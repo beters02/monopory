@@ -1,0 +1,77 @@
+@using Sandbox;
+@using Sandbox.UI;
+@inherits PanelComponent
+
+<root class="monopoly-hud">
+	@if ( GameRef is not null )
+	{
+		<div class="hud-card">
+			<div class="title">Grand Casinopoly</div>
+
+			<div>Current Player: @CurrentPlayerName</div>
+			<div>Money: $@CurrentPlayerMoney</div>
+			<div>Last Roll: @GameRef.LastDieA + @GameRef.LastDieB</div>
+			<div>Phase: @GameRef.Phase</div>
+
+			@if ( GameRef.Phase == MonopolyGamePhase.WaitingToRoll )
+			{
+				<button onclick="@RollDice">Roll Dice</button>
+			}
+
+			@if ( GameRef.Phase == MonopolyGamePhase.WaitingForBuyDecision )
+			{
+				<div class="buy-box">
+					<div>@PendingPropertyName</div>
+					<div>Price: $@PendingPropertyPrice</div>
+
+					<button onclick="@BuyProperty">Buy</button>
+					<button onclick="@SkipProperty">Skip</button>
+				</div>
+			}
+		</div>
+	}
+</root>
+
+@code
+{
+	[Property] public MonopolyGame GameRef { get; set; }
+
+	private MonopolyPlayerState CurrentPlayer => GameRef?.CurrentPlayer;
+
+	private string CurrentPlayerName => CurrentPlayer?.PlayerName ?? "None";
+	private int CurrentPlayerMoney => CurrentPlayer?.Money ?? 0;
+
+	private MonopolySpaceDef PendingDef =>
+		GameRef?.Board?.GetSpaceDef( GameRef.PendingPurchaseSpaceIndex );
+
+	private string PendingPropertyName => PendingDef?.DisplayName ?? "Unknown Property";
+	private int PendingPropertyPrice => PendingDef?.Price ?? 0;
+
+	private void RollDice()
+	{
+		Log.Info("Roll dice button clicked.");
+		GameRef?.RequestRollDice();
+	}
+
+	private void BuyProperty()
+	{
+		GameRef?.RequestBuyPendingProperty();
+	}
+
+	private void SkipProperty()
+	{
+		GameRef?.RequestSkipPendingProperty();
+	}
+
+	protected override int BuildHash()
+	{
+		return System.HashCode.Combine(
+			GameRef?.CurrentPlayerIndex ?? -1,
+			GameRef?.LastDieA ?? 0,
+			GameRef?.LastDieB ?? 0,
+			GameRef?.Phase ?? 0,
+			GameRef?.PendingPurchaseSpaceIndex ?? -1,
+			CurrentPlayerMoney
+		);
+	}
+}

@@ -413,15 +413,13 @@
                   "__guid": "116f2a3e-cf85-4204-9e0c-b03a2abd84a6",
                   "__enabled": true,
                   "Flags": 0,
-                  "DisplayName": "Go",
                   "Index": 0,
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "Type": "Go"
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -447,15 +445,13 @@
                   "__guid": "0049a5a5-1e62-43cc-8f99-3b4eab6dee89",
                   "__enabled": true,
                   "Flags": 0,
-                  "DisplayName": "Brown1",
                   "Index": 1,
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "Type": "Property"
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -481,15 +477,13 @@
                   "__guid": "e5d36746-7e46-4435-b282-070242449ad9",
                   "__enabled": true,
                   "Flags": 0,
-                  "DisplayName": "Community Chest",
                   "Index": 2,
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "Type": "CommunityChest"
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -515,15 +509,13 @@
                   "__guid": "958b3cb1-afd3-4d8f-97aa-afe35fb2222d",
                   "__enabled": true,
                   "Flags": 0,
-                  "DisplayName": "Brown2",
                   "Index": 3,
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "Type": "Property"
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -549,15 +541,13 @@
                   "__guid": "cd0c0018-ed6d-4154-b327-c7692e7afec7",
                   "__enabled": true,
                   "Flags": 0,
-                  "DisplayName": "Income Tax",
                   "Index": 4,
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "Type": "Tax"
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -583,15 +573,13 @@
                   "__guid": "3cdeeac4-c164-40a9-a4ca-9ce830fa00de",
                   "__enabled": true,
                   "Flags": 0,
-                  "DisplayName": "Railroad1",
                   "Index": 5,
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "Type": "Railroad"
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -617,15 +605,13 @@
                   "__guid": "31744d93-40db-448d-b9f7-44e49cf279d2",
                   "__enabled": true,
                   "Flags": 0,
-                  "DisplayName": "Lightblue1",
                   "Index": 6,
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "Type": "Property"
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -651,15 +637,13 @@
                   "__guid": "39a68c9d-fac0-44a2-891a-70fae072a074",
                   "__enabled": true,
                   "Flags": 0,
-                  "DisplayName": "Chance1",
                   "Index": 7,
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "Type": "Chance"
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -685,15 +669,13 @@
                   "__guid": "ec0befdf-a7ec-4b8e-9cb3-85464c773767",
                   "__enabled": true,
                   "Flags": 0,
-                  "DisplayName": "Lightblue2",
                   "Index": 8,
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "Type": "Property"
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -719,15 +701,13 @@
                   "__guid": "d3a72d59-f6d9-4bdf-8d56-8ec433c8eba6",
                   "__enabled": true,
                   "Flags": 0,
-                  "DisplayName": "Lightblue3",
                   "Index": 9,
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "Type": "Property"
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -753,15 +733,13 @@
                   "__guid": "b3291ed6-c08c-4a2e-a261-61b8848a435e",
                   "__enabled": true,
                   "Flags": 0,
-                  "DisplayName": "Jail",
                   "Index": 10,
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "Type": "Jail"
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -787,15 +765,13 @@
                   "__guid": "c8ca53f3-05c3-4720-a1bd-4f41783119ef",
                   "__enabled": true,
                   "Flags": 0,
-                  "DisplayName": "Pink1",
                   "Index": 11,
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "Type": "Property"
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -821,15 +797,13 @@
                   "__guid": "c11d417c-5708-492e-a4cf-b3ce6168bf5f",
                   "__enabled": true,
                   "Flags": 0,
-                  "DisplayName": "Utility1",
                   "Index": 12,
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "Type": "Utility"
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -855,15 +829,13 @@
                   "__guid": "ad93f487-7a5c-46e1-8050-81e8f9abdf11",
                   "__enabled": true,
                   "Flags": 0,
-                  "DisplayName": "Pink2",
                   "Index": 13,
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "Type": "Property"
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -889,15 +861,13 @@
                   "__guid": "5ff60c02-48fd-45d2-a3d6-ad3a029c7a53",
                   "__enabled": true,
                   "Flags": 0,
-                  "DisplayName": "Pink3",
                   "Index": 14,
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "Type": "Property"
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -923,15 +893,13 @@
                   "__guid": "5d15d3e9-4e6d-4333-a307-0972464a0674",
                   "__enabled": true,
                   "Flags": 0,
-                  "DisplayName": "Railroad2",
                   "Index": 15,
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "Type": "Railroad"
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -957,15 +925,13 @@
                   "__guid": "26137398-04f7-4082-92cb-1b7b63c2b721",
                   "__enabled": true,
                   "Flags": 0,
-                  "DisplayName": "Orange1",
                   "Index": 16,
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "Type": "Property"
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -991,15 +957,13 @@
                   "__guid": "e0437f59-eec7-4286-83e1-2409d27730c1",
                   "__enabled": true,
                   "Flags": 0,
-                  "DisplayName": "Community Chest",
                   "Index": 17,
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "Type": "CommunityChest"
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -1025,15 +989,13 @@
                   "__guid": "198d1643-36f0-4e9b-bd8b-e92b987a38f5",
                   "__enabled": true,
                   "Flags": 0,
-                  "DisplayName": "Orange2",
                   "Index": 18,
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "Type": "Property"
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -1059,15 +1021,13 @@
                   "__guid": "362c1ee5-b9fd-47e8-8e4d-0aadeeea0123",
                   "__enabled": true,
                   "Flags": 0,
-                  "DisplayName": "Orange3",
                   "Index": 19,
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "Type": "Property"
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -1093,15 +1053,13 @@
                   "__guid": "fb7e337f-3f11-4da3-af6f-403bc75f06d7",
                   "__enabled": true,
                   "Flags": 0,
-                  "DisplayName": "Free Parking",
                   "Index": 20,
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "Type": "FreeParking"
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -1127,15 +1085,13 @@
                   "__guid": "48680848-14bb-4567-b406-dfe36a8288c2",
                   "__enabled": true,
                   "Flags": 0,
-                  "DisplayName": "Red1",
                   "Index": 21,
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "Type": "Property"
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -1161,15 +1117,13 @@
                   "__guid": "2e1e0fa1-9039-48b7-b540-75e78a944f23",
                   "__enabled": true,
                   "Flags": 0,
-                  "DisplayName": "Chance",
                   "Index": 22,
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "Type": "Chance"
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -1195,15 +1149,13 @@
                   "__guid": "5719480a-5bd9-4f72-bb8c-616167e13c5a",
                   "__enabled": true,
                   "Flags": 0,
-                  "DisplayName": "Red2",
                   "Index": 23,
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "Type": "Property"
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -1229,15 +1181,13 @@
                   "__guid": "641029df-1de1-429e-b0fb-834924f41743",
                   "__enabled": true,
                   "Flags": 0,
-                  "DisplayName": "Red3",
                   "Index": 24,
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "Type": "Property"
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -1263,15 +1213,13 @@
                   "__guid": "6e3cd055-ff3d-4056-8646-f4fc113f09a9",
                   "__enabled": true,
                   "Flags": 0,
-                  "DisplayName": "Railroad3",
                   "Index": 25,
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "Type": "Railroad"
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -1297,15 +1245,13 @@
                   "__guid": "d9493d9d-c4f8-4a96-b850-3443245af942",
                   "__enabled": true,
                   "Flags": 0,
-                  "DisplayName": "Yellow1",
                   "Index": 26,
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "Type": "Property"
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -1331,15 +1277,13 @@
                   "__guid": "18f7f8b4-63ee-435d-b113-7927b8c0ec50",
                   "__enabled": true,
                   "Flags": 0,
-                  "DisplayName": "Yellow2",
                   "Index": 27,
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "Type": "Property"
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -1365,15 +1309,13 @@
                   "__guid": "6d6bd43a-fc6f-47f3-ab15-c536df8d6443",
                   "__enabled": true,
                   "Flags": 0,
-                  "DisplayName": "Utility2",
                   "Index": 28,
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "Type": "Utility"
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -1399,15 +1341,13 @@
                   "__guid": "641e2ec4-5ee9-4026-9e24-d51466d31546",
                   "__enabled": true,
                   "Flags": 0,
-                  "DisplayName": "Yellow3",
                   "Index": 29,
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "Type": "Property"
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -1433,15 +1373,13 @@
                   "__guid": "515f5785-387d-4cbc-955c-fe29e949ca82",
                   "__enabled": true,
                   "Flags": 0,
-                  "DisplayName": "Go To Jail",
                   "Index": 30,
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "Type": "GoToJail"
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -1467,15 +1405,13 @@
                   "__guid": "73d61d33-0b62-4ca4-8570-c8c7114588ad",
                   "__enabled": true,
                   "Flags": 0,
-                  "DisplayName": "Green1",
                   "Index": 31,
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "Type": "Property"
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -1501,15 +1437,13 @@
                   "__guid": "a84bf6dd-3312-4360-aa54-e5668c71ec84",
                   "__enabled": true,
                   "Flags": 0,
-                  "DisplayName": "Green2",
                   "Index": 32,
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "Type": "Property"
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -1535,15 +1469,13 @@
                   "__guid": "80180ac4-591b-4726-9910-22a773e555b5",
                   "__enabled": true,
                   "Flags": 0,
-                  "DisplayName": "Community Chest",
                   "Index": 33,
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "Type": "CommunityChest"
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -1569,15 +1501,13 @@
                   "__guid": "1cbfcb68-1dcb-4c39-bb03-c322771ab08f",
                   "__enabled": true,
                   "Flags": 0,
-                  "DisplayName": "Green3",
                   "Index": 34,
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "Type": "Property"
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -1603,15 +1533,13 @@
                   "__guid": "9cd00aa2-8c81-4be0-bd84-a010fe47486c",
                   "__enabled": true,
                   "Flags": 0,
-                  "DisplayName": "Railroad4",
                   "Index": 35,
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "Type": "Railroad"
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -1637,15 +1565,13 @@
                   "__guid": "5330f8e1-6cc9-44bc-b069-a3eb5473a343",
                   "__enabled": true,
                   "Flags": 0,
-                  "DisplayName": "Chance",
                   "Index": 36,
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "Type": "Chance"
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -1671,15 +1597,13 @@
                   "__guid": "8e2d628b-6126-4b01-a470-88bd1061a56b",
                   "__enabled": true,
                   "Flags": 0,
-                  "DisplayName": "Darkblue1",
                   "Index": 37,
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "Type": "Property"
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -1705,15 +1629,13 @@
                   "__guid": "70c0a717-f54b-42f7-ab03-00f803b5e443",
                   "__enabled": true,
                   "Flags": 0,
-                  "DisplayName": "Luxury Tax",
                   "Index": 38,
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "Type": "Tax"
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -1739,15 +1661,13 @@
                   "__guid": "a20454cd-5730-4287-a465-20bf4095c754",
                   "__enabled": true,
                   "Flags": 0,
-                  "DisplayName": "Darkblue2",
                   "Index": 39,
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "Type": "Property"
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -1836,6 +1756,12 @@
               "__guid": "3a5d8d0c-7021-45c2-91d8-0de80778aae3",
               "__enabled": true,
               "Flags": 0,
+              "Board": {
+                "_type": "component",
+                "component_id": "4b9cd09b-a167-40b7-a17a-0c958e771b55",
+                "go": "469cf384-89f4-4353-99dd-4b89667eff1f",
+                "component_type": "MonopolyBoard"
+              },
               "CurrentPlayerIndex": 0,
               "LastDieA": 0,
               "LastDieB": 0,
@@ -1845,6 +1771,8 @@
               "OnComponentFixedUpdate": null,
               "OnComponentStart": null,
               "OnComponentUpdate": null,
+              "PendingPurchaseSpaceIndex": -1,
+              "Phase": "WaitingToRoll",
               "Players": [
                 {
                   "_type": "component",
@@ -1852,7 +1780,8 @@
                   "go": "9283ae9e-16e2-4c32-91b7-1551b4000a6a",
                   "component_type": "MonopolyPlayerState"
                 }
-              ]
+              ],
+              "PropertyOwners": {}
             }
           ],
           "Children": []
@@ -1886,7 +1815,8 @@
               "OnComponentFixedUpdate": null,
               "OnComponentStart": null,
               "OnComponentUpdate": null,
-              "OwnerId": "00000000-0000-0000-0000-000000000000",
+              "OwnerId": 0,
+              "PlayerName": "Player",
               "SpaceIndex": 0
             }
           ],
@@ -2139,6 +2069,112 @@
               "OnComponentUpdate": null,
               "Scale": 0.2,
               "TexelSize": 1
+            }
+          ],
+          "Children": []
+        },
+        {
+          "__guid": "7989c0ac-6bcb-4ac8-9534-dd039b6e1f8f",
+          "__version": 2,
+          "Flags": 0,
+          "Name": "MonopolyCursor",
+          "Position": "0,0,0",
+          "Rotation": "0,0,0,1",
+          "Scale": "1,1,1",
+          "Tags": "",
+          "Enabled": true,
+          "NetworkMode": 2,
+          "NetworkFlags": 0,
+          "NetworkOrphaned": 0,
+          "NetworkTransmit": true,
+          "OwnerTransfer": 1,
+          "Components": [
+            {
+              "__type": "MonopolyCursor",
+              "__guid": "a7dda7a7-7cf1-495b-b5d8-52a6e4737067",
+              "__enabled": true,
+              "Flags": 0,
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null
+            }
+          ],
+          "Children": []
+        }
+      ]
+    },
+    {
+      "__guid": "31f6caf5-6e98-4492-8dc4-5df14dc3ec8d",
+      "__version": 2,
+      "Flags": 0,
+      "Name": "UIRoot",
+      "Position": "-92.9171753,-261.516846,-25.8012848",
+      "Rotation": "0,0,0,1",
+      "Scale": "1,1,1",
+      "Tags": "",
+      "Enabled": true,
+      "NetworkMode": 2,
+      "NetworkFlags": 0,
+      "NetworkOrphaned": 0,
+      "NetworkTransmit": true,
+      "OwnerTransfer": 1,
+      "Components": [
+        {
+          "__type": "Sandbox.ScreenPanel",
+          "__guid": "5821ede1-7009-45bb-a71a-6c4d26c51c43",
+          "__enabled": true,
+          "Flags": 0,
+          "AutoScreenScale": true,
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null,
+          "Opacity": 1,
+          "Scale": 1,
+          "ScaleStrategy": "ConsistentHeight",
+          "TargetCamera": null,
+          "ZIndex": 100
+        }
+      ],
+      "Children": [
+        {
+          "__guid": "3af0b7e3-e0a9-4a57-89e2-b0ee9b30c2e2",
+          "__version": 2,
+          "Flags": 0,
+          "Name": "MonpolyHud",
+          "Position": "12.8846741,8.18382263,5.31033325",
+          "Rotation": "0,0,0,1",
+          "Scale": "1,1,1",
+          "Tags": "",
+          "Enabled": true,
+          "NetworkMode": 2,
+          "NetworkFlags": 0,
+          "NetworkOrphaned": 0,
+          "NetworkTransmit": true,
+          "OwnerTransfer": 1,
+          "Components": [
+            {
+              "__type": "Sandbox.ui.MonopolyHud",
+              "__guid": "9ce2777c-21c5-496b-929f-52b85c8fa6b4",
+              "__enabled": true,
+              "Flags": 0,
+              "GameRef": {
+                "_type": "component",
+                "component_id": "3a5d8d0c-7021-45c2-91d8-0de80778aae3",
+                "go": "3926108a-01b6-40be-beb6-9bf93b305607",
+                "component_type": "MonopolyGame"
+              },
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null
             }
           ],
           "Children": []

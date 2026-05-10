@@ -1,0 +1,67 @@
+MonopolyHud {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+
+	pointer-events: none;
+
+	.monopoly-hud {
+		position: absolute;
+		top: 32px;
+		left: 32px;
+
+		pointer-events: all;
+	}
+
+	.hud-card {
+		width: 320px;
+		padding: 20px;
+
+		background-color: rgba(10, 10, 10, 0.85);
+		border-radius: 16px;
+
+		color: white;
+		font-family: Poppins;
+		font-size: 18px;
+		font-weight: 600;
+
+		flex-direction: column;
+		gap: 8px;
+	}
+
+	.title {
+		font-size: 26px;
+		font-weight: 900;
+		margin-bottom: 8px;
+	}
+
+	button {
+		margin-top: 10px;
+		padding: 10px 14px;
+
+		background-color: #d9b45f;
+		color: black;
+
+		border-radius: 10px;
+		font-weight: 800;
+		font-size: 16px;
+
+		cursor: pointer;
+		pointer-events: all;
+	}
+
+	button:hover {
+		background-color: #f0cf78;
+	}
+
+	.buy-box {
+		margin-top: 12px;
+		padding-top: 12px;
+		border-top: 2px solid rgba(255, 255, 255, 0.2);
+
+		flex-direction: column;
+		gap: 6px;
+	}
+}
