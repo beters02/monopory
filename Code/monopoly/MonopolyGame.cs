@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Sandbox;
 
 public enum MonopolyGamePhase
@@ -24,8 +25,66 @@ public sealed class MonopolyGame : Component
 	[Property, Sync] public MonopolyGamePhase Phase { get; set; } = MonopolyGamePhase.WaitingToRoll;
 	[Property, Sync] public int PendingPurchaseSpaceIndex { get; set; } = -1;
 
+	protected override void OnStart()
+	{
+		if ( !Networking.IsHost )
+			return;
+
+		foreach ( var connection in Connection.All )
+		{
+			RegisterPlayer( connection );
+		}
+	}
+
+	protected override void OnUpdate()
+	{
+		if ( !Networking.IsHost )
+			return;
+
+		foreach ( var connection in Connection.All )
+		{
+			if ( GetPlayerForConnection( connection ) is null )
+			{
+				RegisterPlayer( connection );
+			}
+		}
+	}
+
+	private MonopolyPlayerState GetPlayerForConnection( Connection connection )
+	{
+		if ( connection is null )
+			return null;
+
+		return Players.FirstOrDefault( x => x.OwnerId == connection.SteamId );
+	}
+
+	private void RegisterPlayer( Connection connection )
+	{
+		if ( connection is null )
+			return;
+
+		if ( GetPlayerForConnection( connection ) is not null )
+			return;
+
+		var emptySlot = Players.FirstOrDefault( x => !x.IsAssigned );
+
+		if ( emptySlot is null )
+		{
+			Log.Warning( $"No available Monopoly player slot for {connection.DisplayName}" );
+			return;
+		}
+
+		emptySlot.OwnerId = connection.SteamId;
+		emptySlot.PlayerName = connection.DisplayName;
+		emptySlot.Money = 1500;
+		emptySlot.SpaceIndex = 0;
+		emptySlot.IsInJail = false;
+
+		Log.Info( $"Assigned {connection.DisplayName} to Monopoly player slot {Players.IndexOf( emptySlot )}" );
+	}
+
 	[Button( "Roll Dice" )]
-	public void RollDice()
+	public async Task RollDiceAsync()
 	{
 		if ( !Networking.IsHost )
 			return;
@@ -36,6 +95,12 @@ public sealed class MonopolyGame : Component
 		if ( Phase != MonopolyGamePhase.WaitingToRoll )
 			return;
 
+		if ( CurrentPlayer is null || !CurrentPlayer.IsAssigned )
+		{
+			AdvanceTurn();
+			return;
+		}
+
 		Phase = MonopolyGamePhase.ResolvingSpace;
 
 		// move player...
@@ -45,19 +110,35 @@ public sealed class MonopolyGame : Component
 
 		var total = LastDieA + LastDieB;
 
-		var SpaceIndex = (CurrentPlayer.SpaceIndex + total) % 40;
-		Log.Info(SpaceIndex);
-		CurrentPlayer.SpaceIndex = SpaceIndex;
+		//var SpaceIndex = (CurrentPlayer.SpaceIndex + total) % 40;
+		//CurrentPlayer.SpaceIndex = SpaceIndex;
+		await MovePlayerSteps( CurrentPlayer, total );
 
 		Log.Info( $"Player {CurrentPlayerIndex + 1} rolled {LastDieA} + {LastDieB} = {total}" );
-
-		ResolveLanding( CurrentPlayer );
 
 		if ( Phase == MonopolyGamePhase.ResolvingSpace )
 		{
 			AdvanceTurn();
 			Phase = MonopolyGamePhase.WaitingToRoll;
 		}
+	}
+
+	private async Task MovePlayerSteps(MonopolyPlayerState player, int steps)
+	{
+		for ( int i = 0; i < steps; i++ )
+		{
+			player.SpaceIndex =
+				(player.SpaceIndex + 1) % 40;
+
+			await Task.DelaySeconds( 0.4f );
+
+			if ( player.SpaceIndex == 0 )
+			{
+				player.Money += 200;
+			}
+		}
+
+		ResolveLanding( player );
 	}
 
 	private void ResolveLanding( MonopolyPlayerState player )
@@ -205,7 +286,7 @@ public sealed class MonopolyGame : Component
 	{
 		if ( !CanCurrentPlayerAct( Rpc.Caller ) )
 			return;
-		RollDice();
+		_ = RollDiceAsync();
 	}
 
 	[Rpc.Host]
@@ -237,6 +318,12 @@ public sealed class MonopolyGame : Component
 		if ( Players.Count == 0 )
 			return;
 
-		CurrentPlayerIndex = (CurrentPlayerIndex + 1) % Players.Count;
+		for ( int i = 0; i < Players.Count; i++ )
+		{
+			CurrentPlayerIndex = (CurrentPlayerIndex + 1) % Players.Count;
+
+			if ( Players[CurrentPlayerIndex].IsAssigned )
+				return;
+		}
 	}
 }

@@ -103,7 +103,7 @@ public sealed class MonopolyBoard : Component
 				Key = "property_light_blue_0",
 				DisplayName = "Light Blue 0",
 				Type = SpaceType.Property,
-				Price = 60,
+				Price = 100,
 				BaseRent = 2,
 				ColorGroup = "light_blue"
 			},
@@ -120,7 +120,7 @@ public sealed class MonopolyBoard : Component
 				Key = "property_light_blue_1",
 				DisplayName = "Light Blue 1",
 				Type = SpaceType.Property,
-				Price = 60,
+				Price = 100,
 				BaseRent = 2,
 				ColorGroup = "light_blue"
 			},
@@ -130,7 +130,7 @@ public sealed class MonopolyBoard : Component
 				Key = "property_light_blue_2",
 				DisplayName = "Light Blue 2",
 				Type = SpaceType.Property,
-				Price = 60,
+				Price = 120,
 				BaseRent = 2,
 				ColorGroup = "light_blue"
 			},
@@ -147,7 +147,7 @@ public sealed class MonopolyBoard : Component
 				Key = "property_pink_0",
 				DisplayName = "Pink 0",
 				Type = SpaceType.Property,
-				Price = 60,
+				Price = 140,
 				BaseRent = 2,
 				ColorGroup = "pink"
 			},
@@ -166,7 +166,7 @@ public sealed class MonopolyBoard : Component
 				Key = "property_pink_1",
 				DisplayName = "Pink 1",
 				Type = SpaceType.Property,
-				Price = 60,
+				Price = 140,
 				BaseRent = 2,
 				ColorGroup = "pink"
 			},
@@ -176,7 +176,7 @@ public sealed class MonopolyBoard : Component
 				Key = "property_pink_2",
 				DisplayName = "Pink 2",
 				Type = SpaceType.Property,
-				Price = 60,
+				Price = 160,
 				BaseRent = 2,
 				ColorGroup = "pink"
 			},
@@ -195,7 +195,7 @@ public sealed class MonopolyBoard : Component
 				Key = "property_orange_0",
 				DisplayName = "Orange 0",
 				Type = SpaceType.Property,
-				Price = 60,
+				Price = 180,
 				BaseRent = 2,
 				ColorGroup = "orange"
 			},
@@ -212,7 +212,7 @@ public sealed class MonopolyBoard : Component
 				Key = "property_orange_1",
 				DisplayName = "Orange 1",
 				Type = SpaceType.Property,
-				Price = 60,
+				Price = 180,
 				BaseRent = 2,
 				ColorGroup = "orange"
 			},
@@ -222,7 +222,7 @@ public sealed class MonopolyBoard : Component
 				Key = "property_orange_2",
 				DisplayName = "Orange 2",
 				Type = SpaceType.Property,
-				Price = 60,
+				Price = 200,
 				BaseRent = 2,
 				ColorGroup = "orange"
 			},
@@ -239,7 +239,7 @@ public sealed class MonopolyBoard : Component
 				Key = "property_red_0",
 				DisplayName = "Red 0",
 				Type = SpaceType.Property,
-				Price = 60,
+				Price = 220,
 				BaseRent = 2,
 				ColorGroup = "red"
 			},
@@ -256,7 +256,7 @@ public sealed class MonopolyBoard : Component
 				Key = "property_red_1",
 				DisplayName = "Red 1",
 				Type = SpaceType.Property,
-				Price = 60,
+				Price = 220,
 				BaseRent = 2,
 				ColorGroup = "red"
 			},
@@ -266,7 +266,7 @@ public sealed class MonopolyBoard : Component
 				Key = "property_red_2",
 				DisplayName = "Red 2",
 				Type = SpaceType.Property,
-				Price = 60,
+				Price = 240,
 				BaseRent = 2,
 				ColorGroup = "red"
 			},
@@ -285,7 +285,7 @@ public sealed class MonopolyBoard : Component
 				Key = "property_yellow_0",
 				DisplayName = "Yellow 0",
 				Type = SpaceType.Property,
-				Price = 60,
+				Price = 260,
 				BaseRent = 2,
 				ColorGroup = "yellow"
 			},
@@ -295,7 +295,7 @@ public sealed class MonopolyBoard : Component
 				Key = "property_yellow_1",
 				DisplayName = "Yellow 1",
 				Type = SpaceType.Property,
-				Price = 60,
+				Price = 260,
 				BaseRent = 2,
 				ColorGroup = "yellow"
 			},
@@ -314,7 +314,7 @@ public sealed class MonopolyBoard : Component
 				Key = "property_yellow_2",
 				DisplayName = "Yellow 2",
 				Type = SpaceType.Property,
-				Price = 60,
+				Price = 280,
 				BaseRent = 2,
 				ColorGroup = "yellow"
 			},
@@ -331,7 +331,7 @@ public sealed class MonopolyBoard : Component
 				Key = "property_green_0",
 				DisplayName = "Green 0",
 				Type = SpaceType.Property,
-				Price = 60,
+				Price = 300,
 				BaseRent = 2,
 				ColorGroup = "green"
 			},
@@ -341,7 +341,7 @@ public sealed class MonopolyBoard : Component
 				Key = "property_green_1",
 				DisplayName = "Green 1",
 				Type = SpaceType.Property,
-				Price = 60,
+				Price = 300,
 				BaseRent = 2,
 				ColorGroup = "green"
 			},
@@ -358,7 +358,7 @@ public sealed class MonopolyBoard : Component
 				Key = "property_green_2",
 				DisplayName = "Green 2",
 				Type = SpaceType.Property,
-				Price = 60,
+				Price = 320,
 				BaseRent = 2,
 				ColorGroup = "green"
 			},
@@ -384,7 +384,7 @@ public sealed class MonopolyBoard : Component
 				Key = "property_dark_blue_0",
 				DisplayName = "Dark Blue 0",
 				Type = SpaceType.Property,
-				Price = 60,
+				Price = 350,
 				BaseRent = 2,
 				ColorGroup = "dark_blue"
 			},
@@ -402,7 +402,7 @@ public sealed class MonopolyBoard : Component
 				Key = "property_dark_blue_1",
 				DisplayName = "Dark Blue 1",
 				Type = SpaceType.Property,
-				Price = 60,
+				Price = 400,
 				BaseRent = 2,
 				ColorGroup = "dark_blue"
 			},

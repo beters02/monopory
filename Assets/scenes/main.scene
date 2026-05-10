@@ -1779,6 +1779,12 @@
                   "component_id": "a460fd92-38a9-4656-8a32-31b00ec6d91a",
                   "go": "9283ae9e-16e2-4c32-91b7-1551b4000a6a",
                   "component_type": "MonopolyPlayerState"
+                },
+                {
+                  "_type": "component",
+                  "component_id": "2da0f262-1c4f-486e-a824-21717ec318e6",
+                  "go": "a671b83f-bf36-4705-abaf-8baac845a900",
+                  "component_type": "MonopolyPlayerState"
                 }
               ],
               "PropertyOwners": {}
@@ -1823,6 +1829,42 @@
           "Children": []
         },
         {
+          "__guid": "a671b83f-bf36-4705-abaf-8baac845a900",
+          "__version": 2,
+          "Flags": 0,
+          "Name": "PlayerState_02",
+          "Position": "0,0,0",
+          "Rotation": "0,0,0,1",
+          "Scale": "1,1,1",
+          "Tags": "",
+          "Enabled": true,
+          "NetworkMode": 2,
+          "NetworkFlags": 0,
+          "NetworkOrphaned": 0,
+          "NetworkTransmit": true,
+          "OwnerTransfer": 1,
+          "Components": [
+            {
+              "__type": "MonopolyPlayerState",
+              "__guid": "2da0f262-1c4f-486e-a824-21717ec318e6",
+              "__enabled": true,
+              "Flags": 0,
+              "IsInJail": false,
+              "Money": 1500,
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null,
+              "OwnerId": 0,
+              "PlayerName": "Player 2",
+              "SpaceIndex": 0
+            }
+          ],
+          "Children": []
+        },
+        {
           "__guid": "ac16fd9e-3901-4b2a-b432-975f84311c4f",
           "__version": 2,
           "Flags": 0,
@@ -1850,7 +1892,7 @@
                 "component_type": "MonopolyBoard"
               },
               "HeightOffset": 4.809978,
-              "MoveSpeed": 10,
+              "MoveSpeed": 15,
               "OnComponentDestroy": null,
               "OnComponentDisabled": null,
               "OnComponentEnabled": null,
@@ -1902,6 +1944,117 @@
                     {
                       "__type": "Sandbox.ModelRenderer",
                       "__guid": "676444db-0dc7-487f-adbb-5ff365a86f0d",
+                      "__enabled": true,
+                      "Flags": 0,
+                      "BodyGroups": 18446744073709551615,
+                      "CreateAttachments": false,
+                      "LodOverride": null,
+                      "MaterialGroup": null,
+                      "MaterialOverride": "materials/pieces/piece.vmat",
+                      "Materials": null,
+                      "Model": "models/cat.vmdl",
+                      "OnComponentDestroy": null,
+                      "OnComponentDisabled": null,
+                      "OnComponentEnabled": null,
+                      "OnComponentFixedUpdate": null,
+                      "OnComponentStart": null,
+                      "OnComponentUpdate": null,
+                      "RenderOptions": {
+                        "GameLayer": true,
+                        "OverlayLayer": false,
+                        "BloomLayer": false,
+                        "AfterUILayer": false
+                      },
+                      "RenderType": "On",
+                      "Tint": "1,1,1,1"
+                    }
+                  ],
+                  "Children": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "__guid": "92a6a908-1327-4062-97da-e1c0035d27a1",
+          "__version": 2,
+          "Flags": 0,
+          "Name": "Token_02",
+          "Position": "73.9639969,41.8661804,146.799408",
+          "Rotation": "0,0,0,1",
+          "Scale": "1,1,1",
+          "Tags": "",
+          "Enabled": true,
+          "NetworkMode": 2,
+          "NetworkFlags": 0,
+          "NetworkOrphaned": 0,
+          "NetworkTransmit": true,
+          "OwnerTransfer": 1,
+          "Components": [
+            {
+              "__type": "MonopolyToken",
+              "__guid": "f12d44c5-3922-49f2-a553-f8a75101b574",
+              "__enabled": true,
+              "Flags": 0,
+              "Board": {
+                "_type": "component",
+                "component_id": "4b9cd09b-a167-40b7-a17a-0c958e771b55",
+                "go": "469cf384-89f4-4353-99dd-4b89667eff1f",
+                "component_type": "MonopolyBoard"
+              },
+              "HeightOffset": 4.809978,
+              "MoveSpeed": 15,
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null,
+              "PlayerState": {
+                "_type": "component",
+                "component_id": "2da0f262-1c4f-486e-a824-21717ec318e6",
+                "go": "a671b83f-bf36-4705-abaf-8baac845a900",
+                "component_type": "MonopolyPlayerState"
+              }
+            }
+          ],
+          "Children": [
+            {
+              "__guid": "b385fecd-e9c7-40fc-85c4-f6fd86511268",
+              "__version": 2,
+              "Flags": 0,
+              "Name": "Visual",
+              "Position": "0,0,0",
+              "Rotation": "0,0,0,1",
+              "Scale": "1,1,1",
+              "Tags": "",
+              "Enabled": true,
+              "NetworkMode": 2,
+              "NetworkFlags": 0,
+              "NetworkOrphaned": 0,
+              "NetworkTransmit": true,
+              "OwnerTransfer": 1,
+              "Components": [],
+              "Children": [
+                {
+                  "__guid": "b867e066-7849-4dc9-a3a5-2d2060382b35",
+                  "__version": 2,
+                  "Flags": 0,
+                  "Name": "ModelRenderer",
+                  "Position": "0,0,0",
+                  "Rotation": "0,0,0,1",
+                  "Scale": "0.0500000007,0.0500000007,0.0500000007",
+                  "Tags": "",
+                  "Enabled": true,
+                  "NetworkMode": 2,
+                  "NetworkFlags": 0,
+                  "NetworkOrphaned": 0,
+                  "NetworkTransmit": true,
+                  "OwnerTransfer": 1,
+                  "Components": [
+                    {
+                      "__type": "Sandbox.ModelRenderer",
+                      "__guid": "acf221f6-2e47-4f77-96f8-c8b1565ef02a",
                       "__enabled": true,
                       "Flags": 0,
                       "BodyGroups": 18446744073709551615,
@@ -2059,7 +2212,7 @@
             {
               "__type": "Sandbox.Sharpen",
               "__guid": "0bffee5e-19f2-41c4-88f9-faefbcce6bf4",
-              "__enabled": true,
+              "__enabled": false,
               "Flags": 0,
               "OnComponentDestroy": null,
               "OnComponentDisabled": null,

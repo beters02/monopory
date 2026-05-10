@@ -12,4 +12,6 @@ public sealed class MonopolyPlayerState : Component
 	[Property, Sync] public string PlayerName { get; set; } = "Player";
 
 	public bool IsOwner => OwnerId == Connection.Local.SteamId;
+
+	public bool IsAssigned => OwnerId != 0;
 }

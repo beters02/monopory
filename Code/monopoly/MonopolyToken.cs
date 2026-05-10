@@ -6,7 +6,7 @@ public sealed class MonopolyToken : Component
 	[Property] public MonopolyPlayerState PlayerState { get; set; }
 
 	[Property] public float HeightOffset { get; set; } = 8f;
-	[Property] public float MoveSpeed { get; set; } = 10f;
+	[Property] public float MoveSpeed { get; set; } = 15f;
 
 	protected override void OnUpdate()
 	{
