@@ -255,6 +255,120 @@
                   "component_id": "fb7e337f-3f11-4da3-af6f-403bc75f06d7",
                   "go": "fc45cd1d-c606-4923-aa7d-a1c299b77eee",
                   "component_type": "MonopolySpace"
+                },
+                {
+                  "_type": "component",
+                  "component_id": "48680848-14bb-4567-b406-dfe36a8288c2",
+                  "go": "f6913f92-3337-4fb0-aa6b-3fb48cc11b81",
+                  "component_type": "MonopolySpace"
+                },
+                {
+                  "_type": "component",
+                  "component_id": "2e1e0fa1-9039-48b7-b540-75e78a944f23",
+                  "go": "bf56248f-89da-42d4-aca5-2e273055f530",
+                  "component_type": "MonopolySpace"
+                },
+                {
+                  "_type": "component",
+                  "component_id": "5719480a-5bd9-4f72-bb8c-616167e13c5a",
+                  "go": "152aff1a-19a6-4d68-84c2-c734800094aa",
+                  "component_type": "MonopolySpace"
+                },
+                {
+                  "_type": "component",
+                  "component_id": "641029df-1de1-429e-b0fb-834924f41743",
+                  "go": "920385cc-def8-4a53-8e07-9c016a0c5152",
+                  "component_type": "MonopolySpace"
+                },
+                {
+                  "_type": "component",
+                  "component_id": "6e3cd055-ff3d-4056-8646-f4fc113f09a9",
+                  "go": "37b1d2e3-ad40-41e2-a829-a75429f5f660",
+                  "component_type": "MonopolySpace"
+                },
+                {
+                  "_type": "component",
+                  "component_id": "d9493d9d-c4f8-4a96-b850-3443245af942",
+                  "go": "442dbdbc-3f0b-4848-92fc-9967ce04cdbd",
+                  "component_type": "MonopolySpace"
+                },
+                {
+                  "_type": "component",
+                  "component_id": "18f7f8b4-63ee-435d-b113-7927b8c0ec50",
+                  "go": "ca2cf0a3-be9a-419b-a8d7-3ee080db499e",
+                  "component_type": "MonopolySpace"
+                },
+                {
+                  "_type": "component",
+                  "component_id": "6d6bd43a-fc6f-47f3-ab15-c536df8d6443",
+                  "go": "0150bfb2-72f7-4022-a570-fd02e8ed9c1b",
+                  "component_type": "MonopolySpace"
+                },
+                {
+                  "_type": "component",
+                  "component_id": "641e2ec4-5ee9-4026-9e24-d51466d31546",
+                  "go": "5ee51f5d-55ab-4e95-8e92-b86a4a3a35ad",
+                  "component_type": "MonopolySpace"
+                },
+                {
+                  "_type": "component",
+                  "component_id": "515f5785-387d-4cbc-955c-fe29e949ca82",
+                  "go": "9516ef25-32df-46b6-9980-82cd00763646",
+                  "component_type": "MonopolySpace"
+                },
+                {
+                  "_type": "component",
+                  "component_id": "73d61d33-0b62-4ca4-8570-c8c7114588ad",
+                  "go": "55888486-1998-47f6-a2bc-48a10844836b",
+                  "component_type": "MonopolySpace"
+                },
+                {
+                  "_type": "component",
+                  "component_id": "a84bf6dd-3312-4360-aa54-e5668c71ec84",
+                  "go": "63338a2d-5824-490c-ac3f-c6b0d01bcf25",
+                  "component_type": "MonopolySpace"
+                },
+                {
+                  "_type": "component",
+                  "component_id": "80180ac4-591b-4726-9910-22a773e555b5",
+                  "go": "97ddbd56-9b74-4d36-87b7-fb4362edee8c",
+                  "component_type": "MonopolySpace"
+                },
+                {
+                  "_type": "component",
+                  "component_id": "1cbfcb68-1dcb-4c39-bb03-c322771ab08f",
+                  "go": "bc7f0a74-c2f4-46dd-8e47-dcb9ae19cc74",
+                  "component_type": "MonopolySpace"
+                },
+                {
+                  "_type": "component",
+                  "component_id": "9cd00aa2-8c81-4be0-bd84-a010fe47486c",
+                  "go": "32ff94a9-e03e-4d57-9c08-e4b18771656d",
+                  "component_type": "MonopolySpace"
+                },
+                {
+                  "_type": "component",
+                  "component_id": "5330f8e1-6cc9-44bc-b069-a3eb5473a343",
+                  "go": "b4e51c57-9582-4c34-8bf0-efd9691bb9f9",
+                  "component_type": "MonopolySpace"
+                },
+                {
+                  "_type": "component",
+                  "component_id": "8e2d628b-6126-4b01-a470-88bd1061a56b",
+                  "go": "d90f2223-7594-416a-b9d7-bb0bf3799d9f",
+                  "component_type": "MonopolySpace"
+                },
+                {
+                  "_type": "component",
+                  "component_id": "70c0a717-f54b-42f7-ab03-00f803b5e443",
+                  "go": "bae526ad-288e-45ff-ac79-4dcee4ca34a9",
+                  "component_type": "MonopolySpace"
+                },
+                {
+                  "_type": "component",
+                  "component_id": "a20454cd-5730-4287-a465-20bf4095c754",
+                  "go": "cf704dcb-3007-4bbb-9062-62d29ff3054c",
+                  "component_type": "MonopolySpace"
                 }
               ]
             }
