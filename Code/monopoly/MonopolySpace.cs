@@ -38,6 +38,39 @@ public sealed class MonopolySpaceDef
 
 	// Text info
 	public float TextScale = MonopolySpaceSettings.DefaultScale;
+
+	private int Quadrant {get; set;}
+
+	public int GetQuadrant()
+	{
+		Log.Info(Quadrant);
+		Log.Info(IsCorner);
+		Log.Info(Index);
+		if (Quadrant == 0 && !IsCorner)
+		{
+			if (Index == 0 || Index == 10 || Index == 20 || Index == 30)
+			{
+				Quadrant = 0; // Corners don't have a quadrant
+				IsCorner = true;
+			} else if(Index < 10)
+			{
+				Quadrant = 1;
+			} else if (Index < 20)
+			{
+				Quadrant = 2;
+			} else if (Index < 30)
+			{
+				Quadrant = 3;
+			} else if (Index < 40)
+			{
+				Quadrant = 4;
+			}
+		}
+
+		return Quadrant;
+	}
+
+	public bool IsCorner {get; set;} = false;
 }
 
 public static class MonopolySpaceSettings
@@ -55,44 +88,125 @@ public static class MonopolySpaceSettings
 
 	public static readonly Vector3 FourthQuadrantLocalPosition = new(0, 4.39999056f, 0.5f);
 	public static readonly Rotation FourthQuadrantLocalRotation = new(-0.49999997f, 0.49999997f, 0.49999997f, 0.49999997f);
+
+	public static readonly Vector3 HitboxSize = Vector3.One * new Vector3(7,12,12f);
+	public static readonly Vector3 CornerHitboxSize = Vector3.One * new Vector3(13f, 13f, 7f);
 	
 }
 
 public sealed class MonopolySpace : Component
 {
+
 	[Property] public int Index { get; set; }
 
 	public Vector3 TokenPosition => GameObject.WorldPosition;
 
 	public TextRenderer LabelRenderer { get; private set; }
 
-	[Property] public int SpaceIndex { get; set; }
+	//[Property] public int SpaceIndex { get; set; }
+
+	public BoxCollider Collider {get; private set;}
 
 	protected override void OnStart()
 	{
 		Tags.Add( "monopoly_space" );
 	}
 
-	protected override void OnUpdate()
+	public void EnsureHitbox()
 	{
-		if ( !Input.Pressed( "attack1" ) )
+		var collider = Components.Get<BoxCollider>();
+
+		if ( collider is null )
+			collider = Components.Create<BoxCollider>();
+
+		//collider.Scale = Vector3.One * new Vector3(6.15907288f,11.5034142f,12f);
+		collider.Scale = MonopolyBoard.GetHitboxSize(Index);
+		//collider.Scale = MonopolySpaceSettings.HitboxSize;
+
+		var center = GameObject.WorldPosition + Vector3.Up * 2f;
+
+		var def = MonopolyBoard.Instance.GetSpaceDef(Index);
+		if (def is null)
+		{
+			Log.Warning($"No definition found for space index {Index}");
 			return;
+		}
 
-		var camera = Scene.Camera;
-		if ( camera is null )
-			return;
+		Log.Info(def.GetQuadrant());
 
-		var ray = camera.ScreenPixelToRay( Mouse.Position );
 
-		var tr = Scene.Trace.Ray( ray, 5000f )
-			.WithTag( "monopoly_space" )
-			.Run();
+		var quad = def.GetQuadrant();
 
-		if ( !tr.Hit || tr.GameObject != GameObject )
-			return;
+		//collider.Center = Vector3.Up * 4f;
 
-		var game = Scene.GetAllComponents<MonopolyGame>().FirstOrDefault();
-		game?.SelectSpace( SpaceIndex );
+		collider.Center = center;
+
+		
+		if(quad == 1 || quad == 3)
+		{
+			Log.Info("center");
+			//collider.Center = new(collider.Center.x, collider.Center.z, collider.Center.y);
+		}
+
+		Log.Info(collider.Center);
+
+		
+		collider.IsTrigger = true;
+
+		Collider = collider;
+		Log.Info(collider.Center);
+
+		// DEBUG VISUAL
+		//var modelRenderer = Components.Get<ModelRenderer>();
+
+		//if ( modelRenderer is null )
+		//	modelRenderer = Components.Create<ModelRenderer>();
+
+		//modelRenderer.Model = Model.Load( "models/dev/measuregeneric01.vmdl" );
+		//modelRenderer.Enabled = false;
+
+		//LocalScale = MonopolySpaceSettings.HitboxSize / 100f;
+		//collider.Enabled = false;
+	}
+
+	public Vector3? GetColliderCenter()
+	{
+		if (Collider == null)
+			return null;
+		return Collider.Center;
+	}
+
+	public void EnsureQuadrant( MonopolySpaceDef def )
+	{
+
+		/*if (def.Index == 10 || def.Index == 20 || def.Index == 30 || def.Index == 0)
+		{
+			def.Quadrant = 0; // Corners don't have a quadrant
+			def.IsCorner = true;
+		} else if(def.Index < 10)
+		{
+			def.Quadrant = 1;
+		} else if (def.Index < 20)
+		{
+			def.Quadrant = 2;
+		} else if (def.Index < 30)
+		{
+			def.Quadrant = 3;
+		} else if (def.Index < 40)
+		{
+			def.Quadrant = 4;
+		}*/
+	}
+
+	public void SetHitboxEnabled(bool enabled)
+	{
+		Collider.Enabled = enabled;
+	}
+
+	public bool IsHitboxEnabled()
+	{
+		var collider = Components.Get<BoxCollider>();
+		return collider != null && collider.Enabled;
 	}
 
 	public void CreateLabel( MonopolySpaceDef def )

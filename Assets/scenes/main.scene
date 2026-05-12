@@ -49,7 +49,7 @@
       "Scale": "1,1,1",
       "Tags": "",
       "Enabled": true,
-      "NetworkMode": 2,
+      "NetworkMode": 0,
       "NetworkFlags": 0,
       "NetworkOrphaned": 0,
       "NetworkTransmit": true,
@@ -123,6 +123,11 @@
               "__guid": "4b9cd09b-a167-40b7-a17a-0c958e771b55",
               "__enabled": true,
               "Flags": 0,
+              "BoardPlaneGameObject": {
+                "_type": "gameobject",
+                "go": "bfa9d9d1-fe04-46cf-bf6c-e2b9e3ef2723"
+              },
+              "HitboxSize": "96,96,12",
               "OnComponentDestroy": null,
               "OnComponentDisabled": null,
               "OnComponentEnabled": null,
@@ -419,8 +424,7 @@
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "SpaceIndex": 0
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -452,8 +456,7 @@
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "SpaceIndex": 0
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -485,8 +488,7 @@
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "SpaceIndex": 0
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -518,8 +520,7 @@
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "SpaceIndex": 0
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -551,8 +552,7 @@
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "SpaceIndex": 0
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -584,8 +584,7 @@
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "SpaceIndex": 0
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -617,8 +616,7 @@
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "SpaceIndex": 0
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -650,8 +648,7 @@
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "SpaceIndex": 0
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -683,8 +680,7 @@
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "SpaceIndex": 0
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -716,8 +712,7 @@
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "SpaceIndex": 0
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -749,8 +744,7 @@
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "SpaceIndex": 0
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -782,8 +776,7 @@
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "SpaceIndex": 0
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -815,8 +808,7 @@
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "SpaceIndex": 0
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -848,8 +840,7 @@
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "SpaceIndex": 0
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -881,8 +872,7 @@
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "SpaceIndex": 0
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -914,8 +904,7 @@
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "SpaceIndex": 0
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -947,8 +936,7 @@
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "SpaceIndex": 0
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -980,8 +968,7 @@
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "SpaceIndex": 0
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -1013,8 +1000,7 @@
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "SpaceIndex": 0
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -1046,8 +1032,7 @@
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "SpaceIndex": 0
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -1079,8 +1064,7 @@
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "SpaceIndex": 0
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -1112,8 +1096,7 @@
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "SpaceIndex": 0
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -1145,8 +1128,7 @@
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "SpaceIndex": 0
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -1178,8 +1160,7 @@
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "SpaceIndex": 0
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -1211,8 +1192,7 @@
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "SpaceIndex": 0
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -1244,8 +1224,7 @@
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "SpaceIndex": 0
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -1277,8 +1256,7 @@
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "SpaceIndex": 0
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -1310,8 +1288,7 @@
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "SpaceIndex": 0
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -1343,8 +1320,7 @@
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "SpaceIndex": 0
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -1376,8 +1352,7 @@
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "SpaceIndex": 0
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -1409,8 +1384,7 @@
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "SpaceIndex": 0
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -1442,8 +1416,7 @@
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "SpaceIndex": 0
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -1475,8 +1448,7 @@
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "SpaceIndex": 0
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -1508,8 +1480,7 @@
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "SpaceIndex": 0
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -1541,8 +1512,7 @@
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "SpaceIndex": 0
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -1574,8 +1544,7 @@
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "SpaceIndex": 0
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -1607,8 +1576,7 @@
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "SpaceIndex": 0
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -1640,8 +1608,7 @@
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "SpaceIndex": 0
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -1673,8 +1640,7 @@
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "SpaceIndex": 0
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -1706,8 +1672,7 @@
                   "OnComponentEnabled": null,
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
-                  "OnComponentUpdate": null,
-                  "SpaceIndex": 0
+                  "OnComponentUpdate": null
                 }
               ],
               "Children": []
@@ -2397,14 +2362,14 @@
       "CustomBounds": false
     },
     "GameObjectSystems": {
-      "Sandbox.Clutter.ClutterGridSystem": {
-        "Storage": {
-          "$blob": "7664decd-7b1f-4214-a5a2-850285e10057"
-        }
-      },
       "Sandbox.SelectionSetsSystem": {
         "Data": {
           "SelectionSets": []
+        }
+      },
+      "Sandbox.Clutter.ClutterGridSystem": {
+        "Storage": {
+          "$blob": "7664decd-7b1f-4214-a5a2-850285e10057"
         }
       },
       "Sandbox.MovieMaker.MovieRecorderSystem": {

@@ -30,7 +30,39 @@
 			}
 		</div>
 
-		//<SpaceCardUI @ref="SpaceCard" GameRef="@GameRef" />
+		@if ( SelectedSpace is not null )
+		{
+			<div class="space-card">
+				<div class="space-title">@SelectedSpace.DisplayName</div>
+				<div class="space-type">@SelectedSpace.Type</div>
+
+				@if ( IsPurchasable )
+				{
+					<div class="space-price">Price: $@SelectedSpace.Price</div>
+				}
+
+				@if ( IsProperty )
+				{
+					<div class="rent-list">
+						<div>Rent: $@SelectedSpace.BaseRent</div>
+						<div>1 House: $@SelectedSpace.OneHouseRent</div>
+						<div>2 Houses: $@SelectedSpace.TwoHouseRent</div>
+						<div>3 Houses: $@SelectedSpace.ThreeHouseRent</div>
+						<div>4 Houses: $@SelectedSpace.FourHouseRent</div>
+						<div>Hotel: $@SelectedSpace.HotelRent</div>
+					</div>
+				}
+
+				@if ( IsPurchasable )
+				{
+					//<div class="space-buttons">
+					//	<button onclick="@Trade">Trade</button>
+					//	<button onclick="@Sell">Sell</button>
+					//	<button onclick="@Mortgage">Mortgage</button>
+					//</div>
+				}
+			</div>
+		}
 	}
 </root>
 
@@ -68,12 +100,56 @@
 	protected override int BuildHash()
 	{
 		return System.HashCode.Combine(
-			GameRef?.CurrentPlayerIndex ?? -1,
+			System.HashCode.Combine(
+				GameRef?.LocalSelectedSpaceIndex ?? -1,
+				GameRef?.Phase ?? 0,
+				GameRef?.CurrentPlayerIndex ?? -1
+			),
 			GameRef?.LastDieA ?? 0,
 			GameRef?.LastDieB ?? 0,
-			GameRef?.Phase ?? 0,
 			GameRef?.PendingPurchaseSpaceIndex ?? -1,
 			CurrentPlayerMoney
 		);
+	}
+
+
+	private MonopolySpaceDef SelectedSpace =>
+		GameRef?.SelectedSpace;
+
+	private int SelectedSpaceIndex =>
+		GameRef?.LocalSelectedSpaceIndex ?? -1;
+
+	private bool IsPurchasable =>
+		SelectedSpace is not null && SelectedSpace.Price > 0;
+
+	private bool IsProperty =>
+		SelectedSpace is not null &&
+		SelectedSpace.HotelRent > 0;
+
+	private void Trade()
+	{
+		if ( SelectedSpaceIndex < 0 )
+			return;
+
+        //TODO: Implement trade UI and logic.
+		//GameRef?.RequestTrade( SelectedSpaceIndex );
+	}
+
+	private void Sell()
+	{
+		if ( SelectedSpaceIndex < 0 )
+			return;
+
+        //TODO: Implement sell UI and logic.
+		//GameRef?.RequestSell( SelectedSpaceIndex );
+	}
+
+	private void Mortgage()
+	{
+		if ( SelectedSpaceIndex < 0 )
+			return;
+
+        //TODO: Implement sell UI and logic.
+		//GameRef?.RequestMortgage( SelectedSpaceIndex );
 	}
 }
