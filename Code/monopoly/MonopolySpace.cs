@@ -22,12 +22,21 @@ public sealed class MonopolySpaceDef
 	public string DisplayName { get; set; } = "";
 	public SpaceType Type { get; set; }
 
+	// Property Data
 	public int Price { get; set; }
 	public int BaseRent { get; set; }
-	public int TaxAmount { get; set; }
+	public int OneHouseRent { get; set; }
+	public int TwoHouseRent { get; set; }
+	public int ThreeHouseRent { get; set; }
+	public int FourHouseRent { get; set; }
+	public int HotelRent { get; set; }
 
 	public string ColorGroup { get; set; } = "";
 
+	// Tax spaces
+	public int TaxAmount { get; set; }
+
+	// Text info
 	public float TextScale = MonopolySpaceSettings.DefaultScale;
 }
 
@@ -56,6 +65,35 @@ public sealed class MonopolySpace : Component
 	public Vector3 TokenPosition => GameObject.WorldPosition;
 
 	public TextRenderer LabelRenderer { get; private set; }
+
+	[Property] public int SpaceIndex { get; set; }
+
+	protected override void OnStart()
+	{
+		Tags.Add( "monopoly_space" );
+	}
+
+	protected override void OnUpdate()
+	{
+		if ( !Input.Pressed( "attack1" ) )
+			return;
+
+		var camera = Scene.Camera;
+		if ( camera is null )
+			return;
+
+		var ray = camera.ScreenPixelToRay( Mouse.Position );
+
+		var tr = Scene.Trace.Ray( ray, 5000f )
+			.WithTag( "monopoly_space" )
+			.Run();
+
+		if ( !tr.Hit || tr.GameObject != GameObject )
+			return;
+
+		var game = Scene.GetAllComponents<MonopolyGame>().FirstOrDefault();
+		game?.SelectSpace( SpaceIndex );
+	}
 
 	public void CreateLabel( MonopolySpaceDef def )
 	{

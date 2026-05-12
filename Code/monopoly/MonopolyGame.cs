@@ -25,6 +25,18 @@ public sealed class MonopolyGame : Component
 	[Property, Sync] public MonopolyGamePhase Phase { get; set; } = MonopolyGamePhase.WaitingToRoll;
 	[Property, Sync] public int PendingPurchaseSpaceIndex { get; set; } = -1;
 
+	public int LocalSelectedSpaceIndex { get; set; } = -1;
+
+	public MonopolySpaceDef? SelectedSpace =>
+		LocalSelectedSpaceIndex >= 0 && LocalSelectedSpaceIndex < Board.Spaces.Count
+			? Board.GetSpaceDef(LocalSelectedSpaceIndex)
+			: null;
+
+	public void SelectSpace( int spaceIndex )
+	{
+		LocalSelectedSpaceIndex = spaceIndex;
+	}
+
 	protected override void OnStart()
 	{
 		if ( !Networking.IsHost )

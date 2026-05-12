@@ -61,6 +61,11 @@ public sealed class MonopolyBoard : Component
 				Type = SpaceType.Property,
 				Price = 60,
 				BaseRent = 2,
+				OneHouseRent = 10,
+				TwoHouseRent = 30,
+				ThreeHouseRent = 90,
+				FourHouseRent = 160,
+				HotelRent = 250,
 				ColorGroup = "brown"
 			},
 			new()
@@ -77,7 +82,12 @@ public sealed class MonopolyBoard : Component
 				DisplayName = "Brown 1",
 				Type = SpaceType.Property,
 				Price = 60,
-				BaseRent = 2,
+				BaseRent = 4,
+				OneHouseRent = 20,
+				TwoHouseRent = 60,
+				ThreeHouseRent = 180,
+				FourHouseRent = 320,
+				HotelRent = 450,
 				ColorGroup = "brown"
 			},
 			new()
@@ -104,7 +114,12 @@ public sealed class MonopolyBoard : Component
 				DisplayName = "Light Blue 0",
 				Type = SpaceType.Property,
 				Price = 100,
-				BaseRent = 2,
+				BaseRent = 6,
+				OneHouseRent = 30,
+				TwoHouseRent = 90,
+				ThreeHouseRent = 270,
+				FourHouseRent = 400,
+				HotelRent = 550,
 				ColorGroup = "light_blue"
 			},
 			new()
@@ -121,7 +136,12 @@ public sealed class MonopolyBoard : Component
 				DisplayName = "Light Blue 1",
 				Type = SpaceType.Property,
 				Price = 100,
-				BaseRent = 2,
+				BaseRent = 6,
+				OneHouseRent = 30,
+				TwoHouseRent = 90,
+				ThreeHouseRent = 270,
+				FourHouseRent = 400,
+				HotelRent = 550,
 				ColorGroup = "light_blue"
 			},
 			new()
@@ -131,7 +151,12 @@ public sealed class MonopolyBoard : Component
 				DisplayName = "Light Blue 2",
 				Type = SpaceType.Property,
 				Price = 120,
-				BaseRent = 2,
+				BaseRent = 8,
+				OneHouseRent = 40,
+				TwoHouseRent = 100,
+				ThreeHouseRent = 300,
+				FourHouseRent = 450,
+				HotelRent = 600,
 				ColorGroup = "light_blue"
 			},
 			new()
@@ -148,7 +173,12 @@ public sealed class MonopolyBoard : Component
 				DisplayName = "Pink 0",
 				Type = SpaceType.Property,
 				Price = 140,
-				BaseRent = 2,
+				BaseRent = 10,
+				OneHouseRent = 50,
+				TwoHouseRent = 150,
+				ThreeHouseRent = 450,
+				FourHouseRent = 625,
+				HotelRent = 750,
 				ColorGroup = "pink"
 			},
 			new()
@@ -167,7 +197,12 @@ public sealed class MonopolyBoard : Component
 				DisplayName = "Pink 1",
 				Type = SpaceType.Property,
 				Price = 140,
-				BaseRent = 2,
+				BaseRent = 10,
+				OneHouseRent = 50,
+				TwoHouseRent = 150,
+				ThreeHouseRent = 450,
+				FourHouseRent = 625,
+				HotelRent = 750,
 				ColorGroup = "pink"
 			},
 			new()
@@ -177,7 +212,12 @@ public sealed class MonopolyBoard : Component
 				DisplayName = "Pink 2",
 				Type = SpaceType.Property,
 				Price = 160,
-				BaseRent = 2,
+				BaseRent = 12,
+				OneHouseRent = 60,
+				TwoHouseRent = 180,
+				ThreeHouseRent = 500,
+				FourHouseRent = 700,
+				HotelRent = 900,
 				ColorGroup = "pink"
 			},
 			new()
@@ -196,7 +236,12 @@ public sealed class MonopolyBoard : Component
 				DisplayName = "Orange 0",
 				Type = SpaceType.Property,
 				Price = 180,
-				BaseRent = 2,
+				BaseRent = 14,
+				OneHouseRent = 70,
+				TwoHouseRent = 200,
+				ThreeHouseRent = 550,
+				FourHouseRent = 750,
+				HotelRent = 950,
 				ColorGroup = "orange"
 			},
 			new()
@@ -213,7 +258,12 @@ public sealed class MonopolyBoard : Component
 				DisplayName = "Orange 1",
 				Type = SpaceType.Property,
 				Price = 180,
-				BaseRent = 2,
+				BaseRent = 14,
+				OneHouseRent = 70,
+				TwoHouseRent = 200,
+				ThreeHouseRent = 550,
+				FourHouseRent = 750,
+				HotelRent = 950,
 				ColorGroup = "orange"
 			},
 			new()
@@ -223,7 +273,12 @@ public sealed class MonopolyBoard : Component
 				DisplayName = "Orange 2",
 				Type = SpaceType.Property,
 				Price = 200,
-				BaseRent = 2,
+				BaseRent = 16,
+				OneHouseRent = 80,
+				TwoHouseRent = 220,
+				ThreeHouseRent = 600,
+				FourHouseRent = 800,
+				HotelRent = 100,
 				ColorGroup = "orange"
 			},
 			new()
@@ -240,7 +295,12 @@ public sealed class MonopolyBoard : Component
 				DisplayName = "Red 0",
 				Type = SpaceType.Property,
 				Price = 220,
-				BaseRent = 2,
+				BaseRent = 18,
+				OneHouseRent = 90,
+				TwoHouseRent = 250,
+				ThreeHouseRent = 700,
+				FourHouseRent = 875,
+				HotelRent = 1050,
 				ColorGroup = "red"
 			},
 			new()
@@ -257,7 +317,12 @@ public sealed class MonopolyBoard : Component
 				DisplayName = "Red 1",
 				Type = SpaceType.Property,
 				Price = 220,
-				BaseRent = 2,
+				BaseRent = 18,
+				OneHouseRent = 90,
+				TwoHouseRent = 250,
+				ThreeHouseRent = 700,
+				FourHouseRent = 875,
+				HotelRent = 1050,
 				ColorGroup = "red"
 			},
 			new()
@@ -267,7 +332,12 @@ public sealed class MonopolyBoard : Component
 				DisplayName = "Red 2",
 				Type = SpaceType.Property,
 				Price = 240,
-				BaseRent = 2,
+				BaseRent = 20,
+				OneHouseRent = 100,
+				TwoHouseRent = 300,
+				ThreeHouseRent = 750,
+				FourHouseRent = 925,
+				HotelRent = 1100,
 				ColorGroup = "red"
 			},
 			new()
@@ -286,7 +356,12 @@ public sealed class MonopolyBoard : Component
 				DisplayName = "Yellow 0",
 				Type = SpaceType.Property,
 				Price = 260,
-				BaseRent = 2,
+				BaseRent = 22,
+				OneHouseRent = 110,
+				TwoHouseRent = 330,
+				ThreeHouseRent = 800,
+				FourHouseRent = 975,
+				HotelRent = 1150,
 				ColorGroup = "yellow"
 			},
 			new()
@@ -296,7 +371,12 @@ public sealed class MonopolyBoard : Component
 				DisplayName = "Yellow 1",
 				Type = SpaceType.Property,
 				Price = 260,
-				BaseRent = 2,
+				BaseRent = 22,
+				OneHouseRent = 110,
+				TwoHouseRent = 330,
+				ThreeHouseRent = 800,
+				FourHouseRent = 975,
+				HotelRent = 1150,
 				ColorGroup = "yellow"
 			},
 			new()
@@ -315,7 +395,12 @@ public sealed class MonopolyBoard : Component
 				DisplayName = "Yellow 2",
 				Type = SpaceType.Property,
 				Price = 280,
-				BaseRent = 2,
+				BaseRent = 24,
+				OneHouseRent = 120,
+				TwoHouseRent = 360,
+				ThreeHouseRent = 850,
+				FourHouseRent = 1025,
+				HotelRent = 1200,
 				ColorGroup = "yellow"
 			},
 			new()
@@ -332,7 +417,12 @@ public sealed class MonopolyBoard : Component
 				DisplayName = "Green 0",
 				Type = SpaceType.Property,
 				Price = 300,
-				BaseRent = 2,
+				BaseRent = 26,
+				OneHouseRent = 130,
+				TwoHouseRent = 390,
+				ThreeHouseRent = 900,
+				FourHouseRent = 1105,
+				HotelRent = 1275,
 				ColorGroup = "green"
 			},
 			new()
@@ -342,7 +432,12 @@ public sealed class MonopolyBoard : Component
 				DisplayName = "Green 1",
 				Type = SpaceType.Property,
 				Price = 300,
-				BaseRent = 2,
+				BaseRent = 26,
+				OneHouseRent = 130,
+				TwoHouseRent = 390,
+				ThreeHouseRent = 900,
+				FourHouseRent = 1105,
+				HotelRent = 1275,
 				ColorGroup = "green"
 			},
 			new()
@@ -359,7 +454,12 @@ public sealed class MonopolyBoard : Component
 				DisplayName = "Green 2",
 				Type = SpaceType.Property,
 				Price = 320,
-				BaseRent = 2,
+				BaseRent = 28,
+				OneHouseRent = 150,
+				TwoHouseRent = 450,
+				ThreeHouseRent = 1000,
+				FourHouseRent = 1200,
+				HotelRent = 1400,
 				ColorGroup = "green"
 			},
 			new()
@@ -385,7 +485,12 @@ public sealed class MonopolyBoard : Component
 				DisplayName = "Dark Blue 0",
 				Type = SpaceType.Property,
 				Price = 350,
-				BaseRent = 2,
+				BaseRent = 35,
+				OneHouseRent = 175,
+				TwoHouseRent = 500,
+				ThreeHouseRent = 1100,
+				FourHouseRent = 1300,
+				HotelRent = 1500,
 				ColorGroup = "dark_blue"
 			},
 			new()
@@ -403,7 +508,12 @@ public sealed class MonopolyBoard : Component
 				DisplayName = "Dark Blue 1",
 				Type = SpaceType.Property,
 				Price = 400,
-				BaseRent = 2,
+				BaseRent = 50,
+				OneHouseRent = 200,
+				TwoHouseRent = 600,
+				ThreeHouseRent = 1400,
+				FourHouseRent = 1700,
+				HotelRent = 1500,
 				ColorGroup = "dark_blue"
 			},
 		};
