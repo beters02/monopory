@@ -1,61 +1,92 @@
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Sandbox;
 
 public sealed class MonopolyBoard : Component
 {
-	[Property] public List<MonopolySpace> Spaces { get; set; } = new();
-	public List<MonopolySpaceDef> SpaceDefs { get; private set; } = new();
-	[Property] public Vector3 HitboxSize { get; set; } = new Vector3( 96f, 96f, 12f );
-	
-	[Property] public GameObject BoardPlaneGameObject {get; set;}
-
 	private static MonopolyBoard instance;
 	public static MonopolyBoard Instance => instance;
+	private MonopolyGame GameRef;
+	private DebugHelper debugHelper = new();
+
+	[Property] public List<MonopolySpace> Spaces { get; set; } = new();
+	public List<MonopolySpaceDef> SpaceDefs { get; private set; } = new();
+
+	[Property] public Vector3 HitboxSize { get; set; } = new Vector3( 96f, 96f, 12f );
+	[Property] public GameObject BoardPlaneGameObject {get; set;}
+
+	[Property, Change("OnDebugEnabledChanged")] public bool DebugEnabled {get; set;} = false;
+	private void OnDebugEnabledChanged(bool _, bool newValue) => debugHelper.SetEnabled(newValue);
+
+	// Component
 
 	protected override void OnStart()
 	{
-		LoadBoardDefinitions();
-
 		instance = this;
+		debugHelper.SetEnabled(DebugEnabled);
 
+		GameRef = Scene.GetAllComponents<MonopolyGame>().FirstOrDefault();
+
+		LoadBoardDefinitions();
+		InitSpaces();
+	}
+
+	protected override void OnUpdate()
+	{
+		DrawAllHitboxesDebug();
+		UpdateLocalSpaceSelection();
+	}
+
+	// Spaces & Defs initializing
+	private void InitSpaces()
+	{
 		foreach ( var space in Spaces )
 		{
-			var def = GetSpaceDef( space.Index );
+			space.EnsureHitbox();
+			space.SetHitboxEnabled(false);
+			space.EnsureDef(GetSpaceDef(space.Index));
 
-			if ( def == null )
+			if (space.Def == null)
 			{
-				Log.Info("def for " + space.Index + " is null.");
+				Log.Warning($"Space at index {space.Index} has no definition! Skipping label creation and modifications.");
 				continue;
 			}
 
-			space.EnsureHitbox();
-			//space.EnsureQuadrant(def);
-				
-			if ( ShouldCreateLabel( def.Type ) )
-			{
-				space.CreateLabel( def );
-			}
-
-			space.SetHitboxEnabled(false);
+			ApplySpaceModifications(space);
+			TryCreateLabel(space);
 		}
 	}
 
-	private bool ShouldCreateLabel( SpaceType type )
+	private void ApplySpaceModifications(MonopolySpace space)
 	{
-		switch ( type )
+		var quad = space.Def.GetQuadrant();
+		if (quad == 0)
+			space.ModifyColliderSize(1f, 1f);
+		else if (quad == 1)
 		{
-			case SpaceType.CommunityChest:
-			case SpaceType.Go:
-			case SpaceType.Chance:
-			case SpaceType.FreeParking:
-			case SpaceType.GoToJail:
-				return false;
-
-			default:
-				return true;
+			ColliderSizeModNon0(space);
+			ColliderSizeMod1or3(space);
+		}
+		else if (quad == 2)
+		{
+			ColliderSizeModNon0(space);
+			ColliderSizeMod2or4(space);
+		}
+		else if (quad == 3)
+		{
+			ColliderSizeModNon0(space);
+			ColliderSizeMod1or3(space);
+		} else if (quad == 4)
+		{
+			space.ModifyColliderCenter(0f, 1.5f);
+			ColliderSizeModNon0(space);
+			ColliderSizeMod2or4(space);
 		}
 	}
 
+	private void ColliderSizeMod1or3(MonopolySpace space) => space.ModifyColliderSize(0.5f);
+	private void ColliderSizeMod2or4(MonopolySpace space) => space.ModifyColliderSize(1f);
+	private void ColliderSizeModNon0(MonopolySpace space) => space.ModifyColliderSize(0f, 3f);
 	private void LoadBoardDefinitions()
 	{
 		SpaceDefs = new()
@@ -532,8 +563,29 @@ public sealed class MonopolyBoard : Component
 			},
 		};
 	}
+	private void TryCreateLabel(MonopolySpace space)
+	{
+		if (!ShouldCreateLabel(space))
+			return;
+		space.CreateLabel();
+	}
+	private bool ShouldCreateLabel( MonopolySpace space )
+	{
+		switch ( space.Def.Type )
+		{
+			case SpaceType.CommunityChest:
+			case SpaceType.Go:
+			case SpaceType.Chance:
+			case SpaceType.FreeParking:
+			case SpaceType.GoToJail:
+				return false;
 
+			default:
+				return true;
+		}
+	}
 
+	// Space Helpers
 	public MonopolySpace GetSpace( int index )
 	{
 		if ( Spaces.Count == 0 || Spaces.Count - 1 < index)
@@ -563,8 +615,6 @@ public sealed class MonopolyBoard : Component
 		return space?.TokenPosition ?? Vector3.Zero;
 	}
 
-	// DEBUG
-
 	public static Vector3 GetHitboxSize(int SpaceIndex)
 	{
 		var isCorner =
@@ -573,50 +623,16 @@ public sealed class MonopolyBoard : Component
 			SpaceIndex == 20 ||
 			SpaceIndex == 30;
 
+		var cornHbs = MonopolySpaceSettings.CornerHitboxSize;
+		var regHbs = MonopolySpaceSettings.HitboxSize;
+
+		if (isCorner)
+			return cornHbs;
+
 		if (GetQuadFromIndex(SpaceIndex) == 1 || GetQuadFromIndex(SpaceIndex) == 3)
-		{
-			return isCorner ? new Vector3(MonopolySpaceSettings.CornerHitboxSize.z, MonopolySpaceSettings.CornerHitboxSize.y, MonopolySpaceSettings.CornerHitboxSize.x) : new Vector3(MonopolySpaceSettings.HitboxSize.z, MonopolySpaceSettings.HitboxSize.y, MonopolySpaceSettings.HitboxSize.x);
-		}
+			return new Vector3(regHbs.y, regHbs.x, regHbs.z);
 
-		return isCorner ? MonopolySpaceSettings.CornerHitboxSize : MonopolySpaceSettings.HitboxSize;
-	}
-
-	protected override void OnUpdate()
-	{
-		DrawAllHitboxesDebug();
-
-		if ( !Input.Pressed( "attack1" ) )
-			return;
-
-		var camera = Scene.Camera;
-		if ( camera is null )
-			return;
-
-		var ray = camera.ScreenPixelToRay( Mouse.Position );
-
-		var tr = Scene.Trace.Ray( ray, 5000f )
-			.UseHitboxes()
-			.HitTriggers()
-			.Run();
-
-		//DebugOverlay.Trace( tr, 5f, true );
-
-		Log.Info( $"Hit: {tr.Hit}, Object: {tr.GameObject?.Name}" );
-
-		if ( !tr.Hit || tr.GameObject is null )
-			return;
-
-		if ( !tr.GameObject.Components.TryGet<MonopolySpace>( out var space ) )
-			return;
-		
-		var def = GetSpaceDef(space.Index);
-		Log.Info( $"def: {def?.GetQuadrant()}" );
-		
-		currentSpace = space;
-		currentBoxActive = true;
-
-		var game = Scene.GetAllComponents<MonopolyGame>().FirstOrDefault();
-		game?.SelectSpace( space.Index );
+		return regHbs;
 	}
 
 	public static int GetQuadFromIndex(int Index)
@@ -637,8 +653,84 @@ public sealed class MonopolyBoard : Component
 		return 4;
 	}
 
+	// Local Space Selection
+	private void UpdateLocalSpaceSelection()
+	{
+		if ( !Input.Pressed( "attack1" ) )
+			return;
+
+		SceneTraceResult? initialTraceResult = GetSelectionMouseTraceResult();
+		if (initialTraceResult == null)
+			return;
+
+		SceneTraceResult traceResult = initialTraceResult.Value;
+		if (DebugEnabled)
+			DebugOverlay.Trace( traceResult, 5f, true );
+
+		HandleTraceResult(traceResult, out MonopolySpace space, out MonopolySpaceDef _);
+
+		if ( GameRef is null || space is null )
+			return;
+		
+		if (space.Index == GameRef.LocalSelectedSpaceIndex)
+			GameRef.SelectSpace(-1);
+		else
+			GameRef.SelectSpace( space.Index );
+	}
+
+	private SceneTraceResult? GetSelectionMouseTraceResult()
+	{
+		var camera = Scene.Camera;
+		if ( camera is null )
+			return null;
+
+		var ray = camera.ScreenPixelToRay( Mouse.Position );
+		return Scene.Trace.Ray( ray, 5000f )
+			.UseHitboxes()
+			.HitTriggers()
+			.Run();
+	}
+
+	private void HandleTraceResult(SceneTraceResult traceResult, out MonopolySpace foundSpace, out MonopolySpaceDef foundSpaceDef)
+	{
+		foundSpace = null;
+		foundSpaceDef = null;
+
+		// start building debug string
+		var str = $"Hit: {traceResult.Hit}, Object: {traceResult.GameObject?.Name}";
+		
+		if ( !traceResult.Hit || traceResult.GameObject is null )
+		{
+			debugHelper.LogInfo(str + " (no hit)");
+			return;
+		}
+
+		if ( !traceResult.GameObject.Components.TryGet<MonopolySpace>( out var space ) )
+		{
+			debugHelper.LogInfo(str + " (not a space)");
+			return;
+		}
+
+		if (traceResult.Collider is BoxCollider)
+		{
+			var trc = traceResult.Collider as BoxCollider;
+			str += $", Collider Center: {trc.Center}, Collider Size: {trc.Scale}";
+		}
+
+		var def = GetSpaceDef(space.Index);
+		str += $", SpaceDef: {def?.DisplayName} (Quad: {def?.GetQuadrant()} Index: {def?.Index}, Type: {def?.Type})";
+		debugHelper.LogInfo(str);
+		
+		foundSpace = space;
+		foundSpaceDef = def;
+	}
+
+	// DEBUG
 	private void DrawAllHitboxesDebug()
 	{
+		if (!DebugEnabled)
+			return;
+		
 		foreach ( var space in Spaces )
 		{
 			if ( space is null )
@@ -646,28 +738,10 @@ public sealed class MonopolyBoard : Component
 
 			var ind = space.Index;
 			space.SetHitboxEnabled(true);
-			//var size = GetHitboxSize( ind );
-			var size = GetHitboxSize(ind);
-			//var center = space.GameObject.WorldPosition;
 
-			//var quad = GetSpaceDef(space.Index).GetQuadrant();
-			//if (quad == 1 || quad == 3)
-			//{
-				//size = new(size.z, size.y, size.x);
-			//
-			
-			var center = space.GetColliderCenter();
-			Log.Info(center);
-
-			Vector3 nc = center ?? Vector3.Zero;
-
-			Log.Info(size);
-			
-
-			//Log.Info(space.Index + " " + size);
 			DebugOverlay.Box(
-				nc,
-				size,
+				space.GetColliderCenter() ?? Vector3.Zero,
+				space.GetColliderSize() ?? GetHitboxSize(ind),
 				Color.Green,
 				0f,
 				default,
@@ -675,34 +749,4 @@ public sealed class MonopolyBoard : Component
 			);
 		}
 	}
-
-	private bool ShouldDrawHitboxDebug()
-	{
-		return currentBoxActive;
-	}
-
-	private bool CanDrawHitboxDebug(bool isRayHit, bool isSpaceNull)
-	{
-		return isRayHit && !isSpaceNull;
-	}
-
-	private BBox CreateCurrentHitboxDebug(MonopolySpace space)
-	{
-		var size = GetHitboxSize(space.Index);
-		var center = space.GameObject.WorldPosition + Vector3.Up * 10f;
-
-		return new BBox(
-			center - size * 0.5f,
-			center + size * 0.5f
-		);
-	}
-
-	private void SetCurrentHitboxDebug(BBox box)
-	{
-		currentBox = box;
-	}
-
-	private BBox currentBox;
-	private bool currentBoxActive = false;
-	private MonopolySpace currentSpace;
 }

@@ -68,12 +68,34 @@ public sealed class MonopolyGame : Component
 		}
 	}
 
+	public MonopolyPlayerState LocalPlayer => Players.FirstOrDefault( p => p.OwnerId == Connection.Local.SteamId );
+
+	public int LocalPlayerIndex => Players.IndexOf( LocalPlayer );
+
+	public int GetOwnerIndexForSpace( int spaceIndex )
+	{
+		if ( PropertyOwners.TryGetValue( spaceIndex, out var ownerIndex ) )
+			return ownerIndex;
+
+		return -1;
+	}
+
+	public int GetPlayerIndex( MonopolyPlayerState player )
+	{
+		return Players.IndexOf( player );
+	}
+
 	private MonopolyPlayerState GetPlayerForConnection( Connection connection )
 	{
 		if ( connection is null )
 			return null;
 
 		return Players.FirstOrDefault( x => x.OwnerId == connection.SteamId );
+	}
+
+	private Connection GetConnectionForPlayer( MonopolyPlayerState player )
+	{
+		return Connection.All.FirstOrDefault( c => c.SteamId == player.OwnerId );
 	}
 
 	private void RegisterPlayer( Connection connection )
@@ -126,7 +148,8 @@ public sealed class MonopolyGame : Component
 		LastDieA = Game.Random.Int( 1, 6 );
 		LastDieB = Game.Random.Int( 1, 6 );
 
-		var total = LastDieA + LastDieB;
+		//var total = LastDieA + LastDieB;
+		var total = 4;
 
 		//var SpaceIndex = (CurrentPlayer.SpaceIndex + total) % 40;
 		//CurrentPlayer.SpaceIndex = SpaceIndex;
@@ -171,6 +194,9 @@ public sealed class MonopolyGame : Component
 			return;
 
 		Log.Info( $"{player.PlayerName} landed on {spaceDef.DisplayName}" );
+
+		//if (spaceDef.Type != SpaceType.Go && spaceDef.Type )
+		ShowCardForPlayerWhoLanded(player);
 
 		switch ( spaceDef.Type )
 		{
@@ -236,6 +262,26 @@ public sealed class MonopolyGame : Component
 			Log.Info( $"{player.PlayerName} paid ${def.BaseRent} rent to {owner.PlayerName}." );
 			return;
 		}
+	}
+
+	private void ShowCardForPlayerWhoLanded( MonopolyPlayerState player )
+	{
+		var spaceIndex = player.SpaceIndex;
+		var connection = GetConnectionForPlayer( player );
+
+		if ( connection is null )
+			return;
+
+		using ( Rpc.FilterInclude( connection ) )
+		{
+			ShowLandedSpaceCard( spaceIndex );
+		}
+	}
+
+	[Rpc.Broadcast]
+	private void ShowLandedSpaceCard( int spaceIndex )
+	{
+		LocalSelectedSpaceIndex = spaceIndex;
 	}
 
 	[Button( "Buy Pending Property" )]

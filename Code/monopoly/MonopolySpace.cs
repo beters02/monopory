@@ -43,9 +43,6 @@ public sealed class MonopolySpaceDef
 
 	public int GetQuadrant()
 	{
-		Log.Info(Quadrant);
-		Log.Info(IsCorner);
-		Log.Info(Index);
 		if (Quadrant == 0 && !IsCorner)
 		{
 			if (Index == 0 || Index == 10 || Index == 20 || Index == 30)
@@ -89,8 +86,8 @@ public static class MonopolySpaceSettings
 	public static readonly Vector3 FourthQuadrantLocalPosition = new(0, 4.39999056f, 0.5f);
 	public static readonly Rotation FourthQuadrantLocalRotation = new(-0.49999997f, 0.49999997f, 0.49999997f, 0.49999997f);
 
-	public static readonly Vector3 HitboxSize = Vector3.One * new Vector3(7,12,12f);
-	public static readonly Vector3 CornerHitboxSize = Vector3.One * new Vector3(13f, 13f, 7f);
+	public static readonly Vector3 HitboxSize = Vector3.One * new Vector3(7f, 12f, 4f);
+	public static readonly Vector3 CornerHitboxSize = Vector3.One * new Vector3(13f, 13f, 4f);
 	
 }
 
@@ -107,6 +104,9 @@ public sealed class MonopolySpace : Component
 
 	public BoxCollider Collider {get; private set;}
 
+	// probably unoptimized but idgaf
+	public MonopolySpaceDef Def { get; set; }
+
 	protected override void OnStart()
 	{
 		Tags.Add( "monopoly_space" );
@@ -114,90 +114,115 @@ public sealed class MonopolySpace : Component
 
 	public void EnsureHitbox()
 	{
-		var collider = Components.Get<BoxCollider>();
+		BoxCollider collider = Components.Get<BoxCollider>() ?? Components.Create<BoxCollider>();
 
-		if ( collider is null )
-			collider = Components.Create<BoxCollider>();
-
-		//collider.Scale = Vector3.One * new Vector3(6.15907288f,11.5034142f,12f);
 		collider.Scale = MonopolyBoard.GetHitboxSize(Index);
-		//collider.Scale = MonopolySpaceSettings.HitboxSize;
-
-		var center = GameObject.WorldPosition + Vector3.Up * 2f;
-
-		var def = MonopolyBoard.Instance.GetSpaceDef(Index);
-		if (def is null)
-		{
-			Log.Warning($"No definition found for space index {Index}");
-			return;
-		}
-
-		Log.Info(def.GetQuadrant());
-
-
-		var quad = def.GetQuadrant();
-
-		//collider.Center = Vector3.Up * 4f;
-
-		collider.Center = center;
-
-		
-		if(quad == 1 || quad == 3)
-		{
-			Log.Info("center");
-			//collider.Center = new(collider.Center.x, collider.Center.z, collider.Center.y);
-		}
-
-		Log.Info(collider.Center);
-
-		
+		collider.Center = new Vector3(0, 0, -2f);
 		collider.IsTrigger = true;
 
 		Collider = collider;
-		Log.Info(collider.Center);
+	}
 
-		// DEBUG VISUAL
-		//var modelRenderer = Components.Get<ModelRenderer>();
-
-		//if ( modelRenderer is null )
-		//	modelRenderer = Components.Create<ModelRenderer>();
-
-		//modelRenderer.Model = Model.Load( "models/dev/measuregeneric01.vmdl" );
-		//modelRenderer.Enabled = false;
-
-		//LocalScale = MonopolySpaceSettings.HitboxSize / 100f;
-		//collider.Enabled = false;
+	public void EnsureDef(MonopolySpaceDef def)
+	{
+		Def = def;
 	}
 
 	public Vector3? GetColliderCenter()
 	{
 		if (Collider == null)
 			return null;
-		return Collider.Center;
+
+		return GameObject.WorldTransform.PointToWorld(Collider.Center);
+		//return Collider.Center;
 	}
 
-	public void EnsureQuadrant( MonopolySpaceDef def )
+	public Vector3? GetColliderSize()
 	{
+		if (Collider == null)
+			return null;
 
-		/*if (def.Index == 10 || def.Index == 20 || def.Index == 30 || def.Index == 0)
-		{
-			def.Quadrant = 0; // Corners don't have a quadrant
-			def.IsCorner = true;
-		} else if(def.Index < 10)
-		{
-			def.Quadrant = 1;
-		} else if (def.Index < 20)
-		{
-			def.Quadrant = 2;
-		} else if (def.Index < 30)
-		{
-			def.Quadrant = 3;
-		} else if (def.Index < 40)
-		{
-			def.Quadrant = 4;
-		}*/
+		return Collider.Scale;
 	}
 
+	public void ModifyColliderSize(float addWidth = 0f, float addHeight = 0f)
+	{
+		if (Collider == null)
+			return;
+
+		MonopolySpaceDef def = MonopolyBoard.GetSpaceDefStatic( Index );
+		if (def == null)
+		{
+			Log.Info("Cannot modify collider width: SpaceDef is null");
+			return;
+		}
+
+		var size = Collider.Scale;
+		int quad = def.GetQuadrant();
+
+		if (quad == 1 || quad == 3)
+		{
+			size.x += addHeight;
+			size.y += addWidth;
+		} else
+		{
+			size.x += addWidth;
+			size.y += addHeight;
+		}
+
+		Collider.Scale = size;
+	}
+
+	public void ModifyColliderCenter(float addLeft = 0f, float addUp = 0f)
+	{
+		if (Collider == null)
+			return;
+
+		MonopolySpaceDef def = MonopolyBoard.GetSpaceDefStatic( Index );
+		if (def == null)
+		{
+			Log.Info("Cannot modify collider width: SpaceDef is null");
+			return;
+		}
+
+		var center = Collider.Center;
+		int quad = def.GetQuadrant();
+
+		if (quad == 4)
+		{
+			center.x += -addLeft;
+			center.y += addUp;
+		} else if (quad == 3)
+		{
+			center.x += -addUp;
+			center.y += -addLeft;
+		} else if (quad == 2)
+		{
+			center.x += addLeft;
+			center.y += -addUp;
+		} else if (quad == 1)
+		{
+			center.x += addLeft;
+			center.y += addUp;
+		}
+
+		/*if (quad == 1 || quad == 3)
+		{
+			var abs = quad == 1 ? 1 : -1;
+			center.x += addLeft * abs;
+			center.y += addUp * abs;
+		} else
+		{
+			var abs = quad == 2 ? 1 : -1;
+			center.x += addUp * abs;
+			center.y += addLeft * abs;
+		}*/
+
+		//var abs = quad == 1 || quad == 3 ? 1 : -1;
+		
+
+		Collider.Center = center;
+	}
 	public void SetHitboxEnabled(bool enabled)
 	{
 		Collider.Enabled = enabled;
@@ -209,7 +234,7 @@ public sealed class MonopolySpace : Component
 		return collider != null && collider.Enabled;
 	}
 
-	public void CreateLabel( MonopolySpaceDef def )
+	public void CreateLabel( )
 	{
 		if ( LabelRenderer != null )
 			return;
@@ -217,15 +242,15 @@ public sealed class MonopolySpace : Component
 		var labelObject = new GameObject( true, $"Label_{Index}" );
 		labelObject.SetParent( GameObject );
 
-		if (def.Index >= 0 && def.Index < 11)
+		if (Def.Index >= 0 && Def.Index < 11)
 		{
 			labelObject.LocalPosition = MonopolySpaceSettings.FirstQuadrantLocalPosition;
 			labelObject.LocalRotation = MonopolySpaceSettings.FirstQuadrantLocalRotation;
-		} else if (def.Index >= 11 && def.Index < 20)
+		} else if (Def.Index >= 11 && Def.Index < 20)
 		{
 			labelObject.LocalPosition = MonopolySpaceSettings.SecondQuadrantLocalPosition;
 			labelObject.LocalRotation = MonopolySpaceSettings.SecondQuadrantLocalRotation;
-		} else if (def.Index >= 20 && def.Index < 30)
+		} else if (Def.Index >= 20 && Def.Index < 30)
 		{
 			labelObject.LocalPosition = MonopolySpaceSettings.ThirdQuadrantLocalPosition;
 			labelObject.LocalRotation = MonopolySpaceSettings.ThirdQuadrantLocalRotation;
@@ -242,10 +267,10 @@ public sealed class MonopolySpace : Component
 		scope.FilterMode = Sandbox.Rendering.FilterMode.Anisotropic;
 		LabelRenderer.TextScope = scope;
 
-		LabelRenderer.Text = def.DisplayName;
+		LabelRenderer.Text = Def.DisplayName;
 		LabelRenderer.FontSize = 128;
 		LabelRenderer.Color = new(0.5f, 0.5f, 0.5f);
-		LabelRenderer.Scale = def.TextScale;
+		LabelRenderer.Scale = Def.TextScale;
 		LabelRenderer.FontWeight = 800;		
 	}
 }

@@ -31,7 +31,7 @@ Layer0
 	TextureNormal "materials/pieces/worn-shiny-metal-Normal-ogl.png"
 
 	//---- Roughness ----
-	g_flRoughnessScaleFactor "1.189"
+	g_flRoughnessScaleFactor "2.000"
 	TextureRoughness "materials/default/default_rough.tga"
 
 	//---- Texture Coordinates ----

@@ -8,8 +8,11 @@
 		<div class="hud-card">
 			<div class="title">Grand Casinopoly</div>
 
+			<h6>Local</h6>
+			<div>Money: $@LocalPlayerMoney</div>
+			<div></div>
+			<div>Game</div>
 			<div>Current Player: @CurrentPlayerName</div>
-			<div>Money: $@CurrentPlayerMoney</div>
 			<div>Last Roll: @GameRef.LastDieA + @GameRef.LastDieB</div>
 			<div>Phase: @GameRef.Phase</div>
 
@@ -20,13 +23,13 @@
 
 			@if ( GameRef.Phase == MonopolyGamePhase.WaitingForBuyDecision )
 			{
-				<div class="buy-box">
+				/*<div class="buy-box">
 					<div>@PendingPropertyName</div>
 					<div>Price: $@PendingPropertyPrice</div>
 
 					<button onclick="@BuyProperty">Buy</button>
 					<button onclick="@SkipProperty">Skip</button>
-				</div>
+				</div>*/
 			}
 		</div>
 
@@ -35,11 +38,6 @@
 			<div class="space-card">
 				<div class="space-title">@SelectedSpace.DisplayName</div>
 				<div class="space-type">@SelectedSpace.Type</div>
-
-				@if ( IsPurchasable )
-				{
-					<div class="space-price">Price: $@SelectedSpace.Price</div>
-				}
 
 				@if ( IsProperty )
 				{
@@ -53,13 +51,21 @@
 					</div>
 				}
 
-				@if ( IsPurchasable )
+				@if ( CanBuySelectedSpace )
 				{
-					//<div class="space-buttons">
-					//	<button onclick="@Trade">Trade</button>
-					//	<button onclick="@Sell">Sell</button>
-					//	<button onclick="@Mortgage">Mortgage</button>
-					//</div>
+					<div class="space-buttons">
+						<button onclick="@BuyProperty">Buy</button>
+						<button onclick="@AuctionProperty">Auction</button>
+					</div>
+				}
+
+				@if ( CanManageSelectedSpace )
+				{
+					<div class="space-buttons">
+						<button onclick="@Sell">Sell</button>
+						<button onclick="@Mortgage">Mortgage</button>
+						<button onclick="@Trade">Trade</button>
+					</div>
 				}
 			</div>
 		}
@@ -71,9 +77,10 @@
 	[Property] public MonopolyGame GameRef { get; set; }
 
 	private MonopolyPlayerState CurrentPlayer => GameRef?.CurrentPlayer;
+	private MonopolyPlayerState LocalPlayer => GameRef?.LocalPlayer;
 
 	private string CurrentPlayerName => CurrentPlayer?.PlayerName ?? "None";
-	private int CurrentPlayerMoney => CurrentPlayer?.Money ?? 0;
+	private int LocalPlayerMoney => LocalPlayer?.Money ?? 0;
 
 	private MonopolySpaceDef PendingDef =>
 		GameRef?.Board?.GetSpaceDef( GameRef.PendingPurchaseSpaceIndex );
@@ -97,6 +104,11 @@
 		GameRef?.RequestSkipPendingProperty();
 	}
 
+	private void AuctionProperty()
+	{
+		GameRef?.RequestSkipPendingProperty();
+	}
+
 	protected override int BuildHash()
 	{
 		return System.HashCode.Combine(
@@ -108,10 +120,10 @@
 			GameRef?.LastDieA ?? 0,
 			GameRef?.LastDieB ?? 0,
 			GameRef?.PendingPurchaseSpaceIndex ?? -1,
-			CurrentPlayerMoney
+			LocalPlayerMoney,
+			GetSelectedOwnerIndex()
 		);
 	}
-
 
 	private MonopolySpaceDef SelectedSpace =>
 		GameRef?.SelectedSpace;
@@ -125,6 +137,42 @@
 	private bool IsProperty =>
 		SelectedSpace is not null &&
 		SelectedSpace.HotelRent > 0;
+	
+	private bool IsSelectedPendingPurchase =>
+		GameRef is not null &&
+		SelectedSpaceIndex == GameRef.PendingPurchaseSpaceIndex;
+
+	private bool IsUnownedSelectedSpace =>
+		IsPurchasable &&
+		GetSelectedOwnerIndex() < 0;
+
+	private bool IsOwnedByLocalPlayer =>
+		IsPurchasable &&
+		GameRef is not null &&
+		GameRef.LocalPlayerIndex >= 0 &&
+		GetSelectedOwnerIndex() == GameRef.LocalPlayerIndex;
+
+	private bool IsOwnedByOtherPlayer =>
+		IsPurchasable &&
+		GetSelectedOwnerIndex() >= 0 &&
+		!IsOwnedByLocalPlayer;
+
+	private bool CanBuySelectedSpace =>
+		IsPurchasable &&
+		GameRef?.Phase == MonopolyGamePhase.WaitingForBuyDecision &&
+		IsSelectedPendingPurchase &&
+		IsUnownedSelectedSpace;
+
+	private bool CanManageSelectedSpace =>
+		IsOwnedByLocalPlayer;
+
+	private int GetSelectedOwnerIndex()
+	{
+		if ( GameRef is null || SelectedSpaceIndex < 0 )
+			return -1;
+
+		return GameRef.GetOwnerIndexForSpace( SelectedSpaceIndex );
+	}
 
 	private void Trade()
 	{
@@ -152,4 +200,5 @@
         //TODO: Implement sell UI and logic.
 		//GameRef?.RequestMortgage( SelectedSpaceIndex );
 	}
+
 }

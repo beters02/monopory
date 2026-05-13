@@ -127,6 +127,7 @@
                 "_type": "gameobject",
                 "go": "bfa9d9d1-fe04-46cf-bf6c-e2b9e3ef2723"
               },
+              "DebugEnabled": true,
               "HitboxSize": "96,96,12",
               "OnComponentDestroy": null,
               "OnComponentDisabled": null,
@@ -722,7 +723,7 @@
               "__version": 2,
               "Flags": 0,
               "Name": "Space_10_Jail",
-              "Position": "-43,41,0",
+              "Position": "-43,42.3297272,0",
               "Rotation": "0,0,0,1",
               "Scale": "1,1,1",
               "Tags": "",
@@ -754,7 +755,7 @@
               "__version": 2,
               "Flags": 0,
               "Name": "Space_11_Property",
-              "Position": "-31.377594,43,0",
+              "Position": "-31.7000008,43,0",
               "Rotation": "0,0,0,1",
               "Scale": "1,1,1",
               "Tags": "",
@@ -786,7 +787,7 @@
               "__version": 2,
               "Flags": 0,
               "Name": "Space_12_Utility",
-              "Position": "-23,43,0",
+              "Position": "-23.75,43,0",
               "Rotation": "0,0,0,1",
               "Scale": "1,1,1",
               "Tags": "",
@@ -850,7 +851,7 @@
               "__version": 2,
               "Flags": 0,
               "Name": "Space_14_Property",
-              "Position": "-7.5,43,0",
+              "Position": "-8,43,0",
               "Rotation": "0,0,0,1",
               "Scale": "1,1,1",
               "Tags": "",
@@ -1074,7 +1075,7 @@
               "__version": 2,
               "Flags": 0,
               "Name": "Space_21_Property",
-              "Position": "43,31,0",
+              "Position": "43,31.2000008,0",
               "Rotation": "0,0,0,1",
               "Scale": "1,1,1",
               "Tags": "",
@@ -2227,6 +2228,18 @@
               "OnComponentUpdate": null,
               "Scale": 0.2,
               "TexelSize": 1
+            },
+            {
+              "__type": "Sandbox.ScreenSpaceReflections",
+              "__guid": "28e564c0-f89a-4f77-830f-bfdafca137fe",
+              "__enabled": true,
+              "Flags": 0,
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null
             }
           ],
           "Children": []
@@ -2362,11 +2375,6 @@
       "CustomBounds": false
     },
     "GameObjectSystems": {
-      "Sandbox.SelectionSetsSystem": {
-        "Data": {
-          "SelectionSets": []
-        }
-      },
       "Sandbox.Clutter.ClutterGridSystem": {
         "Storage": {
           "$blob": "7664decd-7b1f-4214-a5a2-850285e10057"
@@ -2374,6 +2382,11 @@
       },
       "Sandbox.MovieMaker.MovieRecorderSystem": {
         "DisableClientRecording": false
+      },
+      "Sandbox.SelectionSetsSystem": {
+        "Data": {
+          "SelectionSets": []
+        }
       }
     }
   },
