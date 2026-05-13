@@ -1,3 +1,4 @@
+using System;
 using Sandbox;
 using Sandbox.UI;
 
@@ -73,6 +74,45 @@ public sealed class MonopolySpaceDef
 public static class MonopolySpaceSettings
 {
 	public static readonly float DefaultScale = 0.009f;
+	public static readonly float WorldPanelLabelZOffset = 0.75f;
+	public static readonly float WorldPanelLabelPixelsPerWorldUnit = 64f;
+
+	public static readonly Vector2 WorldPanelSizePixels = new(180,300);
+	public static readonly float WorldPanelLabelRenderScale = 0.53f;
+
+	// 2
+	// pos -0.7099998,0.490000159,0.749999762
+	// rot 0.49999997,-0.49999997,0.49999997,0.49999997
+
+	// 3
+	// pos 2.20000005,0,0.749999762
+	// rot 0,-0.707106769,0,0.707106769
+
+	// 4
+	// pos -1.39999998,-0.880000353,0.749999762
+	// rot -0.49999997,-0.49999997,-0.49999997,0.49999997
+
+	//  pos
+	//  rot
+
+	public static Vector3[] WorldLabelPositions =
+	{
+		new (-1.39999998f, 0, 0.749999762f),
+		new (-0.7099998f, 0.490000159f, 0.749999762f),
+		new (2.20000005f, 0, 0.749999762f),
+		new (-1.39999998f, -0.880000353f, 0.749999762f)
+	};
+
+	public static readonly List<Rotation> WorldLabelRotations =
+	[
+		new (0.707106769f, 3.09086197E-08f, 0.707106769f, -3.09086197E-08f),
+		new (0.49999997f, -0.49999997f, 0.49999997f, 0.49999997f),
+		new (0, -0.707106769f, 0, 0.707106769f),
+		new (-0.49999997f, -0.49999997f, -0.49999997f, 0.49999997f)
+	];
+
+	public static readonly Vector3 WorldLabelLocalPosition = new (-1.39999998f, 0, 0.749999762f);
+	public static readonly Rotation WorldLabelLocalRotation = new (0.707106769f, 3.09086197E-08f, 0.707106769f, -3.09086197E-08f);
 
 	public static readonly Vector3 FirstQuadrantLocalPosition = new( 2.79999804f, 0, 0.5f );
 	public static readonly Rotation FirstQuadrantLocalRotation = Rotation.FromPitch( 90f );
@@ -99,6 +139,7 @@ public sealed class MonopolySpace : Component
 	public Vector3 TokenPosition => GameObject.WorldPosition;
 
 	public TextRenderer LabelRenderer { get; private set; }
+	public Sandbox.ui.MonopolySpaceLabel WorldPanelLabel { get; private set; }
 
 	//[Property] public int SpaceIndex { get; set; }
 
@@ -241,24 +282,7 @@ public sealed class MonopolySpace : Component
 
 		var labelObject = new GameObject( true, $"Label_{Index}" );
 		labelObject.SetParent( GameObject );
-
-		if (Def.Index >= 0 && Def.Index < 11)
-		{
-			labelObject.LocalPosition = MonopolySpaceSettings.FirstQuadrantLocalPosition;
-			labelObject.LocalRotation = MonopolySpaceSettings.FirstQuadrantLocalRotation;
-		} else if (Def.Index >= 11 && Def.Index < 20)
-		{
-			labelObject.LocalPosition = MonopolySpaceSettings.SecondQuadrantLocalPosition;
-			labelObject.LocalRotation = MonopolySpaceSettings.SecondQuadrantLocalRotation;
-		} else if (Def.Index >= 20 && Def.Index < 30)
-		{
-			labelObject.LocalPosition = MonopolySpaceSettings.ThirdQuadrantLocalPosition;
-			labelObject.LocalRotation = MonopolySpaceSettings.ThirdQuadrantLocalRotation;
-		} else
-		{
-			labelObject.LocalPosition = MonopolySpaceSettings.FourthQuadrantLocalPosition;
-			labelObject.LocalRotation = MonopolySpaceSettings.FourthQuadrantLocalRotation;
-		}
+		ApplyLabelTransform( labelObject );
 
 		LabelRenderer = labelObject.Components.Create<TextRenderer>();
 
@@ -273,4 +297,89 @@ public sealed class MonopolySpace : Component
 		LabelRenderer.Scale = Def.TextScale;
 		LabelRenderer.FontWeight = 800;		
 	}
+
+	public void CreateWorldPanelLabel()
+	{
+		if ( WorldPanelLabel != null || Collider is null )
+			return;
+
+		var labelObject = new GameObject( true, $"WorldPanelLabel_{Index}" );
+		labelObject.SetParent( GameObject );
+		ApplyWorldLabelTransform( labelObject );
+
+		var worldPanel = labelObject.Components.Create<Sandbox.WorldPanel>();
+		worldPanel.InteractionRange = 0f;
+		worldPanel.PanelSize = GetWorldPanelLabelPanelSizeForQuadrant( Collider.Scale );
+		worldPanel.RenderScale = MonopolySpaceSettings.WorldPanelLabelRenderScale; //1f / MonopolySpaceSettings.WorldPanelLabelPixelsPerWorldUnit;
+		worldPanel.VerticalAlign = Sandbox.WorldPanel.VAlignment.Center;
+		worldPanel.HorizontalAlign = Sandbox.WorldPanel.HAlignment.Center;
+
+		WorldPanelLabel = labelObject.Components.Create<Sandbox.ui.MonopolySpaceLabel>();
+		WorldPanelLabel.SpaceName = Def.DisplayName;
+		WorldPanelLabel.ColorGroup = Def.ColorGroup;
+		WorldPanelLabel.SpaceType = Def.Type;
+		WorldPanelLabel.SpaceIndex = Def.Index;
+		WorldPanelLabel.SpaceKey = Def.Key;
+		WorldPanelLabel.StateHasChanged();
+	}
+
+	private void ApplyLabelTransform( GameObject labelObject )
+	{
+		if ( Def.Index >= 0 && Def.Index < 11 )
+		{
+			labelObject.LocalPosition = MonopolySpaceSettings.FirstQuadrantLocalPosition;
+			labelObject.LocalRotation = MonopolySpaceSettings.FirstQuadrantLocalRotation;
+		}
+		else if ( Def.Index >= 11 && Def.Index < 20 )
+		{
+			labelObject.LocalPosition = MonopolySpaceSettings.SecondQuadrantLocalPosition;
+			labelObject.LocalRotation = MonopolySpaceSettings.SecondQuadrantLocalRotation;
+		}
+		else if ( Def.Index >= 20 && Def.Index < 30 )
+		{
+			labelObject.LocalPosition = MonopolySpaceSettings.ThirdQuadrantLocalPosition;
+			labelObject.LocalRotation = MonopolySpaceSettings.ThirdQuadrantLocalRotation;
+		}
+		else
+		{
+			labelObject.LocalPosition = MonopolySpaceSettings.FourthQuadrantLocalPosition;
+			labelObject.LocalRotation = MonopolySpaceSettings.FourthQuadrantLocalRotation;
+		}
+	}
+
+	private void ApplyWorldLabelTransform( GameObject labelObject )
+	{
+		int quad = Def.GetQuadrant();
+		if (quad == 0)
+			quad = 1;
+		else
+			quad -= 1;
+
+		var colliderCenter = Collider.Center;
+		labelObject.LocalPosition = new Vector3(
+			colliderCenter.x,
+			colliderCenter.y,
+			MonopolySpaceSettings.WorldPanelLabelZOffset
+		);
+		labelObject.LocalRotation = MonopolySpaceSettings.WorldLabelRotations[quad];
+		labelObject.LocalScale = Vector3.One;
+	}
+
+	private Vector2 GetWorldPanelLabelSizeForQuadrant( Vector3 hitboxSize )
+	{
+		var quad = Def.GetQuadrant();
+
+		if ( quad == 2 || quad == 4 )
+			return new Vector2( hitboxSize.y, hitboxSize.x );
+
+		return new Vector2( hitboxSize.x, hitboxSize.y );
+	}
+
+	private Vector2 GetWorldPanelLabelPanelSizeForQuadrant( Vector3 hitboxSize )
+	{
+		return MonopolySpaceSettings.WorldPanelSizePixels;
+		//return GetWorldPanelLabelSizeForQuadrant( hitboxSize ) *
+		//	MonopolySpaceSettings.WorldPanelLabelPixelsPerWorldUnit;
+	}
+
 }

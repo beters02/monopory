@@ -376,7 +376,8 @@
                   "go": "cf704dcb-3007-4bbb-9062-62d29ff3054c",
                   "component_type": "MonopolySpace"
                 }
-              ]
+              ],
+              "UseWorldPanelLabels": true
             }
           ],
           "Children": []

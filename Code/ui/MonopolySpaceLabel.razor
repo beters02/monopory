@@ -1,0 +1,75 @@
+@using Sandbox
+@using Sandbox.UI
+@using System
+@inherits PanelComponent
+
+<root class="@RootClasses">
+	<div class="label-color-bar"></div>
+	<div class="label-color-bar"></div>
+	<div class="label-color-bar"></div>
+	<div class="label-color-bar"></div>
+	<div class="@LabelTextClasses">
+		@foreach(var line in SpaceNameLines)
+		{
+			<div>@line</div>
+		}
+	</div>
+</root>
+
+@code
+{
+	[Property] public string SpaceName { get; set; } = "";
+	private const int MaxLineLength = 10;
+
+	private string[] SpaceNameLines =>
+		SpaceName
+			.Split( '\n' )
+			.SelectMany( WrapLine )
+			.ToArray();
+
+	[Property] public string ColorGroup { get; set; } = "";
+	[Property] public SpaceType SpaceType { get; set; }
+	[Property] public int SpaceIndex { get; set; }
+	[Property] public string SpaceKey { get; set; } = "";
+
+	private string ColorClass =>
+		string.IsNullOrWhiteSpace( ColorGroup ) ? "none" : ColorGroup;
+
+	private string RootClasses =>
+		$"monopoly-space-label color-{ColorClass} space-{SpaceIndex} key-{SpaceKey}";
+
+	private string LabelTextClasses =>
+		$"label-text label-text-space-{SpaceIndex} label-text-key-{SpaceKey}";
+
+	private static IEnumerable<string> WrapLine( string line )
+	{
+		var words = line.Split( ' ', StringSplitOptions.RemoveEmptyEntries );
+		var currentLine = "";
+
+		foreach ( var word in words )
+		{
+			if ( currentLine.Length == 0 )
+			{
+				currentLine = word;
+				continue;
+			}
+
+			if ( currentLine.Length + 1 + word.Length > MaxLineLength )
+			{
+				yield return currentLine;
+				currentLine = word;
+				continue;
+			}
+
+			currentLine += $" {word}";
+		}
+
+		if ( currentLine.Length > 0 )
+			yield return currentLine;
+	}
+
+	protected override int BuildHash()
+	{
+		return System.HashCode.Combine( SpaceName, ColorGroup, SpaceType, SpaceIndex, SpaceKey );
+	}
+}

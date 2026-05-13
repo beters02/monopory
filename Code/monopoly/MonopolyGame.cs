@@ -148,8 +148,7 @@ public sealed class MonopolyGame : Component
 		LastDieA = Game.Random.Int( 1, 6 );
 		LastDieB = Game.Random.Int( 1, 6 );
 
-		//var total = LastDieA + LastDieB;
-		var total = 4;
+		var total = LastDieA + LastDieB;
 
 		//var SpaceIndex = (CurrentPlayer.SpaceIndex + total) % 40;
 		//CurrentPlayer.SpaceIndex = SpaceIndex;

@@ -8,15 +8,16 @@
 		<div class="hud-card">
 			<div class="title">Grand Casinopoly</div>
 
-			<h6>Local</h6>
+			<div class="sub-title">Local</div>
 			<div>Money: $@LocalPlayerMoney</div>
 			<div></div>
-			<div>Game</div>
+			<div></div>
+			<div class="sub-title">Game</div>
 			<div>Current Player: @CurrentPlayerName</div>
 			<div>Last Roll: @GameRef.LastDieA + @GameRef.LastDieB</div>
 			<div>Phase: @GameRef.Phase</div>
 
-			@if ( GameRef.Phase == MonopolyGamePhase.WaitingToRoll )
+			@if ( GameRef.Phase == MonopolyGamePhase.WaitingToRoll && CurrentPlayer == LocalPlayer )
 			{
 				<button onclick="@RollDice">Roll Dice</button>
 			}
@@ -35,9 +36,16 @@
 
 		@if ( SelectedSpace is not null )
 		{
-			<div class="space-card">
-				<div class="space-title">@SelectedSpace.DisplayName</div>
-				<div class="space-type">@SelectedSpace.Type</div>
+			<div class="@SpaceCardClasses">
+				<button class="space-card-close" onclick="@CloseSelectedSpace">
+					<span>X</span>
+				</button>
+
+				<div class="space-card-header">
+					<div class="space-color-band"></div>
+					<div class="space-type">@SelectedSpace.Type</div>
+					<div class="space-title">@SelectedSpace.DisplayName</div>
+				</div>
 
 				@if ( IsProperty )
 				{
@@ -76,6 +84,8 @@
 {
 	[Property] public MonopolyGame GameRef { get; set; }
 
+	private const string SpaceCardThemeClass = "space-card-board";
+
 	private MonopolyPlayerState CurrentPlayer => GameRef?.CurrentPlayer;
 	private MonopolyPlayerState LocalPlayer => GameRef?.LocalPlayer;
 
@@ -109,6 +119,11 @@
 		GameRef?.RequestSkipPendingProperty();
 	}
 
+	private void CloseSelectedSpace()
+	{
+		GameRef?.SelectSpace( -1 );
+	}
+
 	protected override int BuildHash()
 	{
 		return System.HashCode.Combine(
@@ -127,6 +142,9 @@
 
 	private MonopolySpaceDef SelectedSpace =>
 		GameRef?.SelectedSpace;
+
+	private string SpaceCardClasses =>
+		$"space-card {SpaceCardThemeClass} color-{(string.IsNullOrWhiteSpace( SelectedSpace?.ColorGroup ) ? "none" : SelectedSpace.ColorGroup)}";
 
 	private int SelectedSpaceIndex =>
 		GameRef?.LocalSelectedSpaceIndex ?? -1;

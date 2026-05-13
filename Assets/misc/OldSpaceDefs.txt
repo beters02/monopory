@@ -1,97 +1,4 @@
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using Sandbox;
-
-public sealed class MonopolyBoard : Component
-{
-	private static MonopolyBoard instance;
-	public static MonopolyBoard Instance => instance;
-	private MonopolyGame GameRef;
-	private DebugHelper debugHelper = new();
-
-	[Property] public List<MonopolySpace> Spaces { get; set; } = new();
-	public List<MonopolySpaceDef> SpaceDefs { get; private set; } = new();
-
-	[Property] public Vector3 HitboxSize { get; set; } = new Vector3( 96f, 96f, 12f );
-	[Property] public GameObject BoardPlaneGameObject {get; set;}
-	[Property] public bool UseWorldPanelLabels { get; set; } = false;
-
-	[Property, Change("OnDebugEnabledChanged")] public bool DebugEnabled {get; set;} = false;
-	private void OnDebugEnabledChanged(bool _, bool newValue) => debugHelper.SetEnabled(newValue);
-
-	// Component
-
-	protected override void OnStart()
-	{
-		instance = this;
-		debugHelper.SetEnabled(DebugEnabled);
-
-		GameRef = Scene.GetAllComponents<MonopolyGame>().FirstOrDefault();
-
-		LoadBoardDefinitions();
-		InitSpaces();
-	}
-
-	protected override void OnUpdate()
-	{
-		DrawAllHitboxesDebug();
-		UpdateSpaceHoverCursor();
-		UpdateLocalSpaceSelection();
-	}
-
-	// Spaces & Defs initializing
-	private void InitSpaces()
-	{
-		foreach ( var space in Spaces )
-		{
-			space.EnsureHitbox();
-			space.SetHitboxEnabled(true);
-			space.EnsureDef(GetSpaceDef(space.Index));
-
-			if (space.Def == null)
-			{
-				Log.Warning($"Space at index {space.Index} has no definition! Skipping label creation and modifications.");
-				continue;
-			}
-
-			ApplySpaceModifications(space);
-			TryCreateLabel(space);
-		}
-	}
-
-	private void ApplySpaceModifications(MonopolySpace space)
-	{
-		var quad = space.Def.GetQuadrant();
-		if (quad == 0)
-			space.ModifyColliderSize(1f, 1f);
-		else if (quad == 1)
-		{
-			ColliderSizeModNon0(space);
-			ColliderSizeMod1or3(space);
-		}
-		else if (quad == 2)
-		{
-			ColliderSizeModNon0(space);
-			ColliderSizeMod2or4(space);
-		}
-		else if (quad == 3)
-		{
-			ColliderSizeModNon0(space);
-			ColliderSizeMod1or3(space);
-		} else if (quad == 4)
-		{
-			space.ModifyColliderCenter(0f, 1.5f);
-			ColliderSizeModNon0(space);
-			ColliderSizeMod2or4(space);
-		}
-	}
-
-	private void ColliderSizeMod1or3(MonopolySpace space) => space.ModifyColliderSize(0.5f);
-	private void ColliderSizeMod2or4(MonopolySpace space) => space.ModifyColliderSize(1f);
-	private void ColliderSizeModNon0(MonopolySpace space) => space.ModifyColliderSize(0f, 3f);
-	private void LoadBoardDefinitions()
-	{
-		SpaceDefs = new()
+SpaceDefs = new()
 		{
 			new()
 			{
@@ -141,7 +48,7 @@ public sealed class MonopolyBoard : Component
 			{
 				Index = 4,
 				Key = "tax_income",
-				DisplayName = "Plug\nTax",
+				DisplayName = "Income Tax",
 				Type = SpaceType.Tax,
 				TaxAmount = 200
 			},
@@ -180,7 +87,7 @@ public sealed class MonopolyBoard : Component
 			{
 				Index = 8,
 				Key = "property_light_blue_1",
-				DisplayName = "CSGO\nRoll\n.com",
+				DisplayName = "CSGORoll.com",
 				Type = SpaceType.Property,
 				Price = 100,
 				BaseRent = 6,
@@ -195,7 +102,7 @@ public sealed class MonopolyBoard : Component
 			{
 				Index = 9,
 				Key = "property_light_blue_2",
-				DisplayName = "CSGO\nBlackjack\n.com", // wild
+				DisplayName = "CSGOBlackjack.com", // wild
 				Type = SpaceType.Property,
 				Price = 120,
 				BaseRent = 8,
@@ -232,7 +139,7 @@ public sealed class MonopolyBoard : Component
 			{
 				Index = 12,
 				Key = "utility_0",
-				DisplayName = "Kickapoo Casino",
+				DisplayName = "Utility 0",
 				Type = SpaceType.Utility,
 				Price = 60,
 				BaseRent = 2,
@@ -256,7 +163,7 @@ public sealed class MonopolyBoard : Component
 			{
 				Index = 14,
 				Key = "property_pink_2",
-				DisplayName = "Brycen's Goon Cave",
+				DisplayName = "Pink 2",
 				Type = SpaceType.Property,
 				Price = 160,
 				BaseRent = 12,
@@ -271,7 +178,7 @@ public sealed class MonopolyBoard : Component
 			{
 				Index = 15,
 				Key = "railroad_1",
-				DisplayName = "Train Railroad",
+				DisplayName = "Railroad 1",
 				Type = SpaceType.Railroad,
 				Price = 60,
 				BaseRent = 2
@@ -280,7 +187,7 @@ public sealed class MonopolyBoard : Component
 			{
 				Index = 16,
 				Key = "property_orange_0",
-				DisplayName = "Yodie-Land",
+				DisplayName = "Orange 0",
 				Type = SpaceType.Property,
 				Price = 180,
 				BaseRent = 14,
@@ -302,7 +209,7 @@ public sealed class MonopolyBoard : Component
 			{
 				Index = 18,
 				Key = "property_orange_1",
-				DisplayName = "Section 80",
+				DisplayName = "Orange 1",
 				Type = SpaceType.Property,
 				Price = 180,
 				BaseRent = 14,
@@ -317,7 +224,7 @@ public sealed class MonopolyBoard : Component
 			{
 				Index = 19,
 				Key = "property_orange_2",
-				DisplayName = "The Liqo Sto",
+				DisplayName = "Orange 2",
 				Type = SpaceType.Property,
 				Price = 200,
 				BaseRent = 16,
@@ -339,7 +246,7 @@ public sealed class MonopolyBoard : Component
 			{
 				Index = 21,
 				Key = "property_red_0",
-				DisplayName = "Landon's Room",
+				DisplayName = "Red 0",
 				Type = SpaceType.Property,
 				Price = 220,
 				BaseRent = 18,
@@ -361,7 +268,7 @@ public sealed class MonopolyBoard : Component
 			{
 				Index = 23,
 				Key = "property_red_1",
-				DisplayName = "Caden's Cockhouse",
+				DisplayName = "Red 1",
 				Type = SpaceType.Property,
 				Price = 220,
 				BaseRent = 18,
@@ -376,7 +283,7 @@ public sealed class MonopolyBoard : Component
 			{
 				Index = 24,
 				Key = "property_red_2",
-				DisplayName = "Lucas",
+				DisplayName = "Red 2",
 				Type = SpaceType.Property,
 				Price = 240,
 				BaseRent = 20,
@@ -391,7 +298,7 @@ public sealed class MonopolyBoard : Component
 			{
 				Index = 25,
 				Key = "railroad_2",
-				DisplayName = "Cobblestone Railroad",
+				DisplayName = "Railroad 2",
 				Type = SpaceType.Railroad,
 				Price = 60,
 				BaseRent = 2
@@ -400,7 +307,7 @@ public sealed class MonopolyBoard : Component
 			{
 				Index = 26,
 				Key = "property_yellow_0",
-				DisplayName = "The Co-Op",
+				DisplayName = "Yellow 0",
 				Type = SpaceType.Property,
 				Price = 260,
 				BaseRent = 22,
@@ -415,7 +322,7 @@ public sealed class MonopolyBoard : Component
 			{
 				Index = 27,
 				Key = "property_yellow_1",
-				DisplayName = "Mike's Place",
+				DisplayName = "Yellow 1",
 				Type = SpaceType.Property,
 				Price = 260,
 				BaseRent = 22,
@@ -430,7 +337,7 @@ public sealed class MonopolyBoard : Component
 			{
 				Index = 28,
 				Key = "utility_1",
-				DisplayName = "Riverwind Casino",
+				DisplayName = "Utility 1",
 				Type = SpaceType.Utility,
 				Price = 60,
 				BaseRent = 2
@@ -439,7 +346,7 @@ public sealed class MonopolyBoard : Component
 			{
 				Index = 29,
 				Key = "property_yellow_2",
-				DisplayName = "Shrine Auditorium",
+				DisplayName = "Yellow 2",
 				Type = SpaceType.Property,
 				Price = 280,
 				BaseRent = 24,
@@ -461,7 +368,7 @@ public sealed class MonopolyBoard : Component
 			{
 				Index = 31,
 				Key = "property_green_0",
-				DisplayName = "Chance",
+				DisplayName = "Green 0",
 				Type = SpaceType.Property,
 				Price = 300,
 				BaseRent = 26,
@@ -476,7 +383,7 @@ public sealed class MonopolyBoard : Component
 			{
 				Index = 32,
 				Key = "property_green_1",
-				DisplayName = "Troop",
+				DisplayName = "Green 1",
 				Type = SpaceType.Property,
 				Price = 300,
 				BaseRent = 26,
@@ -498,7 +405,7 @@ public sealed class MonopolyBoard : Component
 			{
 				Index = 34,
 				Key = "property_green_2",
-				DisplayName = "Blayze's Giant Balls",
+				DisplayName = "Green 2",
 				Type = SpaceType.Property,
 				Price = 320,
 				BaseRent = 28,
@@ -513,7 +420,7 @@ public sealed class MonopolyBoard : Component
 			{
 				Index = 35,
 				Key = "railroad_3",
-				DisplayName = "Cache Railroad",
+				DisplayName = "Railroad 3",
 				Type = SpaceType.Railroad,
 				Price = 60,
 				BaseRent = 2
@@ -529,7 +436,7 @@ public sealed class MonopolyBoard : Component
 			{
 				Index = 37,
 				Key = "property_dark_blue_0",
-				DisplayName = "The Mos Eisley Cantina",
+				DisplayName = "Dark Blue 0",
 				Type = SpaceType.Property,
 				Price = 350,
 				BaseRent = 35,
@@ -552,7 +459,7 @@ public sealed class MonopolyBoard : Component
 			{
 				Index = 39,
 				Key = "property_dark_blue_1",
-				DisplayName = "The Grand Casino",
+				DisplayName = "Dark Blue 1",
 				Type = SpaceType.Property,
 				Price = 400,
 				BaseRent = 50,
@@ -564,205 +471,3 @@ public sealed class MonopolyBoard : Component
 				ColorGroup = "dark_blue"
 			},
 		};
-	}
-	private void TryCreateLabel(MonopolySpace space)
-	{
-		if (!ShouldCreateLabel(space))
-			return;
-
-		if ( UseWorldPanelLabels )
-			space.CreateWorldPanelLabel();
-		else
-			space.CreateLabel();
-	}
-	private bool ShouldCreateLabel( MonopolySpace space )
-	{
-		switch ( space.Def.Type )
-		{
-			case SpaceType.CommunityChest:
-			case SpaceType.Go:
-			case SpaceType.Chance:
-			case SpaceType.FreeParking:
-			case SpaceType.GoToJail:
-				return false;
-
-			default:
-				return true;
-		}
-	}
-
-	// Space Helpers
-	public MonopolySpace GetSpace( int index )
-	{
-		if ( Spaces.Count == 0 || Spaces.Count - 1 < index)
-			return null;
-
-		index = ((index % Spaces.Count) + Spaces.Count) % Spaces.Count;
-		return Spaces[index];
-	}
-
-	public MonopolySpaceDef GetSpaceDef(int index)
-	{
-		if ( Spaces.Count == 0 || Spaces.Count - 1 < index)
-			return null;
-
-		index = ((index % Spaces.Count) + Spaces.Count) % Spaces.Count;
-		return SpaceDefs[index];
-	}
-
-	public static MonopolySpaceDef GetSpaceDefStatic(int index)
-	{
-		return instance.GetSpaceDef(index);
-	}
-
-	public Vector3 GetSpacePosition( int index )
-	{
-		var space = GetSpace( index );
-		return space?.TokenPosition ?? Vector3.Zero;
-	}
-
-	public static Vector3 GetHitboxSize(int SpaceIndex)
-	{
-		var isCorner =
-			SpaceIndex == 0 ||
-			SpaceIndex == 10 ||
-			SpaceIndex == 20 ||
-			SpaceIndex == 30;
-
-		var cornHbs = MonopolySpaceSettings.CornerHitboxSize;
-		var regHbs = MonopolySpaceSettings.HitboxSize;
-
-		if (isCorner)
-			return cornHbs;
-
-		if (GetQuadFromIndex(SpaceIndex) == 1 || GetQuadFromIndex(SpaceIndex) == 3)
-			return new Vector3(regHbs.y, regHbs.x, regHbs.z);
-
-		return regHbs;
-	}
-
-	public static int GetQuadFromIndex(int Index)
-	{
-		if (Index == 0 || Index == 10 || Index == 20 || Index == 30)
-		{
-			return 0;
-		} else if(Index < 10)
-		{
-			return 1;
-		} else if (Index < 20)
-		{
-			return 2;
-		} else if (Index < 30)
-		{
-			return 3;
-		}
-		return 4;
-	}
-
-	// Local Space Selection
-	private void UpdateLocalSpaceSelection()
-	{
-		if ( !Input.Pressed( "attack1" ) )
-			return;
-
-		SceneTraceResult? initialTraceResult = GetSelectionMouseTraceResult();
-		if (initialTraceResult == null)
-			return;
-
-		SceneTraceResult traceResult = initialTraceResult.Value;
-		if (DebugEnabled)
-			DebugOverlay.Trace( traceResult, 5f, true );
-
-		HandleTraceResult(traceResult, out MonopolySpace space, out MonopolySpaceDef _);
-
-		if ( GameRef is null || space is null )
-			return;
-		
-		if (space.Index == GameRef.LocalSelectedSpaceIndex)
-			GameRef.SelectSpace(-1);
-		else
-			GameRef.SelectSpace( space.Index );
-	}
-
-	private SceneTraceResult? GetSelectionMouseTraceResult()
-	{
-		var camera = Scene.Camera;
-		if ( camera is null )
-			return null;
-
-		var ray = camera.ScreenPixelToRay( Mouse.Position );
-		return Scene.Trace.Ray( ray, 5000f )
-			.UseHitboxes()
-			.HitTriggers()
-			.Run();
-	}
-
-	private void UpdateSpaceHoverCursor()
-	{
-		var traceResult = GetSelectionMouseTraceResult();
-		var isHoveringSpace =
-			traceResult.HasValue &&
-			traceResult.Value.Hit &&
-			traceResult.Value.GameObject is not null &&
-			traceResult.Value.GameObject.Components.TryGet<MonopolySpace>( out _ );
-
-		Mouse.CursorType = isHoveringSpace ? "pointer" : null;
-	}
-
-	private void HandleTraceResult(SceneTraceResult traceResult, out MonopolySpace foundSpace, out MonopolySpaceDef foundSpaceDef)
-	{
-		foundSpace = null;
-		foundSpaceDef = null;
-
-		// start building debug string
-		var str = $"Hit: {traceResult.Hit}, Object: {traceResult.GameObject?.Name}";
-		
-		if ( !traceResult.Hit || traceResult.GameObject is null )
-		{
-			debugHelper.LogInfo(str + " (no hit)");
-			return;
-		}
-
-		if ( !traceResult.GameObject.Components.TryGet<MonopolySpace>( out var space ) )
-		{
-			debugHelper.LogInfo(str + " (not a space)");
-			return;
-		}
-
-		if (traceResult.Collider is BoxCollider)
-		{
-			var trc = traceResult.Collider as BoxCollider;
-			str += $", Collider Center: {trc.Center}, Collider Size: {trc.Scale}";
-		}
-
-		var def = GetSpaceDef(space.Index);
-		str += $", SpaceDef: {def?.DisplayName} (Quad: {def?.GetQuadrant()} Index: {def?.Index}, Type: {def?.Type})";
-		debugHelper.LogInfo(str);
-		
-		foundSpace = space;
-		foundSpaceDef = def;
-	}
-
-	// DEBUG
-	private void DrawAllHitboxesDebug()
-	{
-		if (!DebugEnabled)
-			return;
-		
-		foreach ( var space in Spaces )
-		{
-			if ( space is null )
-				continue;
-
-			var ind = space.Index;
-			DebugOverlay.Box(
-				space.GetColliderCenter() ?? Vector3.Zero,
-				space.GetColliderSize() ?? GetHitboxSize(ind),
-				Color.Green,
-				0f,
-				default,
-				true
-			);
-		}
-	}
-}
