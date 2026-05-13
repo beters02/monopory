@@ -70,7 +70,10 @@ MonopolyHud {
 	//	color: blue;
 	//}
 
-	
+	.hud-card {
+		top: 32px;
+    	left: 32px;
+	}
 
 	button {
 		margin-top: 10px;
@@ -91,29 +94,58 @@ MonopolyHud {
 		background-color: $monopoly-gold-hover;
 	}
 
+	.trade-create-button {
+		width: 116px;
+		height: 38px;
+		padding: 6px 5px;
+		align-items: flex-start;
+		flex-direction: column;
+		//margin: 0;
+		//padding: 0 12px;
+
+		background-color: $monopoly-gold;
+		color: $monopoly-ink;
+		border-radius: $monopoly-radius-board;
+
+		//font-size: 15px;
+	}
+
+	.trade-create-button:hover {
+		background-color: $monopoly-gold-hover;
+	}
+
 	.property-hud-card {
 		position: absolute;
-		top: 24px;
-		right: 24px;
+		top: 32px;
+		right: 32px;
 		z-index: 8;
-
-		width: 220px;
+		padding: 0px;
+		width: 100px;
+		background-color: #ffffff00;
+		
+		//width: 220px;
 
 		display: flex;
 		flex-direction: column;
 		align-items: flex-end;
-		gap: 8px;
+		//gap: 8px;
 
 		pointer-events: all;
 	}
 
 	.property-player-panel {
-		width: 92px;
+		position: relative;
+		//left: 32px;
+		//top: 0px;
+		width: 100px;
+		padding: 0px;
 		min-height: 56px;
+		gap: 0px;
 
 		background-color: $monopoly-panel-strong;
 		border: 2px solid $monopoly-panel-line;
 		border-radius: $monopoly-radius-board;
+		align-self: flex-end;
 
 		color: $monopoly-text;
 		font-family: $monopoly-font-family;
@@ -121,11 +153,24 @@ MonopolyHud {
 		display: flex;
 		flex-direction: column;
 		overflow: hidden;
+
+		transform-origin: right top;
+
+		transition:
+			min-height 0.16s ease 0.03s,
+			gap 0.16s ease 0.03s,
+			width 0.16s ease 0.03s;
 	}
 
 	.property-player-panel.expanded {
 		width: 220px;
 		min-height: 178px;
+		gap: 5px;
+
+		transition:
+			min-height 0.16s ease,
+			gap 0.16s ease,
+			width 0.16s ease;
 	}
 
 	.property-player-panel.local-player {
@@ -183,11 +228,38 @@ MonopolyHud {
 	}
 
 	.property-grid {
-		padding: 10px;
+		//position: relative;
+		opacity: 0;
+		max-height: 0;
+		padding: 0px;
+		overflow: hidden;
+		transform: translateY(-4px);
 
 		display: flex;
 		flex-wrap: wrap;
+		gap: 0px;
+
+		transition:
+			max-height 0.16s ease 0.03s,
+			transform 0.16s ease 0.03s,
+			gap 0.016s ease 0.03s,
+			padding 0.016s ease 0.03s,
+			opacity 0.016s ease;
+	}
+
+	.property-player-panel.expanded .property-grid {
+		opacity: 1;
+		padding: 10px;
+		max-height: 120px;
+		transform: translateY(0);
 		gap: 5px;
+
+		transition:
+			max-height 0.16s ease,
+			transform 0.16s ease,
+			gap 0.016s ease,
+			padding 0.016s ease,
+			opacity 0.12s ease 0.16s;
 	}
 
 	.property-square {
@@ -279,16 +351,17 @@ MonopolyHud {
 
 	.trade-panel {
 		position: absolute;
-		left: 48px;
+		left: 32px;
 		bottom: 32px;
 		z-index: 7;
 
-		width: 520px;
+		width: 400px;
 		min-height: 126px;
 		padding: 12px;
 
 		background-color: $monopoly-panel-strong;
 		border: 2px solid $monopoly-panel-line;
+		border-color: $monopoly-gold;
 		color: $monopoly-text;
 		font-family: $monopoly-font-family;
 
@@ -313,22 +386,7 @@ MonopolyHud {
 		color: rgba(255, 255, 255, 0.82);
 	}
 
-	.trade-create-button {
-		width: 116px;
-		height: 38px;
-		margin: 0;
-		padding: 0 12px;
-
-		background-color: $monopoly-gold;
-		color: $monopoly-ink;
-		border-radius: $monopoly-radius-board;
-
-		font-size: 15px;
-	}
-
-	.trade-create-button:hover {
-		background-color: $monopoly-gold-hover;
-	}
+	
 
 	.trade-empty {
 		justify-content: center;

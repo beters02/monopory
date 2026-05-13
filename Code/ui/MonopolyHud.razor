@@ -19,68 +19,53 @@
 				<HudPanelBody>Current Player: @CurrentPlayerName</HudPanelBody>
 				<HudPanelBody>Last Roll: @GameRef.LastDieA + @GameRef.LastDieB</HudPanelBody>
 				<HudPanelBody>Phase: @GameRef.Phase</HudPanelBody>
+
+				@if ( GameRef.Phase == MonopolyGamePhase.WaitingToRoll && CurrentPlayer == LocalPlayer )
+				{
+					<button onclick="@RollDice">Roll Dice</button>
+				}
 			</ChildContent>
 		</HudPanel>
 
-		/*<div class="info-card hud-card">
-			<div class="info-card-title">Grand Casinopoly</div>
 
-			<div class="info-card-sub-title">Local</div>
-			<div class="info-card-body">Money: $@LocalPlayerMoney</div>
-			<div></div>
-			<div></div>
-			<div class="info-card-sub-title">Game</div>
-			<div>Current Player: @CurrentPlayerName</div>
-			<div>Last Roll: @GameRef.LastDieA + @GameRef.LastDieB</div>
-			<div>Phase: @GameRef.Phase</div>
-
-			@if ( GameRef.Phase == MonopolyGamePhase.WaitingToRoll && CurrentPlayer == LocalPlayer )
-			{
-				<button onclick="@RollDice">Roll Dice</button>
-			}
-
-			@if ( GameRef.Phase == MonopolyGamePhase.WaitingForBuyDecision )
-			{
-				/*<div class="buy-box">
-					<div>@PendingPropertyName</div>
-					<div>Price: $@PendingPropertyPrice</div>
-
-					<button onclick="@BuyProperty">Buy</button>
-					<button onclick="@SkipProperty">Skip</button>
-				</div>
-			}
-		</div>*/
 
 		@if ( PropertyHudPlayers.Count > 0 )
 		{
-			<div class="property-hud-card">
-				@foreach ( var player in PropertyHudPlayers )
-				{
-					var playerIndex = GameRef.GetPlayerIndex( player );
-					var isExpanded = IsPropertyPanelExpanded( playerIndex );
+			
+			<HudPanel Variant="property-hud-card">
+				<ChildContent>
+					@foreach ( var player in PropertyHudPlayers )
+					{
+						var playerIndex = GameRef.GetPlayerIndex( player );
+						var isExpanded = IsPropertyPanelExpanded( playerIndex );
 
-					<div class="@GetPropertyPanelClasses( playerIndex, isExpanded )">
-						<button class="property-player-button" onclick="@(() => TogglePropertyPanel( playerIndex ))">
-							<div class="property-player-name">@player.PlayerName</div>
-							<div class="property-player-money">$@player.Money</div>
-						</button>
+						<HudPanel Variant="@GetPropertyPanelClasses( playerIndex, isExpanded )">
+							<ChildContent>
+								<button class="property-player-button" onclick="@(() => TogglePropertyPanel( playerIndex ))">
+									<div class="property-player-name">@player.PlayerName</div>
+									<div class="property-player-money">$@player.Money</div>
+								</button>
 
-						@if ( isExpanded )
-						{
-							<div class="property-grid">
-								@foreach ( var property in PropertySpaces )
+								<div class="property-grid">
+									@foreach ( var property in PropertySpaces )
+									{
+										<button
+											class="@GetPropertySquareClasses( property, playerIndex )"
+											title="@property.DisplayName"
+											onclick="@(() => SelectPropertySpace( property.Index ))">
+										</button>
+									}
+								</div>
+
+								@if ( isExpanded )
 								{
-									<button
-										class="@GetPropertySquareClasses( property, playerIndex )"
-										title="@property.DisplayName"
-										onclick="@(() => SelectPropertySpace( property.Index ))">
-									</button>
+									
 								}
-							</div>
-						}
-					</div>
-				}
-			</div>
+							</ChildContent>
+						</HudPanel>
+					}
+				</ChildContent>
+			</HudPanel>
 		}
 
 		<div class="trade-panel">
@@ -626,6 +611,8 @@
 
 	private void CloseTradeComposer()
 	{
+		ComposerSenderPropertyIndexes.Clear();
+		ComposerReceiverPropertyIndexes.Clear();
 		IsTradeComposerOpen = false;
 	}
 
@@ -688,6 +675,8 @@
 		ComposerReceiverPropertyIndexes.Clear();
 		IsTradeComposerOpen = false;
 	}
+
+	//private void ClearTrade
 
 	private void AcceptTrade( int tradeId )
 	{

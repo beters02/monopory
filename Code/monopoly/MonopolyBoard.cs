@@ -376,7 +376,7 @@ public sealed class MonopolyBoard : Component
 			{
 				Index = 24,
 				Key = "property_red_2",
-				DisplayName = "Lucas",
+				DisplayName = "Luke's Law",
 				Type = SpaceType.Property,
 				Price = 240,
 				BaseRent = 20,
