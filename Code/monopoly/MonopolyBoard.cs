@@ -415,7 +415,7 @@ public sealed class MonopolyBoard : Component
 			{
 				Index = 27,
 				Key = "property_yellow_1",
-				DisplayName = "Mike's Place",
+				DisplayName = "Ethan's Dirty Den",
 				Type = SpaceType.Property,
 				Price = 260,
 				BaseRent = 22,
@@ -678,10 +678,7 @@ public sealed class MonopolyBoard : Component
 		if ( GameRef is null || space is null )
 			return;
 		
-		if (space.Index == GameRef.LocalSelectedSpaceIndex)
-			GameRef.SelectSpace(-1);
-		else
-			GameRef.SelectSpace( space.Index );
+		GameRef.SelectSpace( space.Index );
 	}
 
 	private SceneTraceResult? GetSelectionMouseTraceResult()

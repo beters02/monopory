@@ -5,7 +5,7 @@
   "Ident": "monopory",
   "Schema": 1,
   "IncludeSourceFiles": false,
-  "Resources": null,
+  "Resources": "*",
   "PackageReferences": [],
   "EditorReferences": null,
   "Mounts": null,

@@ -1,3 +1,5 @@
+@import "MonopolyTheme.scss";
+
 MonopolySpaceLabel {
 	width: 100%;
 	height: 100%;
@@ -8,22 +10,20 @@ MonopolySpaceLabel {
 		width: 100%;
 		height: 100%;
 
-		background-color: rgba(207, 232, 226, 0.96);
-		border: 8px solid #050505;
+		background-color: $monopoly-board-glass;
+		border: 8px solid $monopoly-ink;
 
 		display: flex;
 		flex-direction: column;
 
-		font-family: Poppins;
-		color: #050505;
-		
-		
+		font-family: $monopoly-font-family;
+		color: $monopoly-ink;
 	}
 
 	.label-color-bar {
 		height: 18px;
 		background-color: transparent;
-		border-bottom: 4px solid #050505;
+		border-bottom: 4px solid $monopoly-ink;
 	}
 
 	.color-none .label-color-bar {
@@ -31,35 +31,35 @@ MonopolySpaceLabel {
 	}
 
 	.color-brown .label-color-bar {
-		background-color: #8b3a00;
+		background-color: $property-brown;
 	}
 
 	.color-light_blue .label-color-bar {
-		background-color: #7fa1d0;
+		background-color: $property-light-blue;
 	}
 
 	.color-pink .label-color-bar {
-		background-color: #ed1978;
+		background-color: $property-pink;
 	}
 
 	.color-orange .label-color-bar {
-		background-color: #ff7f0e;
+		background-color: $property-orange;
 	}
 
 	.color-red .label-color-bar {
-		background-color: #f22520;
+		background-color: $property-red;
 	}
 
 	.color-yellow .label-color-bar {
-		background-color: #ffe21a;
+		background-color: $property-yellow;
 	}
 
 	.color-green .label-color-bar {
-		background-color: #07a64f;
+		background-color: $property-green;
 	}
 
 	.color-dark_blue .label-color-bar {
-		background-color: #06469a;
+		background-color: $property-dark-blue;
 	}
 
 	.label-text {

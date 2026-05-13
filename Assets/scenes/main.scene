@@ -49,7 +49,7 @@
       "Scale": "1,1,1",
       "Tags": "",
       "Enabled": true,
-      "NetworkMode": 0,
+      "NetworkMode": 2,
       "NetworkFlags": 0,
       "NetworkOrphaned": 0,
       "NetworkTransmit": true,
@@ -1937,7 +1937,7 @@
                   "__version": 2,
                   "Flags": 0,
                   "Name": "ModelRenderer",
-                  "Position": "0,0,0",
+                  "Position": "0,0,-1.29999995",
                   "Rotation": "0,0,0,1",
                   "Scale": "0.0500000007,0.0500000007,0.0500000007",
                   "Tags": "",
@@ -2048,7 +2048,7 @@
                   "__version": 2,
                   "Flags": 0,
                   "Name": "ModelRenderer",
-                  "Position": "0,0,0",
+                  "Position": "0,0,-1.29999995",
                   "Rotation": "0,0,0,1",
                   "Scale": "0.0500000007,0.0500000007,0.0500000007",
                   "Tags": "",
@@ -2381,13 +2381,13 @@
           "$blob": "7664decd-7b1f-4214-a5a2-850285e10057"
         }
       },
-      "Sandbox.MovieMaker.MovieRecorderSystem": {
-        "DisableClientRecording": false
-      },
       "Sandbox.SelectionSetsSystem": {
         "Data": {
           "SelectionSets": []
         }
+      },
+      "Sandbox.MovieMaker.MovieRecorderSystem": {
+        "DisableClientRecording": false
       }
     }
   },

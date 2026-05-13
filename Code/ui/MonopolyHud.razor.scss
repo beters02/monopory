@@ -1,3 +1,6 @@
+@import "MonopolyTheme.scss";
+@import "Code/ui/components/InfoCard.scss";
+
 MonopolyHud {
 	position: absolute;
 	top: 0;
@@ -19,8 +22,8 @@ MonopolyHud {
 		width: 320px;
 		padding: 20px;
 
-		background-color: rgba(10, 10, 10, 0.85);
-		border-radius: 16px;
+		background-color: $monopoly-panel;
+		border-radius: $monopoly-radius-panel;
 
 		color: white;
 		font-family: Poppins;
@@ -41,7 +44,7 @@ MonopolyHud {
 		pointer-events: none;
 	}
 
-	.hud-card {
+	/*.hud-card {
 		position: absolute;
 		top: 32px;
 		left: 32px;
@@ -61,6 +64,10 @@ MonopolyHud {
 		gap: 8px;
 
 		pointer-events: all;
+	}*/
+
+	.hud-card {
+		background-color: rgba(129, 12, 12, 0.85);
 	}
 
 	.title {
@@ -79,10 +86,10 @@ MonopolyHud {
 		margin-top: 10px;
 		padding: 10px 14px;
 
-		background-color: #d9b45f;
-		color: black;
+		background-color: $monopoly-gold;
+		color: $monopoly-ink;
 
-		border-radius: 10px;
+		border-radius: $monopoly-radius-control;
 		font-weight: 800;
 		font-size: 16px;
 
@@ -91,7 +98,594 @@ MonopolyHud {
 	}
 
 	button:hover {
-		background-color: #f0cf78;
+		background-color: $monopoly-gold-hover;
+	}
+
+	.property-hud {
+		position: absolute;
+		top: 24px;
+		right: 24px;
+		z-index: 8;
+
+		width: 220px;
+
+		display: flex;
+		flex-direction: column;
+		align-items: flex-end;
+		gap: 8px;
+
+		pointer-events: all;
+	}
+
+	.property-player-panel {
+		width: 92px;
+		min-height: 56px;
+
+		background-color: $monopoly-panel-strong;
+		border: 2px solid $monopoly-panel-line;
+		border-radius: $monopoly-radius-board;
+
+		color: $monopoly-text;
+		font-family: $monopoly-font-family;
+
+		display: flex;
+		flex-direction: column;
+		overflow: hidden;
+	}
+
+	.property-player-panel.expanded {
+		width: 220px;
+		min-height: 178px;
+	}
+
+	.property-player-panel.local-player {
+		border-color: $monopoly-gold;
+	}
+
+	.property-player-panel.current-player {
+		box-shadow: 0 0 0 2px rgba(217, 180, 95, 0.45);
+	}
+
+	.property-player-button {
+		width: 100%;
+		min-height: 52px;
+		margin: 0;
+		padding: 8px 10px;
+
+		background-color: rgba(255, 255, 255, 0.04);
+		border: 0;
+		border-radius: 0;
+		color: $monopoly-text;
+
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 1px;
+
+		cursor: pointer;
+	}
+
+	.property-player-button:hover {
+		background-color: rgba(255, 255, 255, 0.12);
+	}
+
+	.property-player-name {
+		width: 100%;
+
+		text-align: center;
+		font-size: 15px;
+		font-weight: 800;
+		line-height: 17px;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+		overflow: hidden;
+	}
+
+	.property-player-money {
+		width: 100%;
+
+		text-align: center;
+		font-size: 12px;
+		font-weight: 700;
+		line-height: 14px;
+		color: rgba(255, 255, 255, 0.72);
+	}
+
+	.property-grid {
+		padding: 10px;
+
+		display: flex;
+		flex-wrap: wrap;
+		gap: 5px;
+	}
+
+	.property-square {
+		width: 17px;
+		height: 17px;
+		margin: 0;
+		padding: 0;
+
+		border: 2px solid rgba(0, 0, 0, 0.72);
+		border-radius: 2px;
+
+		cursor: pointer;
+		opacity: 0.28;
+	}
+
+	.property-square:hover {
+		opacity: 0.85;
+		border-color: white;
+	}
+
+	.property-square.owned-by-panel-player {
+		opacity: 1;
+		box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.52);
+	}
+
+	.property-square.owned-by-other-player {
+		opacity: 0.14;
+	}
+
+	.property-square.unowned {
+		filter: saturate(0.45);
+	}
+
+	.property-square.pending-purchase {
+		border-color: $monopoly-gold-soft;
+		box-shadow: 0 0 0 2px rgba(255, 217, 106, 0.7);
+		opacity: 1;
+	}
+
+	.property-square.selected {
+		border-color: white;
+		box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.78);
+		opacity: 1;
+	}
+
+	.property-square.color-brown {
+		background-color: $property-brown;
+	}
+
+	.property-square.color-light_blue {
+		background-color: $property-light-blue;
+	}
+
+	.property-square.color-pink {
+		background-color: $property-pink;
+	}
+
+	.property-square.color-orange {
+		background-color: $property-orange;
+	}
+
+	.property-square.color-red {
+		background-color: $property-red;
+	}
+
+	.property-square.color-yellow {
+		background-color: $property-yellow;
+	}
+
+	.property-square.color-green {
+		background-color: $property-green;
+	}
+
+	.property-square.color-dark_blue {
+		background-color: $property-dark-blue;
+	}
+
+	.property-square.color-railroad {
+		background-color: $property-railroad;
+	}
+
+	.property-square.color-utility {
+		background-color: $property-utility;
+	}
+
+	.property-square.color-none {
+		background-color: $property-none;
+	}
+
+	.trade-panel {
+		position: absolute;
+		left: 48px;
+		bottom: 32px;
+		z-index: 7;
+
+		width: 520px;
+		min-height: 126px;
+		padding: 12px;
+
+		background-color: $monopoly-panel-strong;
+		border: 2px solid $monopoly-panel-line;
+		color: $monopoly-text;
+		font-family: $monopoly-font-family;
+
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+
+		pointer-events: all;
+	}
+
+	.trade-panel-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+	}
+
+	.trade-panel-title {
+		flex: 1;
+		text-align: center;
+		font-size: 18px;
+		font-weight: 800;
+		color: rgba(255, 255, 255, 0.82);
+	}
+
+	.trade-create-button {
+		width: 116px;
+		height: 38px;
+		margin: 0;
+		padding: 0 12px;
+
+		background-color: $monopoly-gold;
+		color: $monopoly-ink;
+		border-radius: $monopoly-radius-board;
+
+		font-size: 15px;
+	}
+
+	.trade-create-button:hover {
+		background-color: $monopoly-gold-hover;
+	}
+
+	.trade-empty {
+		justify-content: center;
+		align-items: center;
+		min-height: 52px;
+
+		color: rgba(255, 255, 255, 0.52);
+		font-size: 15px;
+		font-weight: 700;
+	}
+
+	.trade-list {
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+	}
+
+	.trade-row {
+		min-height: 42px;
+
+		display: flex;
+		align-items: center;
+		gap: 6px;
+	}
+
+	.trade-row-main {
+		flex: 1;
+		min-width: 0;
+		height: 38px;
+		margin: 0;
+		padding: 0 8px;
+
+		background-color: rgba(255, 255, 255, 0.05);
+		color: white;
+		border-radius: 4px;
+
+		display: flex;
+		align-items: center;
+		gap: 7px;
+
+		font-size: 15px;
+		font-weight: 700;
+	}
+
+	.trade-row-main:hover {
+		background-color: rgba(255, 255, 255, 0.12);
+	}
+
+	.trade-mini-box {
+		width: 22px;
+		height: 22px;
+
+		align-items: center;
+		justify-content: center;
+
+		background-color: rgba(255, 255, 255, 0.12);
+		border-radius: 3px;
+		color: rgba(255, 255, 255, 0.84);
+		font-size: 13px;
+		font-weight: 900;
+	}
+
+	.trade-arrow {
+		color: rgba(255, 255, 255, 0.66);
+	}
+
+	.trade-looking {
+		margin-left: auto;
+		padding: 4px 7px;
+
+		background-color: rgba(217, 180, 95, 0.22);
+		border: 1px solid rgba(217, 180, 95, 0.48);
+		border-radius: 3px;
+
+		color: $monopoly-gold-hover;
+		font-size: 11px;
+		text-transform: uppercase;
+	}
+
+	.trade-icon-button {
+		width: 42px;
+		height: 34px;
+		margin: 0;
+		padding: 0;
+
+		border-radius: 4px;
+		color: white;
+		font-size: 12px;
+	}
+
+	.trade-icon-button.accept {
+		background-color: $monopoly-success;
+	}
+
+	.trade-icon-button.deny {
+		background-color: $monopoly-danger;
+	}
+
+	.trade-modal-backdrop {
+		position: absolute;
+		left: 0;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		z-index: 30;
+
+		align-items: center;
+		justify-content: center;
+
+		background-color: rgba(0, 0, 0, 0.54);
+		pointer-events: all;
+	}
+
+	.trade-modal {
+		position: relative;
+
+		width: 680px;
+		min-height: 330px;
+		padding: 20px 26px;
+
+		background-color: $monopoly-board;
+		border: 4px solid $monopoly-ink;
+		border-radius: $monopoly-radius-board;
+		box-shadow: 0 0 0 5px $monopoly-board-outline, 0 18px 60px rgba(0, 0, 0, 0.5);
+
+		color: $monopoly-ink;
+		font-family: $monopoly-font-family;
+
+		display: flex;
+		flex-direction: column;
+		gap: 18px;
+	}
+
+	.trade-view-modal {
+		width: 580px;
+	}
+
+	.trade-modal-close {
+		position: absolute;
+		top: -18px;
+		right: 18px;
+
+		width: 42px;
+		height: 42px;
+		margin: 0;
+		padding: 0;
+
+		align-items: center;
+		justify-content: center;
+
+		background-color: $monopoly-ink;
+		border-radius: 21px;
+		color: $monopoly-board;
+		font-size: 16px;
+	}
+
+	.trade-modal-title {
+		text-align: center;
+		color: $monopoly-ink;
+		font-size: 18px;
+		font-weight: 800;
+	}
+
+	.trade-editor,
+	.trade-summary-grid {
+		display: flex;
+		gap: 22px;
+	}
+
+	.trade-side,
+	.trade-summary-side {
+		flex: 1;
+		min-width: 0;
+
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+	}
+
+	.trade-player-name {
+		text-align: center;
+		font-size: 17px;
+		font-weight: 900;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+		overflow: hidden;
+	}
+
+	.trade-player-select {
+		display: flex;
+		gap: 6px;
+	}
+
+	.trade-target {
+		flex: 1;
+		min-width: 0;
+		height: 32px;
+		margin: 0;
+		padding: 0 8px;
+
+		background-color: rgba(5, 5, 5, 0.08);
+		color: $monopoly-ink;
+		border: 2px solid rgba(5, 5, 5, 0.22);
+		border-radius: $monopoly-radius-board;
+
+		font-size: 13px;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+		overflow: hidden;
+	}
+
+	.trade-target.selected {
+		background-color: $monopoly-gold;
+	}
+
+	.trade-money-row {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 8px;
+	}
+
+	.trade-money-row button {
+		width: 34px;
+		height: 30px;
+		margin: 0;
+		padding: 0;
+
+		align-items: center;
+		justify-content: center;
+
+		background-color: $monopoly-ink;
+		color: $monopoly-board;
+		border-radius: $monopoly-radius-board;
+	}
+
+	.trade-money-pill {
+		min-width: 82px;
+		height: 34px;
+		padding: 0 12px;
+
+		align-items: center;
+		justify-content: center;
+
+		background-color: $monopoly-gold;
+		border: 2px solid $monopoly-ink;
+		border-radius: $monopoly-radius-board;
+		color: $monopoly-ink;
+
+		font-size: 16px;
+		font-weight: 900;
+	}
+
+	.trade-swap-column {
+		width: 54px;
+		min-height: 190px;
+
+		align-items: center;
+		justify-content: center;
+
+		background-color: $monopoly-ink;
+		border-radius: 24px;
+		color: $monopoly-board;
+
+		font-size: 18px;
+		font-weight: 900;
+	}
+
+	.trade-property-picker {
+		min-height: 96px;
+
+		display: flex;
+		flex-wrap: wrap;
+		align-content: flex-start;
+		gap: 6px;
+	}
+
+	.trade-property-chip,
+	.trade-summary-property {
+		min-height: 30px;
+		margin: 0;
+		padding: 5px 8px;
+
+		border: 2px solid rgba(5, 5, 5, 0.22);
+		border-radius: $monopoly-radius-board;
+
+		color: $monopoly-ink;
+		font-size: 12px;
+		font-weight: 800;
+		text-align: center;
+	}
+
+	.trade-property-chip {
+		max-width: 132px;
+		color: $monopoly-text;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+		overflow: hidden;
+	}
+
+	.trade-property-chip.selected {
+		border-color: $monopoly-ink;
+		box-shadow: 0 0 0 2px rgba(5, 5, 5, 0.25);
+	}
+
+	.trade-summary-property {
+		background-color: rgba(255, 255, 255, 0.28);
+	}
+
+	.trade-property-chip.color-brown { background-color: $property-brown; }
+	.trade-property-chip.color-light_blue { background-color: $property-light-blue; }
+	.trade-property-chip.color-pink { background-color: $property-pink; }
+	.trade-property-chip.color-orange { background-color: $property-orange; }
+	.trade-property-chip.color-red { background-color: $property-red; }
+	.trade-property-chip.color-yellow { background-color: $property-yellow; color: $monopoly-ink; }
+	.trade-property-chip.color-green { background-color: $property-green; }
+	.trade-property-chip.color-dark_blue { background-color: $property-dark-blue; }
+	.trade-property-chip.color-railroad { background-color: $monopoly-ink-hover; }
+	.trade-property-chip.color-utility { background-color: $property-utility; color: $monopoly-ink; }
+	.trade-property-chip.color-none { background-color: $property-none; }
+
+	.trade-send-button,
+	.trade-deny-button {
+		align-self: center;
+		min-width: 150px;
+		height: 50px;
+		margin: 0;
+		padding: 0 18px;
+
+		border-radius: 5px;
+		color: white;
+		font-size: 17px;
+	}
+
+	.trade-send-button {
+		background-color: $monopoly-gold;
+		color: $monopoly-ink;
+	}
+
+	.trade-deny-button {
+		background-color: $monopoly-danger;
+	}
+
+	.trade-modal-actions {
+		display: flex;
+		justify-content: center;
+		gap: 12px;
 	}
 
 	.buy-box {
@@ -122,24 +716,24 @@ MonopolyHud {
 	}
 
 	.space-card-original {
-		background-color: #f4ecd2;
-		border: 5px solid #111;
+		background-color: $monopoly-card-paper;
+		border: 5px solid $monopoly-card-ink;
 		border-radius: 18px;
 
 		box-shadow: 0 16px 48px rgba(0, 0, 0, 0.45);
 
-		color: #111;
+		color: $monopoly-card-ink;
 	}
 
 	.space-card-board {
-		background-color: #cfe8e2;
-		border: 4px solid #050505;
-		border-radius: 4px;
+		background-color: $monopoly-board;
+		border: 4px solid $monopoly-ink;
+		border-radius: $monopoly-radius-board;
 
-		box-shadow: 0 0 0 5px #1399d6, 0 16px 40px rgba(0, 0, 0, 0.45);
+		box-shadow: 0 0 0 5px $monopoly-board-outline, 0 16px 40px rgba(0, 0, 0, 0.45);
 
-		color: #050505;
-		font-family: Poppins;
+		color: $monopoly-ink;
+		font-family: $monopoly-font-family;
 	}
 
 	.space-card-close {
@@ -157,7 +751,7 @@ MonopolyHud {
 		justify-content: center;
 
 		background-color: rgba(0, 0, 0, 0.01);
-		color: #111;
+		color: $monopoly-card-ink;
 		border: 0;
 
 		font-size: 16px;
@@ -174,8 +768,8 @@ MonopolyHud {
 		align-items: center;
 		justify-content: center;
 
-		background-color: #111;
-		color: #f4ecd2;
+		background-color: $monopoly-ink;
+		color: $monopoly-card-paper;
 		border-radius: 15px;
 
 		text-align: center;
@@ -186,7 +780,7 @@ MonopolyHud {
 	}
 
 	.space-card-close:hover span {
-		background-color: #333;
+		background-color: $monopoly-ink-hover;
 	}
 
 	.space-card-header {
@@ -207,40 +801,40 @@ MonopolyHud {
 		justify-content: center;
 		gap: 3px;
 
-		background-color: #cfe8e2;
-		border-bottom: 4px solid #050505;
+		background-color: $monopoly-board;
+		border-bottom: 4px solid $monopoly-ink;
 	}
 
 	.space-card-board.color-brown .space-card-header {
-		background-color: #8b3a00;
+		background-color: $property-brown;
 	}
 
 	.space-card-board.color-light_blue .space-card-header {
-		background-color: #7fa1d0;
+		background-color: $property-light-blue;
 	}
 
 	.space-card-board.color-pink .space-card-header {
-		background-color: #ed1978;
+		background-color: $property-pink;
 	}
 
 	.space-card-board.color-orange .space-card-header {
-		background-color: #ff7f0e;
+		background-color: $property-orange;
 	}
 
 	.space-card-board.color-red .space-card-header {
-		background-color: #f22520;
+		background-color: $property-red;
 	}
 
 	.space-card-board.color-yellow .space-card-header {
-		background-color: #ffe21a;
+		background-color: $property-yellow;
 	}
 
 	.space-card-board.color-green .space-card-header {
-		background-color: #07a64f;
+		background-color: $property-green;
 	}
 
 	.space-card-board.color-dark_blue .space-card-header {
-		background-color: #06469a;
+		background-color: $property-dark-blue;
 	}
 
 	.space-title {
@@ -251,7 +845,7 @@ MonopolyHud {
 		line-height: 38px;
 
 		padding-bottom: 14px;
-		border-bottom: 3px solid #111;
+		border-bottom: 3px solid $monopoly-card-ink;
 	}
 
 	.space-card-original .space-title {
@@ -330,7 +924,7 @@ MonopolyHud {
 	.space-card-board .rent-list {
 		gap: 0;
 
-		border: 3px solid #050505;
+		border: 3px solid $monopoly-ink;
 		background-color: rgba(255, 255, 255, 0.22);
 
 		font-size: 18px;
@@ -342,7 +936,7 @@ MonopolyHud {
 
 		background-color: transparent;
 		border-radius: 0;
-		border-bottom: 2px solid #050505;
+		border-bottom: 2px solid $monopoly-ink;
 	}
 
 	.space-buttons {
@@ -356,8 +950,8 @@ MonopolyHud {
 		flex: 1;
 		height: 52px;
 
-		background-color: #171717;
-		color: white;
+		background-color: $monopoly-ink-soft;
+		color: $monopoly-text;
 
 		border-radius: 12px;
 		border: 0;
@@ -369,7 +963,7 @@ MonopolyHud {
 	}
 
 	.space-buttons button:hover {
-		background-color: #333;
+		background-color: $monopoly-ink-hover;
 	}
 
 	.space-card-board .space-buttons {
@@ -377,15 +971,15 @@ MonopolyHud {
 	}
 
 	.space-card-board .space-buttons button {
-		background-color: #050505;
-		border: 3px solid #050505;
-		border-radius: 3px;
+		background-color: $monopoly-ink;
+		border: 3px solid $monopoly-ink;
+		border-radius: $monopoly-radius-board;
 
-		color: #cfe8e2;
+		color: $monopoly-board;
 		text-transform: uppercase;
 	}
 
 	.space-card-board .space-buttons button:hover {
-		background-color: #2b2b2b;
+		background-color: $monopoly-ink-hover;
 	}
 }
