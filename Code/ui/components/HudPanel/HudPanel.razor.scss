@@ -1,0 +1,40 @@
+.hud-panel {
+    position: absolute;
+    top: 32px;
+    left: 32px;
+
+    width: 320px;
+    padding: 20px;
+
+    background-color: rgba(10, 10, 10, 0.85);
+    border-radius: 16px;
+
+    color: white;
+    font-family: Poppins;
+
+    flex-direction: column;
+    gap: 8px;
+
+    pointer-events: all;
+}
+
+.hud-panel-title {
+    font-size: 28px;
+    font-weight: 900;
+    margin-bottom: 8px;
+}
+
+.hud-panel-sub-title {
+    font-size: 24px;
+    font-weight: 900;
+    //margin-bottom: 8px;
+}
+
+.hud-panel-body {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.hud-panel-empty-line {
+    min-height: 8px;
+}

@@ -1,0 +1,16 @@
+@using Sandbox;
+@using Sandbox.UI;
+@inherits Panel
+
+<root class="@BuildClass()">
+    @ChildContent
+</root>
+
+@code
+{
+    [Parameter] public string Variant { get; set; } = "";
+    [Parameter] public new RenderFragment ChildContent { get; set; }
+
+    private string BuildClass() =>
+        string.IsNullOrWhiteSpace( Variant ) ? "hud-panel-sub-title" : $"hud-panel-sub-title {Variant}";
+}

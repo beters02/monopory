@@ -1,0 +1,13 @@
+@using Sandbox;
+@using Sandbox.UI;
+@inherits Panel
+
+<root class="@BuildClass()"></root>
+
+@code
+{
+    [Parameter] public string Variant { get; set; } = "";
+
+    private string BuildClass() =>
+        string.IsNullOrWhiteSpace( Variant ) ? "hud-panel-empty-line" : $"hud-panel-empty-line {Variant}";
+}

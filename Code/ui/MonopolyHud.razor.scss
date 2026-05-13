@@ -1,5 +1,5 @@
 @import "MonopolyTheme.scss";
-@import "Code/ui/components/InfoCard.scss";
+@import "components/InfoCard/InfoCard.razor.scss";
 
 MonopolyHud {
 	position: absolute;
@@ -66,21 +66,11 @@ MonopolyHud {
 		pointer-events: all;
 	}*/
 
-	.hud-card {
-		background-color: rgba(129, 12, 12, 0.85);
-	}
+	//.hud-card .info-card-title {
+	//	color: blue;
+	//}
 
-	.title {
-		font-size: 28px;
-		font-weight: 900;
-		margin-bottom: 8px;
-	}
-
-	.sub-title {
-		font-size: 24px;
-		font-weight: 900;
-		//margin-bottom: 8px;
-	}
+	
 
 	button {
 		margin-top: 10px;
@@ -101,7 +91,7 @@ MonopolyHud {
 		background-color: $monopoly-gold-hover;
 	}
 
-	.property-hud {
+	.property-hud-card {
 		position: absolute;
 		top: 24px;
 		right: 24px;

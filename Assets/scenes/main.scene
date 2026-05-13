@@ -1772,6 +1772,7 @@
               "CurrentPlayerIndex": 0,
               "LastDieA": 0,
               "LastDieB": 0,
+              "NextTradeId": 1,
               "OnComponentDestroy": null,
               "OnComponentDisabled": null,
               "OnComponentEnabled": null,
@@ -1779,6 +1780,7 @@
               "OnComponentStart": null,
               "OnComponentUpdate": null,
               "PendingPurchaseSpaceIndex": -1,
+              "PendingTrades": {},
               "Phase": "WaitingToRoll",
               "Players": [
                 {
@@ -2381,13 +2383,13 @@
           "$blob": "7664decd-7b1f-4214-a5a2-850285e10057"
         }
       },
+      "Sandbox.MovieMaker.MovieRecorderSystem": {
+        "DisableClientRecording": false
+      },
       "Sandbox.SelectionSetsSystem": {
         "Data": {
           "SelectionSets": []
         }
-      },
-      "Sandbox.MovieMaker.MovieRecorderSystem": {
-        "DisableClientRecording": false
       }
     }
   },

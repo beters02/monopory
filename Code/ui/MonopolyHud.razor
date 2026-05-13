@@ -1,19 +1,35 @@
 @using Sandbox;
 @using Sandbox.UI;
+@using Sandbox.ui.components.HudPanel;
 @using System;
 @inherits PanelComponent
 
 <root class="monopoly-hud">
 	@if ( GameRef is not null )
 	{
-		<div class="info-card hud-card">
-			<div class="title">Grand Casinopoly</div>
 
-			<div class="sub-title">Local</div>
-			<div>Money: $@LocalPlayerMoney</div>
+		<HudPanel Variant="hud-card">
+			<ChildContent>
+				<HudPanelTitle>Grand Casinopoly</HudPanelTitle>
+				<HudPanelSubtitle>Local</HudPanelSubtitle>
+				<HudPanelBody>Money: $@LocalPlayerMoney</HudPanelBody>
+				<HudPanelEmptyLine></HudPanelEmptyLine>
+				<HudPanelEmptyLine></HudPanelEmptyLine>
+				<HudPanelSubtitle>Game</HudPanelSubtitle>
+				<HudPanelBody>Current Player: @CurrentPlayerName</HudPanelBody>
+				<HudPanelBody>Last Roll: @GameRef.LastDieA + @GameRef.LastDieB</HudPanelBody>
+				<HudPanelBody>Phase: @GameRef.Phase</HudPanelBody>
+			</ChildContent>
+		</HudPanel>
+
+		/*<div class="info-card hud-card">
+			<div class="info-card-title">Grand Casinopoly</div>
+
+			<div class="info-card-sub-title">Local</div>
+			<div class="info-card-body">Money: $@LocalPlayerMoney</div>
 			<div></div>
 			<div></div>
-			<div class="sub-title">Game</div>
+			<div class="info-card-sub-title">Game</div>
 			<div>Current Player: @CurrentPlayerName</div>
 			<div>Last Roll: @GameRef.LastDieA + @GameRef.LastDieB</div>
 			<div>Phase: @GameRef.Phase</div>
@@ -31,9 +47,9 @@
 
 					<button onclick="@BuyProperty">Buy</button>
 					<button onclick="@SkipProperty">Skip</button>
-				</div>*/
+				</div>
 			}
-		</div>
+		</div>*/
 
 		@if ( PropertyHudPlayers.Count > 0 )
 		{
@@ -275,6 +291,8 @@
 	private int ComposerSenderMoney;
 	private int ComposerReceiverMoney;
 	private int ViewedTradeId = -1;
+
+	private void log(string msg) => Log.Info(msg);
 
 	private MonopolySpaceDef PendingDef =>
 		GameRef?.Board?.GetSpaceDef( GameRef.PendingPurchaseSpaceIndex );
