@@ -1817,18 +1817,6 @@
               ],
               "PropertyImprovements": {},
               "PropertyOwners": {}
-            },
-            {
-              "__type": "MonopolyCommandWatcher",
-              "__guid": "9fc72d6b-040c-471e-bf75-4eeec61afe08",
-              "__enabled": true,
-              "Flags": 0,
-              "OnComponentDestroy": null,
-              "OnComponentDisabled": null,
-              "OnComponentEnabled": null,
-              "OnComponentFixedUpdate": null,
-              "OnComponentStart": null,
-              "OnComponentUpdate": null
             }
           ],
           "Children": []
@@ -2384,7 +2372,8 @@
               "OnComponentEnabled": null,
               "OnComponentFixedUpdate": null,
               "OnComponentStart": null,
-              "OnComponentUpdate": null
+              "OnComponentUpdate": null,
+              "PendingDecisionBlockedSound": ""
             }
           ],
           "Children": []
