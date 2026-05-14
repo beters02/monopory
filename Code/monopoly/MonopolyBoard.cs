@@ -15,6 +15,10 @@ public sealed class MonopolyBoard : Component
 	[Property] public Vector3 HitboxSize { get; set; } = new Vector3( 96f, 96f, 12f );
 	[Property] public GameObject BoardPlaneGameObject {get; set;}
 	[Property] public bool UseWorldPanelLabels { get; set; } = false;
+	[Property] public Model HouseModel { get; set; }
+	[Property] public Model HotelModel { get; set; }
+	[Property] public Vector3 ImprovementModelScale { get; set; } = Vector3.One;
+	[Property] public float ImprovementModelZOffset { get; set; } = 0.9f;
 
 	[Property, Change("OnDebugEnabledChanged")] public bool DebugEnabled {get; set;} = false;
 	private void OnDebugEnabledChanged(bool _, bool newValue) => debugHelper.SetEnabled(newValue);
@@ -37,6 +41,7 @@ public sealed class MonopolyBoard : Component
 		DrawAllHitboxesDebug();
 		UpdateSpaceHoverCursor();
 		UpdateLocalSpaceSelection();
+		UpdateSpaceImprovements();
 	}
 
 	// Spaces & Defs initializing
@@ -89,6 +94,27 @@ public sealed class MonopolyBoard : Component
 	private void ColliderSizeMod1or3(MonopolySpace space) => space.ModifyColliderSize(0.5f);
 	private void ColliderSizeMod2or4(MonopolySpace space) => space.ModifyColliderSize(1f);
 	private void ColliderSizeModNon0(MonopolySpace space) => space.ModifyColliderSize(0f, 3f);
+
+	private void UpdateSpaceImprovements()
+	{
+		if ( GameRef is null )
+			return;
+
+		foreach ( var space in Spaces )
+		{
+			if ( space?.Def is null || space.Def.Type != SpaceType.Property )
+				continue;
+
+			space.SetImprovementVisuals(
+				GameRef.GetImprovementCount( space.Index ),
+				HouseModel,
+				HotelModel,
+				ImprovementModelScale,
+				ImprovementModelZOffset
+			);
+		}
+	}
+
 	private void LoadBoardDefinitions()
 	{
 		SpaceDefs = new()

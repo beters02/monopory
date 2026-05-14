@@ -16,6 +16,19 @@ public enum SpaceType
 	GoToJail
 }
 
+public enum ColorGroup
+{
+	Brown,
+	LightBlue,
+	Pink,
+	Orange,
+	Red,
+	Yellow,
+	Green,
+	DarkBlue,
+	None
+}
+
 public sealed class MonopolySpaceDef
 {
 	public int Index { get; set; }
@@ -95,6 +108,29 @@ public static class MonopolySpaceSettings
 	//  pos
 	//  rot
 
+	public static ColorGroup StringToColorGroup(string groupString)
+	{
+		string lower = groupString.ToLower();
+		if (lower == "brown")
+			return ColorGroup.Brown;
+		else if (lower == "light_blue" || lower == "lightblue")
+			return ColorGroup.LightBlue;
+		else if (lower == "pink")
+			return ColorGroup.Pink;
+		else if (lower == "orange")
+			return ColorGroup.Orange;
+		else if (lower == "red")
+			return ColorGroup.Red;
+		else if (lower == "yellow")
+			return ColorGroup.Yellow;
+		else if (lower == "green")
+			return ColorGroup.Green;
+		else if (lower == "dark_blue" || lower == "darkblue")
+			return ColorGroup.DarkBlue;
+
+		return ColorGroup.None;
+	}
+
 	public static Vector3[] WorldLabelPositions =
 	{
 		new (-1.39999998f, 0, 0.749999762f),
@@ -147,6 +183,13 @@ public sealed class MonopolySpace : Component
 
 	// probably unoptimized but idgaf
 	public MonopolySpaceDef Def { get; set; }
+
+	private readonly List<GameObject> ImprovementVisuals = new();
+	private int visibleImprovementCount = -1;
+	private Model visibleHouseModel;
+	private Model visibleHotelModel;
+	private Vector3 visibleImprovementScale;
+	private float visibleImprovementZOffset;
 
 	protected override void OnStart()
 	{
@@ -273,6 +316,119 @@ public sealed class MonopolySpace : Component
 	{
 		var collider = Components.Get<BoxCollider>();
 		return collider != null && collider.Enabled;
+	}
+
+	public void SetImprovementVisuals( int improvementCount, Model houseModel, Model hotelModel, Vector3 modelScale, float zOffset )
+	{
+		improvementCount = Math.Clamp( improvementCount, 0, 5 );
+
+		if ( improvementCount == visibleImprovementCount &&
+			houseModel == visibleHouseModel &&
+			hotelModel == visibleHotelModel &&
+			modelScale == visibleImprovementScale &&
+			MathF.Abs( zOffset - visibleImprovementZOffset ) < 0.001f )
+		{
+			return;
+		}
+
+		ClearImprovementVisuals();
+
+		visibleImprovementCount = improvementCount;
+		visibleHouseModel = houseModel;
+		visibleHotelModel = hotelModel;
+		visibleImprovementScale = modelScale;
+		visibleImprovementZOffset = zOffset;
+
+		if ( Def is null || Def.Type != SpaceType.Property || Collider is null || improvementCount <= 0 )
+			return;
+
+		if ( improvementCount >= 5 )
+		{
+			CreateImprovementVisual( 0, 1, hotelModel ?? houseModel, modelScale, zOffset, true );
+			return;
+		}
+
+		if ( houseModel is null )
+			return;
+
+		for ( var i = 0; i < improvementCount; i++ )
+			CreateImprovementVisual( i, improvementCount, houseModel, modelScale, zOffset, false );
+	}
+
+	private void ClearImprovementVisuals()
+	{
+		foreach ( var visual in ImprovementVisuals )
+			visual.Destroy();
+
+		ImprovementVisuals.Clear();
+	}
+
+	private void CreateImprovementVisual( int slot, int total, Model model, Vector3 modelScale, float zOffset, bool isHotel )
+	{
+		if ( model is null )
+			return;
+
+		var visualObject = new GameObject( true, $"{(isHotel ? "Hotel" : "House")}_{Index}_{slot}" );
+		visualObject.SetParent( GameObject );
+		visualObject.LocalPosition = GetImprovementLocalPosition( slot, total, zOffset, isHotel );
+		visualObject.LocalRotation = GetImprovementLocalRotation();
+		visualObject.LocalScale = modelScale;
+
+		var renderer = visualObject.Components.Create<ModelRenderer>();
+		renderer.Model = model;
+
+		ImprovementVisuals.Add( visualObject );
+	}
+
+	private Vector3 GetImprovementLocalPosition( int slot, int total, float zOffset, bool isHotel )
+	{
+		var center = Collider.Center;
+		var quadrant = Def.GetQuadrant();
+		var across = GetImprovementAcrossOffset( slot, total, isHotel );
+		var inward = isHotel ? 1.15f : 1.35f;
+		var position = new Vector3( center.x, center.y, zOffset );
+
+		switch ( quadrant )
+		{
+			case 1:
+				position.x += inward;
+				position.y += across;
+				break;
+			case 2:
+				position.x += across;
+				position.y -= inward;
+				break;
+			case 3:
+				position.x -= inward;
+				position.y += across;
+				break;
+			case 4:
+				position.x += across;
+				position.y += inward;
+				break;
+		}
+
+		return position;
+	}
+
+	private static float GetImprovementAcrossOffset( int slot, int total, bool isHotel )
+	{
+		if ( isHotel || total <= 1 )
+			return 0f;
+
+		const float spacing = 0.7f;
+		return (slot - ((total - 1) * 0.5f)) * spacing;
+	}
+
+	private Rotation GetImprovementLocalRotation()
+	{
+		return Def.GetQuadrant() switch
+		{
+			2 => Rotation.FromYaw( -90f ),
+			3 => Rotation.FromYaw( 180f ),
+			4 => Rotation.FromYaw( 90f ),
+			_ => Rotation.Identity
+		};
 	}
 
 	public void CreateLabel( )

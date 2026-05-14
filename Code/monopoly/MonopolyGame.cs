@@ -7,6 +7,7 @@ public enum MonopolyGamePhase
 	WaitingToRoll,
 	ResolvingSpace,
 	WaitingForBuyDecision,
+	Auctioning,
 	TurnEnded
 }
 
@@ -19,6 +20,7 @@ public sealed class MonopolyGame : Component
 	[Property, Sync] public int LastDieB { get; set; }
 	[Property, Sync] public NetDictionary<int, int> PropertyOwners { get; set; } = new();
 	[Property, Sync] public NetDictionary<int, int> PropertyImprovements { get; set; } = new();
+	[Property, Sync] public NetDictionary<int, bool> MortgagedProperties { get; set; } = new();
 	[Property, Sync] public NetDictionary<int, string> PendingTrades { get; set; } = new();
 	[Property] public MonopolyBoard Board { get; set; }
 
@@ -27,6 +29,10 @@ public sealed class MonopolyGame : Component
 
 	[Property, Sync] public MonopolyGamePhase Phase { get; set; } = MonopolyGamePhase.WaitingToRoll;
 	[Property, Sync] public int PendingPurchaseSpaceIndex { get; set; } = -1;
+	[Property, Sync] public int AuctionSpaceIndex { get; set; } = -1;
+	[Property, Sync] public int AuctionCurrentBid { get; set; }
+	[Property, Sync] public int AuctionHighBidderIndex { get; set; } = -1;
+	[Property, Sync] public float AuctionEndsAt { get; set; }
 	[Property, Sync] public int NextTradeId { get; set; } = 1;
 
 	private static MonopolyGame instance;
@@ -82,6 +88,18 @@ public sealed class MonopolyGame : Component
 		}
 
 		RemoveInvalidTrades();
+		UpdateAuction();
+	}
+
+	private void UpdateAuction()
+	{
+		if ( Phase != MonopolyGamePhase.Auctioning )
+			return;
+
+		if ( AuctionSpaceIndex < 0 || Time.Now < AuctionEndsAt )
+			return;
+
+		FinishAuction();
 	}
 
 	private void UpdatePopups()
@@ -131,6 +149,54 @@ public sealed class MonopolyGame : Component
 		return Connection.All.FirstOrDefault( c => c.SteamId == player.OwnerId );
 	}
 
+	public MonopolyPlayerState GetPlayerForString(String playerString)
+	{
+		if ( string.IsNullOrWhiteSpace( playerString ) )
+			return null;
+
+		playerString = playerString.Trim();
+
+		if ( playerString.Equals( "self", StringComparison.OrdinalIgnoreCase ) ||
+			playerString.Equals( "me", StringComparison.OrdinalIgnoreCase ) )
+		{
+			return LocalPlayer;
+		}
+
+		if ( long.TryParse( playerString, out var steamId ) )
+		{
+			var steamIdMatch = Players.FirstOrDefault( player => player is not null && player.OwnerId == steamId );
+			if ( steamIdMatch is not null )
+				return steamIdMatch;
+		}
+
+		var exactMatches = Players
+			.Where( player => player is not null && player.IsAssigned )
+			.Where( player => string.Equals( player.PlayerName, playerString, StringComparison.OrdinalIgnoreCase ) )
+			.ToList();
+
+		if ( exactMatches.Count == 1 )
+			return exactMatches[0];
+
+		if ( exactMatches.Count > 1 )
+		{
+			Log.Warning( $"Multiple Monopoly players matched \"{playerString}\" exactly." );
+			return null;
+		}
+
+		var partialMatches = Players
+			.Where( player => player is not null && player.IsAssigned )
+			.Where( player => player.PlayerName?.Contains( playerString, StringComparison.OrdinalIgnoreCase ) == true )
+			.ToList();
+
+		if ( partialMatches.Count == 1 )
+			return partialMatches[0];
+
+		if ( partialMatches.Count > 1 )
+			Log.Warning( $"Multiple Monopoly players matched \"{playerString}\"." );
+
+		return null;
+	}
+
 	private int GetPlayerIndexForCaller( Connection caller )
 	{
 		var player = GetPlayerForConnection( caller );
@@ -166,7 +232,7 @@ public sealed class MonopolyGame : Component
 	}
 
 	[Button( "Roll Dice" )]
-	public async Task RollDiceAsync()
+	public async Task RollDiceAsync(int amount = -1)
 	{
 		if ( !Networking.IsHost )
 			return;
@@ -187,10 +253,16 @@ public sealed class MonopolyGame : Component
 
 		// move player...
 
-		LastDieA = Game.Random.Int( 1, 6 );
-		LastDieB = Game.Random.Int( 1, 6 );
+		int total;
 
-		var total = LastDieA + LastDieB;
+		if (amount != -1)
+			total = amount;
+		else
+		{
+			LastDieA = Game.Random.Int( 1, 6 );
+			LastDieB = Game.Random.Int( 1, 6 );
+			total = LastDieA + LastDieB;
+		}
 
 		//var SpaceIndex = (CurrentPlayer.SpaceIndex + total) % 40;
 		//CurrentPlayer.SpaceIndex = SpaceIndex;
@@ -392,6 +464,46 @@ public sealed class MonopolyGame : Component
 			popups.RemoveAt( 0 );
 	}
 
+	private void BuyProperty(MonopolyPlayerState player, int index, bool useMoney = true)
+	{
+
+		if (Phase == MonopolyGamePhase.WaitingForBuyDecision && CurrentPlayer == player)
+		{
+			if (Networking.IsHost)
+				BuyPendingProperty();
+			else
+				RequestBuyPendingProperty();
+			return;
+		}
+
+		if (player is null)
+			return;
+
+		var def = Board.GetSpaceDef( index );
+		if ( def is null )
+			return;
+
+		if (useMoney)
+		{
+			if (player.Money < def.Price)
+				return;
+			
+			player.Money -= def.Price;
+		}
+		
+		PropertyOwners[def.Index] = CurrentPlayerIndex;
+		Log.Info( $"{player.PlayerName} bought {def.DisplayName} for ${def.Price}." );
+	}
+
+	[Rpc.Host]
+	public void RequestBuyPropertyCommand(MonopolyPlayerState player, int index, bool useMoney = true)
+	{
+		if ( !CanCurrentPlayerAct( Rpc.Caller ) )
+			return;
+		
+		BuyProperty(player, index, useMoney);
+	}
+
 	[Button( "Buy Pending Property" )]
 	public void BuyPendingProperty()
 	{
@@ -431,9 +543,78 @@ public sealed class MonopolyGame : Component
 
 		Log.Info( $"{CurrentPlayer?.PlayerName} skipped buying." );
 
+		StartAuction( PendingPurchaseSpaceIndex );
+	}
+
+	[Button( "Auction Pending Property" )]
+	public void AuctionPendingProperty()
+	{
+		if ( !Networking.IsHost )
+			return;
+
+		if ( Phase != MonopolyGamePhase.WaitingForBuyDecision )
+			return;
+
+		StartAuction( PendingPurchaseSpaceIndex );
+	}
+
+	private void StartAuction( int spaceIndex )
+	{
+		var def = Board?.GetSpaceDef( spaceIndex );
+		if ( def is null || !IsPurchasableSpace( def ) || GetOwnerIndexForSpace( spaceIndex ) >= 0 )
+		{
+			PendingPurchaseSpaceIndex = -1;
+			AdvanceTurn();
+			Phase = MonopolyGamePhase.WaitingToRoll;
+			return;
+		}
+
 		PendingPurchaseSpaceIndex = -1;
+		AuctionSpaceIndex = spaceIndex;
+		AuctionCurrentBid = 0;
+		AuctionHighBidderIndex = -1;
+		AuctionEndsAt = Time.Now + 15f;
+		Phase = MonopolyGamePhase.Auctioning;
+
+		SendPopupToAll( "Auction started", $"{def.DisplayName} is up for auction.", MonopolyPopupKind.Info, true, 4f );
+		Log.Info( $"Auction started for {def.DisplayName}." );
+	}
+
+	private void FinishAuction()
+	{
+		if ( !Networking.IsHost )
+			return;
+
+		var def = Board?.GetSpaceDef( AuctionSpaceIndex );
+
+		if ( def is not null && AuctionHighBidderIndex >= 0 )
+		{
+			var winner = Players.ElementAtOrDefault( AuctionHighBidderIndex );
+			if ( winner is not null && winner.IsAssigned && winner.Money >= AuctionCurrentBid )
+			{
+				winner.Money -= AuctionCurrentBid;
+				PropertyOwners[def.Index] = AuctionHighBidderIndex;
+				SendPopupToAll( "Auction won", $"{winner.PlayerName} won {def.DisplayName} for ${AuctionCurrentBid}.", MonopolyPopupKind.Success, true, 5f );
+				Log.Info( $"{winner.PlayerName} won {def.DisplayName} for ${AuctionCurrentBid}." );
+			}
+		}
+		else if ( def is not null )
+		{
+			SendPopupToAll( "Auction ended", $"{def.DisplayName} received no bids.", MonopolyPopupKind.Warning, true, 5f );
+			Log.Info( $"Auction for {def.DisplayName} ended with no bids." );
+		}
+
+		ClearAuction();
 		AdvanceTurn();
 		Phase = MonopolyGamePhase.WaitingToRoll;
+	}
+
+	private void ClearAuction()
+	{
+		AuctionSpaceIndex = -1;
+		AuctionCurrentBid = 0;
+		AuctionHighBidderIndex = -1;
+		AuctionEndsAt = 0f;
 	}
 
 	private bool CanCurrentPlayerAct( Connection caller )
@@ -454,11 +635,11 @@ public sealed class MonopolyGame : Component
 	}
 
 	[Rpc.Host]
-	public void RequestRollDice()
+	public void RequestRollDice(int amount = -1)
 	{
 		if ( !CanCurrentPlayerAct( Rpc.Caller ) )
 			return;
-		_ = RollDiceAsync();
+		_ = RollDiceAsync(amount);
 	}
 
 	[Rpc.Host]
@@ -466,6 +647,7 @@ public sealed class MonopolyGame : Component
 	{
 		if ( !CanCurrentPlayerAct( Rpc.Caller ) )
 			return;
+		
 		BuyPendingProperty();
 	}
 
@@ -475,6 +657,48 @@ public sealed class MonopolyGame : Component
 		if ( !CanCurrentPlayerAct( Rpc.Caller ) )
 			return;
 		SkipPendingProperty();
+	}
+
+	[Rpc.Host]
+	public void RequestStartPendingAuction()
+	{
+		if ( !CanCurrentPlayerAct( Rpc.Caller ) )
+			return;
+
+		AuctionPendingProperty();
+	}
+
+	[Rpc.Host]
+	public void RequestAuctionBid( int bidAmount )
+	{
+		var bidderIndex = GetPlayerIndexForCaller( Rpc.Caller );
+		if ( bidderIndex < 0 )
+			return;
+
+		PlaceAuctionBid( bidderIndex, bidAmount );
+	}
+
+	public void PlaceAuctionBid( int bidderIndex, int bidAmount )
+	{
+		if ( !Networking.IsHost )
+			return;
+
+		if ( Phase != MonopolyGamePhase.Auctioning )
+			return;
+
+		var bidder = Players.ElementAtOrDefault( bidderIndex );
+		var def = Board?.GetSpaceDef( AuctionSpaceIndex );
+		if ( bidder is null || !bidder.IsAssigned || def is null )
+			return;
+
+		if ( bidAmount <= AuctionCurrentBid || bidAmount > bidder.Money )
+			return;
+
+		AuctionCurrentBid = bidAmount;
+		AuctionHighBidderIndex = bidderIndex;
+		AuctionEndsAt = MathF.Max( AuctionEndsAt, Time.Now + 7f );
+
+		Log.Info( $"{bidder.PlayerName} bid ${AuctionCurrentBid} on {def.DisplayName}." );
 	}
 
 	[Rpc.Host]
@@ -513,6 +737,38 @@ public sealed class MonopolyGame : Component
 			PropertyImprovements[spaceIndex] = count - 1;
 
 		Log.Info( $"{player.PlayerName} sold an improvement on {Board.GetSpaceDef( spaceIndex )?.DisplayName} for ${refund}." );
+	}
+
+	[Rpc.Host]
+	public void RequestMortgageProperty( int spaceIndex )
+	{
+		var playerIndex = GetPlayerIndexForCaller( Rpc.Caller );
+		if ( !CanMortgageProperty( playerIndex, spaceIndex ) )
+			return;
+
+		var player = Players[playerIndex];
+		var value = GetMortgageValue( spaceIndex );
+
+		player.Money += value;
+		MortgagedProperties[spaceIndex] = true;
+
+		Log.Info( $"{player.PlayerName} mortgaged {Board.GetSpaceDef( spaceIndex )?.DisplayName} for ${value}." );
+	}
+
+	[Rpc.Host]
+	public void RequestUnmortgageProperty( int spaceIndex )
+	{
+		var playerIndex = GetPlayerIndexForCaller( Rpc.Caller );
+		if ( !CanUnmortgageProperty( playerIndex, spaceIndex ) )
+			return;
+
+		var player = Players[playerIndex];
+		var cost = GetUnmortgageCost( spaceIndex );
+
+		player.Money -= cost;
+		MortgagedProperties.Remove( spaceIndex );
+
+		Log.Info( $"{player.PlayerName} unmortgaged {Board.GetSpaceDef( spaceIndex )?.DisplayName} for ${cost}." );
 	}
 
 	[Rpc.Host]
@@ -589,6 +845,37 @@ public sealed class MonopolyGame : Component
 		PendingTrades.Remove( tradeId );
 	}
 
+	// RPC non-host command helpers
+
+	public MonopolyCommandResult BuyPropertyCommand(Connection connection, int propertyIndex, string playerString = "self")
+	{
+		MonopolyPlayerState player = GetPlayerForString(playerString);
+		if (player == null)
+			return new MonopolyCommandResult(false, "Could not find player "+ playerString);
+
+		if (!Networking.IsHost && ConsoleSystem.GetValue("sv_cheats").ToLower() != "true")
+		{
+			Log.Info("sv_cheats must be enabled to use this command.");
+			return new MonopolyCommandResult(false, "sv_cheats must be enabled to use this command.");
+		}
+
+		if (Phase == MonopolyGamePhase.WaitingForBuyDecision && CurrentPlayer == player)
+		{
+			if (Networking.IsHost)
+				BuyPendingProperty();
+			else
+				RequestBuyPendingProperty();
+		} else
+		{
+			if (Networking.IsHost)
+				BuyProperty(player, propertyIndex, true);
+			else
+				RequestBuyPropertyCommand(player, propertyIndex);
+		}
+
+		return new MonopolyCommandResult(true);
+	}
+
 	private void SendPlayerToJail( MonopolyPlayerState player )
 	{
 		player.SpaceIndex = 10;
@@ -639,6 +926,18 @@ public sealed class MonopolyGame : Component
 			.ToList();
 	}
 
+	public bool IsMortgaged( int spaceIndex )
+	{
+		return MortgagedProperties.TryGetValue( spaceIndex, out var isMortgaged ) && isMortgaged;
+	}
+
+	private static bool IsPurchasableSpace( MonopolySpaceDef def )
+	{
+		return def is not null &&
+			def.Price > 0 &&
+			(def.Type == SpaceType.Property || def.Type == SpaceType.Railroad || def.Type == SpaceType.Utility);
+	}
+
 	public int GetImprovementCount( int spaceIndex )
 	{
 		if ( PropertyImprovements.TryGetValue( spaceIndex, out var count ) )
@@ -663,10 +962,25 @@ public sealed class MonopolyGame : Component
 
 	public int GetImprovementSellValue( int spaceIndex ) => GetImprovementCost( spaceIndex ) / 2;
 
+	public int GetMortgageValue( int spaceIndex )
+	{
+		var def = Board?.GetSpaceDef( spaceIndex );
+		return def is null ? 0 : def.Price / 2;
+	}
+
+	public int GetUnmortgageCost( int spaceIndex )
+	{
+		var mortgageValue = GetMortgageValue( spaceIndex );
+		return mortgageValue + (int)MathF.Ceiling( mortgageValue * 0.1f );
+	}
+
 	public int GetRentForSpace( int spaceIndex )
 	{
 		var def = Board?.GetSpaceDef( spaceIndex );
 		if ( def is null )
+			return 0;
+
+		if ( IsMortgaged( spaceIndex ) )
 			return 0;
 
 		return GetImprovementCount( spaceIndex ) switch
@@ -691,6 +1005,9 @@ public sealed class MonopolyGame : Component
 		if ( GetOwnerIndexForSpace( spaceIndex ) != playerIndex )
 			return false;
 
+		if ( IsMortgaged( spaceIndex ) )
+			return false;
+
 		var cost = GetImprovementCost( spaceIndex );
 		if ( cost <= 0 || player.Money < cost )
 			return false;
@@ -712,6 +1029,9 @@ public sealed class MonopolyGame : Component
 			return false;
 
 		if ( GetOwnerIndexForSpace( spaceIndex ) != playerIndex )
+			return false;
+
+		if ( IsMortgaged( spaceIndex ) )
 			return false;
 
 		if ( GetImprovementCount( spaceIndex ) <= 0 )
@@ -755,6 +1075,46 @@ public sealed class MonopolyGame : Component
 		return true;
 	}
 
+	public bool CanMortgageProperty( int playerIndex, int spaceIndex )
+	{
+		var def = Board?.GetSpaceDef( spaceIndex );
+		var player = Players.ElementAtOrDefault( playerIndex );
+
+		if ( player is null || def is null || !IsPurchasableSpace( def ) )
+			return false;
+
+		if ( GetOwnerIndexForSpace( spaceIndex ) != playerIndex )
+			return false;
+
+		if ( IsMortgaged( spaceIndex ) )
+			return false;
+
+		if ( GetImprovementCount( spaceIndex ) > 0 )
+			return false;
+
+		if ( def.Type == SpaceType.Property && ColorGroupHasImprovements( def.ColorGroup ) )
+			return false;
+
+		return GetMortgageValue( spaceIndex ) > 0;
+	}
+
+	public bool CanUnmortgageProperty( int playerIndex, int spaceIndex )
+	{
+		var def = Board?.GetSpaceDef( spaceIndex );
+		var player = Players.ElementAtOrDefault( playerIndex );
+
+		if ( player is null || def is null || !IsPurchasableSpace( def ) )
+			return false;
+
+		if ( GetOwnerIndexForSpace( spaceIndex ) != playerIndex )
+			return false;
+
+		if ( !IsMortgaged( spaceIndex ) )
+			return false;
+
+		return player.Money >= GetUnmortgageCost( spaceIndex );
+	}
+
 	private void RemoveInvalidTrades()
 	{
 		foreach ( var trade in GetTrades() )
@@ -779,6 +1139,15 @@ public sealed class MonopolyGame : Component
 			.Where( def => def is not null && def.Type == SpaceType.Property && def.ColorGroup == colorGroup )
 			.OrderBy( def => def.Index )
 			.ToList() ?? new();
+	}
+
+	private bool ColorGroupHasImprovements( string colorGroup )
+	{
+		if ( string.IsNullOrWhiteSpace( colorGroup ) )
+			return false;
+
+		return GetColorGroupProperties( colorGroup )
+			.Any( property => GetImprovementCount( property.Index ) > 0 );
 	}
 
 	private bool CanAddEvenly( int spaceIndex )
