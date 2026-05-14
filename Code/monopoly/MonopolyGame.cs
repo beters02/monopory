@@ -14,6 +14,7 @@ public enum MonopolyGamePhase
 public sealed class MonopolyGame : Component
 {
 	[Property] public List<MonopolyPlayerState> Players { get; set; } = new();
+	[Property] public MonopolyGameConfig Config { get; set; } = new();
 
 	[Property, Sync] public int CurrentPlayerIndex { get; set; }
 	[Property, Sync] public int LastDieA { get; set; }
@@ -34,6 +35,8 @@ public sealed class MonopolyGame : Component
 	[Property, Sync] public int AuctionHighBidderIndex { get; set; } = -1;
 	[Property, Sync] public float AuctionEndsAt { get; set; }
 	[Property, Sync] public int NextTradeId { get; set; } = 1;
+	[Property, Sync] public int FreeParkingBank { get; set; }
+	[Property, Sync] public bool CurrentTurnGetsExtraRoll { get; set; }
 
 	private static MonopolyGame instance;
 	private int nextPopupId = 1;
@@ -224,9 +227,11 @@ public sealed class MonopolyGame : Component
 
 		emptySlot.OwnerId = connection.SteamId;
 		emptySlot.PlayerName = connection.DisplayName;
-		emptySlot.Money = 1500;
+		emptySlot.Money = Math.Max( Config?.StartingMoney ?? 1500, 0 );
 		emptySlot.SpaceIndex = 0;
 		emptySlot.IsInJail = false;
+		emptySlot.ConsecutiveDoubles = 0;
+		emptySlot.SkipsNextTurn = false;
 
 		Log.Info( $"Assigned {connection.DisplayName} to Monopoly player slot {Players.IndexOf( emptySlot )}" );
 	}
@@ -250,10 +255,12 @@ public sealed class MonopolyGame : Component
 		}
 
 		Phase = MonopolyGamePhase.ResolvingSpace;
+		CurrentTurnGetsExtraRoll = false;
 
 		// move player...
 
 		int total;
+		bool rolledDoubles = false;
 
 		if (amount != -1)
 			total = amount;
@@ -262,6 +269,30 @@ public sealed class MonopolyGame : Component
 			LastDieA = Game.Random.Int( 1, 6 );
 			LastDieB = Game.Random.Int( 1, 6 );
 			total = LastDieA + LastDieB;
+			rolledDoubles = LastDieA == LastDieB;
+		}
+
+		if ( Config?.DoublesGoesAgain == true )
+		{
+			if ( rolledDoubles )
+			{
+				CurrentPlayer.ConsecutiveDoubles++;
+				if ( CurrentPlayer.ConsecutiveDoubles >= 3 )
+				{
+					SendPlayerToJail( CurrentPlayer );
+					CurrentPlayer.ConsecutiveDoubles = 0;
+					Log.Info( $"{CurrentPlayer.PlayerName} rolled three doubles in a row and went to Jail." );
+					CompleteTurn();
+					Phase = MonopolyGamePhase.WaitingToRoll;
+					return;
+				}
+
+				CurrentTurnGetsExtraRoll = true;
+			}
+			else
+			{
+				CurrentPlayer.ConsecutiveDoubles = 0;
+			}
 		}
 
 		//var SpaceIndex = (CurrentPlayer.SpaceIndex + total) % 40;
@@ -272,7 +303,7 @@ public sealed class MonopolyGame : Component
 
 		if ( Phase == MonopolyGamePhase.ResolvingSpace )
 		{
-			AdvanceTurn();
+			CompleteTurn();
 			Phase = MonopolyGamePhase.WaitingToRoll;
 		}
 	}
@@ -319,7 +350,7 @@ public sealed class MonopolyGame : Component
 				break;
 
 			case SpaceType.Tax:
-				player.Money -= spaceDef.TaxAmount;
+				PayBank( player, spaceDef.TaxAmount );
 				Log.Info( $"{player.PlayerName} paid ${spaceDef.TaxAmount} tax." );
 				break;
 
@@ -346,7 +377,7 @@ public sealed class MonopolyGame : Component
 				break;
 
 			case SpaceType.FreeParking:
-				Log.Info( $"{player.PlayerName} landed on Free Parking." );
+				ResolveFreeParkingLanding( player );
 				break;
 		}
 	}
@@ -355,10 +386,7 @@ public sealed class MonopolyGame : Component
 	{
 		if (!PropertyOwners.ContainsKey(def.Index))
 		{
-			PendingPurchaseSpaceIndex = def.Index;
-			Phase = MonopolyGamePhase.WaitingForBuyDecision;
-
-			Log.Info( $"{player.PlayerName} can buy {def.DisplayName} for ${def.Price}." );
+			ResolveUnownedPropertyLanding( player, def );
 			return;
 		}
 
@@ -369,6 +397,12 @@ public sealed class MonopolyGame : Component
 			if ( owner is null || owner == player )
 				return;
 
+			if ( Config?.DontCollectRentWhileInPrison == true && owner.IsInJail )
+			{
+				Log.Info( $"{owner.PlayerName} is in Jail and cannot collect rent from {player.PlayerName}." );
+				return;
+			}
+
 			var rent = GetRentForSpace( def.Index );
 			player.Money -= rent;
 			owner.Money += rent;
@@ -376,6 +410,59 @@ public sealed class MonopolyGame : Component
 			Log.Info( $"{player.PlayerName} paid ${rent} rent to {owner.PlayerName}." );
 			return;
 		}
+	}
+
+	private void ResolveUnownedPropertyLanding( MonopolyPlayerState player, MonopolySpaceDef def )
+	{
+		switch ( Config?.LandedUnownedMode ?? MonopolyUnownedLandingMode.SkipOrAuction )
+		{
+			case MonopolyUnownedLandingMode.ForceAuction:
+				StartAuction( def.Index );
+				return;
+
+			case MonopolyUnownedLandingMode.ForceBuyIfPossible:
+				if ( player.Money >= def.Price )
+				{
+					BuyUnownedPropertyForPlayer( player, def, CurrentPlayerIndex );
+					return;
+				}
+
+				Log.Info( $"{player.PlayerName} could not afford {def.DisplayName}." );
+				return;
+
+			case MonopolyUnownedLandingMode.SkipOrAuction:
+			default:
+				PendingPurchaseSpaceIndex = def.Index;
+				Phase = MonopolyGamePhase.WaitingForBuyDecision;
+
+				Log.Info( $"{player.PlayerName} can buy {def.DisplayName} for ${def.Price}." );
+				return;
+		}
+	}
+
+	private void ResolveFreeParkingLanding( MonopolyPlayerState player )
+	{
+		if ( Config?.VacationCash != true )
+		{
+			Log.Info( $"{player.PlayerName} landed on Free Parking." );
+			return;
+		}
+
+		var payout = FreeParkingBank;
+		FreeParkingBank = 0;
+
+		if ( payout > 0 )
+			player.Money += payout;
+
+		if ( CurrentTurnGetsExtraRoll )
+		{
+			CurrentTurnGetsExtraRoll = false;
+			Log.Info( $"{player.PlayerName} collected ${payout} from Free Parking and skipped their extra roll." );
+			return;
+		}
+
+		player.SkipsNextTurn = true;
+		Log.Info( $"{player.PlayerName} collected ${payout} from Free Parking and will skip their next turn." );
 	}
 
 	private void ShowCardForPlayerWhoLanded( MonopolyPlayerState player )
@@ -488,7 +575,7 @@ public sealed class MonopolyGame : Component
 			if (player.Money < def.Price)
 				return;
 			
-			player.Money -= def.Price;
+			PayBank( player, def.Price );
 		}
 		
 		PropertyOwners[def.Index] = CurrentPlayerIndex;
@@ -521,14 +608,11 @@ public sealed class MonopolyGame : Component
 
 		if ( player.Money >= def.Price )
 		{
-			PropertyOwners[def.Index] = CurrentPlayerIndex;
-			player.Money -= def.Price;
-
-			Log.Info( $"{player.PlayerName} bought {def.DisplayName} for ${def.Price}." );
+			BuyUnownedPropertyForPlayer( player, def, CurrentPlayerIndex );
 		}
 
 		PendingPurchaseSpaceIndex = -1;
-		AdvanceTurn();
+		CompleteTurn();
 		Phase = MonopolyGamePhase.WaitingToRoll;
 	}
 
@@ -543,7 +627,9 @@ public sealed class MonopolyGame : Component
 
 		Log.Info( $"{CurrentPlayer?.PlayerName} skipped buying." );
 
-		StartAuction( PendingPurchaseSpaceIndex );
+		PendingPurchaseSpaceIndex = -1;
+		CompleteTurn();
+		Phase = MonopolyGamePhase.WaitingToRoll;
 	}
 
 	[Button( "Auction Pending Property" )]
@@ -592,7 +678,7 @@ public sealed class MonopolyGame : Component
 			var winner = Players.ElementAtOrDefault( AuctionHighBidderIndex );
 			if ( winner is not null && winner.IsAssigned && winner.Money >= AuctionCurrentBid )
 			{
-				winner.Money -= AuctionCurrentBid;
+				PayBank( winner, AuctionCurrentBid );
 				PropertyOwners[def.Index] = AuctionHighBidderIndex;
 				SendPopupToAll( "Auction won", $"{winner.PlayerName} won {def.DisplayName} for ${AuctionCurrentBid}.", MonopolyPopupKind.Success, true, 5f );
 				Log.Info( $"{winner.PlayerName} won {def.DisplayName} for ${AuctionCurrentBid}." );
@@ -605,7 +691,7 @@ public sealed class MonopolyGame : Component
 		}
 
 		ClearAuction();
-		AdvanceTurn();
+		CompleteTurn();
 		Phase = MonopolyGamePhase.WaitingToRoll;
 	}
 
@@ -712,7 +798,7 @@ public sealed class MonopolyGame : Component
 		var cost = GetImprovementCost( spaceIndex );
 		var count = GetImprovementCount( spaceIndex );
 
-		player.Money -= cost;
+		PayBank( player, cost );
 		PropertyImprovements[spaceIndex] = count + 1;
 
 		Log.Info( $"{player.PlayerName} built on {Board.GetSpaceDef( spaceIndex )?.DisplayName} for ${cost}." );
@@ -765,7 +851,7 @@ public sealed class MonopolyGame : Component
 		var player = Players[playerIndex];
 		var cost = GetUnmortgageCost( spaceIndex );
 
-		player.Money -= cost;
+		PayBank( player, cost );
 		MortgagedProperties.Remove( spaceIndex );
 
 		Log.Info( $"{player.PlayerName} unmortgaged {Board.GetSpaceDef( spaceIndex )?.DisplayName} for ${cost}." );
@@ -880,14 +966,66 @@ public sealed class MonopolyGame : Component
 	{
 		player.SpaceIndex = 10;
 		player.IsInJail = true;
+		player.ConsecutiveDoubles = 0;
+		CurrentTurnGetsExtraRoll = false;
 
 		Log.Info( $"{player.PlayerName} was sent to Jail." );
+	}
+
+	private void BuyUnownedPropertyForPlayer( MonopolyPlayerState player, MonopolySpaceDef def, int ownerIndex )
+	{
+		PropertyOwners[def.Index] = ownerIndex;
+		PayBank( player, def.Price );
+
+		Log.Info( $"{player.PlayerName} bought {def.DisplayName} for ${def.Price}." );
+	}
+
+	private void PayBank( MonopolyPlayerState player, int amount )
+	{
+		if ( player is null || amount <= 0 )
+			return;
+
+		player.Money -= amount;
+
+		if ( Config?.VacationCash == true )
+			FreeParkingBank += amount;
+	}
+
+	private void CompleteTurn()
+	{
+		if ( CurrentTurnGetsExtraRoll )
+		{
+			CurrentTurnGetsExtraRoll = false;
+			return;
+		}
+
+		CurrentPlayer.ConsecutiveDoubles = 0;
+		AdvanceTurn();
 	}
 
 	private void AdvanceTurn()
 	{
 		if ( Players.Count == 0 )
 			return;
+
+		for ( int i = 0; i < Players.Count; i++ )
+		{
+			CurrentPlayerIndex = (CurrentPlayerIndex + 1) % Players.Count;
+
+			var player = Players[CurrentPlayerIndex];
+			if ( !player.IsAssigned )
+				continue;
+
+			if ( player.SkipsNextTurn )
+			{
+				player.SkipsNextTurn = false;
+				Log.Info( $"{player.PlayerName} skipped their turn." );
+				continue;
+			}
+
+			if ( player.IsAssigned )
+				return;
+		}
 
 		for ( int i = 0; i < Players.Count; i++ )
 		{
@@ -1018,7 +1156,7 @@ public sealed class MonopolyGame : Component
 		if ( !OwnsColorGroup( playerIndex, def.ColorGroup ) )
 			return false;
 
-		return CanAddEvenly( spaceIndex );
+		return Config?.EvenBuild != false || CanAddEvenly( spaceIndex );
 	}
 
 	public bool CanSellImprovement( int playerIndex, int spaceIndex )
@@ -1040,7 +1178,7 @@ public sealed class MonopolyGame : Component
 		if ( !OwnsColorGroup( playerIndex, def.ColorGroup ) )
 			return false;
 
-		return CanRemoveEvenly( spaceIndex );
+		return Config?.EvenBuild != false || CanRemoveEvenly( spaceIndex );
 	}
 
 	public bool IsTradeValid( MonopolyTradeRequest trade )

@@ -1360,6 +1360,38 @@ MonopolyHud {
 		opacity: 0.82;
 	}
 
+	.free-parking-bank {
+		margin-top: 10px;
+		padding: 12px 14px;
+
+		background-color: $monopoly-ink;
+		border: 3px solid $monopoly-gold;
+		border-radius: $monopoly-radius-board;
+		color: $monopoly-board;
+
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 12px;
+	}
+
+	.free-parking-bank-label {
+		color: $monopoly-gold-soft;
+		font-size: 16px;
+		font-weight: 900;
+		line-height: 19px;
+		text-transform: uppercase;
+	}
+
+	.free-parking-bank-amount {
+		color: $monopoly-board;
+		font-size: 30px;
+		font-weight: 900;
+		line-height: 34px;
+		text-align: right;
+		white-space: nowrap;
+	}
+
 	.space-price {
 		font-size: 24px;
 		font-weight: 800;

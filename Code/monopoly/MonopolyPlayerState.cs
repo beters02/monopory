@@ -8,6 +8,8 @@ public sealed class MonopolyPlayerState : Component
 	[Property, Sync] public int SpaceIndex { get; set; } = 0;
 	[Property, Sync] public int Money { get; set; } = 1500;
 	[Property, Sync] public bool IsInJail { get; set; }
+	[Property, Sync] public int ConsecutiveDoubles { get; set; }
+	[Property, Sync] public bool SkipsNextTurn { get; set; }
 
 	[Property, Sync] public string PlayerName { get; set; } = "Player";
 

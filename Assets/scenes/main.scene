@@ -1767,15 +1767,30 @@
               "__guid": "3a5d8d0c-7021-45c2-91d8-0de80778aae3",
               "__enabled": true,
               "Flags": 0,
+              "AuctionCurrentBid": 0,
+              "AuctionEndsAt": 0,
+              "AuctionHighBidderIndex": -1,
+              "AuctionSpaceIndex": -1,
               "Board": {
                 "_type": "component",
                 "component_id": "4b9cd09b-a167-40b7-a17a-0c958e771b55",
                 "go": "469cf384-89f4-4353-99dd-4b89667eff1f",
                 "component_type": "MonopolyBoard"
               },
+              "Config": {
+                "LandedUnownedMode": "SkipOrAuction",
+                "StartingMoney": 1500,
+                "DoublesGoesAgain": false,
+                "VacationCash": true,
+                "DontCollectRentWhileInPrison": false,
+                "EvenBuild": true
+              },
               "CurrentPlayerIndex": 0,
+              "CurrentTurnGetsExtraRoll": false,
+              "FreeParkingBank": 0,
               "LastDieA": 0,
               "LastDieB": 0,
+              "MortgagedProperties": {},
               "NextTradeId": 1,
               "OnComponentDestroy": null,
               "OnComponentDisabled": null,
@@ -1839,6 +1854,7 @@
               "__guid": "a460fd92-38a9-4656-8a32-31b00ec6d91a",
               "__enabled": true,
               "Flags": 0,
+              "ConsecutiveDoubles": 0,
               "IsInJail": false,
               "Money": 1500,
               "OnComponentDestroy": null,
@@ -1849,6 +1865,7 @@
               "OnComponentUpdate": null,
               "OwnerId": 0,
               "PlayerName": "Player",
+              "SkipsNextTurn": false,
               "SpaceIndex": 0
             }
           ],
@@ -1875,6 +1892,7 @@
               "__guid": "2da0f262-1c4f-486e-a824-21717ec318e6",
               "__enabled": true,
               "Flags": 0,
+              "ConsecutiveDoubles": 0,
               "IsInJail": false,
               "Money": 1500,
               "OnComponentDestroy": null,
@@ -1885,6 +1903,7 @@
               "OnComponentUpdate": null,
               "OwnerId": 0,
               "PlayerName": "Player 2",
+              "SkipsNextTurn": false,
               "SpaceIndex": 0
             }
           ],
@@ -2395,13 +2414,13 @@
       "CustomBounds": false
     },
     "GameObjectSystems": {
-      "Sandbox.MovieMaker.MovieRecorderSystem": {
-        "DisableClientRecording": false
-      },
       "Sandbox.SelectionSetsSystem": {
         "Data": {
           "SelectionSets": []
         }
+      },
+      "Sandbox.MovieMaker.MovieRecorderSystem": {
+        "DisableClientRecording": false
       },
       "Sandbox.Clutter.ClutterGridSystem": {
         "Storage": {

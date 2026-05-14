@@ -334,6 +334,14 @@
 					</div>
 				}
 
+				@if ( ShowFreeParkingMoney )
+				{
+					<div class="free-parking-bank">
+						<div class="free-parking-bank-label">Free Parking Bank</div>
+						<div class="free-parking-bank-amount">$@GameRef.FreeParkingBank</div>
+					</div>
+				}
+
 				@if ( IsProperty )
 				{
 					<div class="rent-list">
@@ -442,19 +450,23 @@
 				GetPlayersHash(),
 				SelectedImprovementCount
 			),
-			GameRef?.LastDieA ?? 0,
-			GameRef?.LastDieB ?? 0,
+			System.HashCode.Combine(
+				GameRef?.LastDieA ?? 0,
+				GameRef?.LastDieB ?? 0,
 				GameRef?.PendingPurchaseSpaceIndex ?? -1,
 				GetAuctionHash(),
 				GetMortgagedPropertiesHash(),
-				System.HashCode.Combine(
-					LocalPlayerMoney,
-					GetSelectedOwnerIndex(),
+				LocalPlayerMoney
+			),
+			System.HashCode.Combine(
+				GetSelectedOwnerIndex(),
 				GetExpandedPanelsHash(),
 				GetTradesHash(),
 				GetComposerHash(),
 				GetPopupsHash()
-			)
+			),
+			GameRef?.Config?.VacationCash ?? false,
+			GameRef?.FreeParkingBank ?? 0
 		);
 	}
 
@@ -779,6 +791,10 @@
 	private bool IsProperty =>
 		SelectedSpace is not null &&
 		SelectedSpace.HotelRent > 0;
+
+	private bool ShowFreeParkingMoney =>
+		GameRef?.Config?.VacationCash == true &&
+		SelectedSpace?.Type == SpaceType.FreeParking;
 	
 	private bool IsSelectedPendingPurchase =>
 		GameRef is not null &&
