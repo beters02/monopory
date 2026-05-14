@@ -1781,7 +1781,7 @@
                 "LandedUnownedMode": "SkipOrAuction",
                 "StartingMoney": 1500,
                 "DoublesGoesAgain": false,
-                "VacationCash": true,
+                "VacationCash": false,
                 "DontCollectRentWhileInPrison": false,
                 "EvenBuild": true
               },

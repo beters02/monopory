@@ -139,7 +139,7 @@ public sealed class MonopolyBoard : Component
 				ThreeHouseRent = 90,
 				FourHouseRent = 160,
 				HotelRent = 250,
-				ColorGroup = "brown"
+				ColorGroup = MonopolyColorGroup.Brown
 			},
 			new()
 			{
@@ -161,7 +161,7 @@ public sealed class MonopolyBoard : Component
 				ThreeHouseRent = 180,
 				FourHouseRent = 320,
 				HotelRent = 450,
-				ColorGroup = "brown"
+				ColorGroup = MonopolyColorGroup.Brown
 			},
 			new()
 			{
@@ -193,7 +193,7 @@ public sealed class MonopolyBoard : Component
 				ThreeHouseRent = 270,
 				FourHouseRent = 400,
 				HotelRent = 550,
-				ColorGroup = "light_blue"
+				ColorGroup = MonopolyColorGroup.LightBlue
 			},
 			new()
 			{
@@ -215,7 +215,7 @@ public sealed class MonopolyBoard : Component
 				ThreeHouseRent = 270,
 				FourHouseRent = 400,
 				HotelRent = 550,
-				ColorGroup = "light_blue"
+				ColorGroup = MonopolyColorGroup.LightBlue
 			},
 			new()
 			{
@@ -230,7 +230,7 @@ public sealed class MonopolyBoard : Component
 				ThreeHouseRent = 300,
 				FourHouseRent = 450,
 				HotelRent = 600,
-				ColorGroup = "light_blue"
+				ColorGroup = MonopolyColorGroup.LightBlue
 			},
 			new()
 			{
@@ -252,7 +252,7 @@ public sealed class MonopolyBoard : Component
 				ThreeHouseRent = 450,
 				FourHouseRent = 625,
 				HotelRent = 750,
-				ColorGroup = "pink"
+				ColorGroup = MonopolyColorGroup.Pink
 			},
 			new()
 			{
@@ -276,7 +276,7 @@ public sealed class MonopolyBoard : Component
 				ThreeHouseRent = 450,
 				FourHouseRent = 625,
 				HotelRent = 750,
-				ColorGroup = "pink"
+				ColorGroup = MonopolyColorGroup.Pink
 			},
 			new()
 			{
@@ -291,7 +291,7 @@ public sealed class MonopolyBoard : Component
 				ThreeHouseRent = 500,
 				FourHouseRent = 700,
 				HotelRent = 900,
-				ColorGroup = "pink"
+				ColorGroup = MonopolyColorGroup.Pink
 			},
 			new()
 			{
@@ -315,7 +315,7 @@ public sealed class MonopolyBoard : Component
 				ThreeHouseRent = 550,
 				FourHouseRent = 750,
 				HotelRent = 950,
-				ColorGroup = "orange"
+				ColorGroup = MonopolyColorGroup.Orange
 			},
 			new()
 			{
@@ -337,7 +337,7 @@ public sealed class MonopolyBoard : Component
 				ThreeHouseRent = 550,
 				FourHouseRent = 750,
 				HotelRent = 950,
-				ColorGroup = "orange"
+				ColorGroup = MonopolyColorGroup.Orange
 			},
 			new()
 			{
@@ -352,7 +352,7 @@ public sealed class MonopolyBoard : Component
 				ThreeHouseRent = 600,
 				FourHouseRent = 800,
 				HotelRent = 100,
-				ColorGroup = "orange"
+				ColorGroup = MonopolyColorGroup.Orange
 			},
 			new()
 			{
@@ -374,7 +374,7 @@ public sealed class MonopolyBoard : Component
 				ThreeHouseRent = 700,
 				FourHouseRent = 875,
 				HotelRent = 1050,
-				ColorGroup = "red"
+				ColorGroup = MonopolyColorGroup.Red
 			},
 			new()
 			{
@@ -396,7 +396,7 @@ public sealed class MonopolyBoard : Component
 				ThreeHouseRent = 700,
 				FourHouseRent = 875,
 				HotelRent = 1050,
-				ColorGroup = "red"
+				ColorGroup = MonopolyColorGroup.Red
 			},
 			new()
 			{
@@ -411,7 +411,7 @@ public sealed class MonopolyBoard : Component
 				ThreeHouseRent = 750,
 				FourHouseRent = 925,
 				HotelRent = 1100,
-				ColorGroup = "red"
+				ColorGroup = MonopolyColorGroup.Red
 			},
 			new()
 			{
@@ -435,7 +435,7 @@ public sealed class MonopolyBoard : Component
 				ThreeHouseRent = 800,
 				FourHouseRent = 975,
 				HotelRent = 1150,
-				ColorGroup = "yellow"
+				ColorGroup = MonopolyColorGroup.Yellow
 			},
 			new()
 			{
@@ -450,7 +450,7 @@ public sealed class MonopolyBoard : Component
 				ThreeHouseRent = 800,
 				FourHouseRent = 975,
 				HotelRent = 1150,
-				ColorGroup = "yellow"
+				ColorGroup = MonopolyColorGroup.Yellow
 			},
 			new()
 			{
@@ -474,7 +474,7 @@ public sealed class MonopolyBoard : Component
 				ThreeHouseRent = 850,
 				FourHouseRent = 1025,
 				HotelRent = 1200,
-				ColorGroup = "yellow"
+				ColorGroup = MonopolyColorGroup.Yellow
 			},
 			new()
 			{
@@ -496,7 +496,7 @@ public sealed class MonopolyBoard : Component
 				ThreeHouseRent = 900,
 				FourHouseRent = 1105,
 				HotelRent = 1275,
-				ColorGroup = "green"
+				ColorGroup = MonopolyColorGroup.Green
 			},
 			new()
 			{
@@ -511,7 +511,7 @@ public sealed class MonopolyBoard : Component
 				ThreeHouseRent = 900,
 				FourHouseRent = 1105,
 				HotelRent = 1275,
-				ColorGroup = "green"
+				ColorGroup = MonopolyColorGroup.Green
 			},
 			new()
 			{
@@ -533,7 +533,7 @@ public sealed class MonopolyBoard : Component
 				ThreeHouseRent = 1000,
 				FourHouseRent = 1200,
 				HotelRent = 1400,
-				ColorGroup = "green"
+				ColorGroup = MonopolyColorGroup.Green
 			},
 			new()
 			{
@@ -564,7 +564,7 @@ public sealed class MonopolyBoard : Component
 				ThreeHouseRent = 1100,
 				FourHouseRent = 1300,
 				HotelRent = 1500,
-				ColorGroup = "dark_blue"
+				ColorGroup = MonopolyColorGroup.DarkBlue
 			},
 			new()
 			{
@@ -587,7 +587,7 @@ public sealed class MonopolyBoard : Component
 				ThreeHouseRent = 1400,
 				FourHouseRent = 1700,
 				HotelRent = 1500,
-				ColorGroup = "dark_blue"
+				ColorGroup = MonopolyColorGroup.DarkBlue
 			},
 		};
 	}

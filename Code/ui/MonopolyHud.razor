@@ -46,6 +46,10 @@
 				{
 					<button onclick="@RollDice">Roll Dice</button>
 				}
+				@if ( CurrentPlayer == LocalPlayer )
+				{
+					<button class="@EndTurnButtonClasses" onclick="@EndTurn">End Turn</button>
+				}
 			</ChildContent>
 		</HudPanel>
 
@@ -316,7 +320,7 @@
 		@if ( SelectedSpace is not null )
 		{
 			<div class="@SpaceCardClasses">
-				<button class="space-card-close" onclick="@CloseSelectedSpace">
+				<button class="@SpaceCardCloseButtonClasses" onclick="@CloseSelectedSpace">
 					<span>X</span>
 				</button>
 
@@ -390,6 +394,7 @@
 @code
 {
 	[Property] public MonopolyGame GameRef { get; set; }
+	[Property] public string PendingDecisionBlockedSound { get; set; } = "";
 
 	private const string SpaceCardThemeClass = "space-card-board";
 
@@ -423,6 +428,27 @@
 		Log.Info("Roll dice button clicked.");
 		GameRef?.RequestRollDice();
 	}
+
+	private void EndTurn()
+	{
+		if ( GameRef?.Phase != MonopolyGamePhase.TurnEnded )
+		{
+			PlayBlockedActionSound();
+			GameRef?.ShowLocalPopup(
+				"Cannot end turn yet",
+				GetEndTurnBlockedMessage(),
+				MonopolyPopupKind.Warning,
+				true,
+				3f
+			);
+			return;
+		}
+
+		GameRef?.RequestEndTurn();
+	}
+
+	private string EndTurnButtonClasses =>
+		GameRef?.Phase == MonopolyGamePhase.TurnEnded ? "" : "blocked-action-button";
 
 	private void BuyProperty()
 	{
@@ -583,7 +609,24 @@
 	}
 
 	private void SelectPropertySpace( int spaceIndex ) => GameRef?.SelectSpace( spaceIndex );
-	private void CloseSelectedSpace() => SelectPropertySpace(-1);
+
+	private void CloseSelectedSpace()
+	{
+		if ( ShouldBlockSelectedSpaceClose )
+		{
+			PlayBlockedActionSound();
+			GameRef?.ShowLocalPopup(
+				"Decision required",
+				$"Buy or auction {SelectedSpace?.DisplayName ?? "this property"} before closing this card.",
+				MonopolyPopupKind.Warning,
+				true,
+				3f
+			);
+			return;
+		}
+
+		SelectPropertySpace( -1 );
+	}
 
 	private string GetPropertyPanelClasses( int playerIndex, bool isExpanded )
 	{
@@ -604,7 +647,7 @@
 	private string GetPropertySquareClasses( MonopolySpaceDef property, int playerIndex )
 	{
 		var ownerIndex = GameRef?.GetOwnerIndexForSpace( property.Index ) ?? -1;
-		var colorGroup = string.IsNullOrWhiteSpace( property.ColorGroup ) ? GetSpecialPropertyColorGroup( property.Type ) : property.ColorGroup;
+		var colorGroup = GetPropertyColorClass( property );
 		var classes = $"property-square color-{colorGroup} space-{property.Index}";
 
 		if ( ownerIndex == playerIndex )
@@ -624,6 +667,17 @@
 			classes += " selected";
 
 		return classes;
+	}
+
+	private static string GetPropertyColorClass( MonopolySpaceDef def )
+	{
+		if ( def is null )
+			return "none";
+
+		if ( def.ColorGroup != MonopolyColorGroup.None )
+			return def.ColorGroupClass;
+
+		return GetSpecialPropertyColorGroup( def.Type );
 	}
 
 	private static string GetSpecialPropertyColorGroup( SpaceType type )
@@ -752,10 +806,10 @@
 	}
 
 	private string AuctionTitleDotClasses =>
-		$"auction-title-dot color-{(string.IsNullOrWhiteSpace( AuctionSpace?.ColorGroup ) ? GetSpecialPropertyColorGroup( AuctionSpace?.Type ?? SpaceType.Property ) : AuctionSpace.ColorGroup)}";
+		$"auction-title-dot color-{GetPropertyColorClass( AuctionSpace )}";
 
 	private string AuctionCardClasses =>
-		$"auction-property-card color-{(string.IsNullOrWhiteSpace( AuctionSpace?.ColorGroup ) ? GetSpecialPropertyColorGroup( AuctionSpace?.Type ?? SpaceType.Property ) : AuctionSpace.ColorGroup)}";
+		$"auction-property-card color-{GetPropertyColorClass( AuctionSpace )}";
 
 	private bool CanLocalPlayerBid( int bidAmount )
 	{
@@ -780,7 +834,10 @@
 	}
 
 	private string SpaceCardClasses =>
-		$"space-card {SpaceCardThemeClass} color-{(string.IsNullOrWhiteSpace( SelectedSpace?.ColorGroup ) ? "none" : SelectedSpace.ColorGroup)}";
+		$"space-card {SpaceCardThemeClass} color-{GetPropertyColorClass( SelectedSpace )}";
+
+	private string SpaceCardCloseButtonClasses =>
+		ShouldBlockSelectedSpaceClose ? "space-card-close blocked-action-button" : "space-card-close";
 
 	private int SelectedSpaceIndex =>
 		GameRef?.LocalSelectedSpaceIndex ?? -1;
@@ -799,6 +856,10 @@
 	private bool IsSelectedPendingPurchase =>
 		GameRef is not null &&
 		SelectedSpaceIndex == GameRef.PendingPurchaseSpaceIndex;
+
+	private bool ShouldBlockSelectedSpaceClose =>
+		GameRef?.Phase == MonopolyGamePhase.WaitingForBuyDecision &&
+		IsSelectedPendingPurchase;
 
 	private bool IsUnownedSelectedSpace =>
 		IsPurchasable &&
@@ -1068,7 +1129,7 @@
 			: ComposerReceiverPropertyIndexes.Contains( propertyIndex );
 
 		var def = GameRef?.Board?.GetSpaceDef( propertyIndex );
-		var colorGroup = string.IsNullOrWhiteSpace( def?.ColorGroup ) ? GetSpecialPropertyColorGroup( def?.Type ?? SpaceType.Property ) : def.ColorGroup;
+		var colorGroup = GetPropertyColorClass( def );
 		var classes = $"trade-property-chip color-{colorGroup}";
 
 		if ( selected )
@@ -1126,6 +1187,26 @@
 
 		if ( CanMortgageSelectedSpace )
 			GameRef?.RequestMortgageProperty( SelectedSpaceIndex );
+	}
+
+	private string GetEndTurnBlockedMessage()
+	{
+		return GameRef?.Phase switch
+		{
+			MonopolyGamePhase.WaitingToRoll => "Roll the dice before ending your turn.",
+			MonopolyGamePhase.ResolvingSpace => "Wait for your move to finish resolving.",
+			MonopolyGamePhase.WaitingForBuyDecision => $"Buy or auction {PendingPropertyName} before ending your turn.",
+			MonopolyGamePhase.Auctioning => "Wait for the auction to finish before ending your turn.",
+			_ => "Finish the current action before ending your turn."
+		};
+	}
+
+	private void PlayBlockedActionSound()
+	{
+		if ( string.IsNullOrWhiteSpace( PendingDecisionBlockedSound ) )
+			return;
+
+		Sound.Play( PendingDecisionBlockedSound );
 	}
 
 }

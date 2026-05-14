@@ -94,6 +94,16 @@ MonopolyHud {
 		background-color: $monopoly-gold-hover;
 	}
 
+	button.blocked-action-button {
+		background-color: $monopoly-blocked-action;
+		color: $monopoly-text;
+		cursor: not-allowed;
+	}
+
+	button.blocked-action-button:hover {
+		background-color: $monopoly-blocked-action-hover;
+	}
+
 	.popup-stack {
 		position: absolute;
 		top: 28px;
@@ -1226,6 +1236,15 @@ MonopolyHud {
 
 	.space-card-close:hover span {
 		background-color: $monopoly-ink-hover;
+	}
+
+	.space-card-close.blocked-action-button span {
+		background-color: $monopoly-blocked-action;
+		color: $monopoly-text;
+	}
+
+	.space-card-close.blocked-action-button:hover span {
+		background-color: $monopoly-blocked-action-hover;
 	}
 
 	.space-card-header {

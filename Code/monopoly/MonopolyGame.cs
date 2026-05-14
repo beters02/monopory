@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using System;
+using System.Text.RegularExpressions;
 using Sandbox;
 
 public enum MonopolyGamePhase
@@ -152,17 +153,22 @@ public sealed class MonopolyGame : Component
 		return Connection.All.FirstOrDefault( c => c.SteamId == player.OwnerId );
 	}
 
-	public MonopolyPlayerState GetPlayerForString(String playerString)
+	public MonopolyPlayerState GetPlayerForString( string playerString )
+	{
+		return ResolvePlayerReference( playerString, null );
+	}
+
+	public MonopolyPlayerState ResolvePlayerReference( string playerString, Connection caller = null )
 	{
 		if ( string.IsNullOrWhiteSpace( playerString ) )
 			return null;
 
-		playerString = playerString.Trim();
+		playerString = TrimPlayerReference( playerString );
 
 		if ( playerString.Equals( "self", StringComparison.OrdinalIgnoreCase ) ||
 			playerString.Equals( "me", StringComparison.OrdinalIgnoreCase ) )
 		{
-			return LocalPlayer;
+			return GetPlayerForConnection( caller ) ?? LocalPlayer;
 		}
 
 		if ( long.TryParse( playerString, out var steamId ) )
@@ -172,32 +178,109 @@ public sealed class MonopolyGame : Component
 				return steamIdMatch;
 		}
 
-		var exactMatches = Players
-			.Where( player => player is not null && player.IsAssigned )
-			.Where( player => string.Equals( player.PlayerName, playerString, StringComparison.OrdinalIgnoreCase ) )
-			.ToList();
+		if ( TryResolvePlayerByName( playerString, PlayerNameMatchMode.Exact, out var exactMatch ) )
+			return exactMatch;
 
-		if ( exactMatches.Count == 1 )
-			return exactMatches[0];
-
-		if ( exactMatches.Count > 1 )
+		if ( playerString.Contains( '_' ) &&
+			TryResolvePlayerByName( playerString.Replace( '_', ' ' ), PlayerNameMatchMode.Exact, out var underscoreMatch ) )
 		{
-			Log.Warning( $"Multiple Monopoly players matched \"{playerString}\" exactly." );
-			return null;
+			return underscoreMatch;
 		}
 
-		var partialMatches = Players
-			.Where( player => player is not null && player.IsAssigned )
-			.Where( player => player.PlayerName?.Contains( playerString, StringComparison.OrdinalIgnoreCase ) == true )
-			.ToList();
+		if ( TryResolvePlayerByName( playerString, PlayerNameMatchMode.RegexNormalizedExact, out var normalizedMatch ) )
+			return normalizedMatch;
 
-		if ( partialMatches.Count == 1 )
-			return partialMatches[0];
+		if ( TryResolvePlayerByName( playerString, PlayerNameMatchMode.Partial, out var partialMatch ) )
+			return partialMatch;
 
-		if ( partialMatches.Count > 1 )
-			Log.Warning( $"Multiple Monopoly players matched \"{playerString}\"." );
+		if ( playerString.Contains( '_' ) &&
+			TryResolvePlayerByName( playerString.Replace( '_', ' ' ), PlayerNameMatchMode.Partial, out var underscorePartialMatch ) )
+		{
+			return underscorePartialMatch;
+		}
+
+		if ( TryResolvePlayerByName( playerString, PlayerNameMatchMode.RegexNormalizedPartial, out var normalizedPartialMatch ) )
+			return normalizedPartialMatch;
 
 		return null;
+	}
+
+	private enum PlayerNameMatchMode
+	{
+		Exact,
+		Partial,
+		RegexNormalizedExact,
+		RegexNormalizedPartial
+	}
+
+	private bool TryResolvePlayerByName( string playerName, PlayerNameMatchMode matchMode, out MonopolyPlayerState match )
+	{
+		match = null;
+
+		var reference = matchMode switch
+		{
+			PlayerNameMatchMode.RegexNormalizedExact or PlayerNameMatchMode.RegexNormalizedPartial => NormalizePlayerReference( playerName ),
+			_ => playerName
+		};
+
+		if ( string.IsNullOrWhiteSpace( reference ) )
+			return false;
+
+		var matches = Players
+			.Where( player => player is not null && player.IsAssigned )
+			.Where( player => IsPlayerNameMatch( player.PlayerName, reference, matchMode ) )
+			.ToList();
+
+		if ( matches.Count == 1 )
+		{
+			match = matches[0];
+			return true;
+		}
+
+		if ( matches.Count > 1 )
+		{
+			Log.Warning( $"Multiple Monopoly players matched \"{playerName}\" with {matchMode} matching." );
+			return false;
+		}
+
+		return false;
+	}
+
+	private static bool IsPlayerNameMatch( string playerName, string reference, PlayerNameMatchMode matchMode )
+	{
+		if ( string.IsNullOrWhiteSpace( playerName ) )
+			return false;
+
+		return matchMode switch
+		{
+			PlayerNameMatchMode.Exact => string.Equals( playerName, reference, StringComparison.OrdinalIgnoreCase ),
+			PlayerNameMatchMode.Partial => playerName.Contains( reference, StringComparison.OrdinalIgnoreCase ),
+			PlayerNameMatchMode.RegexNormalizedExact => NormalizePlayerReference( playerName ) == reference,
+			PlayerNameMatchMode.RegexNormalizedPartial => NormalizePlayerReference( playerName ).Contains( reference, StringComparison.OrdinalIgnoreCase ),
+			_ => false
+		};
+	}
+
+	private static string TrimPlayerReference( string playerString )
+	{
+		playerString = playerString.Trim();
+
+		if ( playerString.Length >= 2 &&
+			((playerString[0] == '"' && playerString[^1] == '"') ||
+			(playerString[0] == '\'' && playerString[^1] == '\'')) )
+		{
+			return playerString[1..^1].Trim();
+		}
+
+		return playerString;
+	}
+
+	private static string NormalizePlayerReference( string playerString )
+	{
+		if ( string.IsNullOrWhiteSpace( playerString ) )
+			return "";
+
+		return Regex.Replace( playerString, @"[\W_]+", "" ).ToLowerInvariant();
 	}
 
 	private int GetPlayerIndexForCaller( Connection caller )
@@ -303,8 +386,15 @@ public sealed class MonopolyGame : Component
 
 		if ( Phase == MonopolyGamePhase.ResolvingSpace )
 		{
-			CompleteTurn();
-			Phase = MonopolyGamePhase.WaitingToRoll;
+			if ( amount >= 0 )
+			{
+				CompleteTurn();
+				Phase = MonopolyGamePhase.WaitingToRoll;
+			}
+			else
+			{
+				Phase = MonopolyGamePhase.TurnEnded;
+			}
 		}
 	}
 
@@ -356,6 +446,8 @@ public sealed class MonopolyGame : Component
 
 			case SpaceType.GoToJail:
 				SendPlayerToJail( player );
+				CompleteTurn();
+				Phase = MonopolyGamePhase.WaitingToRoll;
 				break;
 
 			case SpaceType.Property:
@@ -378,6 +470,11 @@ public sealed class MonopolyGame : Component
 
 			case SpaceType.FreeParking:
 				ResolveFreeParkingLanding( player );
+				if ( Config?.VacationCash == true )
+				{
+					CompleteTurn();
+					Phase = MonopolyGamePhase.WaitingToRoll;
+				}
 				break;
 		}
 	}
@@ -533,8 +630,18 @@ public sealed class MonopolyGame : Component
 		popups.RemoveAll( popup => popup.Id == popupId );
 	}
 
+	public void ShowLocalPopup( string title, string message, MonopolyPopupKind kind = MonopolyPopupKind.Info, bool canDismiss = true, float lifetime = 5f )
+	{
+		ShowPopupLocal( nextPopupId++, title, message, kind, canDismiss, lifetime );
+	}
+
 	[Rpc.Broadcast]
 	private void ShowPopup( int popupId, string title, string message, MonopolyPopupKind kind, bool canDismiss, float lifetime )
+	{
+		ShowPopupLocal( popupId, title, message, kind, canDismiss, lifetime );
+	}
+
+	private void ShowPopupLocal( int popupId, string title, string message, MonopolyPopupKind kind, bool canDismiss, float lifetime )
 	{
 		popups.RemoveAll( popup => popup.Id == popupId );
 		popups.Add( new MonopolyPopup
@@ -551,44 +658,175 @@ public sealed class MonopolyGame : Component
 			popups.RemoveAt( 0 );
 	}
 
-	private void BuyProperty(MonopolyPlayerState player, int index, bool useMoney = true)
+	public bool CanBuyPendingProperty( MonopolyPlayerState player, int spaceIndex )
 	{
+		return Phase == MonopolyGamePhase.WaitingForBuyDecision &&
+			CurrentPlayer == player &&
+			PendingPurchaseSpaceIndex == spaceIndex;
+	}
 
-		if (Phase == MonopolyGamePhase.WaitingForBuyDecision && CurrentPlayer == player)
+	public bool TryBuyPendingPropertyForPlayer( MonopolyPlayerState player, out string message )
+	{
+		message = "";
+
+		if ( !Networking.IsHost )
 		{
-			if (Networking.IsHost)
-				BuyPendingProperty();
-			else
-				RequestBuyPendingProperty();
-			return;
+			message = "Only the host can buy pending properties directly.";
+			return false;
 		}
 
-		if (player is null)
-			return;
+		if ( Phase != MonopolyGamePhase.WaitingForBuyDecision || CurrentPlayer != player )
+		{
+			message = "That player does not have a pending buy decision.";
+			return false;
+		}
 
-		var def = Board.GetSpaceDef( index );
+		var def = Board?.GetSpaceDef( PendingPurchaseSpaceIndex );
 		if ( def is null )
-			return;
+		{
+			message = "Pending property does not exist.";
+			return false;
+		}
+
+		if ( player.Money < def.Price )
+		{
+			message = $"{player.PlayerName} cannot afford {def.DisplayName}.";
+			return false;
+		}
+
+		BuyPendingProperty();
+		message = $"{player.PlayerName} bought {def.DisplayName}.";
+		return true;
+	}
+
+	public bool TryBuyPropertyForPlayer( MonopolyPlayerState player, int index, bool useMoney, out string message )
+	{
+		message = "";
+
+		if ( !Networking.IsHost )
+		{
+			message = "Only the host can buy properties directly.";
+			return false;
+		}
+
+		if ( player is null )
+		{
+			message = "Player does not exist.";
+			return false;
+		}
+
+		var playerIndex = GetPlayerIndex( player );
+		if ( playerIndex < 0 )
+		{
+			message = "Player is not part of this game.";
+			return false;
+		}
+
+		var def = Board?.GetSpaceDef( index );
+		if ( def is null || !IsPurchasableSpace( def ) )
+		{
+			message = $"Space {index} is not purchasable.";
+			return false;
+		}
+
+		if ( GetOwnerIndexForSpace( def.Index ) >= 0 )
+		{
+			message = $"{def.DisplayName} is already owned.";
+			return false;
+		}
 
 		if (useMoney)
 		{
 			if (player.Money < def.Price)
-				return;
+			{
+				message = $"{player.PlayerName} cannot afford {def.DisplayName}.";
+				return false;
+			}
 			
 			PayBank( player, def.Price );
 		}
 		
-		PropertyOwners[def.Index] = CurrentPlayerIndex;
+		PropertyOwners[def.Index] = playerIndex;
 		Log.Info( $"{player.PlayerName} bought {def.DisplayName} for ${def.Price}." );
+		message = $"{player.PlayerName} bought {def.DisplayName}.";
+		return true;
 	}
 
-	[Rpc.Host]
-	public void RequestBuyPropertyCommand(MonopolyPlayerState player, int index, bool useMoney = true)
+	public bool TryBuyPropertySetForPlayer( MonopolyPlayerState player, IReadOnlyList<MonopolySpaceDef> properties, bool useMoney, out string message )
 	{
-		if ( !CanCurrentPlayerAct( Rpc.Caller ) )
-			return;
-		
-		BuyProperty(player, index, useMoney);
+		message = "";
+
+		if ( !Networking.IsHost )
+		{
+			message = "Only the host can buy property sets directly.";
+			return false;
+		}
+
+		if ( player is null )
+		{
+			message = "Player does not exist.";
+			return false;
+		}
+
+		var playerIndex = GetPlayerIndex( player );
+		if ( playerIndex < 0 )
+		{
+			message = "Player is not part of this game.";
+			return false;
+		}
+
+		if ( properties is null || properties.Count == 0 )
+		{
+			message = "Property set has no purchasable properties.";
+			return false;
+		}
+
+		var propertiesToBuy = new List<MonopolySpaceDef>();
+		foreach ( var def in properties )
+		{
+			if ( def is null || !IsPurchasableSpace( def ) )
+			{
+				message = $"Space {def?.Index ?? -1} is not purchasable.";
+				return false;
+			}
+
+			var ownerIndex = GetOwnerIndexForSpace( def.Index );
+			if ( ownerIndex == playerIndex )
+				continue;
+
+			if ( ownerIndex >= 0 )
+			{
+				message = $"{def.DisplayName} is already owned by another player.";
+				return false;
+			}
+
+			propertiesToBuy.Add( def );
+		}
+
+		if ( propertiesToBuy.Count == 0 )
+		{
+			message = $"{player.PlayerName} already owns that property set.";
+			return true;
+		}
+
+		var totalPrice = propertiesToBuy.Sum( def => def.Price );
+		if ( useMoney && player.Money < totalPrice )
+		{
+			message = $"{player.PlayerName} cannot afford that property set. Needs ${totalPrice}, has ${player.Money}.";
+			return false;
+		}
+
+		if ( useMoney )
+			PayBank( player, totalPrice );
+
+		foreach ( var def in propertiesToBuy )
+		{
+			PropertyOwners[def.Index] = playerIndex;
+			Log.Info( $"{player.PlayerName} bought {def.DisplayName} for ${def.Price}." );
+		}
+
+		message = $"{player.PlayerName} bought {propertiesToBuy.Count} properties for ${totalPrice}.";
+		return true;
 	}
 
 	[Button( "Buy Pending Property" )]
@@ -612,8 +850,7 @@ public sealed class MonopolyGame : Component
 		}
 
 		PendingPurchaseSpaceIndex = -1;
-		CompleteTurn();
-		Phase = MonopolyGamePhase.WaitingToRoll;
+		Phase = MonopolyGamePhase.TurnEnded;
 	}
 
 	[Button( "Skip Pending Property" )]
@@ -628,8 +865,7 @@ public sealed class MonopolyGame : Component
 		Log.Info( $"{CurrentPlayer?.PlayerName} skipped buying." );
 
 		PendingPurchaseSpaceIndex = -1;
-		CompleteTurn();
-		Phase = MonopolyGamePhase.WaitingToRoll;
+		Phase = MonopolyGamePhase.TurnEnded;
 	}
 
 	[Button( "Auction Pending Property" )]
@@ -650,8 +886,7 @@ public sealed class MonopolyGame : Component
 		if ( def is null || !IsPurchasableSpace( def ) || GetOwnerIndexForSpace( spaceIndex ) >= 0 )
 		{
 			PendingPurchaseSpaceIndex = -1;
-			AdvanceTurn();
-			Phase = MonopolyGamePhase.WaitingToRoll;
+			Phase = MonopolyGamePhase.TurnEnded;
 			return;
 		}
 
@@ -691,8 +926,7 @@ public sealed class MonopolyGame : Component
 		}
 
 		ClearAuction();
-		CompleteTurn();
-		Phase = MonopolyGamePhase.WaitingToRoll;
+		Phase = MonopolyGamePhase.TurnEnded;
 	}
 
 	private void ClearAuction()
@@ -726,6 +960,15 @@ public sealed class MonopolyGame : Component
 		if ( !CanCurrentPlayerAct( Rpc.Caller ) )
 			return;
 		_ = RollDiceAsync(amount);
+	}
+
+	[Rpc.Host]
+	public void RequestEndTurn()
+	{
+		if ( !CanCurrentPlayerAct( Rpc.Caller ) )
+			return;
+
+		EndTurn();
 	}
 
 	[Rpc.Host]
@@ -931,37 +1174,6 @@ public sealed class MonopolyGame : Component
 		PendingTrades.Remove( tradeId );
 	}
 
-	// RPC non-host command helpers
-
-	public MonopolyCommandResult BuyPropertyCommand(Connection connection, int propertyIndex, string playerString = "self")
-	{
-		MonopolyPlayerState player = GetPlayerForString(playerString);
-		if (player == null)
-			return new MonopolyCommandResult(false, "Could not find player "+ playerString);
-
-		if (!Networking.IsHost && ConsoleSystem.GetValue("sv_cheats").ToLower() != "true")
-		{
-			Log.Info("sv_cheats must be enabled to use this command.");
-			return new MonopolyCommandResult(false, "sv_cheats must be enabled to use this command.");
-		}
-
-		if (Phase == MonopolyGamePhase.WaitingForBuyDecision && CurrentPlayer == player)
-		{
-			if (Networking.IsHost)
-				BuyPendingProperty();
-			else
-				RequestBuyPendingProperty();
-		} else
-		{
-			if (Networking.IsHost)
-				BuyProperty(player, propertyIndex, true);
-			else
-				RequestBuyPropertyCommand(player, propertyIndex);
-		}
-
-		return new MonopolyCommandResult(true);
-	}
-
 	private void SendPlayerToJail( MonopolyPlayerState player )
 	{
 		player.SpaceIndex = 10;
@@ -1001,6 +1213,19 @@ public sealed class MonopolyGame : Component
 
 		CurrentPlayer.ConsecutiveDoubles = 0;
 		AdvanceTurn();
+	}
+
+	[Button( "End Turn" )]
+	public void EndTurn()
+	{
+		if ( !Networking.IsHost )
+			return;
+
+		if ( Phase != MonopolyGamePhase.TurnEnded )
+			return;
+
+		CompleteTurn();
+		Phase = MonopolyGamePhase.WaitingToRoll;
 	}
 
 	private void AdvanceTurn()
@@ -1087,13 +1312,14 @@ public sealed class MonopolyGame : Component
 	public int GetImprovementCost( int spaceIndex )
 	{
 		var def = Board?.GetSpaceDef( spaceIndex );
+		var colorGroup = def?.ColorGroup ?? MonopolyColorGroup.None;
 
-		return def?.ColorGroup switch
+		return colorGroup switch
 		{
-			"brown" or "light_blue" => 50,
-			"pink" or "orange" => 100,
-			"red" or "yellow" => 150,
-			"green" or "dark_blue" => 200,
+			MonopolyColorGroup.Brown or MonopolyColorGroup.LightBlue => 50,
+			MonopolyColorGroup.Pink or MonopolyColorGroup.Orange => 100,
+			MonopolyColorGroup.Red or MonopolyColorGroup.Yellow => 150,
+			MonopolyColorGroup.Green or MonopolyColorGroup.DarkBlue => 200,
 			_ => 0
 		};
 	}
@@ -1140,6 +1366,9 @@ public sealed class MonopolyGame : Component
 		if ( player is null || def is null || def.Type != SpaceType.Property )
 			return false;
 
+		if ( !CanPlayerManageProperties( playerIndex ) )
+			return false;
+
 		if ( GetOwnerIndexForSpace( spaceIndex ) != playerIndex )
 			return false;
 
@@ -1156,7 +1385,7 @@ public sealed class MonopolyGame : Component
 		if ( !OwnsColorGroup( playerIndex, def.ColorGroup ) )
 			return false;
 
-		return Config?.EvenBuild != false || CanAddEvenly( spaceIndex );
+		return Config?.EvenBuild != true || CanAddEvenly( spaceIndex );
 	}
 
 	public bool CanSellImprovement( int playerIndex, int spaceIndex )
@@ -1164,6 +1393,9 @@ public sealed class MonopolyGame : Component
 		var def = Board?.GetSpaceDef( spaceIndex );
 
 		if ( def is null || def.Type != SpaceType.Property )
+			return false;
+
+		if ( !CanPlayerManageProperties( playerIndex ) )
 			return false;
 
 		if ( GetOwnerIndexForSpace( spaceIndex ) != playerIndex )
@@ -1178,7 +1410,7 @@ public sealed class MonopolyGame : Component
 		if ( !OwnsColorGroup( playerIndex, def.ColorGroup ) )
 			return false;
 
-		return Config?.EvenBuild != false || CanRemoveEvenly( spaceIndex );
+		return Config?.EvenBuild != true || CanRemoveEvenly( spaceIndex );
 	}
 
 	public bool IsTradeValid( MonopolyTradeRequest trade )
@@ -1221,6 +1453,9 @@ public sealed class MonopolyGame : Component
 		if ( player is null || def is null || !IsPurchasableSpace( def ) )
 			return false;
 
+		if ( !CanPlayerManageProperties( playerIndex ) )
+			return false;
+
 		if ( GetOwnerIndexForSpace( spaceIndex ) != playerIndex )
 			return false;
 
@@ -1244,6 +1479,9 @@ public sealed class MonopolyGame : Component
 		if ( player is null || def is null || !IsPurchasableSpace( def ) )
 			return false;
 
+		if ( !CanPlayerManageProperties( playerIndex ) )
+			return false;
+
 		if ( GetOwnerIndexForSpace( spaceIndex ) != playerIndex )
 			return false;
 
@@ -1251,6 +1489,13 @@ public sealed class MonopolyGame : Component
 			return false;
 
 		return player.Money >= GetUnmortgageCost( spaceIndex );
+	}
+
+	private bool CanPlayerManageProperties( int playerIndex )
+	{
+		return playerIndex >= 0 &&
+			CurrentPlayerIndex == playerIndex &&
+			(Phase == MonopolyGamePhase.WaitingToRoll || Phase == MonopolyGamePhase.TurnEnded);
 	}
 
 	private void RemoveInvalidTrades()
@@ -1262,16 +1507,16 @@ public sealed class MonopolyGame : Component
 		}
 	}
 
-	private bool OwnsColorGroup( int playerIndex, string colorGroup )
+	private bool OwnsColorGroup( int playerIndex, MonopolyColorGroup colorGroup )
 	{
-		if ( string.IsNullOrWhiteSpace( colorGroup ) || Board?.SpaceDefs is null )
+		if ( colorGroup == MonopolyColorGroup.None || Board?.SpaceDefs is null )
 			return false;
 
 		var group = GetColorGroupProperties( colorGroup );
 		return group.Count > 0 && group.All( def => GetOwnerIndexForSpace( def.Index ) == playerIndex );
 	}
 
-	private List<MonopolySpaceDef> GetColorGroupProperties( string colorGroup )
+	private List<MonopolySpaceDef> GetColorGroupProperties( MonopolyColorGroup colorGroup )
 	{
 		return Board?.SpaceDefs?
 			.Where( def => def is not null && def.Type == SpaceType.Property && def.ColorGroup == colorGroup )
@@ -1279,9 +1524,9 @@ public sealed class MonopolyGame : Component
 			.ToList() ?? new();
 	}
 
-	private bool ColorGroupHasImprovements( string colorGroup )
+	private bool ColorGroupHasImprovements( MonopolyColorGroup colorGroup )
 	{
-		if ( string.IsNullOrWhiteSpace( colorGroup ) )
+		if ( colorGroup == MonopolyColorGroup.None )
 			return false;
 
 		return GetColorGroupProperties( colorGroup )
@@ -1291,7 +1536,7 @@ public sealed class MonopolyGame : Component
 	private bool CanAddEvenly( int spaceIndex )
 	{
 		var def = Board?.GetSpaceDef( spaceIndex );
-		var group = GetColorGroupProperties( def?.ColorGroup );
+		var group = def is null ? new List<MonopolySpaceDef>() : GetColorGroupProperties( def.ColorGroup );
 		var current = GetImprovementCount( spaceIndex );
 		var min = group.Count == 0 ? 0 : group.Min( property => GetImprovementCount( property.Index ) );
 
@@ -1301,7 +1546,7 @@ public sealed class MonopolyGame : Component
 	private bool CanRemoveEvenly( int spaceIndex )
 	{
 		var def = Board?.GetSpaceDef( spaceIndex );
-		var group = GetColorGroupProperties( def?.ColorGroup );
+		var group = def is null ? new List<MonopolySpaceDef>() : GetColorGroupProperties( def.ColorGroup );
 		var current = GetImprovementCount( spaceIndex );
 		var max = group.Count == 0 ? 0 : group.Max( property => GetImprovementCount( property.Index ) );
 
