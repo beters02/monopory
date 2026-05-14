@@ -18,6 +18,7 @@ public sealed class MonopolyGame : Component
 	[Property, Sync] public int LastDieA { get; set; }
 	[Property, Sync] public int LastDieB { get; set; }
 	[Property, Sync] public NetDictionary<int, int> PropertyOwners { get; set; } = new();
+	[Property, Sync] public NetDictionary<int, int> PropertyImprovements { get; set; } = new();
 	[Property, Sync] public NetDictionary<int, string> PendingTrades { get; set; } = new();
 	[Property] public MonopolyBoard Board { get; set; }
 
@@ -29,8 +30,11 @@ public sealed class MonopolyGame : Component
 	[Property, Sync] public int NextTradeId { get; set; } = 1;
 
 	private static MonopolyGame instance;
+	private int nextPopupId = 1;
+	private readonly List<MonopolyPopup> popups = new();
 
 	public static MonopolyGame Instance => instance;
+	public IReadOnlyList<MonopolyPopup> Popups => popups;
 
 	public int LocalSelectedSpaceIndex { get; set; } = -1;
 
@@ -64,6 +68,8 @@ public sealed class MonopolyGame : Component
 
 	protected override void OnUpdate()
 	{
+		UpdatePopups();
+
 		if ( !Networking.IsHost )
 			return;
 
@@ -76,6 +82,23 @@ public sealed class MonopolyGame : Component
 		}
 
 		RemoveInvalidTrades();
+	}
+
+	private void UpdatePopups()
+	{
+		if ( popups.Count == 0 )
+			return;
+
+		for ( var i = popups.Count - 1; i >= 0; i-- )
+		{
+			var popup = popups[i];
+			if ( popup.Lifetime <= 0f )
+				continue;
+
+			popup.Lifetime -= Time.Delta;
+			if ( popup.Lifetime <= 0f )
+				popups.RemoveAt( i );
+		}
 	}
 
 	public MonopolyPlayerState LocalPlayer => Players.FirstOrDefault( p => p.OwnerId == Connection.Local.SteamId );
@@ -274,10 +297,11 @@ public sealed class MonopolyGame : Component
 			if ( owner is null || owner == player )
 				return;
 
-			player.Money -= def.BaseRent;
-			owner.Money += def.BaseRent;
+			var rent = GetRentForSpace( def.Index );
+			player.Money -= rent;
+			owner.Money += rent;
 
-			Log.Info( $"{player.PlayerName} paid ${def.BaseRent} rent to {owner.PlayerName}." );
+			Log.Info( $"{player.PlayerName} paid ${rent} rent to {owner.PlayerName}." );
 			return;
 		}
 	}
@@ -300,6 +324,72 @@ public sealed class MonopolyGame : Component
 	private void ShowLandedSpaceCard( int spaceIndex )
 	{
 		LocalSelectedSpaceIndex = spaceIndex;
+	}
+
+	public void SendPopupToAll( string title, string message, MonopolyPopupKind kind = MonopolyPopupKind.Info, bool canDismiss = true, float lifetime = 5f )
+	{
+		if ( !Networking.IsHost )
+			return;
+
+		ShowPopup( nextPopupId++, title, message, kind, canDismiss, lifetime );
+	}
+
+	public void SendPopupToPlayer( int playerIndex, string title, string message, MonopolyPopupKind kind = MonopolyPopupKind.Info, bool canDismiss = true, float lifetime = 5f )
+	{
+		if ( !Networking.IsHost )
+			return;
+
+		var player = Players.ElementAtOrDefault( playerIndex );
+		if ( player is null )
+			return;
+
+		SendPopupToPlayer( player, title, message, kind, canDismiss, lifetime );
+	}
+
+	public void SendPopupToPlayer( MonopolyPlayerState player, string title, string message, MonopolyPopupKind kind = MonopolyPopupKind.Info, bool canDismiss = true, float lifetime = 5f )
+	{
+		if ( !Networking.IsHost )
+			return;
+
+		var connection = GetConnectionForPlayer( player );
+		if ( connection is null )
+			return;
+
+		SendPopupToConnection( connection, title, message, kind, canDismiss, lifetime );
+	}
+
+	public void SendPopupToConnection( Connection connection, string title, string message, MonopolyPopupKind kind = MonopolyPopupKind.Info, bool canDismiss = true, float lifetime = 5f )
+	{
+		if ( !Networking.IsHost || connection is null )
+			return;
+
+		using ( Rpc.FilterInclude( connection ) )
+		{
+			ShowPopup( nextPopupId++, title, message, kind, canDismiss, lifetime );
+		}
+	}
+
+	public void DismissPopup( int popupId )
+	{
+		popups.RemoveAll( popup => popup.Id == popupId );
+	}
+
+	[Rpc.Broadcast]
+	private void ShowPopup( int popupId, string title, string message, MonopolyPopupKind kind, bool canDismiss, float lifetime )
+	{
+		popups.RemoveAll( popup => popup.Id == popupId );
+		popups.Add( new MonopolyPopup
+		{
+			Id = popupId,
+			Title = title ?? "",
+			Message = message ?? "",
+			Kind = kind,
+			CanDismiss = canDismiss,
+			Lifetime = lifetime
+		} );
+
+		while ( popups.Count > 4 )
+			popups.RemoveAt( 0 );
 	}
 
 	[Button( "Buy Pending Property" )]
@@ -385,6 +475,44 @@ public sealed class MonopolyGame : Component
 		if ( !CanCurrentPlayerAct( Rpc.Caller ) )
 			return;
 		SkipPendingProperty();
+	}
+
+	[Rpc.Host]
+	public void RequestBuildImprovement( int spaceIndex )
+	{
+		var playerIndex = GetPlayerIndexForCaller( Rpc.Caller );
+		if ( !CanBuildImprovement( playerIndex, spaceIndex ) )
+			return;
+
+		var player = Players[playerIndex];
+		var cost = GetImprovementCost( spaceIndex );
+		var count = GetImprovementCount( spaceIndex );
+
+		player.Money -= cost;
+		PropertyImprovements[spaceIndex] = count + 1;
+
+		Log.Info( $"{player.PlayerName} built on {Board.GetSpaceDef( spaceIndex )?.DisplayName} for ${cost}." );
+	}
+
+	[Rpc.Host]
+	public void RequestSellImprovement( int spaceIndex )
+	{
+		var playerIndex = GetPlayerIndexForCaller( Rpc.Caller );
+		if ( !CanSellImprovement( playerIndex, spaceIndex ) )
+			return;
+
+		var player = Players[playerIndex];
+		var refund = GetImprovementSellValue( spaceIndex );
+		var count = GetImprovementCount( spaceIndex );
+
+		player.Money += refund;
+
+		if ( count <= 1 )
+			PropertyImprovements.Remove( spaceIndex );
+		else
+			PropertyImprovements[spaceIndex] = count - 1;
+
+		Log.Info( $"{player.PlayerName} sold an improvement on {Board.GetSpaceDef( spaceIndex )?.DisplayName} for ${refund}." );
 	}
 
 	[Rpc.Host]
@@ -511,6 +639,90 @@ public sealed class MonopolyGame : Component
 			.ToList();
 	}
 
+	public int GetImprovementCount( int spaceIndex )
+	{
+		if ( PropertyImprovements.TryGetValue( spaceIndex, out var count ) )
+			return Math.Clamp( count, 0, 5 );
+
+		return 0;
+	}
+
+	public int GetImprovementCost( int spaceIndex )
+	{
+		var def = Board?.GetSpaceDef( spaceIndex );
+
+		return def?.ColorGroup switch
+		{
+			"brown" or "light_blue" => 50,
+			"pink" or "orange" => 100,
+			"red" or "yellow" => 150,
+			"green" or "dark_blue" => 200,
+			_ => 0
+		};
+	}
+
+	public int GetImprovementSellValue( int spaceIndex ) => GetImprovementCost( spaceIndex ) / 2;
+
+	public int GetRentForSpace( int spaceIndex )
+	{
+		var def = Board?.GetSpaceDef( spaceIndex );
+		if ( def is null )
+			return 0;
+
+		return GetImprovementCount( spaceIndex ) switch
+		{
+			1 => def.OneHouseRent,
+			2 => def.TwoHouseRent,
+			3 => def.ThreeHouseRent,
+			4 => def.FourHouseRent,
+			5 => def.HotelRent,
+			_ => def.BaseRent
+		};
+	}
+
+	public bool CanBuildImprovement( int playerIndex, int spaceIndex )
+	{
+		var player = Players.ElementAtOrDefault( playerIndex );
+		var def = Board?.GetSpaceDef( spaceIndex );
+
+		if ( player is null || def is null || def.Type != SpaceType.Property )
+			return false;
+
+		if ( GetOwnerIndexForSpace( spaceIndex ) != playerIndex )
+			return false;
+
+		var cost = GetImprovementCost( spaceIndex );
+		if ( cost <= 0 || player.Money < cost )
+			return false;
+
+		if ( GetImprovementCount( spaceIndex ) >= 5 )
+			return false;
+
+		if ( !OwnsColorGroup( playerIndex, def.ColorGroup ) )
+			return false;
+
+		return CanAddEvenly( spaceIndex );
+	}
+
+	public bool CanSellImprovement( int playerIndex, int spaceIndex )
+	{
+		var def = Board?.GetSpaceDef( spaceIndex );
+
+		if ( def is null || def.Type != SpaceType.Property )
+			return false;
+
+		if ( GetOwnerIndexForSpace( spaceIndex ) != playerIndex )
+			return false;
+
+		if ( GetImprovementCount( spaceIndex ) <= 0 )
+			return false;
+
+		if ( !OwnsColorGroup( playerIndex, def.ColorGroup ) )
+			return false;
+
+		return CanRemoveEvenly( spaceIndex );
+	}
+
 	public bool IsTradeValid( MonopolyTradeRequest trade )
 	{
 		if ( trade is null )
@@ -550,6 +762,43 @@ public sealed class MonopolyGame : Component
 			if ( !IsTradeValid( trade ) )
 				PendingTrades.Remove( trade.Id );
 		}
+	}
+
+	private bool OwnsColorGroup( int playerIndex, string colorGroup )
+	{
+		if ( string.IsNullOrWhiteSpace( colorGroup ) || Board?.SpaceDefs is null )
+			return false;
+
+		var group = GetColorGroupProperties( colorGroup );
+		return group.Count > 0 && group.All( def => GetOwnerIndexForSpace( def.Index ) == playerIndex );
+	}
+
+	private List<MonopolySpaceDef> GetColorGroupProperties( string colorGroup )
+	{
+		return Board?.SpaceDefs?
+			.Where( def => def is not null && def.Type == SpaceType.Property && def.ColorGroup == colorGroup )
+			.OrderBy( def => def.Index )
+			.ToList() ?? new();
+	}
+
+	private bool CanAddEvenly( int spaceIndex )
+	{
+		var def = Board?.GetSpaceDef( spaceIndex );
+		var group = GetColorGroupProperties( def?.ColorGroup );
+		var current = GetImprovementCount( spaceIndex );
+		var min = group.Count == 0 ? 0 : group.Min( property => GetImprovementCount( property.Index ) );
+
+		return current <= min;
+	}
+
+	private bool CanRemoveEvenly( int spaceIndex )
+	{
+		var def = Board?.GetSpaceDef( spaceIndex );
+		var group = GetColorGroupProperties( def?.ColorGroup );
+		var current = GetImprovementCount( spaceIndex );
+		var max = group.Count == 0 ? 0 : group.Max( property => GetImprovementCount( property.Index ) );
+
+		return current >= max;
 	}
 
 	private static List<int> ParseSpaceIndexList( string value )

@@ -7,6 +7,28 @@
 <root class="monopoly-hud">
 	@if ( GameRef is not null )
 	{
+		@if ( Popups.Count > 0 )
+		{
+			<div class="popup-stack">
+				@foreach ( var popup in Popups )
+				{
+					<div class="@GetPopupClasses( popup )">
+						<div class="popup-content">
+							@if ( !string.IsNullOrWhiteSpace( popup.Title ) )
+							{
+								<div class="popup-title">@popup.Title</div>
+							}
+							<div class="popup-message">@popup.Message</div>
+						</div>
+
+						@if ( popup.CanDismiss )
+						{
+							<button class="popup-close" onclick="@(() => DismissPopup( popup.Id ))">X</button>
+						}
+					</div>
+				}
+			</div>
+		}
 
 		<HudPanel Variant="hud-card">
 			<ChildContent>
@@ -227,6 +249,9 @@
 				@if ( IsProperty )
 				{
 					<div class="rent-list">
+						<div>Current Rent: $@SelectedSpaceRent</div>
+						<div>Improvements: @SelectedImprovementLabel</div>
+						<div>Build Cost: $@SelectedImprovementCost</div>
 						<div>Rent: $@SelectedSpace.BaseRent</div>
 						<div>1 House: $@SelectedSpace.OneHouseRent</div>
 						<div>2 Houses: $@SelectedSpace.TwoHouseRent</div>
@@ -247,7 +272,14 @@
 				@if ( CanManageSelectedSpace )
 				{
 					<div class="space-buttons">
-						<button onclick="@Sell">Sell</button>
+						@if ( CanBuildSelectedImprovement )
+						{
+							<button onclick="@BuildImprovement">Build</button>
+						}
+						@if ( CanSellSelectedImprovement )
+						{
+							<button onclick="@SellImprovement">Sell House</button>
+						}
 						<button onclick="@Mortgage">Mortgage</button>
 						<button onclick="@Trade">Trade</button>
 					</div>
@@ -278,6 +310,9 @@
 	private int ViewedTradeId = -1;
 
 	private void log(string msg) => Log.Info(msg);
+
+	private List<MonopolyPopup> Popups =>
+		GameRef?.Popups?.ToList() ?? new();
 
 	private MonopolySpaceDef PendingDef =>
 		GameRef?.Board?.GetSpaceDef( GameRef.PendingPurchaseSpaceIndex );
@@ -314,19 +349,37 @@
 				GameRef?.Phase ?? 0,
 				GameRef?.CurrentPlayerIndex ?? -1,
 				GetPropertyOwnersHash(),
-				GetPlayersHash()
+				GetPlayersHash(),
+				SelectedImprovementCount
 			),
 			GameRef?.LastDieA ?? 0,
-			GameRef?.LastDieB ?? 0,
-			GameRef?.PendingPurchaseSpaceIndex ?? -1,
-			LocalPlayerMoney,
-			GetSelectedOwnerIndex(),
-			GetExpandedPanelsHash(),
-			System.HashCode.Combine(
-				GetTradesHash(),
-				GetComposerHash()
+				GameRef?.LastDieB ?? 0,
+				GameRef?.PendingPurchaseSpaceIndex ?? -1,
+				LocalPlayerMoney,
+				GetSelectedOwnerIndex(),
+				GetExpandedPanelsHash(),
+				System.HashCode.Combine(
+					GetTradesHash(),
+				GetComposerHash(),
+				GetPopupsHash()
 			)
 		);
+	}
+
+	private int GetPopupsHash()
+	{
+		var hash = new HashCode();
+
+		foreach ( var popup in Popups )
+		{
+			hash.Add( popup.Id );
+			hash.Add( popup.Title );
+			hash.Add( popup.Message );
+			hash.Add( popup.Kind );
+			hash.Add( popup.CanDismiss );
+		}
+
+		return hash.ToHashCode();
 	}
 
 	private List<MonopolyPlayerState> PropertyHudPlayers
@@ -576,6 +629,34 @@
 	private bool CanManageSelectedSpace =>
 		IsOwnedByLocalPlayer;
 
+	private int SelectedImprovementCount =>
+		SelectedSpaceIndex < 0 ? 0 : GameRef?.GetImprovementCount( SelectedSpaceIndex ) ?? 0;
+
+	private int SelectedImprovementCost =>
+		SelectedSpaceIndex < 0 ? 0 : GameRef?.GetImprovementCost( SelectedSpaceIndex ) ?? 0;
+
+	private int SelectedSpaceRent =>
+		SelectedSpaceIndex < 0 ? 0 : GameRef?.GetRentForSpace( SelectedSpaceIndex ) ?? 0;
+
+	private string SelectedImprovementLabel =>
+		SelectedImprovementCount switch
+		{
+			0 => "None",
+			1 => "1 House",
+			5 => "Hotel",
+			_ => $"{SelectedImprovementCount} Houses"
+		};
+
+	private bool CanBuildSelectedImprovement =>
+		GameRef is not null &&
+		GameRef.LocalPlayerIndex >= 0 &&
+		GameRef.CanBuildImprovement( GameRef.LocalPlayerIndex, SelectedSpaceIndex );
+
+	private bool CanSellSelectedImprovement =>
+		GameRef is not null &&
+		GameRef.LocalPlayerIndex >= 0 &&
+		GameRef.CanSellImprovement( GameRef.LocalPlayerIndex, SelectedSpaceIndex );
+
 	private int GetSelectedOwnerIndex()
 	{
 		if ( GameRef is null || SelectedSpaceIndex < 0 )
@@ -593,6 +674,22 @@
 
 		if ( IsOwnedByLocalPlayer )
 			ComposerSenderPropertyIndexes.Add( SelectedSpaceIndex );
+	}
+
+	private void BuildImprovement()
+	{
+		if ( SelectedSpaceIndex < 0 )
+			return;
+
+		GameRef?.RequestBuildImprovement( SelectedSpaceIndex );
+	}
+
+	private void SellImprovement()
+	{
+		if ( SelectedSpaceIndex < 0 )
+			return;
+
+		GameRef?.RequestSellImprovement( SelectedSpaceIndex );
 	}
 
 	private void OpenTradeComposer()
@@ -688,6 +785,16 @@
 	{
 		GameRef?.RequestDenyTrade( tradeId );
 		ViewedTradeId = -1;
+	}
+
+	private void DismissPopup( int popupId )
+	{
+		GameRef?.DismissPopup( popupId );
+	}
+
+	private static string GetPopupClasses( MonopolyPopup popup )
+	{
+		return $"game-popup {popup.Kind.ToString().ToLower()}";
 	}
 
 	private string GetTradeRowClasses( MonopolyTradeRequest trade )

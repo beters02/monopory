@@ -94,6 +94,94 @@ MonopolyHud {
 		background-color: $monopoly-gold-hover;
 	}
 
+	.popup-stack {
+		position: absolute;
+		top: 28px;
+		left: 50%;
+		z-index: 40;
+		transform: translateX(-50%);
+
+		width: 440px;
+		max-width: 80%;
+
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+
+		pointer-events: all;
+	}
+
+	.game-popup {
+		min-height: 72px;
+		padding: 13px 14px 13px 18px;
+
+		background-color: $monopoly-board;
+		border: 3px solid $monopoly-ink;
+		border-left-width: 10px;
+		border-radius: $monopoly-radius-board;
+		box-shadow: 0 8px 30px rgba(0, 0, 0, 0.34);
+
+		color: $monopoly-ink;
+		font-family: $monopoly-font-family;
+
+		display: flex;
+		align-items: center;
+		gap: 12px;
+	}
+
+	.game-popup.info {
+		border-left-color: $monopoly-gold;
+	}
+
+	.game-popup.success {
+		border-left-color: $monopoly-success;
+	}
+
+	.game-popup.warning {
+		border-left-color: $monopoly-gold-hover;
+	}
+
+	.game-popup.danger {
+		border-left-color: $monopoly-danger;
+	}
+
+	.popup-content {
+		flex: 1;
+		min-width: 0;
+
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+	}
+
+	.popup-title {
+		font-size: 17px;
+		font-weight: 900;
+		line-height: 20px;
+	}
+
+	.popup-message {
+		font-size: 14px;
+		font-weight: 700;
+		line-height: 18px;
+		opacity: 0.82;
+	}
+
+	.popup-close {
+		width: 34px;
+		height: 34px;
+		margin: 0;
+		padding: 0;
+
+		align-items: center;
+		justify-content: center;
+
+		background-color: $monopoly-ink;
+		border-radius: $monopoly-radius-board;
+		color: $monopoly-board;
+		font-size: 13px;
+	}
+
 	.trade-create-button {
 		width: 116px;
 		height: 38px;
