@@ -1,0 +1,25 @@
+@using Sandbox;
+@using Sandbox.UI;
+@using Sandbox.ui.components.buttons
+@inherits PanelComponent
+
+<root class="monopoly-flow-ui">
+	<div class="flow-screen menu-screen">
+		<div class="flow-panel menu-panel">
+			<div class="flow-kicker">Grand Casinopoly</div>
+			<div class="flow-title">Monopory</div>
+			<div class="flow-copy">Gather the table, tune the rules, and take it to the board.</div>
+			<div class="flow-actions">
+				<MonopolyButton Variant="flow-primary-button" OnClick="@OpenLobby">Host Lobby</MonopolyButton>
+			</div>
+		</div>
+	</div>
+</root>
+
+@code
+{
+	private void OpenLobby()
+	{
+		MonopolySceneFlow.LoadLobby( Scene );
+	}
+}

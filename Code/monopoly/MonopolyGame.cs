@@ -12,11 +12,24 @@ public enum MonopolyGamePhase
 	TurnEnded
 }
 
+public enum MonopolyMatchState
+{
+	Lobby,
+	Starting,
+	InGame,
+	Paused,
+	GameOver
+}
+
 public sealed class MonopolyGame : Component
 {
 	[Property] public List<MonopolyPlayerState> Players { get; set; } = new();
 	[Property] public MonopolyGameConfig Config { get; set; } = new();
 
+	[Property, Sync] public MonopolyMatchState MatchState { get; set; } = MonopolyMatchState.Lobby;
+	[Property, Sync] public int WinnerPlayerIndex { get; set; } = -1;
+	[Property, Sync] public float GameStartedAt { get; set; }
+	[Property, Sync] public int StartingPlayerCount { get; set; }
 	[Property, Sync] public int CurrentPlayerIndex { get; set; }
 	[Property, Sync] public int LastDieA { get; set; }
 	[Property, Sync] public int LastDieB { get; set; }
@@ -27,7 +40,7 @@ public sealed class MonopolyGame : Component
 	[Property] public MonopolyBoard Board { get; set; }
 
 	public MonopolyPlayerState CurrentPlayer =>
-		Players.Count == 0 ? null : Players[CurrentPlayerIndex];
+		Players.Count == 0 || CurrentPlayerIndex < 0 || CurrentPlayerIndex >= Players.Count ? null : Players[CurrentPlayerIndex];
 
 	[Property, Sync] public MonopolyGamePhase Phase { get; set; } = MonopolyGamePhase.WaitingToRoll;
 	[Property, Sync] public int PendingPurchaseSpaceIndex { get; set; } = -1;
@@ -49,9 +62,20 @@ public sealed class MonopolyGame : Component
 	public bool HasPendingForcedPayment =>
 		PendingForcedPaymentPlayerIndex >= 0 && PendingForcedPaymentAmount > 0;
 
+	public bool IsInGame => MatchState == MonopolyMatchState.InGame;
+	public bool IsPaused => MatchState == MonopolyMatchState.Paused;
+	public bool HasStarted => MatchState is MonopolyMatchState.InGame or MonopolyMatchState.Paused or MonopolyMatchState.GameOver;
+	public bool CanStartGame => GetLobbyPlayers().Count >= MinPlayers && GetLobbyPlayers().All( player => player.IsReady );
+	public int MinPlayers => Math.Clamp( Config?.MinPlayers ?? 2, 1, Math.Max( Players.Count, 1 ) );
+	public int MaxPlayers => Math.Clamp( Config?.MaxPlayers ?? Players.Count, MinPlayers, Math.Max( Players.Count, MinPlayers ) );
+	public MonopolyPlayerState Winner =>
+		WinnerPlayerIndex >= 0 ? Players.ElementAtOrDefault( WinnerPlayerIndex ) : null;
+
 	private static MonopolyGame instance;
 	private int nextPopupId = 1;
 	private readonly List<MonopolyPopup> popups = new();
+	private float pausedTurnRemainingSeconds;
+	private float pausedAuctionRemainingSeconds;
 
 	public static MonopolyGame Instance => instance;
 	public IReadOnlyList<MonopolyPopup> Popups => popups;
@@ -59,7 +83,7 @@ public sealed class MonopolyGame : Component
 	public int LocalSelectedSpaceIndex { get; set; } = -1;
 
 	public MonopolySpaceDef SelectedSpace =>
-		LocalSelectedSpaceIndex >= 0 && LocalSelectedSpaceIndex < Board.Spaces.Count
+		Board is not null && LocalSelectedSpaceIndex >= 0 && LocalSelectedSpaceIndex < Board.Spaces.Count
 			? Board.GetSpaceDef(LocalSelectedSpaceIndex)
 			: null;
 
@@ -80,12 +104,19 @@ public sealed class MonopolyGame : Component
 		if ( !Networking.IsHost )
 			return;
 
-		foreach ( var connection in Connection.All )
-		{
-			RegisterPlayer( connection );
-		}
+		var bootstrap = MonopolyMatchBootstrap.Current;
+		if ( bootstrap?.Config is not null )
+			Config = bootstrap.Config;
 
-		StartTurnTimer();
+		SyncLobbyConnections();
+		ResetGameState( false );
+
+		if ( bootstrap?.AutoStartGame == true )
+		{
+			TryStartGame( false );
+			StartingPlayerCount = Math.Max( StartingPlayerCount, bootstrap.StartingPlayerCount );
+			MonopolyMatchBootstrap.Clear();
+		}
 	}
 
 	protected override void OnUpdate()
@@ -95,17 +126,15 @@ public sealed class MonopolyGame : Component
 		if ( !Networking.IsHost )
 			return;
 
-		foreach ( var connection in Connection.All )
-		{
-			if ( GetPlayerForConnection( connection ) is null )
-			{
-				RegisterPlayer( connection );
-			}
-		}
+		SyncLobbyConnections();
+
+		if ( MatchState != MonopolyMatchState.InGame )
+			return;
 
 		RemoveInvalidTrades();
 		UpdateAuction();
 		UpdateTurnTimer();
+		CheckForGameOver();
 	}
 
 	private void UpdateTurnTimer()
@@ -221,6 +250,213 @@ public sealed class MonopolyGame : Component
 	private Connection GetConnectionForPlayer( MonopolyPlayerState player )
 	{
 		return Connection.All.FirstOrDefault( c => c.SteamId == player.OwnerId );
+	}
+
+	public List<MonopolyPlayerState> GetLobbyPlayers()
+	{
+		return Players
+			.Where( player => player is not null && player.IsAssigned )
+			.Take( MaxPlayers )
+			.ToList();
+	}
+
+	private List<MonopolyPlayerState> GetAssignedPlayers()
+	{
+		return Players
+			.Where( player => player is not null && player.IsAssigned )
+			.ToList();
+	}
+
+	private void SyncLobbyConnections()
+	{
+		if ( !Networking.IsHost )
+			return;
+
+		if ( HasStarted && MatchState != MonopolyMatchState.GameOver )
+			return;
+
+		foreach ( var player in Players.Where( player => player is not null && player.IsAssigned ).ToList() )
+		{
+			if ( Connection.All.Any( connection => connection.SteamId == player.OwnerId ) )
+				continue;
+
+			ClearPlayerSlot( player );
+		}
+
+		foreach ( var connection in Connection.All )
+		{
+			if ( GetPlayerForConnection( connection ) is not null )
+				continue;
+
+			if ( GetAssignedPlayers().Count >= MaxPlayers )
+				continue;
+
+			RegisterPlayer( connection );
+		}
+	}
+
+	private void ClearPlayerSlot( MonopolyPlayerState player )
+	{
+		if ( player is null )
+			return;
+
+		player.OwnerId = 0;
+		player.PlayerName = "Player";
+		player.IsReady = false;
+		ResetPlayerForGame( player );
+	}
+
+	private void ResetPlayerForGame( MonopolyPlayerState player )
+	{
+		if ( player is null )
+			return;
+
+		player.Money = Math.Max( Config?.StartingMoney ?? 1500, 0 );
+		player.SpaceIndex = 0;
+		player.IsInJail = false;
+		player.ConsecutiveDoubles = 0;
+		player.SkipsNextTurn = false;
+		player.IsBankrupt = false;
+	}
+
+	private void ResetGameState( bool resetPlayers )
+	{
+		CurrentPlayerIndex = 0;
+		LastDieA = 0;
+		LastDieB = 0;
+		Phase = MonopolyGamePhase.WaitingToRoll;
+		PendingPurchaseSpaceIndex = -1;
+		ClearAuction();
+		NextTradeId = 1;
+		FreeParkingBank = 0;
+		CurrentTurnGetsExtraRoll = false;
+		CurrentTurnEndsAt = 0f;
+		WinnerPlayerIndex = -1;
+		GameStartedAt = 0f;
+		StartingPlayerCount = 0;
+		pausedTurnRemainingSeconds = 0f;
+		pausedAuctionRemainingSeconds = 0f;
+		ClearPendingForcedPayment();
+		PropertyOwners.Clear();
+		PropertyImprovements.Clear();
+		MortgagedProperties.Clear();
+		PendingTrades.Clear();
+
+		foreach ( var player in Players )
+		{
+			if ( resetPlayers )
+				ClearPlayerSlot( player );
+			else
+				ResetPlayerForGame( player );
+		}
+	}
+
+	private bool IsHostCaller( Connection caller )
+	{
+		if ( Networking.IsHost && (caller is null || caller == Connection.Local) )
+			return true;
+
+		return false;
+	}
+
+	private bool CanAcceptGameplayInput()
+	{
+		return MatchState == MonopolyMatchState.InGame;
+	}
+
+	public bool TryStartGame( bool requireReady = true )
+	{
+		if ( !Networking.IsHost )
+			return false;
+
+		SyncLobbyConnections();
+
+		if ( requireReady && !CanStartGame )
+			return false;
+
+		if ( !requireReady && GetLobbyPlayers().Count < MinPlayers )
+			return false;
+
+		var activePlayers = GetLobbyPlayers();
+		ResetGameState( false );
+		StartingPlayerCount = activePlayers.Count;
+
+		foreach ( var player in Players )
+		{
+			if ( player is not null && player.IsAssigned && !activePlayers.Contains( player ) )
+				ClearPlayerSlot( player );
+		}
+
+		foreach ( var player in activePlayers )
+		{
+			ResetPlayerForGame( player );
+			player.IsReady = false;
+		}
+
+		var firstPlayerIndex = Players.FindIndex( player => player is not null && player.IsAssigned );
+		CurrentPlayerIndex = Math.Max( firstPlayerIndex, 0 );
+		MatchState = MonopolyMatchState.Starting;
+		GameStartedAt = Time.Now;
+		MatchState = MonopolyMatchState.InGame;
+		StartTurnTimer();
+
+		SendPopupToAll( "Game started", "The first turn is live.", MonopolyPopupKind.Success, true, 4f );
+		return true;
+	}
+
+	public bool TrySetReady( MonopolyPlayerState player, bool isReady )
+	{
+		if ( !Networking.IsHost || MatchState != MonopolyMatchState.Lobby )
+			return false;
+
+		if ( player is null || !player.IsAssigned )
+			return false;
+
+		player.IsReady = isReady;
+		return true;
+	}
+
+	public bool TryPauseGame()
+	{
+		if ( !Networking.IsHost || MatchState != MonopolyMatchState.InGame )
+			return false;
+
+		pausedTurnRemainingSeconds = CurrentTurnEndsAt <= 0f ? 0f : Math.Max( 0f, CurrentTurnEndsAt - Time.Now );
+		pausedAuctionRemainingSeconds = AuctionEndsAt <= 0f ? 0f : Math.Max( 0f, AuctionEndsAt - Time.Now );
+		CurrentTurnEndsAt = 0f;
+		AuctionEndsAt = 0f;
+		MatchState = MonopolyMatchState.Paused;
+		SendPopupToAll( "Paused", "The host paused the game.", MonopolyPopupKind.Info, true, 4f );
+		return true;
+	}
+
+	public bool TryResumeGame()
+	{
+		if ( !Networking.IsHost || MatchState != MonopolyMatchState.Paused )
+			return false;
+
+		if ( pausedTurnRemainingSeconds > 0f )
+			CurrentTurnEndsAt = Time.Now + pausedTurnRemainingSeconds;
+
+		if ( pausedAuctionRemainingSeconds > 0f )
+			AuctionEndsAt = Time.Now + pausedAuctionRemainingSeconds;
+
+		pausedTurnRemainingSeconds = 0f;
+		pausedAuctionRemainingSeconds = 0f;
+		MatchState = MonopolyMatchState.InGame;
+		SendPopupToAll( "Resumed", "Back to the board.", MonopolyPopupKind.Success, true, 3f );
+		return true;
+	}
+
+	public bool TryReturnToLobby()
+	{
+		if ( !Networking.IsHost )
+			return false;
+
+		ResetGameState( false );
+		SyncLobbyConnections();
+		MatchState = MonopolyMatchState.Lobby;
+		return true;
 	}
 
 	public MonopolyPlayerState GetPlayerForString( string playerString )
@@ -380,12 +616,8 @@ public sealed class MonopolyGame : Component
 
 		emptySlot.OwnerId = connection.SteamId;
 		emptySlot.PlayerName = connection.DisplayName;
-		emptySlot.Money = Math.Max( Config?.StartingMoney ?? 1500, 0 );
-		emptySlot.SpaceIndex = 0;
-		emptySlot.IsInJail = false;
-		emptySlot.ConsecutiveDoubles = 0;
-		emptySlot.SkipsNextTurn = false;
-		emptySlot.IsBankrupt = false;
+		emptySlot.IsReady = false;
+		ResetPlayerForGame( emptySlot );
 
 		Log.Info( $"Assigned {connection.DisplayName} to Monopoly player slot {Players.IndexOf( emptySlot )}" );
 	}
@@ -394,6 +626,9 @@ public sealed class MonopolyGame : Component
 	public async Task RollDiceAsync(int amount = -1)
 	{
 		if ( !Networking.IsHost )
+			return;
+
+		if ( !CanAcceptGameplayInput() )
 			return;
 
 		if ( CurrentPlayer is null )
@@ -1138,6 +1373,9 @@ public sealed class MonopolyGame : Component
 		if ( !Networking.IsHost )
 			return;
 
+		if ( !CanAcceptGameplayInput() )
+			return;
+
 		if ( Phase != MonopolyGamePhase.WaitingForBuyDecision )
 			return;
 
@@ -1162,6 +1400,9 @@ public sealed class MonopolyGame : Component
 		if ( !Networking.IsHost )
 			return;
 
+		if ( !CanAcceptGameplayInput() )
+			return;
+
 		if ( Phase != MonopolyGamePhase.WaitingForBuyDecision )
 			return;
 
@@ -1177,6 +1418,9 @@ public sealed class MonopolyGame : Component
 		if ( !Networking.IsHost )
 			return;
 
+		if ( !CanAcceptGameplayInput() )
+			return;
+
 		if ( Phase != MonopolyGamePhase.WaitingForBuyDecision )
 			return;
 
@@ -1185,6 +1429,9 @@ public sealed class MonopolyGame : Component
 
 	private void StartAuction( int spaceIndex )
 	{
+		if ( !CanAcceptGameplayInput() )
+			return;
+
 		var def = Board?.GetSpaceDef( spaceIndex );
 		if ( def is null || !IsPurchasableSpace( def ) || GetOwnerIndexForSpace( spaceIndex ) >= 0 )
 		{
@@ -1241,6 +1488,9 @@ public sealed class MonopolyGame : Component
 
 	private bool CanCurrentPlayerAct( Connection caller )
 	{
+		if ( !CanAcceptGameplayInput() )
+			return false;
+
 		if ( caller == null )
 			return false;
 
@@ -1254,6 +1504,49 @@ public sealed class MonopolyGame : Component
 			return true;
 
 		return currentPlayer.OwnerId == caller.SteamId;
+	}
+
+	[Rpc.Host]
+	public void RequestSetReady( bool isReady )
+	{
+		var player = GetPlayerForConnection( Rpc.Caller );
+		TrySetReady( player, isReady );
+	}
+
+	[Rpc.Host]
+	public void RequestStartGame()
+	{
+		if ( !IsHostCaller( Rpc.Caller ) )
+			return;
+
+		TryStartGame();
+	}
+
+	[Rpc.Host]
+	public void RequestPauseGame()
+	{
+		if ( !IsHostCaller( Rpc.Caller ) )
+			return;
+
+		TryPauseGame();
+	}
+
+	[Rpc.Host]
+	public void RequestResumeGame()
+	{
+		if ( !IsHostCaller( Rpc.Caller ) )
+			return;
+
+		TryResumeGame();
+	}
+
+	[Rpc.Host]
+	public void RequestReturnToLobby()
+	{
+		if ( !IsHostCaller( Rpc.Caller ) )
+			return;
+
+		TryReturnToLobby();
 	}
 
 	[Rpc.Host]
@@ -1302,6 +1595,9 @@ public sealed class MonopolyGame : Component
 	[Rpc.Host]
 	public void RequestAuctionBid( int bidAmount )
 	{
+		if ( !CanAcceptGameplayInput() )
+			return;
+
 		var bidderIndex = GetPlayerIndexForCaller( Rpc.Caller );
 		if ( bidderIndex < 0 )
 			return;
@@ -1312,6 +1608,9 @@ public sealed class MonopolyGame : Component
 	public void PlaceAuctionBid( int bidderIndex, int bidAmount )
 	{
 		if ( !Networking.IsHost )
+			return;
+
+		if ( !CanAcceptGameplayInput() )
 			return;
 
 		if ( Phase != MonopolyGamePhase.Auctioning )
@@ -1335,6 +1634,9 @@ public sealed class MonopolyGame : Component
 	[Rpc.Host]
 	public void RequestBuildImprovement( int spaceIndex )
 	{
+		if ( !CanAcceptGameplayInput() )
+			return;
+
 		var playerIndex = GetPlayerIndexForCaller( Rpc.Caller );
 		if ( !CanBuildImprovement( playerIndex, spaceIndex ) )
 			return;
@@ -1354,6 +1656,9 @@ public sealed class MonopolyGame : Component
 	[Rpc.Host]
 	public void RequestSellImprovement( int spaceIndex )
 	{
+		if ( !CanAcceptGameplayInput() )
+			return;
+
 		var playerIndex = GetPlayerIndexForCaller( Rpc.Caller );
 		if ( !CanSellImprovement( playerIndex, spaceIndex ) )
 			return;
@@ -1377,6 +1682,9 @@ public sealed class MonopolyGame : Component
 	[Rpc.Host]
 	public void RequestMortgageProperty( int spaceIndex )
 	{
+		if ( !CanAcceptGameplayInput() )
+			return;
+
 		var playerIndex = GetPlayerIndexForCaller( Rpc.Caller );
 		if ( !CanMortgageProperty( playerIndex, spaceIndex ) )
 			return;
@@ -1395,6 +1703,9 @@ public sealed class MonopolyGame : Component
 	[Rpc.Host]
 	public void RequestUnmortgageProperty( int spaceIndex )
 	{
+		if ( !CanAcceptGameplayInput() )
+			return;
+
 		var playerIndex = GetPlayerIndexForCaller( Rpc.Caller );
 		if ( !CanUnmortgageProperty( playerIndex, spaceIndex ) )
 			return;
@@ -1413,6 +1724,9 @@ public sealed class MonopolyGame : Component
 	[Rpc.Host]
 	public void RequestCreateTrade( int receiverPlayerIndex, int senderMoney, int receiverMoney, string senderPropertyIndexes, string receiverPropertyIndexes )
 	{
+		if ( !CanAcceptGameplayInput() )
+			return;
+
 		var senderPlayerIndex = GetPlayerIndexForCaller( Rpc.Caller );
 		if ( senderPlayerIndex < 0 )
 			return;
@@ -1438,6 +1752,9 @@ public sealed class MonopolyGame : Component
 	[Rpc.Host]
 	public void RequestAcceptTrade( int tradeId )
 	{
+		if ( !CanAcceptGameplayInput() )
+			return;
+
 		if ( !TryGetTrade( tradeId, out var trade ) )
 			return;
 
@@ -1474,6 +1791,9 @@ public sealed class MonopolyGame : Component
 	[Rpc.Host]
 	public void RequestDenyTrade( int tradeId )
 	{
+		if ( !CanAcceptGameplayInput() )
+			return;
+
 		if ( !TryGetTrade( tradeId, out var trade ) )
 			return;
 
@@ -1742,6 +2062,36 @@ public sealed class MonopolyGame : Component
 
 		var creditorText = creditor is null ? "" : $" while owing {creditor.PlayerName}";
 		Log.Info( $"{player.PlayerName} went bankrupt{creditorText}." );
+		CheckForGameOver();
+	}
+
+	private void CheckForGameOver()
+	{
+		if ( MatchState != MonopolyMatchState.InGame )
+			return;
+
+		if ( StartingPlayerCount <= 1 )
+			return;
+
+		var remaining = Players
+			.Select( ( player, index ) => new { player, index } )
+			.Where( entry => entry.player is not null && entry.player.IsAssigned && !entry.player.IsBankrupt )
+			.ToList();
+
+		if ( remaining.Count > 1 )
+			return;
+
+		WinnerPlayerIndex = remaining.Count == 1 ? remaining[0].index : -1;
+		CurrentTurnEndsAt = 0f;
+		ClearAuction();
+		ClearPendingForcedPayment();
+		PendingPurchaseSpaceIndex = -1;
+		Phase = MonopolyGamePhase.TurnEnded;
+		MatchState = MonopolyMatchState.GameOver;
+
+		var winnerName = Winner?.PlayerName ?? "No one";
+		SendPopupToAll( "Game over", $"{winnerName} won the game.", MonopolyPopupKind.Success, true, 8f );
+		Log.Info( $"Monopoly game over. Winner: {winnerName}." );
 	}
 
 	private void CompleteTurn()
@@ -1763,6 +2113,9 @@ public sealed class MonopolyGame : Component
 		if ( !Networking.IsHost )
 			return;
 
+		if ( !CanAcceptGameplayInput() )
+			return;
+
 		if ( Phase != MonopolyGamePhase.TurnEnded )
 			return;
 
@@ -1776,6 +2129,10 @@ public sealed class MonopolyGame : Component
 
 	private void AdvanceTurn()
 	{
+		CheckForGameOver();
+		if ( MatchState == MonopolyMatchState.GameOver )
+			return;
+
 		if ( Players.Count == 0 )
 			return;
 
@@ -2075,6 +2432,7 @@ public sealed class MonopolyGame : Component
 	private bool CanPlayerManageProperties( int playerIndex )
 	{
 		return playerIndex >= 0 &&
+			CanAcceptGameplayInput() &&
 			CurrentPlayerIndex == playerIndex &&
 			Players.ElementAtOrDefault( playerIndex )?.IsBankrupt != true &&
 			(Phase == MonopolyGamePhase.WaitingToRoll || Phase == MonopolyGamePhase.TurnEnded);

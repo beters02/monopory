@@ -1,0 +1,269 @@
+{
+  "__guid": "09afa813-4618-456c-b23c-67ecc301a5f9",
+  "GameObjects": [
+    {
+      "__guid": "d69338b7-c8f8-4b75-8b8f-d15121aac85b",
+      "__version": 2,
+      "Flags": 0,
+      "Name": "Scene Info",
+      "Position": "0,0,0",
+      "Rotation": "0,0,0,1",
+      "Scale": "1,1,1",
+      "Tags": "",
+      "Enabled": true,
+      "NetworkMode": 2,
+      "NetworkFlags": 0,
+      "NetworkOrphaned": 0,
+      "NetworkTransmit": true,
+      "OwnerTransfer": 1,
+      "Components": [
+        {
+          "__type": "Sandbox.SceneInformation",
+          "__guid": "fe4728fc-cf3c-421d-9c54-9cf1b661b233",
+          "__enabled": true,
+          "Flags": 0,
+          "Author": null,
+          "Changes": null,
+          "Description": null,
+          "Group": null,
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null,
+          "SceneTags": "",
+          "Title": null,
+          "Version": null
+        },
+        {
+          "__type": "MonopolySceneInfo",
+          "__guid": "9ba2a5b4-8d0f-4776-9e28-6389ffe77bbe",
+          "__enabled": true,
+          "Flags": 0,
+          "Description": "Lobby scene for ready checks and match setup.",
+          "Group": "Flow",
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null,
+          "Title": "Lobby"
+        }
+      ],
+      "Children": []
+    },
+    {
+      "__guid": "b0fbce83-6dff-4d06-b4c8-e494ef5f208d",
+      "__version": 2,
+      "Flags": 0,
+      "Name": "Camera",
+      "Position": "298.80899,-320.370758,142.730774",
+      "Rotation": "0,0,0,1",
+      "Scale": "1,1,1",
+      "Tags": "maincamera",
+      "Enabled": true,
+      "NetworkMode": 2,
+      "NetworkFlags": 0,
+      "NetworkOrphaned": 0,
+      "NetworkTransmit": true,
+      "OwnerTransfer": 1,
+      "Components": [
+        {
+          "__type": "Sandbox.CameraComponent",
+          "__guid": "5d87a6eb-eaf8-49a2-bd6b-66af14fc9bd0",
+          "__enabled": true,
+          "Flags": 0,
+          "BackgroundColor": "0.33333,0.46275,0.52157,1",
+          "ClearFlags": "All",
+          "EnablePostProcessing": true,
+          "FieldOfView": 60,
+          "FovAxis": "Horizontal",
+          "IsMainCamera": true,
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null,
+          "Orthographic": false,
+          "OrthographicHeight": 1204,
+          "PostProcessAnchor": null,
+          "Priority": 1,
+          "RenderExcludeTags": "",
+          "RenderTags": "",
+          "RenderTexture": null,
+          "TargetEye": "None",
+          "Viewport": "0,0,1,1",
+          "ZFar": 10000,
+          "ZNear": 10
+        }
+      ],
+      "Children": []
+    },
+    {
+      "__guid": "04f17a18-2449-4e31-a1e6-88083375f095",
+      "__version": 2,
+      "Flags": 0,
+      "Name": "LobbyController",
+      "Position": "298.80899,-320.370758,142.730774",
+      "Rotation": "0,0,0,1",
+      "Scale": "1,1,1",
+      "Tags": "",
+      "Enabled": true,
+      "NetworkMode": 1,
+      "NetworkFlags": 0,
+      "NetworkOrphaned": 1,
+      "NetworkTransmit": true,
+      "OwnerTransfer": 0,
+      "Components": [
+        {
+          "__type": "MonopolyLobbyController",
+          "__guid": "3cc865cf-e410-4871-a8ef-145da321c683",
+          "__enabled": true,
+          "Flags": 0,
+          "Config": {
+            "MinPlayers": 1,
+            "MaxPlayers": 6,
+            "LandedUnownedMode": "SkipOrAuction",
+            "StartingMoney": 1500,
+            "DoublesGoesAgain": false,
+            "VacationCash": false,
+            "DontCollectRentWhileInPrison": false,
+            "EvenBuild": true,
+            "TurnTimeLimitSeconds": 180
+          },
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null,
+          "ReadyPlayers": {}
+        }
+      ],
+      "Children": []
+    },
+    {
+      "__guid": "606c71c0-1d9b-41a9-b417-f792d2ba0d48",
+      "__version": 2,
+      "Flags": 0,
+      "Name": "UIRoot",
+      "Position": "298.80899,-320.370758,142.730774",
+      "Rotation": "0,0,0,1",
+      "Scale": "1,1,1",
+      "Tags": "",
+      "Enabled": true,
+      "NetworkMode": 2,
+      "NetworkFlags": 0,
+      "NetworkOrphaned": 0,
+      "NetworkTransmit": true,
+      "OwnerTransfer": 1,
+      "Components": [
+        {
+          "__type": "Sandbox.ScreenPanel",
+          "__guid": "1eff8260-d693-4b64-aca7-6b23b438b6dd",
+          "__enabled": true,
+          "Flags": 0,
+          "AutoScreenScale": true,
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null,
+          "Opacity": 1,
+          "Scale": 1,
+          "ScaleStrategy": "ConsistentHeight",
+          "TargetCamera": null,
+          "ZIndex": 100
+        }
+      ],
+      "Children": [
+        {
+          "__guid": "02be10af-234e-42a6-a939-10f88ddfe880",
+          "__version": 2,
+          "Flags": 0,
+          "Name": "LobbyMenu",
+          "Position": "0,0,0",
+          "Rotation": "0,0,0,1",
+          "Scale": "1,1,1",
+          "Tags": "",
+          "Enabled": true,
+          "NetworkMode": 2,
+          "NetworkFlags": 0,
+          "NetworkOrphaned": 0,
+          "NetworkTransmit": true,
+          "OwnerTransfer": 1,
+          "Components": [
+            {
+              "__type": "Sandbox.ui.MonopolyLobbyMenu",
+              "__guid": "86b0b359-3ed5-48c7-8018-7ef365491ad9",
+              "__enabled": true,
+              "Flags": 0,
+              "BlockedSound": "",
+              "LobbyRef": {
+                "_type": "component",
+                "component_id": "3cc865cf-e410-4871-a8ef-145da321c683",
+                "go": "04f17a18-2449-4e31-a1e6-88083375f095",
+                "component_type": "MonopolyLobbyController"
+              },
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null
+            }
+          ],
+          "Children": []
+        }
+      ]
+    }
+  ],
+  "SceneProperties": {
+    "NetworkInterpolation": true,
+    "TimeScale": 1,
+    "WantsSystemScene": true,
+    "Metadata": {
+      "Title": "Lobby",
+      "Group": "Flow",
+      "Description": "Lobby scene for ready checks and match setup."
+    },
+    "NavMesh": {
+      "Enabled": false,
+      "IncludeStaticBodies": true,
+      "IncludeKeyframedBodies": true,
+      "EditorAutoUpdate": false,
+      "AgentHeight": 64,
+      "AgentRadius": 16,
+      "AgentStepSize": 18,
+      "AgentMaxSlope": 40,
+      "ExcludedBodies": "",
+      "IncludedBodies": "",
+      "DeferGeneration": false,
+      "CustomBounds": false
+    },
+    "GameObjectSystems": {
+      "Sandbox.SelectionSetsSystem": {
+        "Data": {
+          "SelectionSets": []
+        }
+      },
+      "Sandbox.MovieMaker.MovieRecorderSystem": {
+        "DisableClientRecording": false
+      },
+      "Sandbox.Clutter.ClutterGridSystem": {
+        "Storage": {
+          "$blob": "91fafa63-ca27-4189-9e6c-d496e8792c15"
+        }
+      }
+    }
+  },
+  "ResourceVersion": 3,
+  "Title": "Lobby",
+  "Description": "Lobby scene for ready checks and match setup.",
+  "__references": [],
+  "__version": 3
+}

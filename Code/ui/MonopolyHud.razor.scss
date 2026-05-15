@@ -77,6 +77,160 @@ MonopolyHud {
     	left: 32px;
 	}
 
+	.session-screen {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		z-index: 35;
+
+		background-color: rgba(8, 17, 15, 0.72);
+
+		display: flex;
+		align-items: center;
+		justify-content: center;
+
+		pointer-events: all;
+	}
+
+	.pause-screen {
+		z-index: 45;
+	}
+
+	.session-panel {
+		width: 520px;
+		max-width: 86%;
+		padding: 28px;
+
+		background-color: $monopoly-board;
+		border: 4px solid $monopoly-ink;
+		border-radius: $monopoly-radius-board;
+		box-shadow: 0 18px 60px rgba(0, 0, 0, 0.38);
+
+		color: $monopoly-ink;
+		font-family: $monopoly-font-family;
+
+		display: flex;
+		flex-direction: column;
+		gap: 14px;
+	}
+
+	.lobby-panel {
+		width: 620px;
+	}
+
+	.session-kicker {
+		color: $monopoly-danger;
+		font-size: 16px;
+		font-weight: 900;
+		text-transform: uppercase;
+	}
+
+	.session-title {
+		font-size: 46px;
+		font-weight: 900;
+		line-height: 48px;
+	}
+
+	.session-copy {
+		font-size: 17px;
+		font-weight: 700;
+		line-height: 23px;
+		opacity: 0.78;
+	}
+
+	.session-actions {
+		margin-top: 8px;
+
+		display: flex;
+		gap: 10px;
+	}
+
+	.session-actions .monopoly-button {
+		margin-top: 0;
+		min-width: 150px;
+		height: 48px;
+
+		border: 3px solid $monopoly-ink;
+		border-radius: $monopoly-radius-board;
+		text-transform: uppercase;
+	}
+
+	.session-primary-button {
+		background-color: $monopoly-gold;
+		color: $monopoly-ink;
+	}
+
+	.session-secondary-button {
+		background-color: $monopoly-ink;
+		color: $monopoly-board;
+	}
+
+	.session-secondary-button:hover {
+		background-color: $monopoly-ink-hover;
+	}
+
+	.lobby-list {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+	}
+
+	.lobby-player-row {
+		min-height: 62px;
+		padding: 10px 12px;
+
+		background-color: rgba(255, 255, 255, 0.42);
+		border: 3px solid rgba(18, 31, 29, 0.24);
+		border-radius: $monopoly-radius-board;
+
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 14px;
+	}
+
+	.lobby-player-row.local {
+		border-color: $monopoly-gold;
+	}
+
+	.lobby-player-row.ready {
+		background-color: rgba(48, 137, 91, 0.18);
+	}
+
+	.lobby-player-name {
+		font-size: 20px;
+		font-weight: 900;
+		line-height: 24px;
+	}
+
+	.lobby-player-detail {
+		font-size: 13px;
+		font-weight: 800;
+		text-transform: uppercase;
+		opacity: 0.62;
+	}
+
+	.lobby-ready-pill {
+		min-width: 92px;
+		padding: 8px 10px;
+
+		background-color: $monopoly-ink;
+		border-radius: $monopoly-radius-board;
+		color: $monopoly-board;
+
+		font-size: 13px;
+		font-weight: 900;
+		text-align: center;
+		text-transform: uppercase;
+	}
+
+	.pause-button {
+		background-color: $monopoly-ink;
+		color: $monopoly-board;
+	}
+
 	
 
 	.popup-stack {

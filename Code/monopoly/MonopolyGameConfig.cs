@@ -9,6 +9,8 @@ public enum MonopolyUnownedLandingMode
 
 public sealed class MonopolyGameConfig
 {
+	[Property] public int MinPlayers { get; set; } = 1;
+	[Property] public int MaxPlayers { get; set; } = 6;
 	[Property] public MonopolyUnownedLandingMode LandedUnownedMode { get; set; } = MonopolyUnownedLandingMode.SkipOrAuction;
 	[Property] public int StartingMoney { get; set; } = 1500;
 	[Property] public bool DoublesGoesAgain { get; set; } = false;

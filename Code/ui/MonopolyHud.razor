@@ -31,6 +31,21 @@
 			</div>
 		}
 
+		@if ( GameRef.MatchState == MonopolyMatchState.GameOver )
+		{
+			<div class="session-screen game-over-screen">
+				<div class="session-panel">
+					<div class="session-kicker">Game Over</div>
+					<div class="session-title">@WinnerName Wins</div>
+					<div class="session-copy">Return to the lobby to change players or start another round with the same table.</div>
+					<div class="session-actions">
+						<MonopolyButton Variant="session-primary-button" OnClick="@ReturnToLobby">Back To Lobby</MonopolyButton>
+					</div>
+				</div>
+			</div>
+		}
+		else
+		{
 		<HudPanel Variant="hud-card">
 			<ChildContent>
 				<HudPanelTitle>Grand Casinopoly</HudPanelTitle>
@@ -44,16 +59,35 @@
 				<HudPanelBody>Last Roll: @GameRef.LastDieA + @GameRef.LastDieB</HudPanelBody>
 				<HudPanelBody>Phase: @GameRef.Phase</HudPanelBody>
 
-				@if ( GameRef.Phase == MonopolyGamePhase.WaitingToRoll && CurrentPlayer == LocalPlayer )
+				@if ( GameRef.MatchState == MonopolyMatchState.InGame && GameRef.Phase == MonopolyGamePhase.WaitingToRoll && CurrentPlayer == LocalPlayer )
 				{
 					<MonopolyButton OnClick="@RollDice">Roll Dice</MonopolyButton>
 				}
-				@if ( CurrentPlayer == LocalPlayer )
+				@if ( GameRef.MatchState == MonopolyMatchState.InGame && CurrentPlayer == LocalPlayer )
 				{
 					<MonopolyButton Variant="@EndTurnButtonClasses" CanClick="@CanEndTurn" OnClick="@EndTurn" OnBlocked="@ShowEndTurnBlocked">End Turn</MonopolyButton>
 				}
+				@if ( GameRef.MatchState == MonopolyMatchState.InGame )
+				{
+					<MonopolyButton Variant="pause-button" OnClick="@PauseGame">Pause</MonopolyButton>
+				}
 			</ChildContent>
 		</HudPanel>
+
+		@if ( GameRef.MatchState == MonopolyMatchState.Paused )
+		{
+			<div class="session-screen pause-screen">
+				<div class="session-panel">
+					<div class="session-kicker">Paused</div>
+					<div class="session-title">Game Paused</div>
+					<div class="session-copy">The table is frozen until the host resumes or returns everyone to the lobby.</div>
+					<div class="session-actions">
+						<MonopolyButton Variant="session-primary-button" OnClick="@ResumeGame">Resume</MonopolyButton>
+						<MonopolyButton Variant="session-secondary-button" OnClick="@ReturnToLobby">Back To Lobby</MonopolyButton>
+					</div>
+				</div>
+			</div>
+		}
 
 
 
@@ -396,6 +430,7 @@
 				}
 			</div>
 		}
+		}
 	}
 </root>
 
@@ -420,6 +455,45 @@
 		CurrentTurnRemainingSeconds < 0
 			? "Off"
 			: $"{CurrentTurnRemainingSeconds / 60:00}:{CurrentTurnRemainingSeconds % 60:00}";
+
+	private string WinnerName =>
+		GameRef?.Winner?.PlayerName ?? "No One";
+
+	private void PauseGame()
+	{
+		if ( GameRef is null )
+			return;
+
+		if ( Networking.IsHost )
+			GameRef.TryPauseGame();
+		else
+			GameRef.RequestPauseGame();
+	}
+
+	private void ResumeGame()
+	{
+		if ( GameRef is null )
+			return;
+
+		if ( Networking.IsHost )
+			GameRef.TryResumeGame();
+		else
+			GameRef.RequestResumeGame();
+	}
+
+	private void ReturnToLobby()
+	{
+		if ( GameRef is null )
+			return;
+
+		if ( Networking.IsHost )
+		{
+			GameRef.TryReturnToLobby();
+			MonopolySceneFlow.LoadLobby( Scene );
+		}
+		else
+			GameRef.RequestReturnToLobby();
+	}
 
 	private readonly HashSet<int> ExpandedPropertyPanels = new();
 	private readonly HashSet<int> ComposerSenderPropertyIndexes = new();
@@ -491,6 +565,7 @@
 		return System.HashCode.Combine(
 			System.HashCode.Combine(
 				GameRef?.LocalSelectedSpaceIndex ?? -1,
+				GameRef?.MatchState ?? 0,
 				GameRef?.Phase ?? 0,
 				GameRef?.CurrentPlayerIndex ?? -1,
 				GetPropertyOwnersHash(),
@@ -513,8 +588,9 @@
 				GetPopupsHash()
 			),
 			GameRef?.Config?.VacationCash ?? false,
-			GameRef?.FreeParkingBank ?? 0,
-			CurrentTurnRemainingSeconds
+				GameRef?.FreeParkingBank ?? 0,
+			CurrentTurnRemainingSeconds,
+			GameRef?.WinnerPlayerIndex ?? -1
 		);
 	}
 

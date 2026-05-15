@@ -11,6 +11,7 @@ public sealed class MonopolyPlayerState : Component
 	[Property, Sync] public int ConsecutiveDoubles { get; set; }
 	[Property, Sync] public bool SkipsNextTurn { get; set; }
 	[Property, Sync] public bool IsBankrupt { get; set; }
+	[Property, Sync] public bool IsReady { get; set; }
 
 	[Property, Sync] public string PlayerName { get; set; } = "Player";
 

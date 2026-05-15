@@ -1,0 +1,165 @@
+@using Sandbox;
+@using Sandbox.UI;
+@using Sandbox.ui.components.buttons
+@using System;
+@inherits PanelComponent
+
+<root class="monopoly-flow-ui">
+	<div class="flow-screen lobby-screen">
+		<div class="flow-panel lobby-panel">
+			<div class="flow-kicker">Lobby</div>
+			<div class="flow-title">Players</div>
+
+			@if ( Lobby is null )
+			{
+				<div class="flow-copy">Lobby controller missing.</div>
+			}
+			else
+			{
+				<div class="lobby-list">
+					@foreach ( var player in Players )
+					{
+						<div class="@GetPlayerClasses( player )">
+							<div>
+								<div class="lobby-player-name">@player.Name</div>
+								<div class="lobby-player-detail">@GetPlayerDetail( player )</div>
+							</div>
+							<div class="lobby-ready-pill">@GetReadyLabel( player )</div>
+						</div>
+					}
+				</div>
+
+				<div class="flow-copy">@LobbyStatusText</div>
+				<div class="flow-actions">
+					<MonopolyButton Variant="@ReadyButtonClasses" OnClick="@ToggleReady">@ReadyButtonLabel</MonopolyButton>
+					<MonopolyButton Variant="@StartButtonClasses" CanClick="@CanStartGame" OnClick="@StartGame" OnBlocked="@ShowStartBlocked">Start Game</MonopolyButton>
+					<MonopolyButton Variant="flow-secondary-button" OnClick="@BackToMenu">Back</MonopolyButton>
+				</div>
+			}
+		</div>
+	</div>
+</root>
+
+@code
+{
+	[Property] public MonopolyLobbyController LobbyRef { get; set; }
+	[Property] public string BlockedSound { get; set; } = "";
+
+	private MonopolyLobbyController Lobby => LobbyRef;
+	private List<MonopolyLobbyPlayer> Players => Lobby?.Players ?? new();
+	private MonopolyLobbyPlayer LocalPlayer => Lobby?.LocalPlayer;
+	private bool CanStartGame => Lobby?.CanStartGame == true;
+
+	private string LobbyStatusText
+	{
+		get
+		{
+			if ( Lobby is null )
+				return "Lobby controller missing.";
+
+			if ( Players.Count < Lobby.MinPlayers )
+				return $"Waiting for {Lobby.MinPlayers - Players.Count} more player(s).";
+
+			if ( HasUnreadyPlayers )
+				return "Waiting for everyone to ready up.";
+
+			return "Ready to start.";
+		}
+	}
+
+	private string ReadyButtonLabel => LocalPlayer?.IsReady == true ? "Unready" : "Ready";
+	private string ReadyButtonClasses => LocalPlayer?.IsReady == true ? "flow-secondary-button ready" : "flow-primary-button";
+	private string StartButtonClasses => CanStartGame ? "flow-primary-button" : "flow-primary-button blocked-action-button";
+
+	private bool HasUnreadyPlayers
+	{
+		get
+		{
+			for ( var i = 0; i < Players.Count; i++ )
+			{
+				if ( !Players[i].IsReady )
+					return true;
+			}
+
+			return false;
+		}
+	}
+
+	protected override int BuildHash()
+	{
+		var hash = new HashCode();
+		hash.Add( Lobby is not null );
+		hash.Add( CanStartGame );
+		hash.Add( LobbyStatusText );
+
+		foreach ( var player in Players )
+		{
+			hash.Add( player.OwnerId );
+			hash.Add( player.Name );
+			hash.Add( player.IsReady );
+		}
+
+		return hash.ToHashCode();
+	}
+
+	private void ToggleReady()
+	{
+		if ( Lobby is null || LocalPlayer is null )
+			return;
+
+		if ( Networking.IsHost )
+			Lobby.TrySetReady( LocalPlayer.OwnerId, !LocalPlayer.IsReady );
+		else
+			Lobby.RequestSetReady( !LocalPlayer.IsReady );
+	}
+
+	private void StartGame()
+	{
+		if ( Lobby is null )
+			return;
+
+		if ( Networking.IsHost )
+			Lobby.TryStartGame();
+		else
+			Lobby.RequestStartGame();
+	}
+
+	private void BackToMenu()
+	{
+		if ( Lobby is null )
+			return;
+
+		Lobby.RequestBackToMenu();
+	}
+
+	private void ShowStartBlocked()
+	{
+		if ( string.IsNullOrWhiteSpace( BlockedSound ) )
+			return;
+
+		Sound.Play( BlockedSound );
+	}
+
+	private static string GetPlayerClasses( MonopolyLobbyPlayer player )
+	{
+		var classes = "lobby-player-row";
+
+		if ( player.IsLocal )
+			classes += " local";
+
+		if ( player.IsReady )
+			classes += " ready";
+
+		return classes;
+	}
+
+	private static string GetPlayerDetail( MonopolyLobbyPlayer player )
+	{
+		return player.IsLocal ? "You" : "Connected";
+	}
+
+	private static string GetReadyLabel( MonopolyLobbyPlayer player )
+	{
+		return player.IsReady ? "Ready" : "Not Ready";
+	}
+}
