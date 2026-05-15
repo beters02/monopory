@@ -1,0 +1,19 @@
+@import "../../MonopolyTheme.scss";
+@import "MonopolyButton.razor.scss";    
+
+.monopoly-button.monopoly-close-button {
+    width: 34px;
+    height: 34px;
+    margin: 0;
+    padding: 0;
+
+    align-items: center;
+    justify-content: center;
+
+    background-color: $monopoly-ink;
+    border-radius: $monopoly-radius-board;
+    color: $monopoly-board;
+    font-size: 13px;
+}
+
+

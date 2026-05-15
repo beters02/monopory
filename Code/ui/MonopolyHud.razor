@@ -2,6 +2,7 @@
 @using Sandbox.UI;
 @using Sandbox.ui.components.HudPanel;
 @using System;
+@using Sandbox.ui.components.buttons
 @inherits PanelComponent
 
 <root class="monopoly-hud">
@@ -23,7 +24,7 @@
 
 						@if ( popup.CanDismiss )
 						{
-							<button class="popup-close" onclick="@(() => DismissPopup( popup.Id ))">X</button>
+							<MonopolyCloseButton OnClick="@(() => DismissPopup( popup.Id ))"></MonopolyCloseButton>
 						}
 					</div>
 				}
@@ -44,11 +45,11 @@
 
 				@if ( GameRef.Phase == MonopolyGamePhase.WaitingToRoll && CurrentPlayer == LocalPlayer )
 				{
-					<button onclick="@RollDice">Roll Dice</button>
+					<MonopolyButton OnClick="@RollDice">Roll Dice</MonopolyButton>
 				}
 				@if ( CurrentPlayer == LocalPlayer )
 				{
-					<button class="@EndTurnButtonClasses" onclick="@EndTurn">End Turn</button>
+					<MonopolyButton Variant="@EndTurnButtonClasses" CanClick="@CanEndTurn" OnClick="@EndTurn" OnBlocked="@ShowEndTurnBlocked">End Turn</MonopolyButton>
 				}
 			</ChildContent>
 		</HudPanel>
@@ -67,23 +68,27 @@
 
 						<HudPanel Variant="@GetPropertyPanelClasses( playerIndex, isExpanded )">
 							<ChildContent>
-								<button class="property-player-button" onclick="@(() => TogglePropertyPanel( playerIndex ))">
-									<div class="property-player-name">@player.PlayerName</div>
-									<div class="property-player-money">$@player.Money</div>
-								</button>
+								<MonopolyButton Variant="property-player-button" OnClick="@(() => TogglePropertyPanel( playerIndex ))" Sound = "@(GetPropertyPanelSound( playerIndex ))">
+									<ChildContent>
+										<div class="property-player-name">@player.PlayerName</div>
+										<div class="property-player-money">$@player.Money</div>
+									</ChildContent>
+								</MonopolyButton>
 
 								<div class="property-grid">
 									@foreach ( var property in PropertySpaces )
 									{
-										<button
-											class="@GetPropertySquareClasses( property, playerIndex )"
-											title="@property.DisplayName"
-											onclick="@(() => SelectPropertySpace( property.Index ))">
-											@if ( GameRef.IsMortgaged( property.Index ) )
-											{
-												<div class="property-mortgage-marker">M</div>
-											}
-										</button>
+										<MonopolyButton
+											Variant="@GetPropertySquareClasses( property, playerIndex )"
+											Title="@property.DisplayName"
+											OnClick="@(() => SelectPropertySpace( property.Index ))">
+											<ChildContent>
+												@if ( GameRef.IsMortgaged( property.Index ) )
+												{
+													<div class="property-mortgage-marker">M</div>
+												}
+											</ChildContent>
+										</MonopolyButton>
 									}
 								</div>
 
@@ -101,7 +106,7 @@
 		<div class="trade-panel">
 			<div class="trade-panel-header">
 				<div class="trade-panel-title">Trades</div>
-				<button class="trade-create-button" onclick="@OpenTradeComposer">+ Create</button>
+				<MonopolyButton Variant="trade-create-button" OnClick="@OpenTradeComposer">+ Create</MonopolyButton>
 			</div>
 
 			@if ( Trades.Count == 0 )
@@ -119,26 +124,28 @@
 						var isSender = trade.SenderPlayerIndex == GameRef.LocalPlayerIndex;
 
 						<div class="@GetTradeRowClasses( trade )">
-							<button class="trade-row-main" onclick="@(() => OpenTradeViewer( trade.Id ))">
-								<span class="trade-mini-box">@GetTradeSideLabel( trade, true )</span>
-								<span class="trade-mini-box">@GetTradeSideLabel( trade, false )</span>
-								<span>@sender</span>
-								<span class="trade-arrow">-&gt;</span>
-								<span>@receiver</span>
-								@if ( isReceiver )
-								{
-									<span class="trade-looking">looking</span>
-								}
-							</button>
+							<MonopolyButton Variant="trade-row-main" OnClick="@(() => OpenTradeViewer( trade.Id ))">
+								<ChildContent>
+									<span class="trade-mini-box">@GetTradeSideLabel( trade, true )</span>
+									<span class="trade-mini-box">@GetTradeSideLabel( trade, false )</span>
+									<span>@sender</span>
+									<span class="trade-arrow">-&gt;</span>
+									<span>@receiver</span>
+									@if ( isReceiver )
+									{
+										<span class="trade-looking">looking</span>
+									}
+								</ChildContent>
+							</MonopolyButton>
 
 							@if ( isReceiver )
 							{
-								<button class="trade-icon-button accept" onclick="@(() => AcceptTrade( trade.Id ))">OK</button>
-								<button class="trade-icon-button deny" onclick="@(() => DenyTrade( trade.Id ))">X</button>
+								<MonopolyButton Variant="trade-icon-button accept" OnClick="@(() => AcceptTrade( trade.Id ))">OK</MonopolyButton>
+								<MonopolyButton Variant="trade-icon-button deny" OnClick="@(() => DenyTrade( trade.Id ))">X</MonopolyButton>
 							}
 							else if ( isSender )
 							{
-								<button class="trade-icon-button deny" onclick="@(() => DenyTrade( trade.Id ))">X</button>
+								<MonopolyButton Variant="trade-icon-button deny" OnClick="@(() => DenyTrade( trade.Id ))">X</MonopolyButton>
 							}
 						</div>
 					}
@@ -150,24 +157,24 @@
 		{
 			<div class="trade-modal-backdrop">
 				<div class="trade-modal">
-					<button class="trade-modal-close" onclick="@CloseTradeComposer">X</button>
+					<MonopolyCloseButton Variant="trade-modal-close" OnClick="@CloseTradeComposer"></MonopolyCloseButton>
 					<div class="trade-modal-title">Create a trade</div>
 
 					<div class="trade-editor">
 						<div class="trade-side">
 							<div class="trade-player-name">@GetPlayerName( GameRef.LocalPlayerIndex )</div>
 							<div class="trade-money-row">
-								<button onclick="@(() => AdjustSenderMoney( -50 ))">-</button>
+								<MonopolyButton OnClick="@(() => AdjustSenderMoney( -50 ))">-</MonopolyButton>
 								<div class="trade-money-pill">$@ComposerSenderMoney</div>
-								<button onclick="@(() => AdjustSenderMoney( 50 ))">+</button>
+								<MonopolyButton OnClick="@(() => AdjustSenderMoney( 50 ))">+</MonopolyButton>
 							</div>
 							<div class="trade-property-picker">
 								@foreach ( var propertyIndex in LocalOwnedPropertyIndexes )
 								{
 									var property = GameRef.Board.GetSpaceDef( propertyIndex );
-									<button class="@GetComposerPropertyClasses( propertyIndex, true )" onclick="@(() => ToggleSenderProperty( propertyIndex ))">
+									<MonopolyButton Variant="@GetComposerPropertyClasses( propertyIndex, true )" OnClick="@(() => ToggleSenderProperty( propertyIndex ))">
 										@property?.DisplayName
-									</button>
+									</MonopolyButton>
 								}
 							</div>
 						</div>
@@ -179,27 +186,27 @@
 								@foreach ( var player in TradeTargets )
 								{
 									var index = GameRef.GetPlayerIndex( player );
-									<button class="@GetTradeTargetClasses( index )" onclick="@(() => SelectTradeTarget( index ))">@player.PlayerName</button>
+									<MonopolyButton Variant="@GetTradeTargetClasses( index )" OnClick="@(() => SelectTradeTarget( index ))">@player.PlayerName</MonopolyButton>
 								}
 							</div>
 							<div class="trade-money-row">
-								<button onclick="@(() => AdjustReceiverMoney( -50 ))">-</button>
+								<MonopolyButton OnClick="@(() => AdjustReceiverMoney( -50 ))">-</MonopolyButton>
 								<div class="trade-money-pill">$@ComposerReceiverMoney</div>
-								<button onclick="@(() => AdjustReceiverMoney( 50 ))">+</button>
+								<MonopolyButton OnClick="@(() => AdjustReceiverMoney( 50 ))">+</MonopolyButton>
 							</div>
 							<div class="trade-property-picker">
 								@foreach ( var propertyIndex in ReceiverOwnedPropertyIndexes )
 								{
 									var property = GameRef.Board.GetSpaceDef( propertyIndex );
-									<button class="@GetComposerPropertyClasses( propertyIndex, false )" onclick="@(() => ToggleReceiverProperty( propertyIndex ))">
+									<MonopolyButton Variant="@GetComposerPropertyClasses( propertyIndex, false )" OnClick="@(() => ToggleReceiverProperty( propertyIndex ))">
 										@property?.DisplayName
-									</button>
+									</MonopolyButton>
 								}
 							</div>
 						</div>
 					</div>
 
-					<button class="trade-send-button" onclick="@SendTrade">Send trade</button>
+					<MonopolyButton Variant="trade-send-button" OnClick="@SendTrade">Send trade</MonopolyButton>
 				</div>
 			</div>
 		}
@@ -208,7 +215,7 @@
 		{
 			<div class="trade-modal-backdrop">
 				<div class="trade-modal trade-view-modal">
-					<button class="trade-modal-close" onclick="@CloseTradeViewer">X</button>
+					<MonopolyCloseButton Variant="trade-modal-close" OnClick="@CloseTradeViewer"></MonopolyCloseButton>
 					<div class="trade-modal-title">@GetPlayerName( ViewedTrade.SenderPlayerIndex ) -&gt; @GetPlayerName( ViewedTrade.ReceiverPlayerIndex )</div>
 
 					<div class="trade-summary-grid">
@@ -233,8 +240,8 @@
 					@if ( ViewedTrade.ReceiverPlayerIndex == GameRef.LocalPlayerIndex )
 					{
 						<div class="trade-modal-actions">
-							<button class="trade-send-button" onclick="@(() => AcceptTrade( ViewedTrade.Id ))">Accept</button>
-							<button class="trade-deny-button" onclick="@(() => DenyTrade( ViewedTrade.Id ))">Deny</button>
+							<MonopolyButton Variant="trade-send-button" OnClick="@(() => AcceptTrade( ViewedTrade.Id ))">Accept</MonopolyButton>
+							<MonopolyButton Variant="trade-deny-button" OnClick="@(() => DenyTrade( ViewedTrade.Id ))">Deny</MonopolyButton>
 						</div>
 					}
 				</div>
@@ -268,10 +275,12 @@
 								@foreach ( var increment in AuctionBidIncrements )
 								{
 									var bid = GameRef.AuctionCurrentBid + increment;
-									<button class="@GetAuctionBidButtonClasses( bid )" onclick="@(() => BidAuction( bid ))">
-										<span>$@bid</span>
-										<span>+$@increment</span>
-									</button>
+									<MonopolyButton Variant="@GetAuctionBidButtonClasses( bid )" OnClick="@(() => BidAuction( bid ))">
+										<ChildContent>
+											<span>$@bid</span>
+											<span>+$@increment</span>
+										</ChildContent>
+									</MonopolyButton>
 								}
 							</div>
 						</div>
@@ -320,9 +329,7 @@
 		@if ( SelectedSpace is not null )
 		{
 			<div class="@SpaceCardClasses">
-				<button class="@SpaceCardCloseButtonClasses" onclick="@CloseSelectedSpace">
-					<span>X</span>
-				</button>
+				<MonopolyCloseButton Variant="@SpaceCardCloseButtonClasses" CanClick="@CanCloseSelectedSpace" OnClick="@CloseSelectedSpace" OnBlocked="@ShowSelectedSpaceCloseBlocked"></MonopolyCloseButton>
 
 				<div class="space-card-header">
 					<div class="space-color-band"></div>
@@ -366,8 +373,8 @@
 				@if ( CanBuySelectedSpace )
 				{
 					<div class="space-buttons">
-						<button onclick="@BuyProperty">Buy</button>
-						<button onclick="@AuctionProperty">Auction</button>
+						<MonopolyButton OnClick="@BuyProperty">Buy</MonopolyButton>
+						<MonopolyButton OnClick="@AuctionProperty">Auction</MonopolyButton>
 					</div>
 				}
 
@@ -377,12 +384,12 @@
 						@if ( IsProperty )
 						{
 							<div class="space-buttons improvement-buttons">
-								<button class="@BuildImprovementButtonClasses" onclick="@BuildImprovement">@BuildImprovementActionLabel</button>
-								<button class="@SellImprovementButtonClasses" onclick="@SellImprovement">@SellImprovementActionLabel</button>
+								<MonopolyButton Variant="@BuildImprovementButtonClasses" OnClick="@BuildImprovement">@BuildImprovementActionLabel</MonopolyButton>
+								<MonopolyButton Variant="@SellImprovementButtonClasses" OnClick="@SellImprovement">@SellImprovementActionLabel</MonopolyButton>
 							</div>
 						}
 						<div class="space-buttons mortgage-buttons">
-							<button class="@MortgageButtonClasses" onclick="@Mortgage">@MortgageActionLabel</button>
+							<MonopolyButton Variant="@MortgageButtonClasses" OnClick="@Mortgage">@MortgageActionLabel</MonopolyButton>
 						</div>
 					</div>
 				}
@@ -431,24 +438,26 @@
 
 	private void EndTurn()
 	{
-		if ( GameRef?.Phase != MonopolyGamePhase.TurnEnded )
-		{
-			PlayBlockedActionSound();
-			GameRef?.ShowLocalPopup(
-				"Cannot end turn yet",
-				GetEndTurnBlockedMessage(),
-				MonopolyPopupKind.Warning,
-				true,
-				3f
-			);
-			return;
-		}
-
 		GameRef?.RequestEndTurn();
 	}
 
+	private void ShowEndTurnBlocked()
+	{
+		PlayBlockedActionSound();
+		GameRef?.ShowLocalPopup(
+			"Cannot end turn yet",
+			GetEndTurnBlockedMessage(),
+			MonopolyPopupKind.Warning,
+			true,
+			3f
+		);
+	}
+
 	private string EndTurnButtonClasses =>
-		GameRef?.Phase == MonopolyGamePhase.TurnEnded ? "" : "blocked-action-button";
+		CanEndTurn ? "" : "blocked-action-button";
+
+	private bool CanEndTurn =>
+		GameRef?.Phase == MonopolyGamePhase.TurnEnded;
 
 	private void BuyProperty()
 	{
@@ -608,24 +617,31 @@
 			ExpandedPropertyPanels.Remove( playerIndex );
 	}
 
+	private MonopolySound GetPropertyPanelSound(int playerIndex)
+	{
+		if (IsPropertyPanelExpanded(playerIndex))
+			return MonopolyAssets.Sounds.ClickAndClose;
+
+		return MonopolyAssets.Sounds.ClickAndOpen;
+	}
+
 	private void SelectPropertySpace( int spaceIndex ) => GameRef?.SelectSpace( spaceIndex );
 
 	private void CloseSelectedSpace()
 	{
-		if ( ShouldBlockSelectedSpaceClose )
-		{
-			PlayBlockedActionSound();
-			GameRef?.ShowLocalPopup(
-				"Decision required",
-				$"Buy or auction {SelectedSpace?.DisplayName ?? "this property"} before closing this card.",
-				MonopolyPopupKind.Warning,
-				true,
-				3f
-			);
-			return;
-		}
-
 		SelectPropertySpace( -1 );
+	}
+
+	private void ShowSelectedSpaceCloseBlocked()
+	{
+		PlayBlockedActionSound();
+		GameRef?.ShowLocalPopup(
+			"Decision required",
+			$"Buy or auction {SelectedSpace?.DisplayName ?? "this property"} before closing this card.",
+			MonopolyPopupKind.Warning,
+			true,
+			3f
+		);
 	}
 
 	private string GetPropertyPanelClasses( int playerIndex, bool isExpanded )
@@ -838,6 +854,9 @@
 
 	private string SpaceCardCloseButtonClasses =>
 		ShouldBlockSelectedSpaceClose ? "space-card-close blocked-action-button" : "space-card-close";
+
+	private bool CanCloseSelectedSpace =>
+		!ShouldBlockSelectedSpaceClose;
 
 	private int SelectedSpaceIndex =>
 		GameRef?.LocalSelectedSpaceIndex ?? -1;

@@ -1,0 +1,30 @@
+@import "../../MonopolyTheme.scss";
+
+.monopoly-button {
+    margin-top: 10px;
+    padding: 10px 14px;
+
+    background-color: $monopoly-gold;
+    color: $monopoly-ink;
+
+    border-radius: $monopoly-radius-control;
+    font-weight: 800;
+    font-size: 16px;
+
+    cursor: pointer;
+    pointer-events: all;
+}
+
+.monopoly-button:hover {
+    background-color: $monopoly-gold-hover;
+}
+
+.monopoly-button.blocked-action-button {
+    background-color: $monopoly-blocked-action;
+    color: $monopoly-text;
+    cursor: not-allowed;
+}
+
+.monopoly-button.blocked-action-button:hover {
+    background-color: $monopoly-blocked-action-hover;
+}

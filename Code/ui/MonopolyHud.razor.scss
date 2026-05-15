@@ -1,5 +1,7 @@
 @import "MonopolyTheme.scss";
 @import "components/HudPanel/HudPanel.razor.scss";
+@import "components/buttons/MonopolyButton.razor.scss";
+@import "components/buttons/MonopolyCloseButton.razor.scss";
 
 MonopolyHud {
 	position: absolute;
@@ -75,34 +77,7 @@ MonopolyHud {
     	left: 32px;
 	}
 
-	button {
-		margin-top: 10px;
-		padding: 10px 14px;
-
-		background-color: $monopoly-gold;
-		color: $monopoly-ink;
-
-		border-radius: $monopoly-radius-control;
-		font-weight: 800;
-		font-size: 16px;
-
-		cursor: pointer;
-		pointer-events: all;
-	}
-
-	button:hover {
-		background-color: $monopoly-gold-hover;
-	}
-
-	button.blocked-action-button {
-		background-color: $monopoly-blocked-action;
-		color: $monopoly-text;
-		cursor: not-allowed;
-	}
-
-	button.blocked-action-button:hover {
-		background-color: $monopoly-blocked-action-hover;
-	}
+	
 
 	.popup-stack {
 		position: absolute;
@@ -177,20 +152,34 @@ MonopolyHud {
 		opacity: 0.82;
 	}
 
-	.popup-close {
-		width: 34px;
-		height: 34px;
-		margin: 0;
-		padding: 0;
+	/*.monopoly-button {
+		margin-top: 10px;
+		padding: 10px 14px;
 
-		align-items: center;
-		justify-content: center;
+		background-color: $monopoly-gold;
+		color: $monopoly-ink;
 
-		background-color: $monopoly-ink;
-		border-radius: $monopoly-radius-board;
-		color: $monopoly-board;
-		font-size: 13px;
+		border-radius: $monopoly-radius-control;
+		font-weight: 800;
+		font-size: 16px;
+
+		cursor: pointer;
+		pointer-events: all;
 	}
+
+	.monopoly-button:hover {
+		background-color: $monopoly-gold-hover;
+	}
+
+	.monopoly-button.blocked-action-button {
+		background-color: $monopoly-blocked-action;
+		color: $monopoly-text;
+		cursor: not-allowed;
+	}
+
+	.monopoly-button.blocked-action-button:hover {
+		background-color: $monopoly-blocked-action-hover;
+	}*/
 
 	.trade-create-button {
 		width: 116px;
@@ -732,7 +721,7 @@ MonopolyHud {
 		gap: 8px;
 	}
 
-	.trade-money-row button {
+	.trade-money-row .monopoly-button {
 		width: 34px;
 		height: 30px;
 		margin: 0;
@@ -1506,7 +1495,7 @@ MonopolyHud {
 		margin-top: 0;
 	}
 
-	.space-buttons button {
+	.space-buttons .monopoly-button {
 		flex: 1;
 		height: 52px;
 
@@ -1522,7 +1511,7 @@ MonopolyHud {
 		cursor: pointer;
 	}
 
-	.space-buttons button:hover {
+	.space-buttons .monopoly-button:hover {
 		background-color: $monopoly-ink-hover;
 	}
 
@@ -1530,7 +1519,7 @@ MonopolyHud {
 		gap: 8px;
 	}
 
-	.space-card-board .space-buttons button {
+	.space-card-board .space-buttons .monopoly-button {
 		background-color: $monopoly-ink;
 		border: 3px solid $monopoly-ink;
 		border-radius: $monopoly-radius-board;
@@ -1539,18 +1528,18 @@ MonopolyHud {
 		text-transform: uppercase;
 	}
 
-	.space-card-board .space-buttons button:hover {
+	.space-card-board .space-buttons .monopoly-button:hover {
 		background-color: $monopoly-ink-hover;
 	}
 
-	.space-card-board .space-buttons button.disabled {
+	.space-card-board .space-buttons .monopoly-button.disabled {
 		background-color: rgba(0, 0, 0, 0.34);
 		border-color: rgba(0, 0, 0, 0.34);
 		color: rgba(209, 232, 223, 0.58);
 		cursor: default;
 	}
 
-	.space-card-board .space-buttons button.disabled:hover {
+	.space-card-board .space-buttons .monopoly-button.disabled:hover {
 		background-color: rgba(0, 0, 0, 0.34);
 	}
 }
