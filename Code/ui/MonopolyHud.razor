@@ -39,6 +39,7 @@
 				<HudPanelEmptyLine></HudPanelEmptyLine>
 				<HudPanelEmptyLine></HudPanelEmptyLine>
 				<HudPanelSubtitle>Game</HudPanelSubtitle>
+				<HudPanelBody>Time Left: @CurrentTurnTimeText</HudPanelBody>
 				<HudPanelBody>Current Player: @CurrentPlayerName</HudPanelBody>
 				<HudPanelBody>Last Roll: @GameRef.LastDieA + @GameRef.LastDieB</HudPanelBody>
 				<HudPanelBody>Phase: @GameRef.Phase</HudPanelBody>
@@ -410,6 +411,16 @@
 
 	private string CurrentPlayerName => CurrentPlayer?.PlayerName ?? "None";
 	private int LocalPlayerMoney => LocalPlayer?.Money ?? 0;
+	private int CurrentTurnRemainingSeconds =>
+		GameRef is null || GameRef.CurrentTurnEndsAt <= 0f
+			? -1
+			: Math.Max( 0, (int)MathF.Ceiling( GameRef.CurrentTurnEndsAt - Time.Now ) );
+
+	private string CurrentTurnTimeText =>
+		CurrentTurnRemainingSeconds < 0
+			? "Off"
+			: $"{CurrentTurnRemainingSeconds / 60:00}:{CurrentTurnRemainingSeconds % 60:00}";
+
 	private readonly HashSet<int> ExpandedPropertyPanels = new();
 	private readonly HashSet<int> ComposerSenderPropertyIndexes = new();
 	private readonly HashSet<int> ComposerReceiverPropertyIndexes = new();
@@ -502,7 +513,8 @@
 				GetPopupsHash()
 			),
 			GameRef?.Config?.VacationCash ?? false,
-			GameRef?.FreeParkingBank ?? 0
+			GameRef?.FreeParkingBank ?? 0,
+			CurrentTurnRemainingSeconds
 		);
 	}
 

@@ -15,4 +15,5 @@ public sealed class MonopolyGameConfig
 	[Property] public bool VacationCash { get; set; } = false;
 	[Property] public bool DontCollectRentWhileInPrison { get; set; } = false;
 	[Property] public bool EvenBuild { get; set; } = true;
+	[Property] public int TurnTimeLimitSeconds { get; set; } = 180;
 }

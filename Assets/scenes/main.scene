@@ -1784,9 +1784,10 @@
                 "VacationCash": false,
                 "DontCollectRentWhileInPrison": false,
                 "EvenBuild": true,
-                "InstantBankruptIfCantAfford": true
+                "TurnTimeLimitSeconds": 180
               },
               "CurrentPlayerIndex": 0,
+              "CurrentTurnEndsAt": 0,
               "CurrentTurnGetsExtraRoll": false,
               "FreeParkingBank": 0,
               "LastDieA": 0,
@@ -1799,6 +1800,12 @@
               "OnComponentFixedUpdate": null,
               "OnComponentStart": null,
               "OnComponentUpdate": null,
+              "PendingForcedPaymentAmount": 0,
+              "PendingForcedPaymentEachPlayerAmount": 0,
+              "PendingForcedPaymentPlayerIndex": -1,
+              "PendingForcedPaymentReceiverIndex": -1,
+              "PendingForcedPaymentToBank": false,
+              "PendingForcedPaymentToEachPlayer": false,
               "PendingPurchaseSpaceIndex": -1,
               "PendingTrades": {},
               "Phase": "WaitingToRoll",
@@ -2406,13 +2413,13 @@
       "CustomBounds": false
     },
     "GameObjectSystems": {
-      "Sandbox.MovieMaker.MovieRecorderSystem": {
-        "DisableClientRecording": false
-      },
       "Sandbox.Clutter.ClutterGridSystem": {
         "Storage": {
           "$blob": "7664decd-7b1f-4214-a5a2-850285e10057"
         }
+      },
+      "Sandbox.MovieMaker.MovieRecorderSystem": {
+        "DisableClientRecording": false
       },
       "Sandbox.SelectionSetsSystem": {
         "Data": {

@@ -38,6 +38,7 @@ public sealed class MonopolyGame : Component
 	[Property, Sync] public int NextTradeId { get; set; } = 1;
 	[Property, Sync] public int FreeParkingBank { get; set; }
 	[Property, Sync] public bool CurrentTurnGetsExtraRoll { get; set; }
+	[Property, Sync] public float CurrentTurnEndsAt { get; set; }
 	[Property, Sync] public int PendingForcedPaymentPlayerIndex { get; set; } = -1;
 	[Property, Sync] public int PendingForcedPaymentAmount { get; set; }
 	[Property, Sync] public int PendingForcedPaymentReceiverIndex { get; set; } = -1;
@@ -83,6 +84,8 @@ public sealed class MonopolyGame : Component
 		{
 			RegisterPlayer( connection );
 		}
+
+		StartTurnTimer();
 	}
 
 	protected override void OnUpdate()
@@ -102,6 +105,64 @@ public sealed class MonopolyGame : Component
 
 		RemoveInvalidTrades();
 		UpdateAuction();
+		UpdateTurnTimer();
+	}
+
+	private void UpdateTurnTimer()
+	{
+		var limit = Config?.TurnTimeLimitSeconds ?? 180;
+		if ( limit <= 0 )
+		{
+			CurrentTurnEndsAt = 0f;
+			return;
+		}
+
+		var player = CurrentPlayer;
+		if ( player is null || !player.IsAssigned || player.IsBankrupt )
+		{
+			AdvanceTurn();
+			return;
+		}
+
+		if ( Phase == MonopolyGamePhase.ResolvingSpace )
+			return;
+
+		if ( CurrentTurnEndsAt <= 0f )
+			StartTurnTimer();
+
+		if ( CurrentTurnEndsAt > 0f && Time.Now >= CurrentTurnEndsAt )
+			SkipCurrentTurnForTimeout();
+	}
+
+	private void StartTurnTimer()
+	{
+		var limit = Config?.TurnTimeLimitSeconds ?? 180;
+		CurrentTurnEndsAt = limit <= 0 ? 0f : Time.Now + limit;
+	}
+
+	private void SkipCurrentTurnForTimeout()
+	{
+		if ( CurrentPlayer is null )
+			return;
+
+		var skippedPlayerIndex = CurrentPlayerIndex;
+		var skippedPlayer = CurrentPlayer;
+
+		if ( HasPendingForcedPaymentForPlayer( skippedPlayerIndex ) )
+			BankruptPlayer( skippedPlayerIndex, Players.ElementAtOrDefault( PendingForcedPaymentReceiverIndex ) );
+
+		PendingPurchaseSpaceIndex = -1;
+
+		if ( Phase == MonopolyGamePhase.Auctioning )
+			ClearAuction();
+
+		CurrentTurnGetsExtraRoll = false;
+		Phase = MonopolyGamePhase.WaitingToRoll;
+
+		Log.Info( $"{skippedPlayer.PlayerName}'s turn timed out and was skipped." );
+		SendPopupToAll( "Turn skipped", $"{skippedPlayer.PlayerName}'s turn timed out.", MonopolyPopupKind.Warning, true, 4f );
+
+		AdvanceTurn();
 	}
 
 	private void UpdateAuction()
@@ -1688,6 +1749,7 @@ public sealed class MonopolyGame : Component
 		if ( CurrentTurnGetsExtraRoll )
 		{
 			CurrentTurnGetsExtraRoll = false;
+			StartTurnTimer();
 			return;
 		}
 
@@ -1709,6 +1771,7 @@ public sealed class MonopolyGame : Component
 
 		CompleteTurn();
 		Phase = MonopolyGamePhase.WaitingToRoll;
+		StartTurnTimer();
 	}
 
 	private void AdvanceTurn()
@@ -1732,7 +1795,10 @@ public sealed class MonopolyGame : Component
 			}
 
 			if ( player.IsAssigned && !player.IsBankrupt )
+			{
+				StartTurnTimer();
 				return;
+			}
 		}
 
 		for ( int i = 0; i < Players.Count; i++ )
@@ -1740,8 +1806,13 @@ public sealed class MonopolyGame : Component
 			CurrentPlayerIndex = (CurrentPlayerIndex + 1) % Players.Count;
 
 			if ( Players[CurrentPlayerIndex].IsAssigned && !Players[CurrentPlayerIndex].IsBankrupt )
+			{
+				StartTurnTimer();
 				return;
+			}
 		}
+
+		CurrentTurnEndsAt = 0f;
 	}
 
 	public List<MonopolyTradeRequest> GetTrades()
