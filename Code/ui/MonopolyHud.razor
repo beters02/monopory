@@ -457,7 +457,8 @@
 		CanEndTurn ? "" : "blocked-action-button";
 
 	private bool CanEndTurn =>
-		GameRef?.Phase == MonopolyGamePhase.TurnEnded;
+		GameRef?.Phase == MonopolyGamePhase.TurnEnded &&
+		GameRef.HasPendingForcedPayment != true;
 
 	private void BuyProperty()
 	{
@@ -1210,6 +1211,9 @@
 
 	private string GetEndTurnBlockedMessage()
 	{
+		if ( GameRef?.HasPendingForcedPayment == true )
+			return $"Raise ${GameRef.PendingForcedPaymentAmount} before ending your turn.";
+
 		return GameRef?.Phase switch
 		{
 			MonopolyGamePhase.WaitingToRoll => "Roll the dice before ending your turn.",

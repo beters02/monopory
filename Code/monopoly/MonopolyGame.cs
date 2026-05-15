@@ -38,6 +38,15 @@ public sealed class MonopolyGame : Component
 	[Property, Sync] public int NextTradeId { get; set; } = 1;
 	[Property, Sync] public int FreeParkingBank { get; set; }
 	[Property, Sync] public bool CurrentTurnGetsExtraRoll { get; set; }
+	[Property, Sync] public int PendingForcedPaymentPlayerIndex { get; set; } = -1;
+	[Property, Sync] public int PendingForcedPaymentAmount { get; set; }
+	[Property, Sync] public int PendingForcedPaymentReceiverIndex { get; set; } = -1;
+	[Property, Sync] public bool PendingForcedPaymentToBank { get; set; }
+	[Property, Sync] public bool PendingForcedPaymentToEachPlayer { get; set; }
+	[Property, Sync] public int PendingForcedPaymentEachPlayerAmount { get; set; }
+
+	public bool HasPendingForcedPayment =>
+		PendingForcedPaymentPlayerIndex >= 0 && PendingForcedPaymentAmount > 0;
 
 	private static MonopolyGame instance;
 	private int nextPopupId = 1;
@@ -227,7 +236,7 @@ public sealed class MonopolyGame : Component
 			return false;
 
 		var matches = Players
-			.Where( player => player is not null && player.IsAssigned )
+			.Where( player => player is not null && player.IsAssigned && !player.IsBankrupt )
 			.Where( player => IsPlayerNameMatch( player.PlayerName, reference, matchMode ) )
 			.ToList();
 
@@ -315,6 +324,7 @@ public sealed class MonopolyGame : Component
 		emptySlot.IsInJail = false;
 		emptySlot.ConsecutiveDoubles = 0;
 		emptySlot.SkipsNextTurn = false;
+		emptySlot.IsBankrupt = false;
 
 		Log.Info( $"Assigned {connection.DisplayName} to Monopoly player slot {Players.IndexOf( emptySlot )}" );
 	}
@@ -331,7 +341,7 @@ public sealed class MonopolyGame : Component
 		if ( Phase != MonopolyGamePhase.WaitingToRoll )
 			return;
 
-		if ( CurrentPlayer is null || !CurrentPlayer.IsAssigned )
+		if ( CurrentPlayer is null || !CurrentPlayer.IsAssigned || CurrentPlayer.IsBankrupt )
 		{
 			AdvanceTurn();
 			return;
@@ -386,7 +396,12 @@ public sealed class MonopolyGame : Component
 
 		if ( Phase == MonopolyGamePhase.ResolvingSpace )
 		{
-			if ( amount >= 0 )
+			if ( CurrentPlayer is not null && CurrentPlayer.IsBankrupt )
+			{
+				CompleteTurn();
+				Phase = MonopolyGamePhase.WaitingToRoll;
+			}
+			else if ( amount >= 0 && !HasPendingForcedPayment )
 			{
 				CompleteTurn();
 				Phase = MonopolyGamePhase.WaitingToRoll;
@@ -440,8 +455,8 @@ public sealed class MonopolyGame : Component
 				break;
 
 			case SpaceType.Tax:
-				PayBank( player, spaceDef.TaxAmount );
-				Log.Info( $"{player.PlayerName} paid ${spaceDef.TaxAmount} tax." );
+				if ( PayBank( player, spaceDef.TaxAmount ) )
+					Log.Info( $"{player.PlayerName} paid ${spaceDef.TaxAmount} tax." );
 				break;
 
 			case SpaceType.GoToJail:
@@ -457,11 +472,11 @@ public sealed class MonopolyGame : Component
 				break;
 
 			case SpaceType.Chance:
-				Log.Info( $"{player.PlayerName} drew a Chance card." );
+				ResolveCardLanding( player, MonopolyCardDeck.Chance );
 				break;
 
 			case SpaceType.CommunityChest:
-				Log.Info( $"{player.PlayerName} drew a Community Chest card." );
+				ResolveCardLanding( player, MonopolyCardDeck.CommunityChest );
 				break;
 
 			case SpaceType.Jail:
@@ -501,10 +516,8 @@ public sealed class MonopolyGame : Component
 			}
 
 			var rent = GetRentForSpace( def.Index );
-			player.Money -= rent;
-			owner.Money += rent;
-
-			Log.Info( $"{player.PlayerName} paid ${rent} rent to {owner.PlayerName}." );
+			if ( PayPlayer( player, owner, rent ) )
+				Log.Info( $"{player.PlayerName} paid ${rent} rent to {owner.PlayerName}." );
 			return;
 		}
 	}
@@ -750,7 +763,11 @@ public sealed class MonopolyGame : Component
 				return false;
 			}
 			
-			PayBank( player, def.Price );
+			if ( !PayBank( player, def.Price ) )
+			{
+				message = $"{player.PlayerName} could not pay for {def.DisplayName}.";
+				return false;
+			}
 		}
 		
 		PropertyOwners[def.Index] = playerIndex;
@@ -823,8 +840,11 @@ public sealed class MonopolyGame : Component
 			return false;
 		}
 
-		if ( useMoney )
-			PayBank( player, totalPrice );
+		if ( useMoney && !PayBank( player, totalPrice ) )
+		{
+			message = $"{player.PlayerName} could not pay for that property set.";
+			return false;
+		}
 
 		foreach ( var def in propertiesToBuy )
 		{
@@ -833,6 +853,221 @@ public sealed class MonopolyGame : Component
 		}
 
 		message = $"{player.PlayerName} bought {propertiesToBuy.Count} properties for ${totalPrice}.";
+		return true;
+	}
+
+	private void ResolveCardLanding( MonopolyPlayerState player, MonopolyCardDeck deck )
+	{
+		var card = DrawCard( deck );
+		if ( player is null || card is null )
+			return;
+
+		SendPopupToAll( card.Title, card.Description, MonopolyPopupKind.Info, true, 6f );
+		Log.Info( $"{player.PlayerName} drew {deck}: {card.Title}." );
+
+		ApplyCard( player, card );
+	}
+
+	private MonopolyCardDef DrawCard( MonopolyCardDeck deck )
+	{
+		var cards = deck == MonopolyCardDeck.Chance
+			? Board?.ChanceCards
+			: Board?.CommunityChestCards;
+
+		if ( cards is null || cards.Count == 0 )
+			return null;
+
+		return cards[Game.Random.Int( 0, cards.Count - 1 )];
+	}
+
+	private void ApplyCard( MonopolyPlayerState player, MonopolyCardDef card )
+	{
+		if ( player is null || card is null )
+			return;
+
+		switch ( card.Action )
+		{
+			case MonopolyCardAction.CollectFromBank:
+				player.Money += Math.Max( card.Amount, 0 );
+				TrySettlePendingForcedPaymentForPlayer( GetPlayerIndex( player ) );
+				Log.Info( $"{player.PlayerName} collected ${card.Amount} from {card.Title}." );
+				break;
+
+			case MonopolyCardAction.PayBank:
+				if ( PayBank( player, card.Amount ) )
+					Log.Info( $"{player.PlayerName} paid ${card.Amount} from {card.Title}." );
+				break;
+
+			case MonopolyCardAction.MoveToSpace:
+				MovePlayerToCardDestination( player, card.TargetSpaceIndex, card.CollectGo, card.ResolveDestination );
+				break;
+
+			case MonopolyCardAction.MoveRelative:
+				MovePlayerByCardOffset( player, card.RelativeSpaces, card.CollectGo, card.ResolveDestination );
+				break;
+
+			case MonopolyCardAction.GoToJail:
+				SendPlayerToJail( player );
+				CompleteTurn();
+				Phase = MonopolyGamePhase.WaitingToRoll;
+				break;
+
+			case MonopolyCardAction.CollectFromEachPlayer:
+				CollectFromEachPlayerForCard( player, card.Amount );
+				break;
+
+			case MonopolyCardAction.PayEachPlayer:
+				PayEachPlayerForCard( player, card.Amount );
+				break;
+
+			case MonopolyCardAction.PayPerImprovement:
+				PayPerImprovementForCard( player, card.HouseAmount, card.HotelAmount );
+				break;
+		}
+	}
+
+	private void MovePlayerToCardDestination( MonopolyPlayerState player, int targetSpaceIndex, bool collectGo, bool resolveDestination )
+	{
+		if ( player is null || Board is null || targetSpaceIndex < 0 )
+			return;
+
+		targetSpaceIndex = NormalizeSpaceIndex( targetSpaceIndex );
+		var passedGo = collectGo && targetSpaceIndex != 0 && targetSpaceIndex < player.SpaceIndex;
+
+		if ( passedGo )
+			player.Money += 200;
+
+		player.SpaceIndex = targetSpaceIndex;
+
+		if ( resolveDestination )
+			ResolveLanding( player );
+	}
+
+	private void MovePlayerByCardOffset( MonopolyPlayerState player, int relativeSpaces, bool collectGo, bool resolveDestination )
+	{
+		if ( player is null )
+			return;
+
+		var targetSpaceIndex = NormalizeSpaceIndex( player.SpaceIndex + relativeSpaces );
+		var passedGo = collectGo && relativeSpaces > 0 && targetSpaceIndex < player.SpaceIndex;
+
+		if ( passedGo )
+			player.Money += 200;
+
+		player.SpaceIndex = targetSpaceIndex;
+
+		if ( resolveDestination )
+			ResolveLanding( player );
+	}
+
+	private void PayPerImprovementForCard( MonopolyPlayerState player, int houseAmount, int hotelAmount )
+	{
+		var playerIndex = GetPlayerIndex( player );
+		if ( playerIndex < 0 )
+			return;
+
+		var houses = 0;
+		var hotels = 0;
+		foreach ( var spaceIndex in GetOwnedPropertyIndexes( playerIndex ) )
+		{
+			var count = GetImprovementCount( spaceIndex );
+			if ( count >= 5 )
+				hotels++;
+			else
+				houses += count;
+		}
+
+		var amount = houses * Math.Max( houseAmount, 0 ) + hotels * Math.Max( hotelAmount, 0 );
+		if ( amount <= 0 )
+		{
+			Log.Info( $"{player.PlayerName} had no repair fees." );
+			return;
+		}
+
+		if ( PayBank( player, amount ) )
+			Log.Info( $"{player.PlayerName} paid ${amount} for repairs." );
+	}
+
+	private void PayEachPlayerForCard( MonopolyPlayerState player, int amountPerPlayer )
+	{
+		var playerIndex = GetPlayerIndex( player );
+		var receivers = GetAssignedPlayerIndexes()
+			.Where( index => index != playerIndex )
+			.ToList();
+
+		var amount = Math.Max( amountPerPlayer, 0 );
+		var total = amount * receivers.Count;
+		if ( playerIndex < 0 || amount <= 0 || total <= 0 )
+			return;
+
+		if ( player.Money >= total )
+		{
+			CompleteForcedPaymentToEachPlayer( playerIndex, amount );
+			return;
+		}
+
+		if ( GetPlayerLiquidAssetTotal( playerIndex ) < total )
+		{
+			BankruptPlayer( playerIndex, null );
+			return;
+		}
+
+		BeginPendingForcedPaymentToEachPlayer( playerIndex, amount );
+	}
+
+	private void CollectFromEachPlayerForCard( MonopolyPlayerState player, int amountPerPlayer )
+	{
+		var receiverIndex = GetPlayerIndex( player );
+		var amount = Math.Max( amountPerPlayer, 0 );
+		if ( receiverIndex < 0 || amount <= 0 )
+			return;
+
+		foreach ( var payerIndex in GetAssignedPlayerIndexes().Where( index => index != receiverIndex ) )
+		{
+			var payer = Players.ElementAtOrDefault( payerIndex );
+			if ( payer is null || payer.Money < amount )
+				continue;
+
+			payer.Money -= amount;
+			player.Money += amount;
+		}
+	}
+
+	public bool TryChangeMoneyForPlayer( MonopolyPlayerState player, int amount, out string message )
+	{
+		message = "";
+
+		if ( !Networking.IsHost )
+		{
+			message = "Only the host can change player money directly.";
+			return false;
+		}
+
+		if ( player is null )
+		{
+			message = "Player does not exist.";
+			return false;
+		}
+
+		if ( GetPlayerIndex( player ) < 0 || !player.IsAssigned )
+		{
+			message = "Player is not part of this game.";
+			return false;
+		}
+
+		if ( player.IsBankrupt )
+		{
+			message = $"{player.PlayerName} is bankrupt.";
+			return false;
+		}
+
+		player.Money += amount;
+		TrySettlePendingForcedPaymentForPlayer( GetPlayerIndex( player ) );
+
+		var direction = amount >= 0 ? "added to" : "removed from";
+		var absoluteAmount = Math.Abs( amount );
+		Log.Info( $"Cheat changed {player.PlayerName}'s money: ${absoluteAmount} {direction} balance." );
+		message = $"{player.PlayerName} now has ${player.Money}.";
 		return true;
 	}
 
@@ -918,9 +1153,8 @@ public sealed class MonopolyGame : Component
 		if ( def is not null && AuctionHighBidderIndex >= 0 )
 		{
 			var winner = Players.ElementAtOrDefault( AuctionHighBidderIndex );
-			if ( winner is not null && winner.IsAssigned && winner.Money >= AuctionCurrentBid )
+			if ( winner is not null && winner.IsAssigned && winner.Money >= AuctionCurrentBid && PayBank( winner, AuctionCurrentBid ) )
 			{
-				PayBank( winner, AuctionCurrentBid );
 				PropertyOwners[def.Index] = AuctionHighBidderIndex;
 				SendPopupToAll( "Auction won", $"{winner.PlayerName} won {def.DisplayName} for ${AuctionCurrentBid}.", MonopolyPopupKind.Success, true, 5f );
 				Log.Info( $"{winner.PlayerName} won {def.DisplayName} for ${AuctionCurrentBid}." );
@@ -951,7 +1185,7 @@ public sealed class MonopolyGame : Component
 
 		var currentPlayer = CurrentPlayer;
 
-		if ( currentPlayer == null )
+		if ( currentPlayer == null || currentPlayer.IsBankrupt )
 			return false;
 
 		// Host can always act during local testing
@@ -1024,7 +1258,7 @@ public sealed class MonopolyGame : Component
 
 		var bidder = Players.ElementAtOrDefault( bidderIndex );
 		var def = Board?.GetSpaceDef( AuctionSpaceIndex );
-		if ( bidder is null || !bidder.IsAssigned || def is null )
+		if ( bidder is null || !bidder.IsAssigned || bidder.IsBankrupt || def is null )
 			return;
 
 		if ( bidAmount <= AuctionCurrentBid || bidAmount > bidder.Money )
@@ -1048,7 +1282,9 @@ public sealed class MonopolyGame : Component
 		var cost = GetImprovementCost( spaceIndex );
 		var count = GetImprovementCount( spaceIndex );
 
-		PayBank( player, cost );
+		if ( !PayBank( player, cost ) )
+			return;
+
 		PropertyImprovements[spaceIndex] = count + 1;
 
 		Log.Info( $"{player.PlayerName} built on {Board.GetSpaceDef( spaceIndex )?.DisplayName} for ${cost}." );
@@ -1072,6 +1308,8 @@ public sealed class MonopolyGame : Component
 		else
 			PropertyImprovements[spaceIndex] = count - 1;
 
+		TrySettlePendingForcedPaymentForPlayer( playerIndex );
+
 		Log.Info( $"{player.PlayerName} sold an improvement on {Board.GetSpaceDef( spaceIndex )?.DisplayName} for ${refund}." );
 	}
 
@@ -1088,6 +1326,8 @@ public sealed class MonopolyGame : Component
 		player.Money += value;
 		MortgagedProperties[spaceIndex] = true;
 
+		TrySettlePendingForcedPaymentForPlayer( playerIndex );
+
 		Log.Info( $"{player.PlayerName} mortgaged {Board.GetSpaceDef( spaceIndex )?.DisplayName} for ${value}." );
 	}
 
@@ -1101,7 +1341,9 @@ public sealed class MonopolyGame : Component
 		var player = Players[playerIndex];
 		var cost = GetUnmortgageCost( spaceIndex );
 
-		PayBank( player, cost );
+		if ( !PayBank( player, cost ) )
+			return;
+
 		MortgagedProperties.Remove( spaceIndex );
 
 		Log.Info( $"{player.PlayerName} unmortgaged {Board.GetSpaceDef( spaceIndex )?.DisplayName} for ${cost}." );
@@ -1193,21 +1435,252 @@ public sealed class MonopolyGame : Component
 
 	private void BuyUnownedPropertyForPlayer( MonopolyPlayerState player, MonopolySpaceDef def, int ownerIndex )
 	{
+		if ( !PayBank( player, def.Price ) )
+			return;
+
 		PropertyOwners[def.Index] = ownerIndex;
-		PayBank( player, def.Price );
 
 		Log.Info( $"{player.PlayerName} bought {def.DisplayName} for ${def.Price}." );
 	}
 
-	private void PayBank( MonopolyPlayerState player, int amount )
+	private bool PayBank( MonopolyPlayerState player, int amount )
 	{
+		if ( player is null || amount <= 0 )
+			return true;
+
+		if ( !TryMakeForcedPayment( player, amount, -1, true ) )
+			return false;
+
+		return true;
+	}
+
+	private bool PayPlayer( MonopolyPlayerState player, MonopolyPlayerState receiver, int amount )
+	{
+		if ( player is null || receiver is null || player == receiver || amount <= 0 )
+			return true;
+
+		return TryMakeForcedPayment( player, amount, GetPlayerIndex( receiver ), false );
+	}
+
+	private bool TryMakeForcedPayment( MonopolyPlayerState player, int amount, int receiverIndex, bool toBank )
+	{
+		if ( player is null || amount <= 0 )
+			return true;
+
+		if ( player.IsBankrupt )
+			return false;
+
+		var playerIndex = GetPlayerIndex( player );
+		if ( playerIndex < 0 )
+			return false;
+
+		if ( HasPendingForcedPayment )
+			return TrySettlePendingForcedPayment();
+
+		if ( player.Money >= amount )
+		{
+			CompleteForcedPayment( playerIndex, amount, receiverIndex, toBank );
+			return true;
+		}
+
+		var totalAssets = GetPlayerLiquidAssetTotal( playerIndex );
+		if ( totalAssets < amount )
+		{
+			BankruptPlayer( playerIndex, Players.ElementAtOrDefault( receiverIndex ) );
+			return false;
+		}
+
+		BeginPendingForcedPayment( playerIndex, amount, receiverIndex, toBank );
+		return false;
+	}
+
+	private void CompleteForcedPayment( int playerIndex, int amount, int receiverIndex, bool toBank )
+	{
+		var player = Players.ElementAtOrDefault( playerIndex );
 		if ( player is null || amount <= 0 )
 			return;
 
 		player.Money -= amount;
 
-		if ( Config?.VacationCash == true )
-			FreeParkingBank += amount;
+		if ( toBank )
+		{
+			if ( Config?.VacationCash == true )
+				FreeParkingBank += amount;
+
+			return;
+		}
+
+		var receiver = Players.ElementAtOrDefault( receiverIndex );
+		if ( receiver is not null )
+			receiver.Money += amount;
+	}
+
+	private void CompleteForcedPaymentToEachPlayer( int playerIndex, int amountPerPlayer )
+	{
+		var player = Players.ElementAtOrDefault( playerIndex );
+		var receivers = GetAssignedPlayerIndexes()
+			.Where( index => index != playerIndex )
+			.ToList();
+
+		if ( player is null || amountPerPlayer <= 0 || receivers.Count == 0 )
+			return;
+
+		var total = amountPerPlayer * receivers.Count;
+		player.Money -= total;
+
+		foreach ( var receiverIndex in receivers )
+		{
+			var receiver = Players.ElementAtOrDefault( receiverIndex );
+			if ( receiver is not null )
+				receiver.Money += amountPerPlayer;
+		}
+
+		Log.Info( $"{player.PlayerName} paid ${amountPerPlayer} to each player." );
+	}
+
+	private void BeginPendingForcedPayment( int playerIndex, int amount, int receiverIndex, bool toBank )
+	{
+		PendingForcedPaymentPlayerIndex = playerIndex;
+		PendingForcedPaymentAmount = amount;
+		PendingForcedPaymentReceiverIndex = receiverIndex;
+		PendingForcedPaymentToBank = toBank;
+		PendingForcedPaymentToEachPlayer = false;
+		PendingForcedPaymentEachPlayerAmount = 0;
+
+		var player = Players.ElementAtOrDefault( playerIndex );
+		if ( player is not null )
+			Log.Info( $"{player.PlayerName} must raise ${amount} before their turn can end." );
+	}
+
+	private void BeginPendingForcedPaymentToEachPlayer( int playerIndex, int amountPerPlayer )
+	{
+		var receiverCount = GetAssignedPlayerIndexes().Count( index => index != playerIndex );
+		var total = amountPerPlayer * receiverCount;
+		if ( total <= 0 )
+			return;
+
+		PendingForcedPaymentPlayerIndex = playerIndex;
+		PendingForcedPaymentAmount = total;
+		PendingForcedPaymentReceiverIndex = -1;
+		PendingForcedPaymentToBank = false;
+		PendingForcedPaymentToEachPlayer = true;
+		PendingForcedPaymentEachPlayerAmount = amountPerPlayer;
+
+		var player = Players.ElementAtOrDefault( playerIndex );
+		if ( player is not null )
+			Log.Info( $"{player.PlayerName} must raise ${total} to pay each player ${amountPerPlayer}." );
+	}
+
+	private bool TrySettlePendingForcedPaymentForPlayer( int playerIndex )
+	{
+		if ( !HasPendingForcedPayment || PendingForcedPaymentPlayerIndex != playerIndex )
+			return false;
+
+		return TrySettlePendingForcedPayment();
+	}
+
+	private bool TrySettlePendingForcedPayment()
+	{
+		if ( !HasPendingForcedPayment )
+			return true;
+
+		var player = Players.ElementAtOrDefault( PendingForcedPaymentPlayerIndex );
+		if ( player is null || player.IsBankrupt )
+		{
+			ClearPendingForcedPayment();
+			return false;
+		}
+
+		if ( player.Money < PendingForcedPaymentAmount )
+			return false;
+
+		var amount = PendingForcedPaymentAmount;
+		var receiverIndex = PendingForcedPaymentReceiverIndex;
+		var toBank = PendingForcedPaymentToBank;
+		var toEachPlayer = PendingForcedPaymentToEachPlayer;
+		var eachPlayerAmount = PendingForcedPaymentEachPlayerAmount;
+
+		if ( toEachPlayer )
+			CompleteForcedPaymentToEachPlayer( PendingForcedPaymentPlayerIndex, eachPlayerAmount );
+		else
+			CompleteForcedPayment( PendingForcedPaymentPlayerIndex, amount, receiverIndex, toBank );
+
+		ClearPendingForcedPayment();
+
+		Log.Info( $"{player.PlayerName} paid their pending ${amount} debt." );
+		return true;
+	}
+
+	private void ClearPendingForcedPayment()
+	{
+		PendingForcedPaymentPlayerIndex = -1;
+		PendingForcedPaymentAmount = 0;
+		PendingForcedPaymentReceiverIndex = -1;
+		PendingForcedPaymentToBank = false;
+		PendingForcedPaymentToEachPlayer = false;
+		PendingForcedPaymentEachPlayerAmount = 0;
+	}
+
+	public int GetPlayerLiquidAssetTotal( int playerIndex )
+	{
+		if ( playerIndex < 0 )
+			return 0;
+
+		var player = Players.ElementAtOrDefault( playerIndex );
+		if ( player is null || player.IsBankrupt )
+			return 0;
+
+		var total = Math.Max( player.Money, 0 );
+		foreach ( var spaceIndex in GetOwnedPropertyIndexes( playerIndex ) )
+		{
+			total += GetImprovementCount( spaceIndex ) * GetImprovementSellValue( spaceIndex );
+
+			if ( !IsMortgaged( spaceIndex ) )
+				total += GetMortgageValue( spaceIndex );
+		}
+
+		return total;
+	}
+
+	private void BankruptPlayer( int playerIndex, MonopolyPlayerState creditor )
+	{
+		if ( playerIndex < 0 )
+			return;
+
+		var player = Players.ElementAtOrDefault( playerIndex );
+		if ( player is null || player.IsBankrupt )
+			return;
+
+		player.IsBankrupt = true;
+		player.Money = 0;
+		player.IsInJail = false;
+		player.ConsecutiveDoubles = 0;
+		player.SkipsNextTurn = false;
+
+		if ( PendingForcedPaymentPlayerIndex == playerIndex )
+			ClearPendingForcedPayment();
+
+		foreach ( var spaceIndex in GetOwnedPropertyIndexes( playerIndex ) )
+		{
+			PropertyOwners.Remove( spaceIndex );
+			PropertyImprovements.Remove( spaceIndex );
+			MortgagedProperties.Remove( spaceIndex );
+		}
+
+		foreach ( var trade in GetTrades() )
+		{
+			if ( trade.SenderPlayerIndex == playerIndex || trade.ReceiverPlayerIndex == playerIndex )
+				PendingTrades.Remove( trade.Id );
+		}
+
+		if ( AuctionHighBidderIndex == playerIndex )
+		{
+			AuctionHighBidderIndex = -1;
+			AuctionCurrentBid = 0;
+		}
+
+		var creditorText = creditor is null ? "" : $" while owing {creditor.PlayerName}";
+		Log.Info( $"{player.PlayerName} went bankrupt{creditorText}." );
 	}
 
 	private void CompleteTurn()
@@ -1231,6 +1704,9 @@ public sealed class MonopolyGame : Component
 		if ( Phase != MonopolyGamePhase.TurnEnded )
 			return;
 
+		if ( HasPendingForcedPayment )
+			return;
+
 		CompleteTurn();
 		Phase = MonopolyGamePhase.WaitingToRoll;
 	}
@@ -1245,7 +1721,7 @@ public sealed class MonopolyGame : Component
 			CurrentPlayerIndex = (CurrentPlayerIndex + 1) % Players.Count;
 
 			var player = Players[CurrentPlayerIndex];
-			if ( !player.IsAssigned )
+			if ( !player.IsAssigned || player.IsBankrupt )
 				continue;
 
 			if ( player.SkipsNextTurn )
@@ -1255,7 +1731,7 @@ public sealed class MonopolyGame : Component
 				continue;
 			}
 
-			if ( player.IsAssigned )
+			if ( player.IsAssigned && !player.IsBankrupt )
 				return;
 		}
 
@@ -1263,7 +1739,7 @@ public sealed class MonopolyGame : Component
 		{
 			CurrentPlayerIndex = (CurrentPlayerIndex + 1) % Players.Count;
 
-			if ( Players[CurrentPlayerIndex].IsAssigned )
+			if ( Players[CurrentPlayerIndex].IsAssigned && !Players[CurrentPlayerIndex].IsBankrupt )
 				return;
 		}
 	}
@@ -1294,6 +1770,24 @@ public sealed class MonopolyGame : Component
 			.Select( entry => entry.Key )
 			.OrderBy( index => index )
 			.ToList();
+	}
+
+	private List<int> GetAssignedPlayerIndexes()
+	{
+		return Players
+			.Select( ( player, index ) => new { player, index } )
+			.Where( entry => entry.player is not null && entry.player.IsAssigned && !entry.player.IsBankrupt )
+			.Select( entry => entry.index )
+			.ToList();
+	}
+
+	private int NormalizeSpaceIndex( int spaceIndex )
+	{
+		var spaceCount = Board?.SpaceDefs?.Count ?? 40;
+		if ( spaceCount <= 0 )
+			spaceCount = 40;
+
+		return ((spaceIndex % spaceCount) + spaceCount) % spaceCount;
 	}
 
 	public bool IsMortgaged( int spaceIndex )
@@ -1376,6 +1870,9 @@ public sealed class MonopolyGame : Component
 		if ( !CanPlayerManageProperties( playerIndex ) )
 			return false;
 
+		if ( HasPendingForcedPaymentForPlayer( playerIndex ) )
+			return false;
+
 		if ( GetOwnerIndexForSpace( spaceIndex ) != playerIndex )
 			return false;
 
@@ -1428,7 +1925,10 @@ public sealed class MonopolyGame : Component
 		var sender = Players.ElementAtOrDefault( trade.SenderPlayerIndex );
 		var receiver = Players.ElementAtOrDefault( trade.ReceiverPlayerIndex );
 
-		if ( sender is null || receiver is null || !sender.IsAssigned || !receiver.IsAssigned )
+		if ( sender is null || receiver is null || !sender.IsAssigned || !receiver.IsAssigned || sender.IsBankrupt || receiver.IsBankrupt )
+			return false;
+
+		if ( HasPendingForcedPaymentForPlayer( trade.SenderPlayerIndex ) || HasPendingForcedPaymentForPlayer( trade.ReceiverPlayerIndex ) )
 			return false;
 
 		if ( trade.SenderPlayerIndex == trade.ReceiverPlayerIndex )
@@ -1489,6 +1989,9 @@ public sealed class MonopolyGame : Component
 		if ( !CanPlayerManageProperties( playerIndex ) )
 			return false;
 
+		if ( HasPendingForcedPaymentForPlayer( playerIndex ) )
+			return false;
+
 		if ( GetOwnerIndexForSpace( spaceIndex ) != playerIndex )
 			return false;
 
@@ -1502,7 +2005,13 @@ public sealed class MonopolyGame : Component
 	{
 		return playerIndex >= 0 &&
 			CurrentPlayerIndex == playerIndex &&
+			Players.ElementAtOrDefault( playerIndex )?.IsBankrupt != true &&
 			(Phase == MonopolyGamePhase.WaitingToRoll || Phase == MonopolyGamePhase.TurnEnded);
+	}
+
+	private bool HasPendingForcedPaymentForPlayer( int playerIndex )
+	{
+		return HasPendingForcedPayment && PendingForcedPaymentPlayerIndex == playerIndex;
 	}
 
 	private void RemoveInvalidTrades()

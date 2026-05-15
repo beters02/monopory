@@ -34,6 +34,12 @@ public sealed class MonopolyCommandWatcher : Component
 		LogCommandResult( "roll_dice", MonopolyCommandManager.RollDice( connection, amount, JoinPlayerName( playerName, playerNameTail ) ) );
 	}
 
+	[ConCmd( "change_money" )]
+	private static void ChangeMoney( Connection connection, int amount, string playerName = "self", params string[] playerNameTail )
+	{
+		LogCommandResult( "change_money", MonopolyCommandManager.ChangeMoney( connection, amount, JoinPlayerName( playerName, playerNameTail ) ) );
+	}
+
 	private static string JoinPlayerName( string playerName, string[] playerNameTail )
 	{
 		if ( playerNameTail is null || playerNameTail.Length == 0 )

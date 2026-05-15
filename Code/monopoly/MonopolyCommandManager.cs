@@ -101,6 +101,24 @@ public sealed class MonopolyCommandManager : Component
 		return MonopolyCommandResult.Success();
 	}
 
+	public static MonopolyCommandResult ChangeMoney( Connection caller, int amount, string playerName = "self" )
+	{
+		if ( !CanUseCheatCommand( caller ) )
+			return MonopolyCommandResult.Fail( "sv_cheats must be enabled to change player money." );
+
+		var game = MonopolyGame.Instance;
+		if ( game is null )
+			return MonopolyCommandResult.Fail( "No active Monopoly game." );
+
+		var player = game.ResolvePlayerReference( playerName, caller );
+		if ( player is null )
+			return MonopolyCommandResult.Fail( $"Could not find player \"{playerName}\"." );
+
+		return game.TryChangeMoneyForPlayer( player, amount, out var message )
+			? MonopolyCommandResult.Success( message )
+			: MonopolyCommandResult.Fail( message );
+	}
+
 	private static bool CanUseCheatCommand( Connection caller )
 	{
 		if ( Networking.IsHost && (caller is null || caller == Connection.Local) )

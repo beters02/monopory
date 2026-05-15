@@ -1783,7 +1783,8 @@
                 "DoublesGoesAgain": false,
                 "VacationCash": false,
                 "DontCollectRentWhileInPrison": false,
-                "EvenBuild": true
+                "EvenBuild": true,
+                "InstantBankruptIfCantAfford": true
               },
               "CurrentPlayerIndex": 0,
               "CurrentTurnGetsExtraRoll": false,
@@ -1843,6 +1844,7 @@
               "__enabled": true,
               "Flags": 0,
               "ConsecutiveDoubles": 0,
+              "IsBankrupt": false,
               "IsInJail": false,
               "Money": 1500,
               "OnComponentDestroy": null,
@@ -1881,6 +1883,7 @@
               "__enabled": true,
               "Flags": 0,
               "ConsecutiveDoubles": 0,
+              "IsBankrupt": false,
               "IsInJail": false,
               "Money": 1500,
               "OnComponentDestroy": null,
