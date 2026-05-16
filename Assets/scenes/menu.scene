@@ -159,6 +159,7 @@
               "__guid": "a15ebe46-f9c9-4a1a-8f96-47e9f9c00e5e",
               "__enabled": true,
               "Flags": 0,
+              "MenuRef": null,
               "OnComponentDestroy": null,
               "OnComponentDisabled": null,
               "OnComponentEnabled": null,
@@ -170,6 +171,48 @@
           "Children": []
         }
       ]
+    },
+    {
+      "__guid": "0caebde4-34ea-4442-acc6-17ef10d14dce",
+      "__version": 2,
+      "Flags": 0,
+      "Name": "MonopolyMenuController",
+      "Position": "233.042664,-115.29248,120.323067",
+      "Rotation": "0,0,0,1",
+      "Scale": "1,1,1",
+      "Tags": "",
+      "Enabled": true,
+      "NetworkMode": 1,
+      "NetworkFlags": 0,
+      "NetworkOrphaned": 1,
+      "NetworkTransmit": true,
+      "OwnerTransfer": 1,
+      "Components": [
+        {
+          "__type": "MonopolyMenuController",
+          "__guid": "0830a337-9c84-44c5-a25a-f978eefd4c51",
+          "__enabled": true,
+          "Flags": 0,
+          "Config": {
+            "MinPlayers": 1,
+            "MaxPlayers": 6,
+            "LandedUnownedMode": "SkipOrAuction",
+            "StartingMoney": 1500,
+            "DoublesGoesAgain": false,
+            "VacationCash": false,
+            "DontCollectRentWhileInPrison": false,
+            "EvenBuild": true,
+            "TurnTimeLimitSeconds": 180
+          },
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null
+        }
+      ],
+      "Children": []
     }
   ],
   "SceneProperties": {
@@ -201,13 +244,13 @@
           "SelectionSets": []
         }
       },
-      "Sandbox.MovieMaker.MovieRecorderSystem": {
-        "DisableClientRecording": false
-      },
       "Sandbox.Clutter.ClutterGridSystem": {
         "Storage": {
           "$blob": "1038bcfc-1f47-4964-962a-e0cb2849ee20"
         }
+      },
+      "Sandbox.MovieMaker.MovieRecorderSystem": {
+        "DisableClientRecording": false
       }
     }
   },

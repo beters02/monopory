@@ -966,8 +966,7 @@
 		SelectedSpaceIndex == GameRef.PendingPurchaseSpaceIndex;
 
 	private bool ShouldBlockSelectedSpaceClose =>
-		GameRef?.Phase == MonopolyGamePhase.WaitingForBuyDecision &&
-		IsSelectedPendingPurchase;
+		GameRef?.CanLeaveCurrentSelectedSpace() == false;
 
 	private bool IsUnownedSelectedSpace =>
 		IsPurchasable &&

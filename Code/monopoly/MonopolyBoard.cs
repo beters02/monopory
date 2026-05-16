@@ -31,6 +31,19 @@ public sealed class MonopolyBoard : Component
 	protected override void OnStart()
 	{
 		instance = this;
+
+		var debugConvarParsed = bool.TryParse(ConsoleSystem.GetValue( "debug" ), out bool debugConvar);
+		if (debugConvarParsed && debugConvar)
+			DebugEnabled = true;
+
+		#if STANDALONE
+		if (DebugEnabled && !debugConvar)
+		{
+			DebugEnabled = false;
+			Log.Warning("Game was published with MonopolyBoard DebugEnabled!");
+		}
+		#endif
+
 		debugHelper.SetEnabled(DebugEnabled);
 
 		GameRef = Scene.GetAllComponents<MonopolyGame>().FirstOrDefault();
@@ -734,18 +747,30 @@ public sealed class MonopolyBoard : Component
 			return;
 
 		SceneTraceResult? initialTraceResult = GetSelectionMouseTraceResult();
-		if (initialTraceResult == null)
+		if ( initialTraceResult == null )
 			return;
 
 		SceneTraceResult traceResult = initialTraceResult.Value;
-		if (DebugEnabled)
+		if ( DebugEnabled )
 			DebugOverlay.Trace( traceResult, 5f, true );
 
-		HandleTraceResult(traceResult, out MonopolySpace space, out MonopolySpaceDef _);
+		HandleTraceResult( traceResult, out MonopolySpace space, out MonopolySpaceDef _ );
 
 		if ( GameRef is null || space is null )
 			return;
 		
+		if ( !GameRef.CanLeaveCurrentSelectedSpace() )
+		{
+			MonopolySpaceDef def = GetSpaceDef( GameRef.LocalSelectedSpaceIndex );
+			GameRef.ShowLocalPopup(
+				"Decision required",
+				$"Buy or auction {def.DisplayName} before closing this card.",
+				MonopolyPopupKind.Warning,
+				true,
+				3f
+			);
+			return;
+		}
 		GameRef.SelectSpace( space.Index );
 	}
 

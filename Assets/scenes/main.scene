@@ -1743,7 +1743,7 @@
       "NetworkFlags": 0,
       "NetworkOrphaned": 1,
       "NetworkTransmit": true,
-      "OwnerTransfer": 0,
+      "OwnerTransfer": 1,
       "Components": [],
       "Children": [
         {
@@ -2426,13 +2426,13 @@
           "SelectionSets": []
         }
       },
-      "Sandbox.MovieMaker.MovieRecorderSystem": {
-        "DisableClientRecording": false
-      },
       "Sandbox.Clutter.ClutterGridSystem": {
         "Storage": {
           "$blob": "7664decd-7b1f-4214-a5a2-850285e10057"
         }
+      },
+      "Sandbox.MovieMaker.MovieRecorderSystem": {
+        "DisableClientRecording": false
       }
     }
   },

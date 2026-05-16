@@ -18,8 +18,21 @@
 
 @code
 {
+	[Property] public MonopolyMenuController MenuRef { get; set; }
+
+	private MonopolyMenuController Menu => MenuRef ?? Scene?.GetAllComponents<MonopolyMenuController>().FirstOrDefault();
+
 	private void OpenLobby()
 	{
-		MonopolySceneFlow.LoadLobby( Scene );
+		if ( Menu is null )
+		{
+			Log.Warning( "Host Lobby clicked, but no MonopolyMenuController was found in the scene." );
+			return;
+		}
+
+		if ( Networking.IsHost )
+			Menu.TryOpenLobby();
+		else
+			Menu.RequestOpenLobby();
 	}
 }

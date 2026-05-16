@@ -40,6 +40,9 @@ public sealed class MonopolyCommandWatcher : Component
 		LogCommandResult( "change_money", MonopolyCommandManager.ChangeMoney( connection, amount, JoinPlayerName( playerName, playerNameTail ) ) );
 	}
 
+	[ConVar( "debug" )]
+	public static bool Debug { get; set; } = false;
+
 	private static string JoinPlayerName( string playerName, string[] playerNameTail )
 	{
 		if ( playerNameTail is null || playerNameTail.Length == 0 )

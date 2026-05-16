@@ -91,15 +91,27 @@ public sealed class MonopolyGame : Component
 
 	public void SelectSpace( int spaceIndex )
 	{
+		if ( !CanLeaveCurrentSelectedSpace() )
+			return;
+
 		if ( spaceIndex == LocalSelectedSpaceIndex )
 			spaceIndex = -1;
 
-		SelectSpaceAsync(spaceIndex);
+		SelectSpaceAsync( spaceIndex );
+	}
+
+	public bool CanLeaveCurrentSelectedSpace()
+	{
+		return CurrentPlayerIndex != LocalPlayerIndex ||
+			Phase != MonopolyGamePhase.WaitingForBuyDecision ||
+			PendingPurchaseSpaceIndex < 0 ||
+			LocalSelectedSpaceIndex != PendingPurchaseSpaceIndex;
 	}
 
 	protected override void OnStart()
 	{
 		instance = this;
+		MonopolySteamInviteBridge.Register( Scene );
 
 		if ( !Networking.IsHost )
 			return;
@@ -135,6 +147,8 @@ public sealed class MonopolyGame : Component
 		UpdateAuction();
 		UpdateTurnTimer();
 		CheckForGameOver();
+
+		
 	}
 
 	private void UpdateTurnTimer()
@@ -275,6 +289,9 @@ public sealed class MonopolyGame : Component
 		if ( HasStarted && MatchState != MonopolyMatchState.GameOver )
 			return;
 
+		var availableSlotCount = Players.Count( player => player is not null );
+		var registrationLimit = Math.Min( MaxPlayers, availableSlotCount );
+
 		foreach ( var player in Players.Where( player => player is not null && player.IsAssigned ).ToList() )
 		{
 			if ( Connection.All.Any( connection => connection.SteamId == player.OwnerId ) )
@@ -288,7 +305,7 @@ public sealed class MonopolyGame : Component
 			if ( GetPlayerForConnection( connection ) is not null )
 				continue;
 
-			if ( GetAssignedPlayers().Count >= MaxPlayers )
+			if ( GetAssignedPlayers().Count >= registrationLimit )
 				continue;
 
 			RegisterPlayer( connection );

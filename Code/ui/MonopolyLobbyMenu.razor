@@ -33,6 +33,7 @@
 				<div class="flow-actions">
 					<MonopolyButton Variant="@ReadyButtonClasses" OnClick="@ToggleReady">@ReadyButtonLabel</MonopolyButton>
 					<MonopolyButton Variant="@StartButtonClasses" CanClick="@CanStartGame" OnClick="@StartGame" OnBlocked="@ShowStartBlocked">Start Game</MonopolyButton>
+					<MonopolyButton Variant="flow-secondary-button" OnClick="@InviteFriends">Invite Friends</MonopolyButton>
 					<MonopolyButton Variant="flow-secondary-button" OnClick="@BackToMenu">Back</MonopolyButton>
 				</div>
 			}
@@ -130,6 +131,11 @@
 			return;
 
 		Lobby.RequestBackToMenu();
+	}
+
+	private void InviteFriends()
+	{
+		Lobby?.TryOpenInviteOverlay();
 	}
 
 	private void ShowStartBlocked()
