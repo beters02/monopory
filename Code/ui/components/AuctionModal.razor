@@ -66,7 +66,7 @@
 
 	private MonopolyPlayerState LocalPlayer => GameRef?.LocalPlayer;
 
-	private MonopolySpaceDef AuctionSpace =>
+	private SpaceDef AuctionSpace =>
 		GameRef?.Board?.GetSpaceDef( GameRef.AuctionSpaceIndex );
 
 	private bool IsAuctionActive =>

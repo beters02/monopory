@@ -1,7 +1,7 @@
 using System;
 using Sandbox;
 
-public sealed class MonopolySpaceDef
+public sealed class SpaceDef
 {
 	public int Index { get; set; }
 	public string Key { get; set; } = "";
@@ -17,8 +17,8 @@ public sealed class MonopolySpaceDef
 	public int FourHouseRent { get; set; }
 	public int HotelRent { get; set; }
 
-	public MonopolyColorGroup ColorGroup { get; set; } = MonopolyColorGroup.None;
-	public string ColorGroupClass => MonopolyColorGroups.ToCssClass( ColorGroup );
+	public ColorGroup ColorGroup { get; set; } = ColorGroup.None;
+	public string ColorGroupClass => ColorGroups.ToCssClass( ColorGroup );
 
 	// Tax spaces
 	public int TaxAmount { get; set; }

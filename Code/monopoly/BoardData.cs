@@ -1,9 +1,9 @@
 using System;
 using Sandbox;
 
-public static class MonopolyBoardData
+public static class BoardData
 {
-	public static List<MonopolySpaceDef> CreateSpaceDefs()
+	public static List<SpaceDef> CreateSpaceDefs()
 	{
 		return new()
 		{
@@ -27,7 +27,7 @@ public static class MonopolyBoardData
 				ThreeHouseRent = 90,
 				FourHouseRent = 160,
 				HotelRent = 250,
-				ColorGroup = MonopolyColorGroup.Brown
+				ColorGroup = ColorGroup.Brown
 			},
 			new()
 			{
@@ -49,7 +49,7 @@ public static class MonopolyBoardData
 				ThreeHouseRent = 180,
 				FourHouseRent = 320,
 				HotelRent = 450,
-				ColorGroup = MonopolyColorGroup.Brown
+				ColorGroup = ColorGroup.Brown
 			},
 			new()
 			{
@@ -81,7 +81,7 @@ public static class MonopolyBoardData
 				ThreeHouseRent = 270,
 				FourHouseRent = 400,
 				HotelRent = 550,
-				ColorGroup = MonopolyColorGroup.LightBlue
+				ColorGroup = ColorGroup.LightBlue
 			},
 			new()
 			{
@@ -103,7 +103,7 @@ public static class MonopolyBoardData
 				ThreeHouseRent = 270,
 				FourHouseRent = 400,
 				HotelRent = 550,
-				ColorGroup = MonopolyColorGroup.LightBlue
+				ColorGroup = ColorGroup.LightBlue
 			},
 			new()
 			{
@@ -118,7 +118,7 @@ public static class MonopolyBoardData
 				ThreeHouseRent = 300,
 				FourHouseRent = 450,
 				HotelRent = 600,
-				ColorGroup = MonopolyColorGroup.LightBlue
+				ColorGroup = ColorGroup.LightBlue
 			},
 			new()
 			{
@@ -140,7 +140,7 @@ public static class MonopolyBoardData
 				ThreeHouseRent = 450,
 				FourHouseRent = 625,
 				HotelRent = 750,
-				ColorGroup = MonopolyColorGroup.Pink
+				ColorGroup = ColorGroup.Pink
 			},
 			new()
 			{
@@ -164,7 +164,7 @@ public static class MonopolyBoardData
 				ThreeHouseRent = 450,
 				FourHouseRent = 625,
 				HotelRent = 750,
-				ColorGroup = MonopolyColorGroup.Pink
+				ColorGroup = ColorGroup.Pink
 			},
 			new()
 			{
@@ -179,7 +179,7 @@ public static class MonopolyBoardData
 				ThreeHouseRent = 500,
 				FourHouseRent = 700,
 				HotelRent = 900,
-				ColorGroup = MonopolyColorGroup.Pink
+				ColorGroup = ColorGroup.Pink
 			},
 			new()
 			{
@@ -203,7 +203,7 @@ public static class MonopolyBoardData
 				ThreeHouseRent = 550,
 				FourHouseRent = 750,
 				HotelRent = 950,
-				ColorGroup = MonopolyColorGroup.Orange
+				ColorGroup = ColorGroup.Orange
 			},
 			new()
 			{
@@ -225,7 +225,7 @@ public static class MonopolyBoardData
 				ThreeHouseRent = 550,
 				FourHouseRent = 750,
 				HotelRent = 950,
-				ColorGroup = MonopolyColorGroup.Orange
+				ColorGroup = ColorGroup.Orange
 			},
 			new()
 			{
@@ -240,7 +240,7 @@ public static class MonopolyBoardData
 				ThreeHouseRent = 600,
 				FourHouseRent = 800,
 				HotelRent = 100,
-				ColorGroup = MonopolyColorGroup.Orange
+				ColorGroup = ColorGroup.Orange
 			},
 			new()
 			{
@@ -262,7 +262,7 @@ public static class MonopolyBoardData
 				ThreeHouseRent = 700,
 				FourHouseRent = 875,
 				HotelRent = 1050,
-				ColorGroup = MonopolyColorGroup.Red
+				ColorGroup = ColorGroup.Red
 			},
 			new()
 			{
@@ -284,7 +284,7 @@ public static class MonopolyBoardData
 				ThreeHouseRent = 700,
 				FourHouseRent = 875,
 				HotelRent = 1050,
-				ColorGroup = MonopolyColorGroup.Red
+				ColorGroup = ColorGroup.Red
 			},
 			new()
 			{
@@ -299,7 +299,7 @@ public static class MonopolyBoardData
 				ThreeHouseRent = 750,
 				FourHouseRent = 925,
 				HotelRent = 1100,
-				ColorGroup = MonopolyColorGroup.Red
+				ColorGroup = ColorGroup.Red
 			},
 			new()
 			{
@@ -323,7 +323,7 @@ public static class MonopolyBoardData
 				ThreeHouseRent = 800,
 				FourHouseRent = 975,
 				HotelRent = 1150,
-				ColorGroup = MonopolyColorGroup.Yellow
+				ColorGroup = ColorGroup.Yellow
 			},
 			new()
 			{
@@ -338,7 +338,7 @@ public static class MonopolyBoardData
 				ThreeHouseRent = 800,
 				FourHouseRent = 975,
 				HotelRent = 1150,
-				ColorGroup = MonopolyColorGroup.Yellow
+				ColorGroup = ColorGroup.Yellow
 			},
 			new()
 			{
@@ -362,7 +362,7 @@ public static class MonopolyBoardData
 				ThreeHouseRent = 850,
 				FourHouseRent = 1025,
 				HotelRent = 1200,
-				ColorGroup = MonopolyColorGroup.Yellow
+				ColorGroup = ColorGroup.Yellow
 			},
 			new()
 			{
@@ -384,7 +384,7 @@ public static class MonopolyBoardData
 				ThreeHouseRent = 900,
 				FourHouseRent = 1105,
 				HotelRent = 1275,
-				ColorGroup = MonopolyColorGroup.Green
+				ColorGroup = ColorGroup.Green
 			},
 			new()
 			{
@@ -399,7 +399,7 @@ public static class MonopolyBoardData
 				ThreeHouseRent = 900,
 				FourHouseRent = 1105,
 				HotelRent = 1275,
-				ColorGroup = MonopolyColorGroup.Green
+				ColorGroup = ColorGroup.Green
 			},
 			new()
 			{
@@ -421,7 +421,7 @@ public static class MonopolyBoardData
 				ThreeHouseRent = 1000,
 				FourHouseRent = 1200,
 				HotelRent = 1400,
-				ColorGroup = MonopolyColorGroup.Green
+				ColorGroup = ColorGroup.Green
 			},
 			new()
 			{
@@ -452,7 +452,7 @@ public static class MonopolyBoardData
 				ThreeHouseRent = 1100,
 				FourHouseRent = 1300,
 				HotelRent = 1500,
-				ColorGroup = MonopolyColorGroup.DarkBlue
+				ColorGroup = ColorGroup.DarkBlue
 			},
 			new()
 			{
@@ -475,7 +475,7 @@ public static class MonopolyBoardData
 				ThreeHouseRent = 1400,
 				FourHouseRent = 1700,
 				HotelRent = 1500,
-				ColorGroup = MonopolyColorGroup.DarkBlue
+				ColorGroup = ColorGroup.DarkBlue
 			},
 		};
 	}

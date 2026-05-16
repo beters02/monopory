@@ -12,7 +12,7 @@ public sealed class MonopolyBoard : Component
 	private Logger boardSpace = new("BoardSpace");
 
 	[Property] public List<MonopolySpace> Spaces { get; set; } = new();
-	public List<MonopolySpaceDef> SpaceDefs { get; private set; } = new();
+	public List<SpaceDef> SpaceDefs { get; private set; } = new();
 
 	[Property] public Vector3 HitboxSize { get; set; } = new Vector3( 96f, 96f, 12f );
 	[Property] public GameObject BoardPlaneGameObject {get; set;}
@@ -22,8 +22,8 @@ public sealed class MonopolyBoard : Component
 	[Property] public Vector3 ImprovementModelScale { get; set; } = Vector3.One;
 	[Property] public float ImprovementModelZOffset { get; set; } = 0.9f;
 
-	public List<MonopolyCardDef> ChanceCards { get; private set; } = new();
-	public List<MonopolyCardDef> CommunityChestCards { get; private set; } = new();
+	public List<CardDef> ChanceCards { get; private set; } = new();
+	public List<CardDef> CommunityChestCards { get; private set; } = new();
 
 	[Property, Change("OnDebugEnabledChanged")] public bool DebugEnabled {get; set;} = false;
 	private void OnDebugEnabledChanged(bool _, bool newValue) => logger.SetEnabled(newValue);
@@ -136,13 +136,13 @@ public sealed class MonopolyBoard : Component
 
 	private void LoadBoardDefinitions()
 	{
-		SpaceDefs = MonopolyBoardData.CreateSpaceDefs();
+		SpaceDefs = BoardData.CreateSpaceDefs();
 	}
 
 	private void LoadCardDefinitions()
 	{
-		ChanceCards = MonopolyCardData.CreateChanceCards();
-		CommunityChestCards = MonopolyCardData.CreateCommunityChestCards();
+		ChanceCards = CardData.CreateChanceCards();
+		CommunityChestCards = CardData.CreateCommunityChestCards();
 	}
 
 
@@ -218,7 +218,7 @@ public sealed class MonopolyBoard : Component
 		return space;
 	}
 
-	public MonopolySpaceDef GetSpaceDef(int index)
+	public SpaceDef GetSpaceDef(int index)
 	{
 		int originalIndex = index;
 
@@ -263,7 +263,7 @@ public sealed class MonopolyBoard : Component
 		return spaceDef;
 	}
 
-	public static MonopolySpaceDef GetSpaceDefStatic(int index)
+	public static SpaceDef GetSpaceDefStatic(int index)
 	{
 		return instance.GetSpaceDef(index);
 	}
@@ -326,14 +326,14 @@ public sealed class MonopolyBoard : Component
 		if ( DebugEnabled )
 			DebugOverlay.Trace( traceResult, 5f, true );
 
-		HandleTraceResult( traceResult, out MonopolySpace space, out MonopolySpaceDef _ );
+		HandleTraceResult( traceResult, out MonopolySpace space, out SpaceDef _ );
 
 		if ( GameRef is null || space is null )
 			return;
 		
 		if ( !GameRef.CanLeaveCurrentSelectedSpace() )
 		{
-			MonopolySpaceDef def = GetSpaceDef( GameRef.LocalSelectedSpaceIndex );
+			SpaceDef def = GetSpaceDef( GameRef.LocalSelectedSpaceIndex );
 			GameRef.ShowLocalPopup(
 				"Decision required",
 				$"Buy or auction {def.DisplayName} before closing this card.",
@@ -371,7 +371,7 @@ public sealed class MonopolyBoard : Component
 		Mouse.CursorType = isHoveringSpace ? "pointer" : null;
 	}
 
-	private void HandleTraceResult(SceneTraceResult traceResult, out MonopolySpace foundSpace, out MonopolySpaceDef foundSpaceDef)
+	private void HandleTraceResult(SceneTraceResult traceResult, out MonopolySpace foundSpace, out SpaceDef foundSpaceDef)
 	{
 		foundSpace = null;
 		foundSpaceDef = null;

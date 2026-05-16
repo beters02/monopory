@@ -1,10 +1,10 @@
-public enum MonopolyCardDeck
+public enum CardDeck
 {
 	Chance,
 	CommunityChest
 }
 
-public enum MonopolyCardAction
+public enum CardAction
 {
 	CollectFromBank,
 	PayBank,
@@ -16,13 +16,13 @@ public enum MonopolyCardAction
 	PayPerImprovement
 }
 
-public sealed class MonopolyCardDef
+public sealed class CardDef
 {
 	public string Key { get; set; } = "";
 	public string Title { get; set; } = "";
 	public string Description { get; set; } = "";
-	public MonopolyCardDeck Deck { get; set; }
-	public MonopolyCardAction Action { get; set; }
+	public CardDeck Deck { get; set; }
+	public CardAction Action { get; set; }
 	public int Amount { get; set; }
 	public int TargetSpaceIndex { get; set; } = -1;
 	public int RelativeSpaces { get; set; }

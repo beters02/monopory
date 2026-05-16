@@ -6,7 +6,7 @@ using Sandbox;
 public sealed partial class MonopolyGame : Component
 {
 
-	private void ResolveCardLanding( MonopolyPlayerState player, MonopolyCardDeck deck )
+	private void ResolveCardLanding( MonopolyPlayerState player, CardDeck deck )
 	{
 		var card = DrawCard( deck );
 		if ( player is null || card is null )
@@ -20,7 +20,7 @@ public sealed partial class MonopolyGame : Component
 		ApplyCard( player, card );
 	}
 
-	private static string GetCardDisplayText( MonopolyCardDef card )
+	private static string GetCardDisplayText( CardDef card )
 	{
 		if ( card is null )
 			return "";
@@ -34,9 +34,9 @@ public sealed partial class MonopolyGame : Component
 		return $"{card.Title}. {card.Description}";
 	}
 
-	private MonopolyCardDef DrawCard( MonopolyCardDeck deck )
+	private CardDef DrawCard( CardDeck deck )
 	{
-		var cards = deck == MonopolyCardDeck.Chance
+		var cards = deck == CardDeck.Chance
 			? Board?.ChanceCards
 			: Board?.CommunityChestCards;
 
@@ -46,47 +46,47 @@ public sealed partial class MonopolyGame : Component
 		return cards[Game.Random.Int( 0, cards.Count - 1 )];
 	}
 
-	private void ApplyCard( MonopolyPlayerState player, MonopolyCardDef card )
+	private void ApplyCard( MonopolyPlayerState player, CardDef card )
 	{
 		if ( player is null || card is null )
 			return;
 
 		switch ( card.Action )
 		{
-			case MonopolyCardAction.CollectFromBank:
+			case CardAction.CollectFromBank:
 				player.Money += Math.Max( card.Amount, 0 );
 				TrySettlePendingForcedPaymentForPlayer( GetPlayerIndex( player ) );
 				Log.Info( $"{player.PlayerName} collected ${card.Amount} from {card.Title}." );
 				break;
 
-			case MonopolyCardAction.PayBank:
+			case CardAction.PayBank:
 				if ( PayBank( player, card.Amount ) )
 					Log.Info( $"{player.PlayerName} paid ${card.Amount} from {card.Title}." );
 				break;
 
-			case MonopolyCardAction.MoveToSpace:
+			case CardAction.MoveToSpace:
 				MovePlayerToCardDestination( player, card.TargetSpaceIndex, card.CollectGo, card.ResolveDestination );
 				break;
 
-			case MonopolyCardAction.MoveRelative:
+			case CardAction.MoveRelative:
 				MovePlayerByCardOffset( player, card.RelativeSpaces, card.CollectGo, card.ResolveDestination );
 				break;
 
-			case MonopolyCardAction.GoToJail:
+			case CardAction.GoToJail:
 				SendPlayerToJail( player );
 				CompleteTurn();
 				Phase = MonopolyGamePhase.WaitingToRoll;
 				break;
 
-			case MonopolyCardAction.CollectFromEachPlayer:
+			case CardAction.CollectFromEachPlayer:
 				CollectFromEachPlayerForCard( player, card.Amount );
 				break;
 
-			case MonopolyCardAction.PayEachPlayer:
+			case CardAction.PayEachPlayer:
 				PayEachPlayerForCard( player, card.Amount );
 				break;
 
-			case MonopolyCardAction.PayPerImprovement:
+			case CardAction.PayPerImprovement:
 				PayPerImprovementForCard( player, card.HouseAmount, card.HotelAmount );
 				break;
 		}

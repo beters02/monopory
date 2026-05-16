@@ -79,7 +79,7 @@
 		}
 	}
 
-	private List<MonopolySpaceDef> PropertySpaces =>
+	private List<SpaceDef> PropertySpaces =>
 		GameRef?.Board?.SpaceDefs?
 			.Where( MonopolyHudUi.IsPurchasableSpace )
 			.ToList() ?? new();
@@ -124,7 +124,7 @@
 		return classes;
 	}
 
-	private string GetPropertySquareClasses( MonopolySpaceDef property, int playerIndex )
+	private string GetPropertySquareClasses( SpaceDef property, int playerIndex )
 	{
 		var ownerIndex = GameRef?.GetOwnerIndexForSpace( property.Index ) ?? -1;
 		var colorGroup = MonopolyHudUi.GetPropertyColorClass( property );

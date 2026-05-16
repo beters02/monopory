@@ -11,7 +11,7 @@ public sealed partial class MonopolyGame : Component
 
 	public Logger landingLogger = new("GameLanding");
 
-	public MonopolySpaceDef SelectedSpace =>
+	public SpaceDef SelectedSpace =>
 		Board is not null && LocalSelectedSpaceIndex >= 0 && LocalSelectedSpaceIndex < Board.Spaces.Count
 			? Board.GetSpaceDef(LocalSelectedSpaceIndex)
 			: null;

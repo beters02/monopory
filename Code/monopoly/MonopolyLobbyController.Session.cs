@@ -7,7 +7,7 @@ public sealed partial class MonopolyLobbyController
 		if ( !Networking.IsHost || !CanStartGame )
 			return false;
 
-		MonopolyMatchBootstrap.PrepareGame( GetGameConfig(), Players.Count );
+		MatchBootstrap.PrepareGame( GetGameConfig(), Players.Count );
 		LoadGameScene();
 		return true;
 	}

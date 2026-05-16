@@ -104,7 +104,7 @@ public sealed partial class MonopolyGame : Component
 		return true;
 	}
 
-	public bool TryBuyPropertySetForPlayer( MonopolyPlayerState player, IReadOnlyList<MonopolySpaceDef> properties, bool useMoney, out string message )
+	public bool TryBuyPropertySetForPlayer( MonopolyPlayerState player, IReadOnlyList<SpaceDef> properties, bool useMoney, out string message )
 	{
 		message = "";
 
@@ -133,7 +133,7 @@ public sealed partial class MonopolyGame : Component
 			return false;
 		}
 
-		var propertiesToBuy = new List<MonopolySpaceDef>();
+		var propertiesToBuy = new List<SpaceDef>();
 		foreach ( var def in properties )
 		{
 			if ( def is null || !IsPurchasableSpace( def ) )
@@ -229,7 +229,7 @@ public sealed partial class MonopolyGame : Component
 		Phase = MonopolyGamePhase.TurnEnded;
 	}
 
-	private void BuyUnownedPropertyForPlayer( MonopolyPlayerState player, MonopolySpaceDef def, int ownerIndex )
+	private void BuyUnownedPropertyForPlayer( MonopolyPlayerState player, SpaceDef def, int ownerIndex )
 	{
 		if ( !PayBank( player, def.Price ) )
 			return;

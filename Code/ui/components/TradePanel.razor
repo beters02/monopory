@@ -96,10 +96,10 @@
 	private MonopolyPlayerState LocalPlayer => GameRef?.LocalPlayer;
 	private int LocalPlayerMoney => LocalPlayer?.Money ?? 0;
 
-	private List<MonopolyTradeRequest> Trades =>
+	private List<TradeRequest> Trades =>
 		GameRef?.GetTrades() ?? new();
 
-	private MonopolyTradeRequest ViewedTrade =>
+	private TradeRequest ViewedTrade =>
 		ViewedTradeId < 0 || GameRef is null || !GameRef.TryGetTrade( ViewedTradeId, out var trade )
 			? null
 			: trade;
@@ -208,7 +208,7 @@
 		ViewedTradeId = -1;
 	}
 
-	private string GetTradeRowClasses( MonopolyTradeRequest trade )
+	private string GetTradeRowClasses( TradeRequest trade )
 	{
 		var classes = "trade-row";
 
@@ -221,7 +221,7 @@
 		return classes;
 	}
 
-	private static string GetTradeSideLabel( MonopolyTradeRequest trade, bool senderSide )
+	private static string GetTradeSideLabel( TradeRequest trade, bool senderSide )
 	{
 		var money = senderSide ? trade.SenderMoney : trade.ReceiverMoney;
 		var properties = senderSide ? trade.SenderPropertyIndexes.Count : trade.ReceiverPropertyIndexes.Count;

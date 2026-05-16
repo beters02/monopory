@@ -28,7 +28,7 @@ public sealed partial class MonopolyGame : Component
 		return MortgagedProperties.TryGetValue( spaceIndex, out var isMortgaged ) && isMortgaged;
 	}
 
-	private static bool IsPurchasableSpace( MonopolySpaceDef def )
+	private static bool IsPurchasableSpace( SpaceDef def )
 	{
 		return def is not null &&
 			def.Price > 0 &&
@@ -46,14 +46,14 @@ public sealed partial class MonopolyGame : Component
 	public int GetImprovementCost( int spaceIndex )
 	{
 		var def = Board?.GetSpaceDef( spaceIndex );
-		var colorGroup = def?.ColorGroup ?? MonopolyColorGroup.None;
+		var colorGroup = def?.ColorGroup ?? ColorGroup.None;
 
 		return colorGroup switch
 		{
-			MonopolyColorGroup.Brown or MonopolyColorGroup.LightBlue => 50,
-			MonopolyColorGroup.Pink or MonopolyColorGroup.Orange => 100,
-			MonopolyColorGroup.Red or MonopolyColorGroup.Yellow => 150,
-			MonopolyColorGroup.Green or MonopolyColorGroup.DarkBlue => 200,
+			ColorGroup.Brown or ColorGroup.LightBlue => 50,
+			ColorGroup.Pink or ColorGroup.Orange => 100,
+			ColorGroup.Red or ColorGroup.Yellow => 150,
+			ColorGroup.Green or ColorGroup.DarkBlue => 200,
 			_ => 0
 		};
 	}
@@ -213,16 +213,16 @@ public sealed partial class MonopolyGame : Component
 		return HasPendingForcedPayment && PendingForcedPaymentPlayerIndex == playerIndex;
 	}
 
-	private bool OwnsColorGroup( int playerIndex, MonopolyColorGroup colorGroup )
+	private bool OwnsColorGroup( int playerIndex, ColorGroup colorGroup )
 	{
-		if ( colorGroup == MonopolyColorGroup.None || Board?.SpaceDefs is null )
+		if ( colorGroup == ColorGroup.None || Board?.SpaceDefs is null )
 			return false;
 
 		var group = GetColorGroupProperties( colorGroup );
 		return group.Count > 0 && group.All( def => GetOwnerIndexForSpace( def.Index ) == playerIndex );
 	}
 
-	private List<MonopolySpaceDef> GetColorGroupProperties( MonopolyColorGroup colorGroup )
+	private List<SpaceDef> GetColorGroupProperties( ColorGroup colorGroup )
 	{
 		return Board?.SpaceDefs?
 			.Where( def => def is not null && def.Type == SpaceType.Property && def.ColorGroup == colorGroup )
@@ -230,9 +230,9 @@ public sealed partial class MonopolyGame : Component
 			.ToList() ?? new();
 	}
 
-	private bool ColorGroupHasImprovements( MonopolyColorGroup colorGroup )
+	private bool ColorGroupHasImprovements( ColorGroup colorGroup )
 	{
-		if ( colorGroup == MonopolyColorGroup.None )
+		if ( colorGroup == ColorGroup.None )
 			return false;
 
 		return GetColorGroupProperties( colorGroup )
@@ -242,7 +242,7 @@ public sealed partial class MonopolyGame : Component
 	private bool CanAddEvenly( int spaceIndex )
 	{
 		var def = Board?.GetSpaceDef( spaceIndex );
-		var group = def is null ? new List<MonopolySpaceDef>() : GetColorGroupProperties( def.ColorGroup );
+		var group = def is null ? new List<SpaceDef>() : GetColorGroupProperties( def.ColorGroup );
 		var current = GetImprovementCount( spaceIndex );
 		var min = group.Count == 0 ? 0 : group.Min( property => GetImprovementCount( property.Index ) );
 
@@ -252,7 +252,7 @@ public sealed partial class MonopolyGame : Component
 	private bool CanRemoveEvenly( int spaceIndex )
 	{
 		var def = Board?.GetSpaceDef( spaceIndex );
-		var group = def is null ? new List<MonopolySpaceDef>() : GetColorGroupProperties( def.ColorGroup );
+		var group = def is null ? new List<SpaceDef>() : GetColorGroupProperties( def.ColorGroup );
 		var current = GetImprovementCount( spaceIndex );
 		var max = group.Count == 0 ? 0 : group.Max( property => GetImprovementCount( property.Index ) );
 

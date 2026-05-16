@@ -1,7 +1,7 @@
 using System;
 using Sandbox;
 
-public sealed class MonopolyTradeRequest
+public sealed class TradeRequest
 {
 	public int Id { get; set; }
 	public int SenderPlayerIndex { get; set; }
@@ -34,7 +34,7 @@ public sealed class MonopolyTradeRequest
 		);
 	}
 
-	public static bool TryDeserialize( int id, string value, out MonopolyTradeRequest request )
+	public static bool TryDeserialize( int id, string value, out TradeRequest request )
 	{
 		request = null;
 
@@ -51,7 +51,7 @@ public sealed class MonopolyTradeRequest
 			!int.TryParse( parts[3], out var receiverMoney ) )
 			return false;
 
-		request = new MonopolyTradeRequest
+		request = new TradeRequest
 		{
 			Id = id,
 			SenderPlayerIndex = senderIndex,

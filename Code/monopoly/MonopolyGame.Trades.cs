@@ -15,7 +15,7 @@ public sealed partial class MonopolyGame : Component
 		if ( senderPlayerIndex < 0 )
 			return;
 
-		var request = new MonopolyTradeRequest
+		var request = new TradeRequest
 		{
 			Id = NextTradeId++,
 			SenderPlayerIndex = senderPlayerIndex,
@@ -88,26 +88,26 @@ public sealed partial class MonopolyGame : Component
 		PendingTrades.Remove( tradeId );
 	}
 
-	public List<MonopolyTradeRequest> GetTrades()
+	public List<TradeRequest> GetTrades()
 	{
 		return PendingTrades
-			.Select( entry => MonopolyTradeRequest.TryDeserialize( entry.Key, entry.Value, out var trade ) ? trade : null )
+			.Select( entry => TradeRequest.TryDeserialize( entry.Key, entry.Value, out var trade ) ? trade : null )
 			.Where( trade => trade is not null )
 			.OrderBy( trade => trade.Id )
 			.ToList();
 	}
 
-	public bool TryGetTrade( int tradeId, out MonopolyTradeRequest trade )
+	public bool TryGetTrade( int tradeId, out TradeRequest trade )
 	{
 		trade = null;
 
 		if ( !PendingTrades.TryGetValue( tradeId, out var value ) )
 			return false;
 
-		return MonopolyTradeRequest.TryDeserialize( tradeId, value, out trade );
+		return TradeRequest.TryDeserialize( tradeId, value, out trade );
 	}
 
-	public bool IsTradeValid( MonopolyTradeRequest trade )
+	public bool IsTradeValid( TradeRequest trade )
 	{
 		if ( trade is null )
 			return false;

@@ -56,11 +56,11 @@ public sealed partial class MonopolyGame : Component
 				break;
 
 			case SpaceType.Chance:
-				ResolveCardLanding( player, MonopolyCardDeck.Chance );
+				ResolveCardLanding( player, CardDeck.Chance );
 				break;
 
 			case SpaceType.CommunityChest:
-				ResolveCardLanding( player, MonopolyCardDeck.CommunityChest );
+				ResolveCardLanding( player, CardDeck.CommunityChest );
 				break;
 
 			case SpaceType.Jail:
@@ -78,7 +78,7 @@ public sealed partial class MonopolyGame : Component
 		}
 	}
 
-	private void ResolvePropertyLanding( MonopolyPlayerState player, MonopolySpaceDef def )
+	private void ResolvePropertyLanding( MonopolyPlayerState player, SpaceDef def )
 	{
 		if (!PropertyOwners.ContainsKey(def.Index))
 		{
@@ -106,15 +106,15 @@ public sealed partial class MonopolyGame : Component
 		}
 	}
 
-	private void ResolveUnownedPropertyLanding( MonopolyPlayerState player, MonopolySpaceDef def )
+	private void ResolveUnownedPropertyLanding( MonopolyPlayerState player, SpaceDef def )
 	{
-		switch ( Config?.LandedUnownedMode ?? MonopolyUnownedLandingMode.SkipOrAuction )
+		switch ( Config?.LandedUnownedMode ?? UnownedLandingMode.SkipOrAuction )
 		{
-			case MonopolyUnownedLandingMode.ForceAuction:
+			case UnownedLandingMode.ForceAuction:
 				StartAuction( def.Index );
 				return;
 
-			case MonopolyUnownedLandingMode.ForceBuyIfPossible:
+			case UnownedLandingMode.ForceBuyIfPossible:
 				if ( player.Money >= def.Price )
 				{
 					BuyUnownedPropertyForPlayer( player, def, CurrentPlayerIndex );
@@ -124,7 +124,7 @@ public sealed partial class MonopolyGame : Component
 				Log.Info( $"{player.PlayerName} could not afford {def.DisplayName}." );
 				return;
 
-			case MonopolyUnownedLandingMode.SkipOrAuction:
+			case UnownedLandingMode.SkipOrAuction:
 			default:
 				PendingPurchaseSpaceIndex = def.Index;
 				Phase = MonopolyGamePhase.WaitingForBuyDecision;

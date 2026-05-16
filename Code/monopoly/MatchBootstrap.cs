@@ -1,17 +1,17 @@
 using Sandbox;
 
-public sealed class MonopolyMatchBootstrap
+public sealed class MatchBootstrap
 {
-	public MonopolyGameConfig Config { get; set; } = new();
+	public MatchConfig Config { get; set; } = new();
 	public bool HasConfig { get; set; }
 	public bool AutoStartGame { get; set; }
 	public int StartingPlayerCount { get; set; }
 
-	public static MonopolyMatchBootstrap Current { get; private set; } = new();
+	public static MatchBootstrap Current { get; private set; } = new();
 
-	public static void PrepareLobby( MonopolyGameConfig config )
+	public static void PrepareLobby( MatchConfig config )
 	{
-		Current = new MonopolyMatchBootstrap
+		Current = new MatchBootstrap
 		{
 			Config = CloneConfig( config ),
 			HasConfig = true,
@@ -20,9 +20,9 @@ public sealed class MonopolyMatchBootstrap
 		};
 	}
 
-	public static void PrepareGame( MonopolyGameConfig config, int startingPlayerCount )
+	public static void PrepareGame( MatchConfig config, int startingPlayerCount )
 	{
-		Current = new MonopolyMatchBootstrap
+		Current = new MatchBootstrap
 		{
 			Config = CloneConfig( config ),
 			HasConfig = true,
@@ -33,14 +33,14 @@ public sealed class MonopolyMatchBootstrap
 
 	public static void Clear()
 	{
-		Current = new MonopolyMatchBootstrap();
+		Current = new MatchBootstrap();
 	}
 
-	public static MonopolyGameConfig CloneConfig( MonopolyGameConfig source )
+	public static MatchConfig CloneConfig( MatchConfig source )
 	{
-		source ??= new MonopolyGameConfig();
+		source ??= new MatchConfig();
 
-		return new MonopolyGameConfig
+		return new MatchConfig
 		{
 			MinPlayers = source.MinPlayers,
 			MaxPlayers = source.MaxPlayers,

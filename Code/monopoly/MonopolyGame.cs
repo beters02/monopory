@@ -24,7 +24,7 @@ public enum MonopolyMatchState
 public sealed partial class MonopolyGame : Component
 {
 	[Property] public List<MonopolyPlayerState> Players { get; set; } = new();
-	[Property] public MonopolyGameConfig Config { get; set; } = new();
+	[Property] public MatchConfig Config { get; set; } = new();
 	[Property] public GameObject TokenPrefab { get; set; }
 
 	[Property, Sync] public MonopolyMatchState MatchState { get; set; } = MonopolyMatchState.Lobby;
@@ -92,7 +92,7 @@ public sealed partial class MonopolyGame : Component
 		if ( !Networking.IsHost )
 			return;
 
-		var bootstrap = MonopolyMatchBootstrap.Current;
+		var bootstrap = MatchBootstrap.Current;
 		if ( bootstrap?.HasConfig == true )
 			Config = bootstrap.Config;
 
@@ -104,7 +104,7 @@ public sealed partial class MonopolyGame : Component
 		{
 			TryStartGame( false );
 			StartingPlayerCount = Math.Max( StartingPlayerCount, bootstrap.StartingPlayerCount );
-			MonopolyMatchBootstrap.Clear();
+			MatchBootstrap.Clear();
 		}
 	}
 

@@ -17,7 +17,7 @@ public sealed class MonopolySpace : Component
 	public BoxCollider Collider {get; private set;}
 
 	// probably unoptimized but idgaf
-	public MonopolySpaceDef Def { get; set; }
+	public SpaceDef Def { get; set; }
 	public string DisplayName {get; set;}
 
 	private readonly List<GameObject> ImprovementVisuals = new();
@@ -43,7 +43,7 @@ public sealed class MonopolySpace : Component
 		Collider = collider;
 	}
 
-	public void EnsureDef(MonopolySpaceDef def)
+	public void EnsureDef(SpaceDef def)
 	{
 		Def = def;
 		DisplayName = def.DisplayName;
@@ -71,7 +71,7 @@ public sealed class MonopolySpace : Component
 		if (Collider == null)
 			return;
 
-		MonopolySpaceDef def = MonopolyBoard.GetSpaceDefStatic( Index );
+		SpaceDef def = MonopolyBoard.GetSpaceDefStatic( Index );
 		if (def == null)
 		{
 			Log.Info("Cannot modify collider width: SpaceDef is null");
@@ -99,7 +99,7 @@ public sealed class MonopolySpace : Component
 		if (Collider == null)
 			return;
 
-		MonopolySpaceDef def = MonopolyBoard.GetSpaceDefStatic( Index );
+		SpaceDef def = MonopolyBoard.GetSpaceDefStatic( Index );
 		if (def == null)
 		{
 			Log.Info("Cannot modify collider width: SpaceDef is null");

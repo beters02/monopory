@@ -39,7 +39,7 @@
 	private MonopolyPlayerState LocalPlayer => GameRef?.LocalPlayer;
 	private string CurrentPlayerName => CurrentPlayer?.PlayerName ?? "None";
 	private int LocalPlayerMoney => LocalPlayer?.Money ?? 0;
-	private MonopolySpaceDef PendingDef => GameRef?.Board?.GetSpaceDef( GameRef.PendingPurchaseSpaceIndex );
+	private SpaceDef PendingDef => GameRef?.Board?.GetSpaceDef( GameRef.PendingPurchaseSpaceIndex );
 	private string PendingPropertyName => PendingDef?.DisplayName ?? "Unknown Property";
 
 	private int CurrentTurnRemainingSeconds =>

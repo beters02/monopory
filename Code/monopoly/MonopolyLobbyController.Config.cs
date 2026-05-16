@@ -4,18 +4,18 @@ public sealed partial class MonopolyLobbyController
 {
 	private void ApplyHostedConfig()
 	{
-		var bootstrap = MonopolyMatchBootstrap.Current;
+		var bootstrap = MatchBootstrap.Current;
 		if ( bootstrap?.HasConfig == true )
-			Config = MonopolyMatchBootstrap.CloneConfig( bootstrap.Config );
+			Config = MatchBootstrap.CloneConfig( bootstrap.Config );
 
 		HostedMinPlayers = Math.Max( Config?.MinPlayers ?? 1, 1 );
 		HostedMaxPlayers = Math.Max( Config?.MaxPlayers ?? HostedMinPlayers, HostedMinPlayers );
 		HostedOnlyHostStartsGame = Config?.OnlyHostStartsGame ?? true;
 	}
 
-	private MonopolyGameConfig GetGameConfig()
+	private MatchConfig GetGameConfig()
 	{
-		var config = MonopolyMatchBootstrap.CloneConfig( Config );
+		var config = MatchBootstrap.CloneConfig( Config );
 		config.MinPlayers = MinPlayers;
 		config.MaxPlayers = MaxPlayers;
 		config.OnlyHostStartsGame = OnlyHostStartsGame;

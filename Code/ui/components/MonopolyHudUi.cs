@@ -4,19 +4,19 @@ namespace Sandbox.ui.components;
 
 public static class MonopolyHudUi
 {
-	public static bool IsPurchasableSpace( MonopolySpaceDef def )
+	public static bool IsPurchasableSpace( SpaceDef def )
 	{
 		return def is not null &&
 			def.Price > 0 &&
 			(def.Type == SpaceType.Property || def.Type == SpaceType.Railroad || def.Type == SpaceType.Utility);
 	}
 
-	public static string GetPropertyColorClass( MonopolySpaceDef def )
+	public static string GetPropertyColorClass( SpaceDef def )
 	{
 		if ( def is null )
 			return "none";
 
-		if ( def.ColorGroup != MonopolyColorGroup.None )
+		if ( def.ColorGroup != ColorGroup.None )
 			return def.ColorGroupClass;
 
 		return GetSpecialPropertyColorGroup( def.Type );

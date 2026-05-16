@@ -5,7 +5,7 @@ using System;
 
 public sealed class MonopolyMenuController : Component
 {
-	[Property] public MonopolyGameConfig Config { get; set; } = new();
+	[Property] public MatchConfig Config { get; set; } = new();
 
 
 
@@ -20,8 +20,8 @@ public sealed class MonopolyMenuController : Component
 		if ( Networking.IsActive )
 			Networking.Disconnect();
 
-		var hostedConfig = MonopolyMatchBootstrap.CloneConfig( Config );
-		MonopolyMatchBootstrap.PrepareLobby( hostedConfig );
+		var hostedConfig = MatchBootstrap.CloneConfig( Config );
+		MatchBootstrap.PrepareLobby( hostedConfig );
 
 		Networking.CreateLobby( new LobbyConfig
 		{

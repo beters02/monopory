@@ -87,7 +87,7 @@
 {
 	[Parameter] public MonopolyGame GameRef { get; set; }
 
-	private MonopolySpaceDef SelectedSpace =>
+	private SpaceDef SelectedSpace =>
 		GameRef?.SelectedSpace;
 
 	private string SelectedDrawnCardText =>

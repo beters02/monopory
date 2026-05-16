@@ -49,7 +49,7 @@ public sealed class MonopolyCommandManager : Component
 		if ( !CanUseCheatCommand( caller ) )
 			return MonopolyCommandResult.Fail( "sv_cheats must be enabled to buy property sets." );
 
-		if ( !MonopolyColorGroups.TryParse( propertySet, out var colorGroup ) || colorGroup == MonopolyColorGroup.None )
+		if ( !ColorGroups.TryParse( propertySet, out var colorGroup ) || colorGroup == ColorGroup.None )
 			return MonopolyCommandResult.Fail( $"Property set \"{propertySet}\" does not exist." );
 
 		var game = MonopolyGame.Instance;

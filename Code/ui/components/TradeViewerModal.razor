@@ -46,7 +46,7 @@
 @code
 {
 	[Parameter] public MonopolyGame GameRef { get; set; }
-	[Parameter] public MonopolyTradeRequest Trade { get; set; }
+	[Parameter] public TradeRequest Trade { get; set; }
 	[Parameter] public Action OnClose { get; set; }
 	[Parameter] public Action<int> OnAccept { get; set; }
 	[Parameter] public Action<int> OnDeny { get; set; }
