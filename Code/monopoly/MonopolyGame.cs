@@ -25,6 +25,7 @@ public sealed class MonopolyGame : Component
 {
 	[Property] public List<MonopolyPlayerState> Players { get; set; } = new();
 	[Property] public MonopolyGameConfig Config { get; set; } = new();
+	[Property] public GameObject TokenPrefab { get; set; }
 
 	[Property, Sync] public MonopolyMatchState MatchState { get; set; } = MonopolyMatchState.Lobby;
 	[Property, Sync] public int WinnerPlayerIndex { get; set; } = -1;
@@ -66,14 +67,15 @@ public sealed class MonopolyGame : Component
 	public bool IsPaused => MatchState == MonopolyMatchState.Paused;
 	public bool HasStarted => MatchState is MonopolyMatchState.InGame or MonopolyMatchState.Paused or MonopolyMatchState.GameOver;
 	public bool CanStartGame => GetLobbyPlayers().Count >= MinPlayers && GetLobbyPlayers().All( player => player.IsReady );
-	public int MinPlayers => Math.Clamp( Config?.MinPlayers ?? 2, 1, Math.Max( Players.Count, 1 ) );
-	public int MaxPlayers => Math.Clamp( Config?.MaxPlayers ?? Players.Count, MinPlayers, Math.Max( Players.Count, MinPlayers ) );
+	public int MinPlayers => Math.Max( Config?.MinPlayers ?? 2, 1 );
+	public int MaxPlayers => Math.Max( Config?.MaxPlayers ?? Players.Count, MinPlayers );
 	public MonopolyPlayerState Winner =>
 		WinnerPlayerIndex >= 0 ? Players.ElementAtOrDefault( WinnerPlayerIndex ) : null;
 
 	private static MonopolyGame instance;
 	private int nextPopupId = 1;
 	private readonly List<MonopolyPopup> popups = new();
+	private readonly List<GameObject> spawnedTokenObjects = new();
 	private float pausedTurnRemainingSeconds;
 	private float pausedAuctionRemainingSeconds;
 
@@ -81,6 +83,8 @@ public sealed class MonopolyGame : Component
 	public IReadOnlyList<MonopolyPopup> Popups => popups;
 
 	public int LocalSelectedSpaceIndex { get; set; } = -1;
+
+	public Logger landingLogger = new("GameLanding");
 
 	public MonopolySpaceDef SelectedSpace =>
 		Board is not null && LocalSelectedSpaceIndex >= 0 && LocalSelectedSpaceIndex < Board.Spaces.Count
@@ -120,6 +124,7 @@ public sealed class MonopolyGame : Component
 		if ( bootstrap?.Config is not null )
 			Config = bootstrap.Config;
 
+		EnsurePlayerSlots();
 		SyncLobbyConnections();
 		ResetGameState( false );
 
@@ -289,6 +294,8 @@ public sealed class MonopolyGame : Component
 		if ( HasStarted && MatchState != MonopolyMatchState.GameOver )
 			return;
 
+		EnsurePlayerSlots();
+
 		var availableSlotCount = Players.Count( player => player is not null );
 		var registrationLimit = Math.Min( MaxPlayers, availableSlotCount );
 
@@ -310,6 +317,44 @@ public sealed class MonopolyGame : Component
 
 			RegisterPlayer( connection );
 		}
+	}
+
+	private void EnsurePlayerSlots()
+	{
+		var targetSlotCount = Math.Max( MaxPlayers, 1 );
+		while ( Players.Count < targetSlotCount )
+		{
+			var slotNumber = Players.Count + 1;
+			var player = CreatePlayerStateObject( slotNumber );
+			player.PlayerName = $"Player {slotNumber}";
+			Players.Add( player );
+		}
+
+		for ( var i = 0; i < Players.Count; i++ )
+			EnsurePlayerStateObject( i );
+	}
+
+	private MonopolyPlayerState CreatePlayerStateObject( int slotNumber )
+	{
+		var playerObject = new GameObject( true, $"PlayerState_{slotNumber:00}" );
+		playerObject.SetParent( GameObject );
+		return playerObject.Components.Create<MonopolyPlayerState>();
+	}
+
+	private void EnsurePlayerStateObject( int playerIndex )
+	{
+		var player = Players.ElementAtOrDefault( playerIndex );
+		var slotNumber = playerIndex + 1;
+
+		if ( player is null || player.GameObject is null || !player.GameObject.IsValid() )
+		{
+			Players[playerIndex] = CreatePlayerStateObject( slotNumber );
+			Players[playerIndex].PlayerName = $"Player {slotNumber}";
+			return;
+		}
+
+		player.GameObject.Name = $"PlayerState_{slotNumber:00}";
+		player.GameObject.SetParent( GameObject );
 	}
 
 	private void ClearPlayerSlot( MonopolyPlayerState player )
@@ -410,6 +455,8 @@ public sealed class MonopolyGame : Component
 			player.IsReady = false;
 		}
 
+		SpawnTokensForPlayers( activePlayers );
+
 		var firstPlayerIndex = Players.FindIndex( player => player is not null && player.IsAssigned );
 		CurrentPlayerIndex = Math.Max( firstPlayerIndex, 0 );
 		MatchState = MonopolyMatchState.Starting;
@@ -419,6 +466,63 @@ public sealed class MonopolyGame : Component
 
 		SendPopupToAll( "Game started", "The first turn is live.", MonopolyPopupKind.Success, true, 4f );
 		return true;
+	}
+
+	private void SpawnTokensForPlayers( IReadOnlyList<MonopolyPlayerState> activePlayers )
+	{
+		ClearSpawnedTokens();
+		ClearExistingTokenObjects();
+
+		if ( TokenPrefab is null )
+		{
+			Log.Warning( "MonopolyGame has no TokenPrefab assigned, so player tokens were not spawned." );
+			return;
+		}
+
+		if ( Board is null )
+			Board = Scene.GetAllComponents<MonopolyBoard>().FirstOrDefault();
+
+		for ( var i = 0; i < activePlayers.Count; i++ )
+		{
+			var player = activePlayers[i];
+			if ( player is null || !player.IsAssigned )
+				continue;
+
+			var tokenObject = TokenPrefab.Clone();
+			tokenObject.Name = $"Token_{i + 1:00}";
+			tokenObject.SetParent( GameObject );
+
+			var token = tokenObject.Components.Get<MonopolyToken>() ?? tokenObject.Components.Create<MonopolyToken>();
+			token.Board = Board;
+			token.PlayerState = player;
+
+			if ( Board is not null )
+				tokenObject.WorldPosition = Board.GetSpacePosition( player.SpaceIndex ) + Vector3.Up * token.HeightOffset;
+
+			spawnedTokenObjects.Add( tokenObject );
+		}
+	}
+
+	private void ClearExistingTokenObjects()
+	{
+		foreach ( var token in Scene.GetAllComponents<MonopolyToken>().ToList() )
+		{
+			if ( token?.GameObject is null || token.GameObject == TokenPrefab )
+				continue;
+
+			token.GameObject.Destroy();
+		}
+	}
+
+	private void ClearSpawnedTokens()
+	{
+		for ( var i = spawnedTokenObjects.Count - 1; i >= 0; i-- )
+		{
+			if ( spawnedTokenObjects[i] is not null )
+				spawnedTokenObjects[i].Destroy();
+		}
+
+		spawnedTokenObjects.Clear();
 	}
 
 	public bool TrySetReady( MonopolyPlayerState player, bool isReady )
@@ -470,10 +574,36 @@ public sealed class MonopolyGame : Component
 		if ( !Networking.IsHost )
 			return false;
 
+		ClearSpawnedTokens();
 		ResetGameState( false );
 		SyncLobbyConnections();
 		MatchState = MonopolyMatchState.Lobby;
 		return true;
+	}
+
+	internal void ForceEndGameFromException( Exception ex )
+	{
+		if ( !Networking.IsHost )
+			return;
+
+		Log.Error( ex );
+
+		CurrentTurnEndsAt = 0f;
+		ClearAuction();
+		ClearPendingForcedPayment();
+		PendingPurchaseSpaceIndex = -1;
+		CurrentTurnGetsExtraRoll = false;
+
+		Phase = MonopolyGamePhase.TurnEnded;
+		MatchState = MonopolyMatchState.GameOver;
+
+		SendPopupToAll(
+			"Game ended",
+			"The game hit a fatal rules error and was ended by the host.",
+			MonopolyPopupKind.Danger,
+			true,
+			8f
+		);
 	}
 
 	public MonopolyPlayerState GetPlayerForString( string playerString )
@@ -606,6 +736,20 @@ public sealed class MonopolyGame : Component
 		return Regex.Replace( playerString, @"[\W_]+", "" ).ToLowerInvariant();
 	}
 
+	public bool TryNormalizePlayerIndex( int index, out int normalizedIndex )
+	{
+		normalizedIndex = NormalizePlayerIndex(index);
+		return normalizedIndex != index;
+	}
+
+	public int NormalizePlayerIndex( int index )
+	{
+		if ( Players.Count <= 0 )
+			return -1;
+
+		return ((index % Players.Count) + Players.Count) % Players.Count;
+	}
+
 	private int GetPlayerIndexForCaller( Connection caller )
 	{
 		var player = GetPlayerForConnection( caller );
@@ -730,15 +874,12 @@ public sealed class MonopolyGame : Component
 	{
 		for ( int i = 0; i < steps; i++ )
 		{
-			player.SpaceIndex =
-				(player.SpaceIndex + 1) % 40;
+			player.SpaceIndex = NormalizeSpaceIndex(player.SpaceIndex + 1);
 
 			await Task.DelaySeconds( 0.4f );
 
 			if ( player.SpaceIndex == 0 )
-			{
 				player.Money += 200;
-			}
 		}
 
 		ResolveLanding( player );
@@ -747,13 +888,22 @@ public sealed class MonopolyGame : Component
 	private void ResolveLanding( MonopolyPlayerState player )
 	{
 		if ( player is null || Board is null )
+		{
+			landingLogger.Error($"FAILED FOR PLAYER/BOARD NULL: IsPlayerNull: {player == null} . IsBoardNull: {Board == null}");
 			return;
+		}
 
-		var space = Board.GetSpace( player.SpaceIndex );
-		MonopolySpaceDef spaceDef = Board.GetSpaceDef(player.SpaceIndex);
+		landingLogger.Info($"RESOLVING PLAYER LANDING FOR PLAYER {player.PlayerName}");
+		landingLogger.Info($"GETTING BOARD SPACE DEF FOR INDEX: {player.SpaceIndex}");
+		var spaceDef = Board.GetSpaceDef( player.SpaceIndex );
+		landingLogger.Info($"SAVED BOARD SPACE DEF");
 
-		if ( space is null || spaceDef is null )
+		if ( spaceDef is null )
+		{
+			landingLogger.Error($"FAILED FOR SPACE DEF NULL: SpaceIndex: {player.SpaceIndex}");
+			ForceEndGameFromException(new InvalidOperationException($"No board definition for space index {player.SpaceIndex}."));
 			return;
+		}
 
 		Log.Info( $"{player.PlayerName} landed on {spaceDef.DisplayName}" );
 
@@ -2155,7 +2305,8 @@ public sealed class MonopolyGame : Component
 
 		for ( int i = 0; i < Players.Count; i++ )
 		{
-			CurrentPlayerIndex = (CurrentPlayerIndex + 1) % Players.Count;
+			CurrentPlayerIndex = NormalizePlayerIndex(CurrentPlayerIndex + 1);
+			//CurrentPlayerIndex = (CurrentPlayerIndex + 1) % Players.Count;
 
 			var player = Players[CurrentPlayerIndex];
 			if ( !player.IsAssigned || player.IsBankrupt )
@@ -2177,7 +2328,8 @@ public sealed class MonopolyGame : Component
 
 		for ( int i = 0; i < Players.Count; i++ )
 		{
-			CurrentPlayerIndex = (CurrentPlayerIndex + 1) % Players.Count;
+			//CurrentPlayerIndex = (CurrentPlayerIndex + 1) % Players.Count;
+			CurrentPlayerIndex = NormalizePlayerIndex(CurrentPlayerIndex + 1);
 
 			if ( Players[CurrentPlayerIndex].IsAssigned && !Players[CurrentPlayerIndex].IsBankrupt )
 			{
@@ -2226,13 +2378,16 @@ public sealed class MonopolyGame : Component
 			.ToList();
 	}
 
-	private int NormalizeSpaceIndex( int spaceIndex )
+	// returns false if index did not need to be normalized.
+	public static bool TryNormalizeSpaceIndex(int spaceIndex, out int normalizedSpaceIndex)
 	{
-		var spaceCount = Board?.SpaceDefs?.Count ?? 40;
-		if ( spaceCount <= 0 )
-			spaceCount = 40;
+		normalizedSpaceIndex = NormalizeSpaceIndex(spaceIndex);
+		return normalizedSpaceIndex != spaceIndex;
+	}
 
-		return ((spaceIndex % spaceCount) + spaceCount) % spaceCount;
+	public static int NormalizeSpaceIndex( int spaceIndex )
+	{
+		return ((spaceIndex % 40) + 40) % 40;
 	}
 
 	public bool IsMortgaged( int spaceIndex )

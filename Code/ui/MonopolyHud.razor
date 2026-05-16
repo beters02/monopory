@@ -74,6 +74,20 @@
 			</ChildContent>
 		</HudPanel>
 
+		@if ( IsEscapeMenuOpen )
+		{
+			<div class="session-screen escape-menu-screen">
+				<div class="session-panel escape-menu-panel">
+					<div class="session-kicker">Menu</div>
+					<div class="session-title">Game Menu</div>
+					<div class="session-actions escape-menu-actions">
+						<MonopolyButton Variant="session-secondary-button" OnClick="@LeaveLobby">Leave Lobby</MonopolyButton>
+						<MonopolyButton Variant="session-danger-button" OnClick="@ExitGame">Exit Game</MonopolyButton>
+					</div>
+				</div>
+			</div>
+		}
+
 		@if ( GameRef.MatchState == MonopolyMatchState.Paused )
 		{
 			<div class="session-screen pause-screen">
@@ -459,6 +473,39 @@
 	private string WinnerName =>
 		GameRef?.Winner?.PlayerName ?? "No One";
 
+	private bool IsEscapeMenuOpen;
+
+	protected override void OnUpdate()
+	{
+		base.OnUpdate();
+
+		if ( GameRef is null || GameRef.MatchState == MonopolyMatchState.GameOver )
+		{
+			IsEscapeMenuOpen = false;
+			return;
+		}
+
+		HandleMenuOpen();
+	}
+
+	private void HandleMenuOpen()
+	{
+		#if STANDALONE
+		if ( Input.EscapePressed )
+		{
+			Log.Info("yayayaya");
+			IsEscapeMenuOpen = !IsEscapeMenuOpen;
+			return;
+		}
+		#endif
+		
+		if (Input.Pressed("EditorMenu"))
+		{
+			Log.Info("YAYAYA");
+			IsEscapeMenuOpen = !IsEscapeMenuOpen;
+		}
+	}
+
 	private void PauseGame()
 	{
 		if ( GameRef is null )
@@ -493,6 +540,18 @@
 		}
 		else
 			GameRef.RequestReturnToLobby();
+	}
+
+	private void LeaveLobby()
+	{
+		IsEscapeMenuOpen = false;
+		ReturnToLobby();
+	}
+
+	private void ExitGame()
+	{
+		IsEscapeMenuOpen = false;
+		Game.Close();
 	}
 
 	private readonly HashSet<int> ExpandedPropertyPanels = new();
@@ -587,6 +646,7 @@
 				GetComposerHash(),
 				GetPopupsHash()
 			),
+			IsEscapeMenuOpen,
 			GameRef?.Config?.VacationCash ?? false,
 				GameRef?.FreeParkingBank ?? 0,
 			CurrentTurnRemainingSeconds,

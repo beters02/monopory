@@ -204,6 +204,7 @@ public sealed class MonopolySpace : Component
 
 	// probably unoptimized but idgaf
 	public MonopolySpaceDef Def { get; set; }
+	public string DisplayName {get; set;}
 
 	private readonly List<GameObject> ImprovementVisuals = new();
 	private int visibleImprovementCount = -1;
@@ -231,6 +232,7 @@ public sealed class MonopolySpace : Component
 	public void EnsureDef(MonopolySpaceDef def)
 	{
 		Def = def;
+		DisplayName = def.DisplayName;
 	}
 
 	public Vector3? GetColliderCenter()

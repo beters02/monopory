@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Sandbox;
@@ -7,7 +8,8 @@ public sealed class MonopolyBoard : Component
 	private static MonopolyBoard instance;
 	public static MonopolyBoard Instance => instance;
 	private MonopolyGame GameRef;
-	private DebugHelper debugHelper = new();
+	private Logger logger = new("Board");
+	private Logger boardSpace = new("BoardSpace");
 
 	[Property] public List<MonopolySpace> Spaces { get; set; } = new();
 	public List<MonopolySpaceDef> SpaceDefs { get; private set; } = new();
@@ -24,7 +26,7 @@ public sealed class MonopolyBoard : Component
 	public List<MonopolyCardDef> CommunityChestCards { get; private set; } = new();
 
 	[Property, Change("OnDebugEnabledChanged")] public bool DebugEnabled {get; set;} = false;
-	private void OnDebugEnabledChanged(bool _, bool newValue) => debugHelper.SetEnabled(newValue);
+	private void OnDebugEnabledChanged(bool _, bool newValue) => logger.SetEnabled(newValue);
 
 	// Component
 
@@ -44,7 +46,7 @@ public sealed class MonopolyBoard : Component
 		}
 		#endif
 
-		debugHelper.SetEnabled(DebugEnabled);
+		logger.SetEnabled(DebugEnabled);
 
 		GameRef = Scene.GetAllComponents<MonopolyGame>().FirstOrDefault();
 
@@ -675,20 +677,92 @@ public sealed class MonopolyBoard : Component
 	// Space Helpers
 	public MonopolySpace GetSpace( int index )
 	{
-		if ( Spaces.Count == 0 || Spaces.Count - 1 < index)
-			return null;
+		int originalIndex = index;
 
-		index = ((index % Spaces.Count) + Spaces.Count) % Spaces.Count;
-		return Spaces[index];
+		boardSpace.Info("RETRIEVING SPACE FOR INDEX: " + index);
+		bool didNormalize = MonopolyGame.TryNormalizeSpaceIndex(index, out int normalizedSpaceIndex);
+
+		if (didNormalize)
+		{
+			boardSpace.Info($"NORMALIZED SPACE INDEX {index} -> {normalizedSpaceIndex}");
+			index = normalizedSpaceIndex;
+		}
+
+		if ( Spaces.Count == 0 )
+		{
+			boardSpace.Error("COULD NOT RETRIEVE SPACE. SPACES LIST IS EMPTY.");
+			GameRef?.ForceEndGameFromException(new InvalidOperationException("No available board spaces."));
+			return null;
+		}
+
+		if ( index < 0 || index >= Spaces.Count )
+		{
+			boardSpace.Error($"COULD NOT RETRIEVE SPACE. SPACES[{index}] IS OUT OF RANGE. SPACES.COUNT: {Spaces.Count}.");
+			GameRef?.ForceEndGameFromException(new InvalidOperationException($"Board space index {index} is out of range."));
+			return null;
+		}
+
+		var space = Spaces[index];
+		if ( space is null )
+		{
+			boardSpace.Error($"COULD NOT RETRIEVE SPACE. SPACES[{index}] RETURNED NULL. SPACES.COUNT: {Spaces.Count}.");
+			GameRef?.ForceEndGameFromException(new InvalidOperationException($"Board space index {index} is null."));
+			return null;
+		}
+
+		string succMsg = $"SUCCESSFULLY RETRIEVED SPACE FROM INDEX: {originalIndex}";
+		if (didNormalize)
+			succMsg += $"->{normalizedSpaceIndex}->{space.DisplayName}";
+		else
+			succMsg += $"->{space.DisplayName}";
+		
+		boardSpace.Info(succMsg);
+		return space;
 	}
 
 	public MonopolySpaceDef GetSpaceDef(int index)
 	{
-		if ( Spaces.Count == 0 || Spaces.Count - 1 < index)
-			return null;
+		int originalIndex = index;
 
-		index = ((index % Spaces.Count) + Spaces.Count) % Spaces.Count;
-		return SpaceDefs[index];
+		boardSpace.Info("RETRIEVING SPACE DEF FOR INDEX: " + index);
+		bool didNormalize = MonopolyGame.TryNormalizeSpaceIndex(index, out int normalizedSpaceIndex);
+
+		if (didNormalize)
+		{
+			boardSpace.Info($"NORMALIZED SPACE DEF INDEX {index} -> {normalizedSpaceIndex}");
+			index = normalizedSpaceIndex;
+		}
+
+		if ( SpaceDefs.Count == 0 )
+		{
+			boardSpace.Error("COULD NOT RETRIEVE SPACE DEF. SPACEDEFS LIST IS EMPTY.");
+			GameRef?.ForceEndGameFromException(new InvalidOperationException("No available board space definitions."));
+			return null;
+		}
+
+		if ( index < 0 || index >= SpaceDefs.Count )
+		{
+			boardSpace.Error($"COULD NOT RETRIEVE SPACE DEF. SPACEDEFS[{index}] IS OUT OF RANGE. SPACEDEFS.COUNT: {SpaceDefs.Count}.");
+			GameRef?.ForceEndGameFromException(new InvalidOperationException($"Board space definition index {index} is out of range."));
+			return null;
+		}
+
+		var spaceDef = SpaceDefs[index];
+		if ( spaceDef is null )
+		{
+			boardSpace.Error($"COULD NOT RETRIEVE SPACE DEF. SPACEDEFS[{index}] RETURNED NULL. SPACEDEFS.COUNT: {SpaceDefs.Count}.");
+			GameRef?.ForceEndGameFromException(new InvalidOperationException($"Board space definition index {index} is null."));
+			return null;
+		}
+
+		string succMsg = $"SUCCESSFULLY RETRIEVED SPACE DEF FROM INDEX: {originalIndex}";
+		if (didNormalize)
+			succMsg += $"->{normalizedSpaceIndex}->{spaceDef.DisplayName}";
+		else
+			succMsg += $"->{spaceDef.DisplayName}";
+
+		boardSpace.Info(succMsg);
+		return spaceDef;
 	}
 
 	public static MonopolySpaceDef GetSpaceDefStatic(int index)
@@ -809,13 +883,13 @@ public sealed class MonopolyBoard : Component
 		
 		if ( !traceResult.Hit || traceResult.GameObject is null )
 		{
-			debugHelper.LogInfo(str + " (no hit)");
+			logger.Info(str + " (no hit)");
 			return;
 		}
 
 		if ( !traceResult.GameObject.Components.TryGet<MonopolySpace>( out var space ) )
 		{
-			debugHelper.LogInfo(str + " (not a space)");
+			logger.Info(str + " (not a space)");
 			return;
 		}
 
@@ -827,7 +901,7 @@ public sealed class MonopolyBoard : Component
 
 		var def = GetSpaceDef(space.Index);
 		str += $", SpaceDef: {def?.DisplayName} (Quad: {def?.GetQuadrant()} Index: {def?.Index}, Type: {def?.Type})";
-		debugHelper.LogInfo(str);
+		logger.Info(str);
 		
 		foundSpace = space;
 		foundSpaceDef = def;

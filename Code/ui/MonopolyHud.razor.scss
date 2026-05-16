@@ -98,6 +98,10 @@ MonopolyHud {
 		z-index: 45;
 	}
 
+	.escape-menu-screen {
+		z-index: 50;
+	}
+
 	.session-panel {
 		width: 520px;
 		max-width: 86%;
@@ -114,6 +118,10 @@ MonopolyHud {
 		display: flex;
 		flex-direction: column;
 		gap: 14px;
+	}
+
+	.escape-menu-panel {
+		width: 420px;
 	}
 
 	.lobby-panel {
@@ -169,6 +177,19 @@ MonopolyHud {
 
 	.session-secondary-button:hover {
 		background-color: $monopoly-ink-hover;
+	}
+
+	.session-danger-button {
+		background-color: $monopoly-danger;
+		color: $monopoly-board;
+	}
+
+	.session-danger-button:hover {
+		background-color: $monopoly-danger-hover;
+	}
+
+	.escape-menu-actions {
+		flex-direction: column;
 	}
 
 	.lobby-list {
