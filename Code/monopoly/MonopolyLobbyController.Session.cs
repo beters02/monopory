@@ -15,7 +15,7 @@ public sealed partial class MonopolyLobbyController
 	[Rpc.Broadcast]
 	private void LoadGameScene()
 	{
-		MonopolySceneFlow.LoadGame( Scene );
+		SceneFlow.LoadGame( Scene );
 	}
 
 	[Rpc.Host]
@@ -43,6 +43,6 @@ public sealed partial class MonopolyLobbyController
 
 	public void LeaveLobby()
 	{
-		MonopolyNetworkSession.LeaveCurrentLobby( Scene );
+		NetworkSession.LeaveCurrentLobby( Scene );
 	}
 }

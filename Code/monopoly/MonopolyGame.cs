@@ -87,7 +87,7 @@ public sealed partial class MonopolyGame : Component
 	protected override void OnStart()
 	{
 		instance = this;
-		MonopolySteamInviteBridge.Register( Scene );
+		SteamInviteBridge.Register( Scene );
 
 		if ( !Networking.IsHost )
 			return;

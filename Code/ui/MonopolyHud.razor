@@ -90,7 +90,7 @@
 		if ( Networking.IsHost )
 		{
 			GameRef.TryReturnToLobby();
-			MonopolySceneFlow.LoadLobby( Scene );
+			SceneFlow.LoadLobby( Scene );
 		}
 		else
 			GameRef.RequestReturnToLobby();
@@ -99,7 +99,7 @@
 	private void LeaveLobby()
 	{
 		IsEscapeMenuOpen = false;
-		MonopolyNetworkSession.LeaveCurrentLobby( Scene );
+		NetworkSession.LeaveCurrentLobby( Scene );
 	}
 
 	private void ExitGame()

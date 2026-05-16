@@ -1,4 +1,4 @@
-public static class MonopolyScenePaths
+public static class ScenePaths
 {
 	public const string Menu = "scenes/menu.scene";
 	public const string Lobby = "scenes/lobby.scene";

@@ -11,7 +11,7 @@ public sealed class MonopolyMenuController : Component
 
 	protected override void OnStart()
 	{
-		MonopolySteamInviteBridge.Register( Scene );
+		SteamInviteBridge.Register( Scene );
 		HandleLaunchArguments();
 	}
 
@@ -44,6 +44,6 @@ public sealed class MonopolyMenuController : Component
 	[Rpc.Broadcast]
 	private void LoadLobbyScene()
 	{
-		MonopolySceneFlow.LoadLobby( Scene );
+		SceneFlow.LoadLobby( Scene );
 	}
 }

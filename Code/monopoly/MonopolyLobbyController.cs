@@ -26,7 +26,7 @@ public sealed partial class MonopolyLobbyController : Component
 
 	protected override void OnStart()
 	{
-		MonopolySteamInviteBridge.Register( Scene );
+		SteamInviteBridge.Register( Scene );
 
 		if ( Networking.IsHost )
 			ApplyHostedConfig();

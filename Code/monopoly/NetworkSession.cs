@@ -1,12 +1,12 @@
 using Sandbox;
 
-public static class MonopolyNetworkSession
+public static class NetworkSession
 {
 	public static void LeaveCurrentLobby( Scene scene )
 	{
 		if ( Networking.IsActive )
 			Networking.Disconnect();
 
-		MonopolySceneFlow.LoadMenu( scene );
+		SceneFlow.LoadMenu( scene );
 	}
 }

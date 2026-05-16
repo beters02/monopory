@@ -4,7 +4,7 @@ using System;
 using System.Reflection;
 #endif
 
-public static class MonopolySteamInviteBridge
+public static class SteamInviteBridge
 {
 #if STANDALONE
 	private static bool isRegistered;
@@ -24,7 +24,7 @@ public static class MonopolySteamInviteBridge
 		{
 			var steamFriendsType = FindLoadedType( "Steamworks.SteamFriends" );
 			var joinRequestedProperty = steamFriendsType?.GetProperty( "OnGameLobbyJoinRequested", BindingFlags.Public | BindingFlags.Static );
-			var handlerMethod = typeof( MonopolySteamInviteBridge ).GetMethod( nameof( OnGameLobbyJoinRequested ), BindingFlags.NonPublic | BindingFlags.Static );
+			var handlerMethod = typeof( SteamInviteBridge ).GetMethod( nameof( OnGameLobbyJoinRequested ), BindingFlags.NonPublic | BindingFlags.Static );
 
 			if ( joinRequestedProperty is null || handlerMethod is null )
 			{
@@ -63,7 +63,7 @@ public static class MonopolySteamInviteBridge
 		}
 
 		Log.Info( $"Joined Steam lobby invite {lobbyIdValue}." );
-		MonopolySceneFlow.LoadLobby( currentScene );
+		SceneFlow.LoadLobby( currentScene );
 	}
 
 	private static Type FindLoadedType( string typeName )
