@@ -1,6 +1,6 @@
 using System;
 
-public sealed partial class MonopolyLobbyController
+public sealed partial class LobbyController
 {
 	private void ApplyHostedConfig()
 	{

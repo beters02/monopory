@@ -119,7 +119,7 @@
       "OwnerTransfer": 1,
       "Components": [
         {
-          "__type": "MonopolyLobbyController",
+          "__type": "LobbyController",
           "__guid": "3cc865cf-e410-4871-a8ef-145da321c683",
           "__enabled": true,
           "Flags": 0,
@@ -207,7 +207,7 @@
                 "_type": "component",
                 "component_id": "3cc865cf-e410-4871-a8ef-145da321c683",
                 "go": "04f17a18-2449-4e31-a1e6-88083375f095",
-                "component_type": "MonopolyLobbyController"
+                "component_type": "LobbyController"
               },
               "OnComponentDestroy": null,
               "OnComponentDisabled": null,

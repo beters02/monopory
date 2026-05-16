@@ -1,7 +1,7 @@
 using Sandbox;
 using System;
 
-public sealed partial class MonopolyLobbyController
+public sealed partial class LobbyController
 {
 	public bool TrySetReady( long ownerId, bool isReady )
 	{

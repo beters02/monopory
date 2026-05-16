@@ -1,7 +1,7 @@
 using Sandbox;
 using System;
 
-public sealed partial class MonopolyLobbyController : Component
+public sealed partial class LobbyController : Component
 {
 	[Property] public MatchConfig Config { get; set; } = new();
 	[Property, Sync] public int HostedMinPlayers { get; set; } = 1;

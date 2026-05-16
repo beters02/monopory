@@ -45,9 +45,9 @@
 
 @code
 {
-	[Property] public MonopolyLobbyController LobbyRef { get; set; }
+	[Property] public LobbyController LobbyRef { get; set; }
 
-	private MonopolyLobbyController Lobby => LobbyRef;
+	private LobbyController Lobby => LobbyRef;
 	private List<LobbyPlayer> Players => Lobby?.Players ?? new();
 	private List<GamePopup> LocalPopupList => LocalPopups.Popups.ToList();
 	private LobbyPlayer LocalPlayer => Lobby?.LocalPlayer;

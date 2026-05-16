@@ -5,7 +5,7 @@ using System.Collections;
 using System.Reflection;
 #endif
 
-public sealed partial class MonopolyLobbyController
+public sealed partial class LobbyController
 {
 	public bool TryOpenInviteOverlay()
 	{

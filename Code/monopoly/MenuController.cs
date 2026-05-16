@@ -3,7 +3,7 @@ using Sandbox.Network;
 using Sandbox.Rendering;
 using System;
 
-public sealed class MonopolyMenuController : Component
+public sealed class MenuController : Component
 {
 	[Property] public MatchConfig Config { get; set; } = new();
 

@@ -1787,7 +1787,7 @@
                 "VacationCash": false,
                 "DontCollectRentWhileInPrison": false,
                 "EvenBuild": true,
-                "TurnTimeLimitSeconds": 20
+                "TurnTimeLimitSeconds": 180
               },
               "CurrentPlayerIndex": 0,
               "CurrentTurnEndsAt": 0,

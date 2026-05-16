@@ -144,12 +144,7 @@
               "__guid": "9271f2b2-3c6d-4a93-a551-f1e451f69b41",
               "__enabled": true,
               "Flags": 0,
-              "MenuRef": {
-                "_type": "component",
-                "component_id": "b9b0496d-220d-407b-b453-44c344131cab",
-                "go": "0caebde4-34ea-4442-acc6-17ef10d14dce",
-                "component_type": "MonopolyMenuController"
-              },
+              "MenuRef": null,
               "OnComponentDestroy": null,
               "OnComponentDisabled": null,
               "OnComponentEnabled": null,
@@ -179,8 +174,8 @@
       "OwnerTransfer": 1,
       "Components": [
         {
-          "__type": "MonopolyMenuController",
-          "__guid": "b9b0496d-220d-407b-b453-44c344131cab",
+          "__type": "MenuController",
+          "__guid": "e3df852f-1c23-4b96-8b4d-f2280693d81d",
           "__enabled": true,
           "Flags": 0,
           "Config": {

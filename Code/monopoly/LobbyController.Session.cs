@@ -1,6 +1,6 @@
 using Sandbox;
 
-public sealed partial class MonopolyLobbyController
+public sealed partial class LobbyController
 {
 	public bool TryStartGame()
 	{
