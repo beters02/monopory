@@ -305,8 +305,10 @@ ui/components/HudPanel/
  HudPanelEmptyLine.razor
  HudPanelSubtitle.razor
  HudPanelTitle.razor
+ui/components/
+ MonopolyPopupStack.razor
+ MonopolySpaceCard.razor
 ui/
- components/MonopolyPopupStack.razor
  MonopolyHud.razor
  MonopolyLobbyMenu.razor
  MonopolyMainMenu.razor
@@ -322,8 +324,10 @@ ui/components/HudPanel/
  HudPanelEmptyLine.razor
  HudPanelSubtitle.razor
  HudPanelTitle.razor
+ui/components/
+ MonopolyPopupStack.razor
+ MonopolySpaceCard.razor
 ui/
- components/MonopolyPopupStack.razor
  MonopolyHud.razor
  MonopolyLobbyMenu.razor
  MonopolyMainMenu.razor

@@ -47,10 +47,6 @@
 				{
 					<MonopolyButton Variant="@EndTurnButtonClasses" CanClick="@CanEndTurn" OnClick="@EndTurn" BlockedPopupTitle="Cannot end turn yet" BlockedPopupMessage="@GetEndTurnBlockedMessage()">End Turn</MonopolyButton>
 				}
-				@if ( GameRef.MatchState == MonopolyMatchState.InGame )
-				{
-					<MonopolyButton Variant="pause-button" OnClick="@PauseGame">Pause</MonopolyButton>
-				}
 			</ChildContent>
 		</HudPanel>
 
@@ -314,32 +310,8 @@
 							</div>
 						</div>
 
-						<div class="@AuctionCardClasses">
-							<div class="auction-card-header">
-								<div class="auction-card-type">@AuctionSpace.Type</div>
-								<div class="auction-card-name">@AuctionSpace.DisplayName</div>
-							</div>
-
-							@if ( AuctionSpace.Type == SpaceType.Property )
-							{
-								<div class="auction-card-rents">
-									<div><span>with rent</span><span>$@AuctionSpace.BaseRent</span></div>
-									<div><span>with one house</span><span>$@AuctionSpace.OneHouseRent</span></div>
-									<div><span>with two houses</span><span>$@AuctionSpace.TwoHouseRent</span></div>
-									<div><span>with three houses</span><span>$@AuctionSpace.ThreeHouseRent</span></div>
-									<div><span>with four houses</span><span>$@AuctionSpace.FourHouseRent</span></div>
-									<div><span>with a hotel</span><span>$@AuctionSpace.HotelRent</span></div>
-								</div>
-							}
-							else
-							{
-								<div class="auction-card-rents">
-									<div><span>listed price</span><span>$@AuctionSpace.Price</span></div>
-									<div><span>space type</span><span>@AuctionSpace.Type</span></div>
-								</div>
-							}
-
-							<div class="auction-card-footer">
+						<MonopolySpaceCard Space="@AuctionSpace" Variant="auction-space-card" ColorClass="@GetPropertyColorClass( AuctionSpace )">
+							<FooterContent>
 								<div>
 									<span>Price</span>
 									<strong>$@AuctionSpace.Price</strong>
@@ -348,8 +320,8 @@
 									<span>Bid</span>
 									<strong>$@GameRef.AuctionCurrentBid</strong>
 								</div>
-							</div>
-						</div>
+							</FooterContent>
+						</MonopolySpaceCard>
 					</div>
 				</div>
 			</div>
@@ -357,69 +329,76 @@
 
 		@if ( SelectedSpace is not null )
 		{
-			<div class="@SpaceCardClasses">
-				<MonopolyCloseButton Variant="@SpaceCardCloseButtonClasses" CanClick="@CanCloseSelectedSpace" OnClick="@CloseSelectedSpace" BlockedPopupTitle="Decision required" BlockedPopupMessage="@SelectedSpaceCloseBlockedMessage"></MonopolyCloseButton>
-
-				<div class="space-card-header">
-					<div class="space-color-band"></div>
-					<div class="space-type">@SelectedSpace.Type</div>
-					<div class="space-title">@SelectedSpace.DisplayName</div>
-				</div>
-
-				@if ( IsSelectedSpaceMortgaged )
-				{
-					<div class="space-mortgage-status">
-						<div class="space-mortgage-label">Mortgaged</div>
-						<div class="space-mortgage-detail">Rent is suspended until unmortgaged.</div>
-					</div>
-				}
-
-				@if ( ShowFreeParkingMoney )
-				{
-					<div class="free-parking-bank">
-						<div class="free-parking-bank-label">Free Parking Bank</div>
-						<div class="free-parking-bank-amount">$@GameRef.FreeParkingBank</div>
-					</div>
-				}
-
-				@if ( IsProperty )
-				{
-					<div class="rent-list">
-						<div>Rent: $@SelectedSpace.BaseRent</div>
-						<div>1 House: $@SelectedSpace.OneHouseRent</div>
-						<div>2 Houses: $@SelectedSpace.TwoHouseRent</div>
-						<div>3 Houses: $@SelectedSpace.ThreeHouseRent</div>
-						<div>4 Houses: $@SelectedSpace.FourHouseRent</div>
-						<div>Hotel: $@SelectedSpace.HotelRent</div>
-					</div>
-
-					<div class="property-house-count">
-						<img class="property-house-icon" src="ui/house-placeholder.svg" />
-						<span>Current houses: @SelectedImprovementAmountLabel</span>
-					</div>
-				}
-
-				@if ( CanBuySelectedSpace )
-				{
-					<div class="space-buttons">
-						<MonopolyButton OnClick="@BuyProperty">Buy</MonopolyButton>
-						<MonopolyButton OnClick="@AuctionProperty">Auction</MonopolyButton>
-					</div>
-				}
-
-				@if ( CanManageSelectedSpace )
-				{
-					<div class="space-management">
+			<div class="selected-space-card-panel">
+				<MonopolySpaceCard
+					Space="@SelectedSpace"
+					Variant="selected-space-card"
+					ColorClass="@GetPropertyColorClass( SelectedSpace )"
+					IsMortgaged="@IsSelectedSpaceMortgaged"
+					ShowFreeParkingBank="@ShowFreeParkingMoney"
+					FreeParkingBank="@(GameRef?.FreeParkingBank ?? 0)"
+					ShowImprovementCount="@IsProperty"
+					HasActions="@false"
+					ImprovementLabel="@SelectedImprovementAmountLabel"
+					DrawnCardText="@SelectedDrawnCardText">
+					<OverlayContent>
+						<MonopolyCloseButton Variant="@SpaceCardCloseButtonClasses" CanClick="@CanCloseSelectedSpace" OnClick="@CloseSelectedSpace" BlockedPopupTitle="Decision required" BlockedPopupMessage="@SelectedSpaceCloseBlockedMessage"></MonopolyCloseButton>
+					</OverlayContent>
+					<FooterContent>
+						<div>
+							<span>Price</span>
+							<strong>@SelectedSpacePriceLabel</strong>
+						</div>
+						<div>
+							<span>Rent</span>
+							<strong>@SelectedSpaceRentLabel</strong>
+						</div>
 						@if ( IsProperty )
 						{
-							<div class="space-buttons improvement-buttons">
-								<MonopolyButton Variant="@BuildImprovementButtonClasses" OnClick="@BuildImprovement">@BuildImprovementActionLabel</MonopolyButton>
-								<MonopolyButton Variant="@SellImprovementButtonClasses" OnClick="@SellImprovement">@SellImprovementActionLabel</MonopolyButton>
+							<div>
+								<span>House</span>
+								<strong>@SelectedHousePriceLabel</strong>
 							</div>
 						}
-						<div class="space-buttons mortgage-buttons">
-							<MonopolyButton Variant="@MortgageButtonClasses" OnClick="@Mortgage">@MortgageActionLabel</MonopolyButton>
+					</FooterContent>
+				</MonopolySpaceCard>
+
+				@if ( CanBuySelectedSpace || CanManageSelectedSpace )
+				{
+					<div class="selected-space-actions">
+					@if ( CanBuySelectedSpace )
+					{
+						<div class="space-buttons">
+							<MonopolyButton OnClick="@BuyProperty">Buy</MonopolyButton>
+							<MonopolyButton OnClick="@AuctionProperty">Auction</MonopolyButton>
 						</div>
+					}
+
+					@if ( CanManageSelectedSpace )
+					{
+						<div class="space-management">
+							@if ( IsProperty )
+							{
+								<div class="space-buttons improvement-buttons">
+									<MonopolyButton Variant="@BuildImprovementButtonClasses" OnClick="@BuildImprovement">
+										<ChildContent>
+											<span>+</span>
+											<img class="space-action-house-icon" src="ui/house-placeholder.svg" />
+										</ChildContent>
+									</MonopolyButton>
+									<MonopolyButton Variant="@SellImprovementButtonClasses" OnClick="@SellImprovement">
+										<ChildContent>
+											<span>-</span>
+											<img class="space-action-house-icon" src="ui/house-placeholder.svg" />
+										</ChildContent>
+									</MonopolyButton>
+								</div>
+							}
+							<div class="space-buttons mortgage-buttons">
+								<MonopolyButton Variant="@MortgageButtonClasses" OnClick="@Mortgage">@MortgageActionLabel</MonopolyButton>
+							</div>
+						</div>
+					}
 					</div>
 				}
 			</div>
@@ -617,9 +596,12 @@
 			),
 			IsEscapeMenuOpen,
 			GameRef?.Config?.VacationCash ?? false,
-				GameRef?.FreeParkingBank ?? 0,
+			GameRef?.FreeParkingBank ?? 0,
 			CurrentTurnRemainingSeconds,
-			GameRef?.WinnerPlayerIndex ?? -1
+			System.HashCode.Combine(
+				GameRef?.WinnerPlayerIndex ?? -1,
+				GameRef?.LocalSelectedDrawnCardText ?? ""
+			)
 		);
 	}
 
@@ -697,6 +679,11 @@
 
 	private List<MonopolyTradeRequest> Trades =>
 		GameRef?.GetTrades() ?? new();
+
+	private string SelectedDrawnCardText =>
+		IsSelectedCardSpace
+			? GameRef?.LocalSelectedDrawnCardText ?? ""
+			: "";
 
 	private MonopolyTradeRequest ViewedTrade =>
 		ViewedTradeId < 0 || GameRef is null || !GameRef.TryGetTrade( ViewedTradeId, out var trade )
@@ -933,9 +920,6 @@
 	private string AuctionTitleDotClasses =>
 		$"auction-title-dot color-{GetPropertyColorClass( AuctionSpace )}";
 
-	private string AuctionCardClasses =>
-		$"auction-property-card color-{GetPropertyColorClass( AuctionSpace )}";
-
 	private bool CanLocalPlayerBid( int bidAmount )
 	{
 		return IsAuctionActive &&
@@ -958,9 +942,6 @@
 		GameRef?.RequestAuctionBid( bidAmount );
 	}
 
-	private string SpaceCardClasses =>
-		$"space-card {SpaceCardThemeClass} color-{GetPropertyColorClass( SelectedSpace )}";
-
 	private string SpaceCardCloseButtonClasses =>
 		ShouldBlockSelectedSpaceClose ? "space-card-close blocked-action-button" : "space-card-close";
 
@@ -976,6 +957,9 @@
 	private bool IsProperty =>
 		SelectedSpace is not null &&
 		SelectedSpace.HotelRent > 0;
+
+	private bool IsSelectedCardSpace =>
+		SelectedSpace?.Type is SpaceType.Chance or SpaceType.CommunityChest;
 
 	private bool ShowFreeParkingMoney =>
 		GameRef?.Config?.VacationCash == true &&
@@ -1027,6 +1011,15 @@
 	private int SelectedSpaceRent =>
 		SelectedSpaceIndex < 0 ? 0 : GameRef?.GetRentForSpace( SelectedSpaceIndex ) ?? 0;
 
+	private string SelectedSpacePriceLabel =>
+		SelectedSpace?.Price > 0 ? $"${SelectedSpace.Price}" : "-";
+
+	private string SelectedSpaceRentLabel =>
+		SelectedSpaceRent > 0 ? $"${SelectedSpaceRent}" : "-";
+
+	private string SelectedHousePriceLabel =>
+		SelectedImprovementCost > 0 ? $"${SelectedImprovementCost}" : "-";
+
 	private string SelectedImprovementName =>
 		SelectedImprovementCount switch
 		{
@@ -1040,12 +1033,6 @@
 
 	private string NextImprovementName =>
 		SelectedImprovementCount >= 4 ? "Hotel" : "House";
-
-	private string BuildImprovementActionLabel =>
-		$"Build {NextImprovementName} -${SelectedImprovementCost}";
-
-	private string SellImprovementActionLabel =>
-		$"Sell {SelectedImprovementName} +${SelectedImprovementSellValue}";
 
 	private string BuildImprovementButtonClasses =>
 		CanBuildSelectedImprovement ? "improvement-action" : "improvement-action disabled";

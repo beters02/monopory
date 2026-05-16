@@ -1780,13 +1780,14 @@
               "Config": {
                 "MinPlayers": 1,
                 "MaxPlayers": 6,
+                "OnlyHostStartsGame": true,
                 "LandedUnownedMode": "SkipOrAuction",
                 "StartingMoney": 1500,
                 "DoublesGoesAgain": false,
                 "VacationCash": false,
                 "DontCollectRentWhileInPrison": false,
                 "EvenBuild": true,
-                "TurnTimeLimitSeconds": 180
+                "TurnTimeLimitSeconds": 20
               },
               "CurrentPlayerIndex": 0,
               "CurrentTurnEndsAt": 0,
@@ -2082,8 +2083,7 @@
               "OnComponentEnabled": null,
               "OnComponentFixedUpdate": null,
               "OnComponentStart": null,
-              "OnComponentUpdate": null,
-              "PendingDecisionBlockedSound": ""
+              "OnComponentUpdate": null
             }
           ],
           "Children": []
@@ -2118,13 +2118,13 @@
           "SelectionSets": []
         }
       },
+      "Sandbox.MovieMaker.MovieRecorderSystem": {
+        "DisableClientRecording": false
+      },
       "Sandbox.Clutter.ClutterGridSystem": {
         "Storage": {
           "$blob": "7664decd-7b1f-4214-a5a2-850285e10057"
         }
-      },
-      "Sandbox.MovieMaker.MovieRecorderSystem": {
-        "DisableClientRecording": false
       }
     }
   },

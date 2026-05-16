@@ -83,6 +83,7 @@ public sealed class MonopolyGame : Component
 	public IReadOnlyList<MonopolyPopup> Popups => popups;
 
 	public int LocalSelectedSpaceIndex { get; set; } = -1;
+	public string LocalSelectedDrawnCardText { get; set; } = "";
 
 	public Logger landingLogger = new("GameLanding");
 
@@ -91,7 +92,11 @@ public sealed class MonopolyGame : Component
 			? Board.GetSpaceDef(LocalSelectedSpaceIndex)
 			: null;
 
-	private void SelectSpaceAsync( int spaceIndex ) => LocalSelectedSpaceIndex = spaceIndex;
+	private void SelectSpaceAsync( int spaceIndex, string drawnCardText = "" )
+	{
+		LocalSelectedSpaceIndex = spaceIndex;
+		LocalSelectedDrawnCardText = drawnCardText ?? "";
+	}
 
 	public void SelectSpace( int spaceIndex )
 	{
@@ -190,14 +195,8 @@ public sealed class MonopolyGame : Component
 
 	private void SkipCurrentTurnForTimeout()
 	{
-		if ( CurrentPlayer is null )
-			return;
-
 		var skippedPlayerIndex = CurrentPlayerIndex;
 		var skippedPlayer = CurrentPlayer;
-
-		if ( HasPendingForcedPaymentForPlayer( skippedPlayerIndex ) )
-			BankruptPlayer( skippedPlayerIndex, Players.ElementAtOrDefault( PendingForcedPaymentReceiverIndex ) );
 
 		PendingPurchaseSpaceIndex = -1;
 
@@ -205,7 +204,16 @@ public sealed class MonopolyGame : Component
 			ClearAuction();
 
 		CurrentTurnGetsExtraRoll = false;
-		Phase = MonopolyGamePhase.WaitingToRoll;
+		CurrentTurnEndsAt = 0f;
+
+		if ( skippedPlayer is null || !skippedPlayer.IsAssigned || skippedPlayer.IsBankrupt )
+		{
+			AdvanceTurn();
+			return;
+		}
+
+		if ( HasPendingForcedPaymentForPlayer( skippedPlayerIndex ) )
+			BankruptPlayer( skippedPlayerIndex, Players.ElementAtOrDefault( PendingForcedPaymentReceiverIndex ) );
 
 		Log.Info( $"{skippedPlayer.PlayerName}'s turn timed out and was skipped." );
 		SendPopupToAll( "Turn skipped", $"{skippedPlayer.PlayerName}'s turn timed out.", MonopolyPopupKind.Warning, true, 4f );
@@ -398,6 +406,7 @@ public sealed class MonopolyGame : Component
 		StartingPlayerCount = 0;
 		pausedTurnRemainingSeconds = 0f;
 		pausedAuctionRemainingSeconds = 0f;
+		LocalSelectedDrawnCardText = "";
 		ClearPendingForcedPayment();
 		PropertyOwners.Clear();
 		PropertyImprovements.Clear();
@@ -1038,7 +1047,7 @@ public sealed class MonopolyGame : Component
 		Log.Info( $"{player.PlayerName} collected ${payout} from Free Parking and will skip their next turn." );
 	}
 
-	private void ShowCardForPlayerWhoLanded( MonopolyPlayerState player )
+	private void ShowCardForPlayerWhoLanded( MonopolyPlayerState player, string drawnCardText = "" )
 	{
 		var spaceIndex = player.SpaceIndex;
 		var connection = GetConnectionForPlayer( player );
@@ -1048,14 +1057,14 @@ public sealed class MonopolyGame : Component
 
 		using ( Rpc.FilterInclude( connection ) )
 		{
-			ShowLandedSpaceCard( spaceIndex );
+			ShowLandedSpaceCard( spaceIndex, drawnCardText );
 		}
 	}
 
 	[Rpc.Broadcast]
-	private void ShowLandedSpaceCard( int spaceIndex )
+	private void ShowLandedSpaceCard( int spaceIndex, string drawnCardText )
 	{
-		LocalSelectedSpaceIndex = spaceIndex;
+		SelectSpaceAsync( spaceIndex, drawnCardText );
 	}
 
 	public void SendPopupToAll( string title, string message, MonopolyPopupKind kind = MonopolyPopupKind.Info, bool canDismiss = true, float lifetime = 5f, bool soundEnabled = true )
@@ -1325,10 +1334,24 @@ public sealed class MonopolyGame : Component
 		if ( player is null || card is null )
 			return;
 
-		SendPopupToAll( card.Title, card.Description, MonopolyPopupKind.Info, true, 6f );
+		ShowCardForPlayerWhoLanded( player, GetCardDisplayText( card ) );
 		Log.Info( $"{player.PlayerName} drew {deck}: {card.Title}." );
 
 		ApplyCard( player, card );
+	}
+
+	private static string GetCardDisplayText( MonopolyCardDef card )
+	{
+		if ( card is null )
+			return "";
+
+		if ( string.IsNullOrWhiteSpace( card.Title ) )
+			return card.Description ?? "";
+
+		if ( string.IsNullOrWhiteSpace( card.Description ) )
+			return card.Title;
+
+		return $"{card.Title}. {card.Description}";
 	}
 
 	private MonopolyCardDef DrawCard( MonopolyCardDeck deck )
@@ -2321,6 +2344,7 @@ public sealed class MonopolyGame : Component
 
 			if ( player.IsAssigned && !player.IsBankrupt )
 			{
+				Phase = MonopolyGamePhase.WaitingToRoll;
 				StartTurnTimer();
 				return;
 			}
@@ -2333,6 +2357,7 @@ public sealed class MonopolyGame : Component
 
 			if ( Players[CurrentPlayerIndex].IsAssigned && !Players[CurrentPlayerIndex].IsBankrupt )
 			{
+				Phase = MonopolyGamePhase.WaitingToRoll;
 				StartTurnTimer();
 				return;
 			}

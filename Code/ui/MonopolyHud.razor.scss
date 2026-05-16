@@ -3,6 +3,7 @@
 @import "components/buttons/MonopolyButton.razor.scss";
 @import "components/buttons/MonopolyCloseButton.razor.scss";
 @import "components/MonopolyPopupStack.razor.scss";
+@import "components/MonopolySpaceCard.razor.scss";
 
 MonopolyHud {
 	position: absolute;
@@ -1644,5 +1645,107 @@ MonopolyHud {
 
 	.space-card-board .space-buttons .monopoly-button.disabled:hover {
 		background-color: rgba(0, 0, 0, 0.34);
+	}
+
+	.selected-space-card-panel {
+		position: absolute;
+		right: 48px;
+		top: 50%;
+		z-index: 10;
+		transform: translateY(-50%);
+
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+
+		pointer-events: none;
+	}
+
+	.selected-space-card-panel .selected-space-card,
+	.selected-space-actions {
+		pointer-events: all;
+	}
+
+	.selected-space-card-panel .selected-space-card {
+		position: relative;
+		z-index: 2;
+	}
+
+	.selected-space-actions {
+		position: relative;
+		z-index: 1;
+
+		align-self: center;
+		width: 196px;
+		padding: 8px;
+
+		background-color: $monopoly-panel-strong;
+		border: 2px solid $monopoly-gold;
+		border-radius: $monopoly-radius-board;
+		box-shadow: 0 8px 22px rgba(0, 0, 0, 0.28);
+
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+	}
+
+	.selected-space-actions .space-management {
+		margin-top: 0;
+
+		display: flex;
+		flex-direction: column;
+		gap: 7px;
+	}
+
+	.selected-space-actions .space-buttons {
+		margin-top: 0;
+
+		display: flex;
+		gap: 7px;
+	}
+
+	.selected-space-actions .space-buttons .monopoly-button {
+		flex: 1;
+		height: auto;
+		min-height: 34px;
+		margin-top: 0;
+		padding: 5px 8px;
+
+		background-color: $monopoly-gold;
+		border: 0;
+		border-radius: $monopoly-radius-board;
+
+		color: $monopoly-ink;
+		font-size: 13px;
+		font-weight: 900;
+		line-height: 14px;
+		text-transform: none;
+	}
+
+	.selected-space-actions .improvement-buttons .monopoly-button {
+		align-items: center;
+		justify-content: center;
+		gap: 5px;
+	}
+
+	.space-action-house-icon {
+		width: 16px;
+		height: 16px;
+		object-fit: contain;
+	}
+
+	.selected-space-actions .space-buttons .monopoly-button:hover {
+		background-color: $monopoly-gold-hover;
+	}
+
+	.selected-space-actions .space-buttons .monopoly-button.disabled {
+		background-color: $monopoly-blocked-action;
+		border-color: $monopoly-blocked-action;
+		color: $monopoly-text-muted;
+		cursor: default;
+	}
+
+	.selected-space-actions .space-buttons .monopoly-button.disabled:hover {
+		background-color: $monopoly-blocked-action-hover;
 	}
 }
