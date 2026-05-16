@@ -35,21 +35,6 @@
           "SceneTags": "",
           "Title": null,
           "Version": null
-        },
-        {
-          "__type": "MonopolySceneInfo",
-          "__guid": "09dfe9fb-5870-46d8-a377-484602d92fc1",
-          "__enabled": true,
-          "Flags": 0,
-          "Description": "Main menu scene for Monopory.",
-          "Group": "Flow",
-          "OnComponentDestroy": null,
-          "OnComponentDisabled": null,
-          "OnComponentEnabled": null,
-          "OnComponentFixedUpdate": null,
-          "OnComponentStart": null,
-          "OnComponentUpdate": null,
-          "Title": "Main Menu"
         }
       ],
       "Children": []
@@ -156,10 +141,15 @@
           "Components": [
             {
               "__type": "Sandbox.ui.MonopolyMainMenu",
-              "__guid": "a15ebe46-f9c9-4a1a-8f96-47e9f9c00e5e",
+              "__guid": "9271f2b2-3c6d-4a93-a551-f1e451f69b41",
               "__enabled": true,
               "Flags": 0,
-              "MenuRef": null,
+              "MenuRef": {
+                "_type": "component",
+                "component_id": "b9b0496d-220d-407b-b453-44c344131cab",
+                "go": "0caebde4-34ea-4442-acc6-17ef10d14dce",
+                "component_type": "MonopolyMenuController"
+              },
               "OnComponentDestroy": null,
               "OnComponentDisabled": null,
               "OnComponentEnabled": null,
@@ -190,7 +180,7 @@
       "Components": [
         {
           "__type": "MonopolyMenuController",
-          "__guid": "0830a337-9c84-44c5-a25a-f978eefd4c51",
+          "__guid": "b9b0496d-220d-407b-b453-44c344131cab",
           "__enabled": true,
           "Flags": 0,
           "Config": {
@@ -220,11 +210,7 @@
     "NetworkInterpolation": true,
     "TimeScale": 1,
     "WantsSystemScene": true,
-    "Metadata": {
-      "Title": "Main Menu",
-      "Group": "Flow",
-      "Description": "Main menu scene for Monopory."
-    },
+    "Metadata": {},
     "NavMesh": {
       "Enabled": false,
       "IncludeStaticBodies": true,
@@ -256,8 +242,8 @@
     }
   },
   "ResourceVersion": 3,
-  "Title": "Main Menu",
-  "Description": "Main menu scene for Monopory.",
+  "Title": null,
+  "Description": null,
   "__references": [],
   "__version": 3
 }

@@ -1,0 +1,201 @@
+using System.Threading.Tasks;
+using System;
+using System.Text.RegularExpressions;
+using Sandbox;
+
+public sealed partial class MonopolyGame : Component
+{
+
+	private void ResolveCardLanding( MonopolyPlayerState player, MonopolyCardDeck deck )
+	{
+		var card = DrawCard( deck );
+		if ( player is null || card is null )
+			return;
+
+		string cardDisplayText = GetCardDisplayText( card );
+		ShowCardForPlayerWhoLanded( player, cardDisplayText );
+		SendPopupToAll( card.Title, card.Description, MonopolyPopupKind.Info, true, 6f );
+		currentRollDrewCard = true;
+		Log.Info( $"{player.PlayerName} drew {deck}: {card.Title}." );
+		ApplyCard( player, card );
+	}
+
+	private static string GetCardDisplayText( MonopolyCardDef card )
+	{
+		if ( card is null )
+			return "";
+
+		if ( string.IsNullOrWhiteSpace( card.Title ) )
+			return card.Description ?? "";
+
+		if ( string.IsNullOrWhiteSpace( card.Description ) )
+			return card.Title;
+
+		return $"{card.Title}. {card.Description}";
+	}
+
+	private MonopolyCardDef DrawCard( MonopolyCardDeck deck )
+	{
+		var cards = deck == MonopolyCardDeck.Chance
+			? Board?.ChanceCards
+			: Board?.CommunityChestCards;
+
+		if ( cards is null || cards.Count == 0 )
+			return null;
+
+		return cards[Game.Random.Int( 0, cards.Count - 1 )];
+	}
+
+	private void ApplyCard( MonopolyPlayerState player, MonopolyCardDef card )
+	{
+		if ( player is null || card is null )
+			return;
+
+		switch ( card.Action )
+		{
+			case MonopolyCardAction.CollectFromBank:
+				player.Money += Math.Max( card.Amount, 0 );
+				TrySettlePendingForcedPaymentForPlayer( GetPlayerIndex( player ) );
+				Log.Info( $"{player.PlayerName} collected ${card.Amount} from {card.Title}." );
+				break;
+
+			case MonopolyCardAction.PayBank:
+				if ( PayBank( player, card.Amount ) )
+					Log.Info( $"{player.PlayerName} paid ${card.Amount} from {card.Title}." );
+				break;
+
+			case MonopolyCardAction.MoveToSpace:
+				MovePlayerToCardDestination( player, card.TargetSpaceIndex, card.CollectGo, card.ResolveDestination );
+				break;
+
+			case MonopolyCardAction.MoveRelative:
+				MovePlayerByCardOffset( player, card.RelativeSpaces, card.CollectGo, card.ResolveDestination );
+				break;
+
+			case MonopolyCardAction.GoToJail:
+				SendPlayerToJail( player );
+				CompleteTurn();
+				Phase = MonopolyGamePhase.WaitingToRoll;
+				break;
+
+			case MonopolyCardAction.CollectFromEachPlayer:
+				CollectFromEachPlayerForCard( player, card.Amount );
+				break;
+
+			case MonopolyCardAction.PayEachPlayer:
+				PayEachPlayerForCard( player, card.Amount );
+				break;
+
+			case MonopolyCardAction.PayPerImprovement:
+				PayPerImprovementForCard( player, card.HouseAmount, card.HotelAmount );
+				break;
+		}
+	}
+
+	private void MovePlayerToCardDestination( MonopolyPlayerState player, int targetSpaceIndex, bool collectGo, bool resolveDestination )
+	{
+		if ( player is null || Board is null || targetSpaceIndex < 0 )
+			return;
+
+		targetSpaceIndex = NormalizeSpaceIndex( targetSpaceIndex );
+		var passedGo = collectGo && targetSpaceIndex != 0 && targetSpaceIndex < player.SpaceIndex;
+
+		if ( passedGo )
+			player.Money += 200;
+
+		player.SpaceIndex = targetSpaceIndex;
+
+		if ( resolveDestination )
+			ResolveLanding( player );
+	}
+
+	private void MovePlayerByCardOffset( MonopolyPlayerState player, int relativeSpaces, bool collectGo, bool resolveDestination )
+	{
+		if ( player is null )
+			return;
+
+		var targetSpaceIndex = NormalizeSpaceIndex( player.SpaceIndex + relativeSpaces );
+		var passedGo = collectGo && relativeSpaces > 0 && targetSpaceIndex < player.SpaceIndex;
+
+		if ( passedGo )
+			player.Money += 200;
+
+		player.SpaceIndex = targetSpaceIndex;
+
+		if ( resolveDestination )
+			ResolveLanding( player );
+	}
+
+	private void PayPerImprovementForCard( MonopolyPlayerState player, int houseAmount, int hotelAmount )
+	{
+		var playerIndex = GetPlayerIndex( player );
+		if ( playerIndex < 0 )
+			return;
+
+		var houses = 0;
+		var hotels = 0;
+		foreach ( var spaceIndex in GetOwnedPropertyIndexes( playerIndex ) )
+		{
+			var count = GetImprovementCount( spaceIndex );
+			if ( count >= 5 )
+				hotels++;
+			else
+				houses += count;
+		}
+
+		var amount = houses * Math.Max( houseAmount, 0 ) + hotels * Math.Max( hotelAmount, 0 );
+		if ( amount <= 0 )
+		{
+			Log.Info( $"{player.PlayerName} had no repair fees." );
+			return;
+		}
+
+		if ( PayBank( player, amount ) )
+			Log.Info( $"{player.PlayerName} paid ${amount} for repairs." );
+	}
+
+	private void PayEachPlayerForCard( MonopolyPlayerState player, int amountPerPlayer )
+	{
+		var playerIndex = GetPlayerIndex( player );
+		var receivers = GetAssignedPlayerIndexes()
+			.Where( index => index != playerIndex )
+			.ToList();
+
+		var amount = Math.Max( amountPerPlayer, 0 );
+		var total = amount * receivers.Count;
+		if ( playerIndex < 0 || amount <= 0 || total <= 0 )
+			return;
+
+		if ( player.Money >= total )
+		{
+			CompleteForcedPaymentToEachPlayer( playerIndex, amount );
+			return;
+		}
+
+		if ( GetPlayerLiquidAssetTotal( playerIndex ) < total )
+		{
+			BankruptPlayer( playerIndex, null );
+			return;
+		}
+
+		BeginPendingForcedPaymentToEachPlayer( playerIndex, amount );
+	}
+
+	private void CollectFromEachPlayerForCard( MonopolyPlayerState player, int amountPerPlayer )
+	{
+		var receiverIndex = GetPlayerIndex( player );
+		var amount = Math.Max( amountPerPlayer, 0 );
+		if ( receiverIndex < 0 || amount <= 0 )
+			return;
+
+		foreach ( var payerIndex in GetAssignedPlayerIndexes().Where( index => index != receiverIndex ) )
+		{
+			var payer = Players.ElementAtOrDefault( payerIndex );
+			if ( payer is null || payer.Money < amount )
+				continue;
+
+			payer.Money -= amount;
+			player.Money += amount;
+		}
+	}
+}
