@@ -78,6 +78,7 @@ public sealed class MonopolyGame : Component
 	private readonly List<GameObject> spawnedTokenObjects = new();
 	private float pausedTurnRemainingSeconds;
 	private float pausedAuctionRemainingSeconds;
+	private bool currentRollDrewCard;
 
 	public static MonopolyGame Instance => instance;
 	public IReadOnlyList<MonopolyPopup> Popups => popups;
@@ -815,6 +816,7 @@ public sealed class MonopolyGame : Component
 
 		Phase = MonopolyGamePhase.ResolvingSpace;
 		CurrentTurnGetsExtraRoll = false;
+		currentRollDrewCard = false;
 
 		// move player...
 
@@ -867,7 +869,7 @@ public sealed class MonopolyGame : Component
 				CompleteTurn();
 				Phase = MonopolyGamePhase.WaitingToRoll;
 			}
-			else if ( amount >= 0 && !HasPendingForcedPayment )
+			else if ( amount >= 0 && !currentRollDrewCard && !HasPendingForcedPayment )
 			{
 				CompleteTurn();
 				Phase = MonopolyGamePhase.WaitingToRoll;
@@ -1334,9 +1336,11 @@ public sealed class MonopolyGame : Component
 		if ( player is null || card is null )
 			return;
 
-		ShowCardForPlayerWhoLanded( player, GetCardDisplayText( card ) );
+		string cardDisplayText = GetCardDisplayText( card );
+		ShowCardForPlayerWhoLanded( player, cardDisplayText );
+		SendPopupToAll( card.Title, card.Description, MonopolyPopupKind.Info, true, 6f );
+		currentRollDrewCard = true;
 		Log.Info( $"{player.PlayerName} drew {deck}: {card.Title}." );
-
 		ApplyCard( player, card );
 	}
 
