@@ -37,8 +37,8 @@
           "Version": null
         },
         {
-          "__type": "MonopolySceneInfo",
-          "__guid": "9ba2a5b4-8d0f-4776-9e28-6389ffe77bbe",
+          "__type": "SceneInfo",
+          "__guid": "b1730e0a-e004-4962-b099-a888667ecc49",
           "__enabled": true,
           "Flags": 0,
           "Description": "Lobby scene for ready checks and match setup.",
@@ -120,12 +120,13 @@
       "Components": [
         {
           "__type": "LobbyController",
-          "__guid": "3cc865cf-e410-4871-a8ef-145da321c683",
+          "__guid": "ce624668-e474-4d83-916c-b05c241c96ef",
           "__enabled": true,
           "Flags": 0,
           "Config": {
             "MinPlayers": 1,
             "MaxPlayers": 6,
+            "OnlyHostStartsGame": true,
             "LandedUnownedMode": "SkipOrAuction",
             "StartingMoney": 1500,
             "DoublesGoesAgain": false,
@@ -134,6 +135,9 @@
             "EvenBuild": true,
             "TurnTimeLimitSeconds": 180
           },
+          "HostedMaxPlayers": 6,
+          "HostedMinPlayers": 1,
+          "HostedOnlyHostStartsGame": true,
           "OnComponentDestroy": null,
           "OnComponentDisabled": null,
           "OnComponentEnabled": null,
@@ -199,13 +203,12 @@
           "Components": [
             {
               "__type": "Sandbox.ui.MonopolyLobbyMenu",
-              "__guid": "86b0b359-3ed5-48c7-8018-7ef365491ad9",
+              "__guid": "65a5c099-eb16-4422-8e2a-d6b7863f6f67",
               "__enabled": true,
               "Flags": 0,
-              "BlockedSound": "",
               "LobbyRef": {
                 "_type": "component",
-                "component_id": "3cc865cf-e410-4871-a8ef-145da321c683",
+                "component_id": "ce624668-e474-4d83-916c-b05c241c96ef",
                 "go": "04f17a18-2449-4e31-a1e6-88083375f095",
                 "component_type": "LobbyController"
               },
@@ -251,13 +254,13 @@
           "SelectionSets": []
         }
       },
+      "Sandbox.MovieMaker.MovieRecorderSystem": {
+        "DisableClientRecording": false
+      },
       "Sandbox.Clutter.ClutterGridSystem": {
         "Storage": {
           "$blob": "91fafa63-ca27-4189-9e6c-d496e8792c15"
         }
-      },
-      "Sandbox.MovieMaker.MovieRecorderSystem": {
-        "DisableClientRecording": false
       }
     }
   },

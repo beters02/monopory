@@ -1849,7 +1849,7 @@
       "OwnerTransfer": 1,
       "Components": [
         {
-          "__type": "MonopolyCamera",
+          "__type": "GameCamera",
           "__guid": "e1503ec4-417a-41df-8492-53b767c81d72",
           "__enabled": true,
           "Flags": 0,
@@ -1986,7 +1986,7 @@
           "__guid": "7989c0ac-6bcb-4ac8-9534-dd039b6e1f8f",
           "__version": 2,
           "Flags": 0,
-          "Name": "MonopolyCursor",
+          "Name": "GameCursor",
           "Position": "0,0,0",
           "Rotation": "0,0,0,1",
           "Scale": "1,1,1",
@@ -1999,7 +1999,7 @@
           "OwnerTransfer": 1,
           "Components": [
             {
-              "__type": "MonopolyCursor",
+              "__type": "GameCursor",
               "__guid": "a7dda7a7-7cf1-495b-b5d8-52a6e4737067",
               "__enabled": true,
               "Flags": 0,

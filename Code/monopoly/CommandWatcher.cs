@@ -1,6 +1,6 @@
 using Sandbox;
 
-public sealed class MonopolyCommandWatcher : Component
+public sealed class CommandWatcher : Component
 {
 	private bool lastCheatsEnabled;
 	private bool firstRun = true;

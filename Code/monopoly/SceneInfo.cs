@@ -1,6 +1,6 @@
 using Sandbox;
 
-public sealed class MonopolySceneInfo : Component, ISceneMetadata
+public sealed class SceneInfo : Component, ISceneMetadata
 {
 	[Property] public string Title { get; set; } = "";
 	[Property] public string Group { get; set; } = "";

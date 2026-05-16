@@ -1,6 +1,6 @@
 using Sandbox;
 
-public sealed class MonopolyCursor : Component
+public sealed class GameCursor : Component
 {
 	protected override void OnUpdate()
 	{

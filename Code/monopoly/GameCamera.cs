@@ -1,6 +1,6 @@
 using Sandbox;
 
-public sealed class MonopolyCamera : Component
+public sealed class GameCamera : Component
 {
 	[Property] public GameObject Target { get; set; }
 
