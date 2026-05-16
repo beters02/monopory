@@ -2,7 +2,7 @@ using System;
 
 namespace Sandbox.ui.components;
 
-public static class MonopolyHudUi
+public static class HudUi
 {
 	public static bool IsPurchasableSpace( SpaceDef def )
 	{

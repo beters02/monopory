@@ -42,7 +42,7 @@
 						</div>
 					</div>
 
-					<MonopolySpaceCard Space="@AuctionSpace" Variant="auction-space-card" ColorClass="@MonopolyHudUi.GetPropertyColorClass( AuctionSpace )">
+					<MonopolySpaceCard Space="@AuctionSpace" Variant="auction-space-card" ColorClass="@HudUi.GetPropertyColorClass( AuctionSpace )">
 						<FooterContent>
 							<div>
 								<span>Price</span>
@@ -97,7 +97,7 @@
 	}
 
 	private string AuctionTitleDotClasses =>
-		$"auction-title-dot color-{MonopolyHudUi.GetPropertyColorClass( AuctionSpace )}";
+		$"auction-title-dot color-{HudUi.GetPropertyColorClass( AuctionSpace )}";
 
 	private bool CanLocalPlayerBid( int bidAmount )
 	{

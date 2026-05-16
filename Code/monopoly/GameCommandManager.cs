@@ -1,138 +1,138 @@
 using System;
 using Sandbox;
 
-public sealed class MonopolyCommandResult
+public sealed class CommandResult
 {
 	public bool Ok { get; }
 	public string Message { get; }
 
-	private MonopolyCommandResult( bool ok, string message = "" )
+	private CommandResult( bool ok, string message = "" )
 	{
 		Ok = ok;
 		Message = message ?? "";
 	}
 
-	public static MonopolyCommandResult Success( string message = "" ) => new( true, message );
-	public static MonopolyCommandResult Fail( string message ) => new( false, message );
+	public static CommandResult Success( string message = "" ) => new( true, message );
+	public static CommandResult Fail( string message ) => new( false, message );
 }
 
-public sealed class MonopolyCommandManager : Component
+public sealed class GameCommandManager : Component
 {
-	public static MonopolyCommandResult BuyProperty( Connection caller, int propertyIndex, string playerName = "self" )
+	public static CommandResult BuyProperty( Connection caller, int propertyIndex, string playerName = "self" )
 	{
 		var game = MonopolyGame.Instance;
 		if ( game is null )
-			return MonopolyCommandResult.Fail( "No active Monopoly game." );
+			return CommandResult.Fail( "No active Monopoly game." );
 
 		var player = game.ResolvePlayerReference( playerName, caller );
 		if ( player is null )
-			return MonopolyCommandResult.Fail( $"Could not find player \"{playerName}\"." );
+			return CommandResult.Fail( $"Could not find player \"{playerName}\"." );
 
 		if ( game.CanBuyPendingProperty( player, propertyIndex ) )
 			return game.TryBuyPendingPropertyForPlayer( player, out var pendingMessage )
-				? MonopolyCommandResult.Success( pendingMessage )
-				: MonopolyCommandResult.Fail( pendingMessage );
+				? CommandResult.Success( pendingMessage )
+				: CommandResult.Fail( pendingMessage );
 
 		if ( HasUnresolvedPendingBuyDecision( game, player ) )
-			return MonopolyCommandResult.Fail( GetPendingBuyDecisionMessage( game ) );
+			return CommandResult.Fail( GetPendingBuyDecisionMessage( game ) );
 
 		if ( !CanUseCheatCommand( caller ) )
-			return MonopolyCommandResult.Fail( "sv_cheats must be enabled to buy arbitrary properties." );
+			return CommandResult.Fail( "sv_cheats must be enabled to buy arbitrary properties." );
 
 		return game.TryBuyPropertyForPlayer( player, propertyIndex, true, out var message )
-			? MonopolyCommandResult.Success( message )
-			: MonopolyCommandResult.Fail( message );
+			? CommandResult.Success( message )
+			: CommandResult.Fail( message );
 	}
 
-	public static MonopolyCommandResult BuyPropertySet( Connection caller, string propertySet, string playerName = "self" )
+	public static CommandResult BuyPropertySet( Connection caller, string propertySet, string playerName = "self" )
 	{
 		if ( !CanUseCheatCommand( caller ) )
-			return MonopolyCommandResult.Fail( "sv_cheats must be enabled to buy property sets." );
+			return CommandResult.Fail( "sv_cheats must be enabled to buy property sets." );
 
 		if ( !ColorGroups.TryParse( propertySet, out var colorGroup ) || colorGroup == ColorGroup.None )
-			return MonopolyCommandResult.Fail( $"Property set \"{propertySet}\" does not exist." );
+			return CommandResult.Fail( $"Property set \"{propertySet}\" does not exist." );
 
 		var game = MonopolyGame.Instance;
 		var board = MonopolyBoard.Instance;
 		if ( game is null || board?.SpaceDefs is null )
-			return MonopolyCommandResult.Fail( "No active Monopoly board." );
+			return CommandResult.Fail( "No active Monopoly board." );
 
 		var player = game.ResolvePlayerReference( playerName, caller );
 		if ( player is null )
-			return MonopolyCommandResult.Fail( $"Could not find player \"{playerName}\"." );
+			return CommandResult.Fail( $"Could not find player \"{playerName}\"." );
 
 		if ( HasUnresolvedPendingBuyDecision( game, player ) )
-			return MonopolyCommandResult.Fail( GetPendingBuyDecisionMessage( game ) );
+			return CommandResult.Fail( GetPendingBuyDecisionMessage( game ) );
 
 		var properties = board.SpaceDefs
 			.Where( def => def is not null && def.ColorGroup == colorGroup )
 			.ToList();
 
 		return game.TryBuyPropertySetForPlayer( player, properties, true, out var message )
-			? MonopolyCommandResult.Success( message )
-			: MonopolyCommandResult.Fail( message );
+			? CommandResult.Success( message )
+			: CommandResult.Fail( message );
 	}
 
-	public static MonopolyCommandResult RollDice( Connection caller, int amount = -1, string playerName = "self" )
+	public static CommandResult RollDice( Connection caller, int amount = -1, string playerName = "self" )
 	{
 		var game = MonopolyGame.Instance;
 		if ( game is null )
-			return MonopolyCommandResult.Fail( "No active Monopoly game." );
+			return CommandResult.Fail( "No active Monopoly game." );
 
 		var player = game.ResolvePlayerReference( playerName, caller );
 		if ( player is null )
-			return MonopolyCommandResult.Fail( $"Could not find player \"{playerName}\"." );
+			return CommandResult.Fail( $"Could not find player \"{playerName}\"." );
 
 		if ( game.CurrentPlayer != player )
-			return MonopolyCommandResult.Fail( "It is not that player's turn." );
+			return CommandResult.Fail( "It is not that player's turn." );
 
 		var isForcedRoll = amount >= 0;
 		var isCallerRollingSelf = playerName.Equals( "self", StringComparison.OrdinalIgnoreCase ) ||
 			playerName.Equals( "me", StringComparison.OrdinalIgnoreCase );
 
 		if ( (isForcedRoll || !isCallerRollingSelf) && !CanUseCheatCommand( caller ) )
-			return MonopolyCommandResult.Fail( "sv_cheats must be enabled to force rolls or roll for another player." );
+			return CommandResult.Fail( "sv_cheats must be enabled to force rolls or roll for another player." );
 
 		if ( Networking.IsHost )
 			_ = game.RollDiceAsync( amount );
 		else
 			game.RequestRollDice( amount );
 
-		return MonopolyCommandResult.Success();
+		return CommandResult.Success();
 	}
 
-	public static MonopolyCommandResult ChangeMoney( Connection caller, int amount, string playerName = "self" )
+	public static CommandResult ChangeMoney( Connection caller, int amount, string playerName = "self" )
 	{
 		if ( !CanUseCheatCommand( caller ) )
-			return MonopolyCommandResult.Fail( "sv_cheats must be enabled to change player money." );
+			return CommandResult.Fail( "sv_cheats must be enabled to change player money." );
 
 		var game = MonopolyGame.Instance;
 		if ( game is null )
-			return MonopolyCommandResult.Fail( "No active Monopoly game." );
+			return CommandResult.Fail( "No active Monopoly game." );
 
 		var player = game.ResolvePlayerReference( playerName, caller );
 		if ( player is null )
-			return MonopolyCommandResult.Fail( $"Could not find player \"{playerName}\"." );
+			return CommandResult.Fail( $"Could not find player \"{playerName}\"." );
 
 		return game.TryChangeMoneyForPlayer( player, amount, out var message )
-			? MonopolyCommandResult.Success( message )
-			: MonopolyCommandResult.Fail( message );
+			? CommandResult.Success( message )
+			: CommandResult.Fail( message );
 	}
 
-	public static MonopolyCommandResult DebugRefactorStageTest(Connection caller, string  playerName = "self")
+	public static CommandResult DebugRefactorStageTest(Connection caller, string  playerName = "self")
 	{
 		var game = MonopolyGame.Instance;
 		if ( game is null )
-			return MonopolyCommandResult.Fail( "No active Monopoly game." );
+			return CommandResult.Fail( "No active Monopoly game." );
 
 		var player = game.ResolvePlayerReference( playerName, caller );
 		if ( player is null )
-			return MonopolyCommandResult.Fail( $"Could not find player \"{playerName}\"." );
+			return CommandResult.Fail( $"Could not find player \"{playerName}\"." );
 
 		ConsoleSystem.Run("buy_property_set pink boot");
 		ConsoleSystem.Run("buy_property_set red boot");
 		ConsoleSystem.Run("change_money 1500 boot");
-		return MonopolyCommandResult.Success();
+		return CommandResult.Success();
 	}
 
 	private static bool CanUseCheatCommand( Connection caller )

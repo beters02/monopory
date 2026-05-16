@@ -38,7 +38,7 @@ public static class LocalPopups
 			expiresAt.Remove( popup.Id );
 
 		if ( soundEnabled )
-			MonopolyAssets.Sounds.Popup.ForKind( kind ).Play();
+			GameAssets.Sounds.Popup.ForKind( kind ).Play();
 	}
 
 	public static void Dismiss( int popupId )

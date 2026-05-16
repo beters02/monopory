@@ -11,7 +11,7 @@
 			<MonopolySpaceCard
 				Space="@SelectedSpace"
 				Variant="selected-space-card"
-				ColorClass="@MonopolyHudUi.GetPropertyColorClass( SelectedSpace )"
+				ColorClass="@HudUi.GetPropertyColorClass( SelectedSpace )"
 				IsMortgaged="@IsSelectedSpaceMortgaged"
 				ShowFreeParkingBank="@ShowFreeParkingMoney"
 				FreeParkingBank="@(GameRef?.FreeParkingBank ?? 0)"
@@ -276,8 +276,8 @@
 		hash.Add( GameRef?.PendingPurchaseSpaceIndex ?? -1 );
 		hash.Add( GameRef?.FreeParkingBank ?? 0 );
 		hash.Add( GameRef?.Config?.VacationCash ?? false );
-		hash.Add( MonopolyHudUi.GetPropertyOwnersHash( GameRef ) );
-		hash.Add( MonopolyHudUi.GetMortgagedPropertiesHash( GameRef ) );
+		hash.Add( HudUi.GetPropertyOwnersHash( GameRef ) );
+		hash.Add( HudUi.GetMortgagedPropertiesHash( GameRef ) );
 		hash.Add( SelectedImprovementCount );
 		return hash.ToHashCode();
 	}

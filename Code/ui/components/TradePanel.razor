@@ -284,8 +284,8 @@
 	{
 		return HashCode.Combine(
 			GameRef?.LocalPlayerIndex ?? -1,
-			MonopolyHudUi.GetPlayersHash( GameRef ),
-			MonopolyHudUi.GetPropertyOwnersHash( GameRef ),
+			HudUi.GetPlayersHash( GameRef ),
+			HudUi.GetPropertyOwnersHash( GameRef ),
 			GetTradesHash(),
 			GetComposerHash()
 		);

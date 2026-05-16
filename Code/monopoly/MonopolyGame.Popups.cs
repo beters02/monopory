@@ -99,7 +99,7 @@ public sealed partial class MonopolyGame : Component
 		//TODO: add dismiss sound
 
 		if (soundEnabled)
-			MonopolyAssets.Sounds.Popup.ForKind(kind).Play();
+			GameAssets.Sounds.Popup.ForKind(kind).Play();
 			
 
 		while ( popups.Count > 4 )

@@ -107,7 +107,7 @@
 			: ReceiverPropertyIndexes.Contains( propertyIndex );
 
 		var def = GameRef?.Board?.GetSpaceDef( propertyIndex );
-		var colorGroup = MonopolyHudUi.GetPropertyColorClass( def );
+		var colorGroup = HudUi.GetPropertyColorClass( def );
 		var classes = $"trade-property-chip color-{colorGroup}";
 
 		if ( selected )
@@ -133,8 +133,8 @@
 		hash.Add( ReceiverPlayerIndex );
 		hash.Add( SenderMoney );
 		hash.Add( ReceiverMoney );
-		hash.Add( MonopolyHudUi.GetPlayersHash( GameRef ) );
-		hash.Add( MonopolyHudUi.GetPropertyOwnersHash( GameRef ) );
+		hash.Add( HudUi.GetPlayersHash( GameRef ) );
+		hash.Add( HudUi.GetPropertyOwnersHash( GameRef ) );
 
 		foreach ( var index in SenderPropertyIndexes.OrderBy( x => x ) )
 			hash.Add( index );

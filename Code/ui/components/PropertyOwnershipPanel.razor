@@ -81,7 +81,7 @@
 
 	private List<SpaceDef> PropertySpaces =>
 		GameRef?.Board?.SpaceDefs?
-			.Where( MonopolyHudUi.IsPurchasableSpace )
+			.Where( HudUi.IsPurchasableSpace )
 			.ToList() ?? new();
 
 	private bool IsPropertyPanelExpanded( int playerIndex )
@@ -98,12 +98,12 @@
 			ExpandedPropertyPanels.Remove( playerIndex );
 	}
 
-	private MonopolySound GetPropertyPanelSound( int playerIndex )
+	private GameSound GetPropertyPanelSound( int playerIndex )
 	{
 		if ( IsPropertyPanelExpanded( playerIndex ) )
-			return MonopolyAssets.Sounds.ClickAndClose;
+			return GameAssets.Sounds.ClickAndClose;
 
-		return MonopolyAssets.Sounds.ClickAndOpen;
+		return GameAssets.Sounds.ClickAndOpen;
 	}
 
 	private void SelectPropertySpace( int spaceIndex ) => GameRef?.SelectSpace( spaceIndex );
@@ -127,7 +127,7 @@
 	private string GetPropertySquareClasses( SpaceDef property, int playerIndex )
 	{
 		var ownerIndex = GameRef?.GetOwnerIndexForSpace( property.Index ) ?? -1;
-		var colorGroup = MonopolyHudUi.GetPropertyColorClass( property );
+		var colorGroup = HudUi.GetPropertyColorClass( property );
 		var classes = $"property-square color-{colorGroup} space-{property.Index}";
 
 		if ( ownerIndex == playerIndex )
@@ -167,9 +167,9 @@
 			GameRef?.CurrentPlayerIndex ?? -1,
 			GameRef?.PendingPurchaseSpaceIndex ?? -1,
 			GameRef?.LocalSelectedSpaceIndex ?? -1,
-			MonopolyHudUi.GetPropertyOwnersHash( GameRef ),
-			MonopolyHudUi.GetMortgagedPropertiesHash( GameRef ),
-			MonopolyHudUi.GetPlayersHash( GameRef ),
+			HudUi.GetPropertyOwnersHash( GameRef ),
+			HudUi.GetMortgagedPropertiesHash( GameRef ),
+			HudUi.GetPlayersHash( GameRef ),
 			GetExpandedPanelsHash()
 		);
 	}

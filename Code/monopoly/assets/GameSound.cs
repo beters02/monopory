@@ -1,14 +1,14 @@
 using System;
 
-public enum MonopolySoundType
+public enum GameSoundType
 {
 	SoundFile,
 	SoundEvent
 }
 
-public readonly struct MonopolySound
+public readonly struct GameSound
 {
-	public MonopolySound( string path )
+	public GameSound( string path )
     {
         Path = path ?? "";
 		SoundType = GetSoundType( path );
@@ -18,14 +18,14 @@ public readonly struct MonopolySound
 
 	public bool IsAssigned => !string.IsNullOrWhiteSpace( Path );
 
-	public readonly MonopolySoundType SoundType;
+	public readonly GameSoundType SoundType;
 
 	public bool Play()
 	{
 		if ( !IsAssigned )
 			return false;
 
-		if ( SoundType == MonopolySoundType.SoundFile )
+		if ( SoundType == GameSoundType.SoundFile )
 			Sound.PlayFile( SoundFile.Load( Path ) );
 		else
 			Sound.Play( Path );
@@ -33,14 +33,14 @@ public readonly struct MonopolySound
 		return true;
 	}
 
-	private static MonopolySoundType GetSoundType( string path )
+	private static GameSoundType GetSoundType( string path )
 	{
 		return System.IO.Path.GetExtension( path ).Equals( ".sound", StringComparison.OrdinalIgnoreCase )
-			? MonopolySoundType.SoundEvent
-			: MonopolySoundType.SoundFile;
+			? GameSoundType.SoundEvent
+			: GameSoundType.SoundFile;
 	}
 
 	public override string ToString() => Path;
 
-	public static implicit operator MonopolySound( string path ) => new( path );
+	public static implicit operator GameSound( string path ) => new( path );
 }
