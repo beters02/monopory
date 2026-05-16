@@ -18,6 +18,12 @@ public sealed partial class LobbyController
 		SceneFlow.LoadGame( Scene );
 	}
 
+	[Rpc.Broadcast]
+	private void LoadMenuScene()
+	{
+		SceneFlow.LoadMenu( Scene );
+	}
+
 	[Rpc.Host]
 	public void RequestSetReady( bool isReady )
 	{
@@ -36,13 +42,18 @@ public sealed partial class LobbyController
 		TryStartGame();
 	}
 
+	[Rpc.Host]
+	public void RequestBackToMenu()
+	{
+		if ( !Networking.IsHost )
+			return;
+
+		LoadMenuScene();
+	}
+
 	private bool IsHostCaller( Connection caller )
 	{
 		return Networking.IsHost && (caller is null || caller == Connection.Local);
 	}
 
-	public void LeaveLobby()
-	{
-		NetworkSession.LeaveCurrentLobby( Scene );
-	}
 }

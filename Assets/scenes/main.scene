@@ -120,7 +120,7 @@
           "Components": [
             {
               "__type": "Board",
-              "__guid": "4b9cd09b-a167-40b7-a17a-0c958e771b55",
+              "__guid": "66d913ac-d240-40cc-88f4-3cf333667425",
               "__enabled": true,
               "Flags": 0,
               "BoardPlaneGameObject": {
@@ -142,241 +142,241 @@
               "Spaces": [
                 {
                   "_type": "component",
-                  "component_id": "116f2a3e-cf85-4204-9e0c-b03a2abd84a6",
+                  "component_id": "2a26ac80-75a0-4011-873b-95c0c63f4b1e",
                   "go": "cdd2d717-f1b6-4375-b9b6-6158e52ff550",
                   "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
-                  "component_id": "0049a5a5-1e62-43cc-8f99-3b4eab6dee89",
+                  "component_id": "fc2e43c0-e699-4bce-ae0d-e96574db7894",
                   "go": "886edcee-b55a-4047-b1bf-63c875051d8c",
                   "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
-                  "component_id": "e5d36746-7e46-4435-b282-070242449ad9",
+                  "component_id": "acdf5809-2afb-488e-88fc-c94a7f09969f",
                   "go": "89b61455-e5d3-41fc-ab95-3143437d28d3",
                   "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
-                  "component_id": "958b3cb1-afd3-4d8f-97aa-afe35fb2222d",
+                  "component_id": "529d3c17-3111-45ad-8fea-ce0ac21c6c4c",
                   "go": "4f4229b9-b2c3-47dc-9d1e-1480718a9db3",
                   "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
-                  "component_id": "cd0c0018-ed6d-4154-b327-c7692e7afec7",
+                  "component_id": "3621aa53-f2b1-45fc-b9e2-311c243e24d6",
                   "go": "751e01fd-1378-4805-9ffc-536acbf87869",
                   "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
-                  "component_id": "3cdeeac4-c164-40a9-a4ca-9ce830fa00de",
+                  "component_id": "658e4e2a-8a9d-4a27-9791-ff06e1d11b9e",
                   "go": "a3e7815f-fd0f-46ec-b3e1-7234b941d9a9",
                   "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
-                  "component_id": "31744d93-40db-448d-b9f7-44e49cf279d2",
+                  "component_id": "a765a07b-21ed-437a-89cf-48cf75a6a075",
                   "go": "130014ce-80a5-453d-bdd8-940838bcca75",
                   "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
-                  "component_id": "39a68c9d-fac0-44a2-891a-70fae072a074",
+                  "component_id": "9a5f115f-ff62-4ecd-adfc-7bb0321f7088",
                   "go": "ad9479fe-666b-41db-b6de-7ce7c16c618e",
                   "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
-                  "component_id": "ec0befdf-a7ec-4b8e-9cb3-85464c773767",
+                  "component_id": "77afaf33-9226-4a7e-9723-72b8fbfa65fe",
                   "go": "2b318778-6838-476d-b293-1bfb7900133e",
                   "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
-                  "component_id": "d3a72d59-f6d9-4bdf-8d56-8ec433c8eba6",
+                  "component_id": "a0aa90fe-1aa1-49bc-837e-6f2650baebea",
                   "go": "55318d63-162a-49ab-8dfb-211552700bef",
                   "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
-                  "component_id": "b3291ed6-c08c-4a2e-a261-61b8848a435e",
+                  "component_id": "17c3ffe8-a7ad-4bdf-a4a6-a431e6638077",
                   "go": "e0d7aad5-4050-4966-80c0-96a45f72f255",
                   "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
-                  "component_id": "c8ca53f3-05c3-4720-a1bd-4f41783119ef",
+                  "component_id": "e9fbf6dd-c409-4552-9711-6103d6f99fee",
                   "go": "c795630d-33b3-4c38-ae7e-8a37df0f793b",
                   "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
-                  "component_id": "c11d417c-5708-492e-a4cf-b3ce6168bf5f",
+                  "component_id": "50e1671b-932e-49d2-8c52-2244c2e777a1",
                   "go": "b1948f2f-56d0-48ef-94f9-9e9d30807a81",
                   "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
-                  "component_id": "ad93f487-7a5c-46e1-8050-81e8f9abdf11",
+                  "component_id": "ae030d75-ea1a-4abf-926e-997fa0625c68",
                   "go": "08724c5c-27b4-44be-b6a5-f6f62e21e209",
                   "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
-                  "component_id": "5ff60c02-48fd-45d2-a3d6-ad3a029c7a53",
+                  "component_id": "439dd01a-af70-45c4-950f-43d7d45bbbde",
                   "go": "85f8a32b-18b3-4efd-b249-1a75541fa8bd",
                   "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
-                  "component_id": "5d15d3e9-4e6d-4333-a307-0972464a0674",
+                  "component_id": "b51723b1-d268-4923-9eef-b2d98831c684",
                   "go": "14cbef9c-cd5c-4bcc-9c97-ed831440f59b",
                   "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
-                  "component_id": "26137398-04f7-4082-92cb-1b7b63c2b721",
+                  "component_id": "642f32fc-3b49-4550-8f40-70c4c574182c",
                   "go": "37e73386-4e1d-4b48-ab86-dfbfaf5eac79",
                   "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
-                  "component_id": "e0437f59-eec7-4286-83e1-2409d27730c1",
+                  "component_id": "96c34d4e-08c2-4808-84e0-83c6775284dd",
                   "go": "7c15b257-63d0-471d-9638-f20db53e5965",
                   "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
-                  "component_id": "198d1643-36f0-4e9b-bd8b-e92b987a38f5",
+                  "component_id": "4d69aa29-bf98-4ce4-9868-7371d2cf6e6f",
                   "go": "157cc0d2-c79f-4051-8fb1-53040f1ce082",
                   "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
-                  "component_id": "362c1ee5-b9fd-47e8-8e4d-0aadeeea0123",
+                  "component_id": "35f2bcd9-7e7a-48d0-85c2-75399a03f464",
                   "go": "73062ac3-bf39-492c-8f92-4b50c427d8fa",
                   "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
-                  "component_id": "fb7e337f-3f11-4da3-af6f-403bc75f06d7",
+                  "component_id": "56049e05-1649-4231-b9d4-1a9a21f7f4e6",
                   "go": "fc45cd1d-c606-4923-aa7d-a1c299b77eee",
                   "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
-                  "component_id": "48680848-14bb-4567-b406-dfe36a8288c2",
+                  "component_id": "e1e007ed-b81f-4e3a-b294-751afe9ab5b5",
                   "go": "f6913f92-3337-4fb0-aa6b-3fb48cc11b81",
                   "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
-                  "component_id": "2e1e0fa1-9039-48b7-b540-75e78a944f23",
+                  "component_id": "fa207a27-3dfc-4d62-951f-48f90264c84e",
                   "go": "bf56248f-89da-42d4-aca5-2e273055f530",
                   "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
-                  "component_id": "5719480a-5bd9-4f72-bb8c-616167e13c5a",
+                  "component_id": "bb455e5c-ade0-4217-be33-f9696574a916",
                   "go": "152aff1a-19a6-4d68-84c2-c734800094aa",
                   "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
-                  "component_id": "641029df-1de1-429e-b0fb-834924f41743",
+                  "component_id": "ccc6bd2c-1086-47ee-a677-b20f4390fe07",
                   "go": "920385cc-def8-4a53-8e07-9c016a0c5152",
                   "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
-                  "component_id": "6e3cd055-ff3d-4056-8646-f4fc113f09a9",
+                  "component_id": "0c40049a-4695-4115-96ee-c2eb2081fa09",
                   "go": "37b1d2e3-ad40-41e2-a829-a75429f5f660",
                   "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
-                  "component_id": "d9493d9d-c4f8-4a96-b850-3443245af942",
+                  "component_id": "5f4150ef-a537-45b3-b122-d5be7ee57f00",
                   "go": "442dbdbc-3f0b-4848-92fc-9967ce04cdbd",
                   "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
-                  "component_id": "18f7f8b4-63ee-435d-b113-7927b8c0ec50",
+                  "component_id": "ffb4b2de-6159-45bd-97ed-f942c0216f90",
                   "go": "ca2cf0a3-be9a-419b-a8d7-3ee080db499e",
                   "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
-                  "component_id": "6d6bd43a-fc6f-47f3-ab15-c536df8d6443",
+                  "component_id": "e50a5eea-fc64-43dc-91a1-2f6fe6bc925f",
                   "go": "0150bfb2-72f7-4022-a570-fd02e8ed9c1b",
                   "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
-                  "component_id": "641e2ec4-5ee9-4026-9e24-d51466d31546",
+                  "component_id": "8ad88525-324a-4456-ba70-c3ec47ce8817",
                   "go": "5ee51f5d-55ab-4e95-8e92-b86a4a3a35ad",
                   "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
-                  "component_id": "515f5785-387d-4cbc-955c-fe29e949ca82",
+                  "component_id": "ddaab4f0-18a6-410e-a02a-bd0144d11807",
                   "go": "9516ef25-32df-46b6-9980-82cd00763646",
                   "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
-                  "component_id": "73d61d33-0b62-4ca4-8570-c8c7114588ad",
+                  "component_id": "e5fbb7a4-a3a7-4fdc-a674-5b4e81c5a10e",
                   "go": "55888486-1998-47f6-a2bc-48a10844836b",
                   "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
-                  "component_id": "a84bf6dd-3312-4360-aa54-e5668c71ec84",
+                  "component_id": "fd255621-2d24-4879-bdff-f0f9a0aaa4de",
                   "go": "63338a2d-5824-490c-ac3f-c6b0d01bcf25",
                   "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
-                  "component_id": "80180ac4-591b-4726-9910-22a773e555b5",
+                  "component_id": "1e603395-3b45-4601-bd8f-4510b2f841b3",
                   "go": "97ddbd56-9b74-4d36-87b7-fb4362edee8c",
                   "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
-                  "component_id": "1cbfcb68-1dcb-4c39-bb03-c322771ab08f",
+                  "component_id": "be1a1c4e-b451-4e67-96eb-70385b4b0d19",
                   "go": "bc7f0a74-c2f4-46dd-8e47-dcb9ae19cc74",
                   "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
-                  "component_id": "9cd00aa2-8c81-4be0-bd84-a010fe47486c",
+                  "component_id": "c8e5b1bf-740d-43ea-ac0f-5f4deff6aa9d",
                   "go": "32ff94a9-e03e-4d57-9c08-e4b18771656d",
                   "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
-                  "component_id": "5330f8e1-6cc9-44bc-b069-a3eb5473a343",
+                  "component_id": "9848a406-5986-4e8e-ae00-c8f541e08a7b",
                   "go": "b4e51c57-9582-4c34-8bf0-efd9691bb9f9",
                   "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
-                  "component_id": "8e2d628b-6126-4b01-a470-88bd1061a56b",
+                  "component_id": "d7949ad3-0e05-41f5-a270-6234668b613a",
                   "go": "d90f2223-7594-416a-b9d7-bb0bf3799d9f",
                   "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
-                  "component_id": "70c0a717-f54b-42f7-ab03-00f803b5e443",
+                  "component_id": "65ba8f95-0477-4e20-9c74-ee498b3fee4e",
                   "go": "bae526ad-288e-45ff-ac79-4dcee4ca34a9",
                   "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
-                  "component_id": "a20454cd-5730-4287-a465-20bf4095c754",
+                  "component_id": "9d29c0c7-b380-4d1b-b0a9-0cbf3135bcbd",
                   "go": "cf704dcb-3007-4bbb-9062-62d29ff3054c",
                   "component_type": "BoardSpace"
                 }
@@ -421,7 +421,7 @@
               "Components": [
                 {
                   "__type": "BoardSpace",
-                  "__guid": "116f2a3e-cf85-4204-9e0c-b03a2abd84a6",
+                  "__guid": "2a26ac80-75a0-4011-873b-95c0c63f4b1e",
                   "__enabled": true,
                   "Flags": 0,
                   "Index": 0,
@@ -453,7 +453,7 @@
               "Components": [
                 {
                   "__type": "BoardSpace",
-                  "__guid": "0049a5a5-1e62-43cc-8f99-3b4eab6dee89",
+                  "__guid": "fc2e43c0-e699-4bce-ae0d-e96574db7894",
                   "__enabled": true,
                   "Flags": 0,
                   "Index": 1,
@@ -485,7 +485,7 @@
               "Components": [
                 {
                   "__type": "BoardSpace",
-                  "__guid": "e5d36746-7e46-4435-b282-070242449ad9",
+                  "__guid": "acdf5809-2afb-488e-88fc-c94a7f09969f",
                   "__enabled": true,
                   "Flags": 0,
                   "Index": 2,
@@ -517,7 +517,7 @@
               "Components": [
                 {
                   "__type": "BoardSpace",
-                  "__guid": "958b3cb1-afd3-4d8f-97aa-afe35fb2222d",
+                  "__guid": "529d3c17-3111-45ad-8fea-ce0ac21c6c4c",
                   "__enabled": true,
                   "Flags": 0,
                   "Index": 3,
@@ -549,7 +549,7 @@
               "Components": [
                 {
                   "__type": "BoardSpace",
-                  "__guid": "cd0c0018-ed6d-4154-b327-c7692e7afec7",
+                  "__guid": "3621aa53-f2b1-45fc-b9e2-311c243e24d6",
                   "__enabled": true,
                   "Flags": 0,
                   "Index": 4,
@@ -581,7 +581,7 @@
               "Components": [
                 {
                   "__type": "BoardSpace",
-                  "__guid": "3cdeeac4-c164-40a9-a4ca-9ce830fa00de",
+                  "__guid": "658e4e2a-8a9d-4a27-9791-ff06e1d11b9e",
                   "__enabled": true,
                   "Flags": 0,
                   "Index": 5,
@@ -613,7 +613,7 @@
               "Components": [
                 {
                   "__type": "BoardSpace",
-                  "__guid": "31744d93-40db-448d-b9f7-44e49cf279d2",
+                  "__guid": "a765a07b-21ed-437a-89cf-48cf75a6a075",
                   "__enabled": true,
                   "Flags": 0,
                   "Index": 6,
@@ -645,7 +645,7 @@
               "Components": [
                 {
                   "__type": "BoardSpace",
-                  "__guid": "39a68c9d-fac0-44a2-891a-70fae072a074",
+                  "__guid": "9a5f115f-ff62-4ecd-adfc-7bb0321f7088",
                   "__enabled": true,
                   "Flags": 0,
                   "Index": 7,
@@ -677,7 +677,7 @@
               "Components": [
                 {
                   "__type": "BoardSpace",
-                  "__guid": "ec0befdf-a7ec-4b8e-9cb3-85464c773767",
+                  "__guid": "77afaf33-9226-4a7e-9723-72b8fbfa65fe",
                   "__enabled": true,
                   "Flags": 0,
                   "Index": 8,
@@ -709,7 +709,7 @@
               "Components": [
                 {
                   "__type": "BoardSpace",
-                  "__guid": "d3a72d59-f6d9-4bdf-8d56-8ec433c8eba6",
+                  "__guid": "a0aa90fe-1aa1-49bc-837e-6f2650baebea",
                   "__enabled": true,
                   "Flags": 0,
                   "Index": 9,
@@ -741,7 +741,7 @@
               "Components": [
                 {
                   "__type": "BoardSpace",
-                  "__guid": "b3291ed6-c08c-4a2e-a261-61b8848a435e",
+                  "__guid": "17c3ffe8-a7ad-4bdf-a4a6-a431e6638077",
                   "__enabled": true,
                   "Flags": 0,
                   "Index": 10,
@@ -773,7 +773,7 @@
               "Components": [
                 {
                   "__type": "BoardSpace",
-                  "__guid": "c8ca53f3-05c3-4720-a1bd-4f41783119ef",
+                  "__guid": "e9fbf6dd-c409-4552-9711-6103d6f99fee",
                   "__enabled": true,
                   "Flags": 0,
                   "Index": 11,
@@ -805,7 +805,7 @@
               "Components": [
                 {
                   "__type": "BoardSpace",
-                  "__guid": "c11d417c-5708-492e-a4cf-b3ce6168bf5f",
+                  "__guid": "50e1671b-932e-49d2-8c52-2244c2e777a1",
                   "__enabled": true,
                   "Flags": 0,
                   "Index": 12,
@@ -837,7 +837,7 @@
               "Components": [
                 {
                   "__type": "BoardSpace",
-                  "__guid": "ad93f487-7a5c-46e1-8050-81e8f9abdf11",
+                  "__guid": "ae030d75-ea1a-4abf-926e-997fa0625c68",
                   "__enabled": true,
                   "Flags": 0,
                   "Index": 13,
@@ -869,7 +869,7 @@
               "Components": [
                 {
                   "__type": "BoardSpace",
-                  "__guid": "5ff60c02-48fd-45d2-a3d6-ad3a029c7a53",
+                  "__guid": "439dd01a-af70-45c4-950f-43d7d45bbbde",
                   "__enabled": true,
                   "Flags": 0,
                   "Index": 14,
@@ -901,7 +901,7 @@
               "Components": [
                 {
                   "__type": "BoardSpace",
-                  "__guid": "5d15d3e9-4e6d-4333-a307-0972464a0674",
+                  "__guid": "b51723b1-d268-4923-9eef-b2d98831c684",
                   "__enabled": true,
                   "Flags": 0,
                   "Index": 15,
@@ -933,7 +933,7 @@
               "Components": [
                 {
                   "__type": "BoardSpace",
-                  "__guid": "26137398-04f7-4082-92cb-1b7b63c2b721",
+                  "__guid": "642f32fc-3b49-4550-8f40-70c4c574182c",
                   "__enabled": true,
                   "Flags": 0,
                   "Index": 16,
@@ -965,7 +965,7 @@
               "Components": [
                 {
                   "__type": "BoardSpace",
-                  "__guid": "e0437f59-eec7-4286-83e1-2409d27730c1",
+                  "__guid": "96c34d4e-08c2-4808-84e0-83c6775284dd",
                   "__enabled": true,
                   "Flags": 0,
                   "Index": 17,
@@ -997,7 +997,7 @@
               "Components": [
                 {
                   "__type": "BoardSpace",
-                  "__guid": "198d1643-36f0-4e9b-bd8b-e92b987a38f5",
+                  "__guid": "4d69aa29-bf98-4ce4-9868-7371d2cf6e6f",
                   "__enabled": true,
                   "Flags": 0,
                   "Index": 18,
@@ -1029,7 +1029,7 @@
               "Components": [
                 {
                   "__type": "BoardSpace",
-                  "__guid": "362c1ee5-b9fd-47e8-8e4d-0aadeeea0123",
+                  "__guid": "35f2bcd9-7e7a-48d0-85c2-75399a03f464",
                   "__enabled": true,
                   "Flags": 0,
                   "Index": 19,
@@ -1061,7 +1061,7 @@
               "Components": [
                 {
                   "__type": "BoardSpace",
-                  "__guid": "fb7e337f-3f11-4da3-af6f-403bc75f06d7",
+                  "__guid": "56049e05-1649-4231-b9d4-1a9a21f7f4e6",
                   "__enabled": true,
                   "Flags": 0,
                   "Index": 20,
@@ -1093,7 +1093,7 @@
               "Components": [
                 {
                   "__type": "BoardSpace",
-                  "__guid": "48680848-14bb-4567-b406-dfe36a8288c2",
+                  "__guid": "e1e007ed-b81f-4e3a-b294-751afe9ab5b5",
                   "__enabled": true,
                   "Flags": 0,
                   "Index": 21,
@@ -1125,7 +1125,7 @@
               "Components": [
                 {
                   "__type": "BoardSpace",
-                  "__guid": "2e1e0fa1-9039-48b7-b540-75e78a944f23",
+                  "__guid": "fa207a27-3dfc-4d62-951f-48f90264c84e",
                   "__enabled": true,
                   "Flags": 0,
                   "Index": 22,
@@ -1157,7 +1157,7 @@
               "Components": [
                 {
                   "__type": "BoardSpace",
-                  "__guid": "5719480a-5bd9-4f72-bb8c-616167e13c5a",
+                  "__guid": "bb455e5c-ade0-4217-be33-f9696574a916",
                   "__enabled": true,
                   "Flags": 0,
                   "Index": 23,
@@ -1189,7 +1189,7 @@
               "Components": [
                 {
                   "__type": "BoardSpace",
-                  "__guid": "641029df-1de1-429e-b0fb-834924f41743",
+                  "__guid": "ccc6bd2c-1086-47ee-a677-b20f4390fe07",
                   "__enabled": true,
                   "Flags": 0,
                   "Index": 24,
@@ -1221,7 +1221,7 @@
               "Components": [
                 {
                   "__type": "BoardSpace",
-                  "__guid": "6e3cd055-ff3d-4056-8646-f4fc113f09a9",
+                  "__guid": "0c40049a-4695-4115-96ee-c2eb2081fa09",
                   "__enabled": true,
                   "Flags": 0,
                   "Index": 25,
@@ -1253,7 +1253,7 @@
               "Components": [
                 {
                   "__type": "BoardSpace",
-                  "__guid": "d9493d9d-c4f8-4a96-b850-3443245af942",
+                  "__guid": "5f4150ef-a537-45b3-b122-d5be7ee57f00",
                   "__enabled": true,
                   "Flags": 0,
                   "Index": 26,
@@ -1285,7 +1285,7 @@
               "Components": [
                 {
                   "__type": "BoardSpace",
-                  "__guid": "18f7f8b4-63ee-435d-b113-7927b8c0ec50",
+                  "__guid": "ffb4b2de-6159-45bd-97ed-f942c0216f90",
                   "__enabled": true,
                   "Flags": 0,
                   "Index": 27,
@@ -1317,7 +1317,7 @@
               "Components": [
                 {
                   "__type": "BoardSpace",
-                  "__guid": "6d6bd43a-fc6f-47f3-ab15-c536df8d6443",
+                  "__guid": "e50a5eea-fc64-43dc-91a1-2f6fe6bc925f",
                   "__enabled": true,
                   "Flags": 0,
                   "Index": 28,
@@ -1349,7 +1349,7 @@
               "Components": [
                 {
                   "__type": "BoardSpace",
-                  "__guid": "641e2ec4-5ee9-4026-9e24-d51466d31546",
+                  "__guid": "8ad88525-324a-4456-ba70-c3ec47ce8817",
                   "__enabled": true,
                   "Flags": 0,
                   "Index": 29,
@@ -1381,7 +1381,7 @@
               "Components": [
                 {
                   "__type": "BoardSpace",
-                  "__guid": "515f5785-387d-4cbc-955c-fe29e949ca82",
+                  "__guid": "ddaab4f0-18a6-410e-a02a-bd0144d11807",
                   "__enabled": true,
                   "Flags": 0,
                   "Index": 30,
@@ -1413,7 +1413,7 @@
               "Components": [
                 {
                   "__type": "BoardSpace",
-                  "__guid": "73d61d33-0b62-4ca4-8570-c8c7114588ad",
+                  "__guid": "e5fbb7a4-a3a7-4fdc-a674-5b4e81c5a10e",
                   "__enabled": true,
                   "Flags": 0,
                   "Index": 31,
@@ -1445,7 +1445,7 @@
               "Components": [
                 {
                   "__type": "BoardSpace",
-                  "__guid": "a84bf6dd-3312-4360-aa54-e5668c71ec84",
+                  "__guid": "fd255621-2d24-4879-bdff-f0f9a0aaa4de",
                   "__enabled": true,
                   "Flags": 0,
                   "Index": 32,
@@ -1477,7 +1477,7 @@
               "Components": [
                 {
                   "__type": "BoardSpace",
-                  "__guid": "80180ac4-591b-4726-9910-22a773e555b5",
+                  "__guid": "1e603395-3b45-4601-bd8f-4510b2f841b3",
                   "__enabled": true,
                   "Flags": 0,
                   "Index": 33,
@@ -1509,7 +1509,7 @@
               "Components": [
                 {
                   "__type": "BoardSpace",
-                  "__guid": "1cbfcb68-1dcb-4c39-bb03-c322771ab08f",
+                  "__guid": "be1a1c4e-b451-4e67-96eb-70385b4b0d19",
                   "__enabled": true,
                   "Flags": 0,
                   "Index": 34,
@@ -1541,7 +1541,7 @@
               "Components": [
                 {
                   "__type": "BoardSpace",
-                  "__guid": "9cd00aa2-8c81-4be0-bd84-a010fe47486c",
+                  "__guid": "c8e5b1bf-740d-43ea-ac0f-5f4deff6aa9d",
                   "__enabled": true,
                   "Flags": 0,
                   "Index": 35,
@@ -1573,7 +1573,7 @@
               "Components": [
                 {
                   "__type": "BoardSpace",
-                  "__guid": "5330f8e1-6cc9-44bc-b069-a3eb5473a343",
+                  "__guid": "9848a406-5986-4e8e-ae00-c8f541e08a7b",
                   "__enabled": true,
                   "Flags": 0,
                   "Index": 36,
@@ -1605,7 +1605,7 @@
               "Components": [
                 {
                   "__type": "BoardSpace",
-                  "__guid": "8e2d628b-6126-4b01-a470-88bd1061a56b",
+                  "__guid": "d7949ad3-0e05-41f5-a270-6234668b613a",
                   "__enabled": true,
                   "Flags": 0,
                   "Index": 37,
@@ -1637,7 +1637,7 @@
               "Components": [
                 {
                   "__type": "BoardSpace",
-                  "__guid": "70c0a717-f54b-42f7-ab03-00f803b5e443",
+                  "__guid": "65ba8f95-0477-4e20-9c74-ee498b3fee4e",
                   "__enabled": true,
                   "Flags": 0,
                   "Index": 38,
@@ -1669,7 +1669,7 @@
               "Components": [
                 {
                   "__type": "BoardSpace",
-                  "__guid": "a20454cd-5730-4287-a465-20bf4095c754",
+                  "__guid": "9d29c0c7-b380-4d1b-b0a9-0cbf3135bcbd",
                   "__enabled": true,
                   "Flags": 0,
                   "Index": 39,
@@ -1764,7 +1764,7 @@
           "Components": [
             {
               "__type": "GameController",
-              "__guid": "3a5d8d0c-7021-45c2-91d8-0de80778aae3",
+              "__guid": "60763db4-1a8a-48a6-b49e-9a59bae142f3",
               "__enabled": true,
               "Flags": 0,
               "AuctionCurrentBid": 0,
@@ -1773,7 +1773,7 @@
               "AuctionSpaceIndex": -1,
               "Board": {
                 "_type": "component",
-                "component_id": "4b9cd09b-a167-40b7-a17a-0c958e771b55",
+                "component_id": "66d913ac-d240-40cc-88f4-3cf333667425",
                 "go": "469cf384-89f4-4353-99dd-4b89667eff1f",
                 "component_type": "Board"
               },
@@ -1850,7 +1850,7 @@
       "Components": [
         {
           "__type": "GameCamera",
-          "__guid": "e1503ec4-417a-41df-8492-53b767c81d72",
+          "__guid": "f0aaa3af-837d-44a2-8b6b-a4200b2db168",
           "__enabled": true,
           "Flags": 0,
           "Distance": 200,
@@ -2000,7 +2000,7 @@
           "Components": [
             {
               "__type": "GameCursor",
-              "__guid": "a7dda7a7-7cf1-495b-b5d8-52a6e4737067",
+              "__guid": "83533c1b-e097-495f-a30d-9123d955e08a",
               "__enabled": true,
               "Flags": 0,
               "OnComponentDestroy": null,
@@ -2074,7 +2074,7 @@
               "Flags": 0,
               "GameRef": {
                 "_type": "component",
-                "component_id": "3a5d8d0c-7021-45c2-91d8-0de80778aae3",
+                "component_id": "60763db4-1a8a-48a6-b49e-9a59bae142f3",
                 "go": "3926108a-01b6-40be-beb6-9bf93b305607",
                 "component_type": "GameController"
               },
@@ -2113,13 +2113,13 @@
       "CustomBounds": false
     },
     "GameObjectSystems": {
+      "Sandbox.MovieMaker.MovieRecorderSystem": {
+        "DisableClientRecording": false
+      },
       "Sandbox.SelectionSetsSystem": {
         "Data": {
           "SelectionSets": []
         }
-      },
-      "Sandbox.MovieMaker.MovieRecorderSystem": {
-        "DisableClientRecording": false
       },
       "Sandbox.Clutter.ClutterGridSystem": {
         "Storage": {

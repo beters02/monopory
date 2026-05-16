@@ -30,6 +30,9 @@
 			return;
 		}
 
-		Menu.TryOpenLobby();
+		if ( Networking.IsHost )
+			Menu.TryOpenLobby();
+		else
+			Menu.RequestOpenLobby();
 	}
 }

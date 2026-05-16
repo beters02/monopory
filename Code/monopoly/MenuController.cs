@@ -17,22 +17,31 @@ public sealed class MenuController : Component
 
 	public bool TryOpenLobby()
 	{
-		if ( Networking.IsActive )
-			Networking.Disconnect();
+		if ( !Networking.IsHost )
+			return false;
 
 		var hostedConfig = MatchBootstrap.CloneConfig( Config );
 		MatchBootstrap.PrepareLobby( hostedConfig );
 
-		Networking.CreateLobby( new LobbyConfig
+		if ( !Networking.IsActive )
 		{
-			Name = "Monopory Lobby",
-			MaxPlayers = Math.Max( hostedConfig.MaxPlayers, hostedConfig.MinPlayers ),
-			Privacy = LobbyPrivacy.FriendsOnly,
-			DestroyWhenHostLeaves = false
-		} );
+			Networking.CreateLobby( new LobbyConfig
+			{
+				Name = "Monopory Lobby",
+				MaxPlayers = Math.Max( hostedConfig.MaxPlayers, hostedConfig.MinPlayers ),
+				Privacy = LobbyPrivacy.FriendsOnly,
+				DestroyWhenHostLeaves = true
+			} );
+		}
 
 		LoadLobbyScene();
 		return true;
+	}
+
+	[Rpc.Host]
+	public void RequestOpenLobby()
+	{
+		TryOpenLobby();
 	}
 
 	private void HandleLaunchArguments()

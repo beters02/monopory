@@ -175,7 +175,7 @@
       "Components": [
         {
           "__type": "MenuController",
-          "__guid": "e3df852f-1c23-4b96-8b4d-f2280693d81d",
+          "__guid": "187c46d3-7999-4b29-8704-6c7c48c74b89",
           "__enabled": true,
           "Flags": 0,
           "Config": {
@@ -221,13 +221,13 @@
       "CustomBounds": false
     },
     "GameObjectSystems": {
+      "Sandbox.MovieMaker.MovieRecorderSystem": {
+        "DisableClientRecording": false
+      },
       "Sandbox.SelectionSetsSystem": {
         "Data": {
           "SelectionSets": []
         }
-      },
-      "Sandbox.MovieMaker.MovieRecorderSystem": {
-        "DisableClientRecording": false
       },
       "Sandbox.Clutter.ClutterGridSystem": {
         "Storage": {

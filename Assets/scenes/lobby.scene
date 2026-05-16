@@ -38,7 +38,7 @@
         },
         {
           "__type": "SceneInfo",
-          "__guid": "b1730e0a-e004-4962-b099-a888667ecc49",
+          "__guid": "5981fa56-0f99-4415-b140-3211e3f65405",
           "__enabled": true,
           "Flags": 0,
           "Description": "Lobby scene for ready checks and match setup.",
@@ -120,7 +120,7 @@
       "Components": [
         {
           "__type": "LobbyController",
-          "__guid": "ce624668-e474-4d83-916c-b05c241c96ef",
+          "__guid": "bde94123-51b8-45c7-ad19-a5211250b987",
           "__enabled": true,
           "Flags": 0,
           "Config": {
@@ -208,7 +208,7 @@
               "Flags": 0,
               "LobbyRef": {
                 "_type": "component",
-                "component_id": "ce624668-e474-4d83-916c-b05c241c96ef",
+                "component_id": "bde94123-51b8-45c7-ad19-a5211250b987",
                 "go": "04f17a18-2449-4e31-a1e6-88083375f095",
                 "component_type": "LobbyController"
               },
@@ -249,13 +249,13 @@
       "CustomBounds": false
     },
     "GameObjectSystems": {
+      "Sandbox.MovieMaker.MovieRecorderSystem": {
+        "DisableClientRecording": false
+      },
       "Sandbox.SelectionSetsSystem": {
         "Data": {
           "SelectionSets": []
         }
-      },
-      "Sandbox.MovieMaker.MovieRecorderSystem": {
-        "DisableClientRecording": false
       },
       "Sandbox.Clutter.ClutterGridSystem": {
         "Storage": {
