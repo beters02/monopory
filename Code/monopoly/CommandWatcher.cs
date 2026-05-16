@@ -87,7 +87,7 @@ public sealed class CommandWatcher : Component
 		if ( wasFirstRun )
 			return;
 
-		MonopolyGame.Instance?.SendPopupToAll(
+		GameController.Instance?.SendPopupToAll(
 			"Server cheats changed",
 			$"sv_cheats is now {(newValue ? "enabled" : "disabled")}.",
 			newValue ? PopupKind.Warning : PopupKind.Info

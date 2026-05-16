@@ -3,7 +3,7 @@ using System;
 using System.Text.RegularExpressions;
 using Sandbox;
 
-public sealed partial class MonopolyGame : Component
+public sealed partial class GameController : Component
 {
 
 	private bool TryMakeForcedPayment( PlayerState player, int amount, int receiverIndex, bool toBank )

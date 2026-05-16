@@ -7,7 +7,7 @@ public sealed class Board : Component
 {
 	private static Board instance;
 	public static Board Instance => instance;
-	private MonopolyGame GameRef;
+	private GameController GameRef;
 	private Logger logger = new("Board");
 	private Logger boardSpace = new("BoardSpace");
 
@@ -48,7 +48,7 @@ public sealed class Board : Component
 
 		logger.SetEnabled(DebugEnabled);
 
-		GameRef = Scene.GetAllComponents<MonopolyGame>().FirstOrDefault();
+		GameRef = Scene.GetAllComponents<GameController>().FirstOrDefault();
 
 		LoadBoardDefinitions();
 		LoadCardDefinitions();
@@ -178,7 +178,7 @@ public sealed class Board : Component
 		int originalIndex = index;
 
 		boardSpace.Info("RETRIEVING SPACE FOR INDEX: " + index);
-		bool didNormalize = MonopolyGame.TryNormalizeSpaceIndex(index, out int normalizedSpaceIndex);
+		bool didNormalize = GameController.TryNormalizeSpaceIndex(index, out int normalizedSpaceIndex);
 
 		if (didNormalize)
 		{
@@ -223,7 +223,7 @@ public sealed class Board : Component
 		int originalIndex = index;
 
 		boardSpace.Info("RETRIEVING SPACE DEF FOR INDEX: " + index);
-		bool didNormalize = MonopolyGame.TryNormalizeSpaceIndex(index, out int normalizedSpaceIndex);
+		bool didNormalize = GameController.TryNormalizeSpaceIndex(index, out int normalizedSpaceIndex);
 
 		if (didNormalize)
 		{

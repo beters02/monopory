@@ -33,7 +33,7 @@
 
 @code
 {
-	[Parameter] public MonopolyGame GameRef { get; set; }
+	[Parameter] public GameController GameRef { get; set; }
 
 	private PlayerState CurrentPlayer => GameRef?.CurrentPlayer;
 	private PlayerState LocalPlayer => GameRef?.LocalPlayer;

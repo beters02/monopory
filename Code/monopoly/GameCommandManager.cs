@@ -20,7 +20,7 @@ public sealed class GameCommandManager : Component
 {
 	public static CommandResult BuyProperty( Connection caller, int propertyIndex, string playerName = "self" )
 	{
-		var game = MonopolyGame.Instance;
+		var game = GameController.Instance;
 		if ( game is null )
 			return CommandResult.Fail( "No active Monopoly game." );
 
@@ -52,7 +52,7 @@ public sealed class GameCommandManager : Component
 		if ( !ColorGroups.TryParse( propertySet, out var colorGroup ) || colorGroup == ColorGroup.None )
 			return CommandResult.Fail( $"Property set \"{propertySet}\" does not exist." );
 
-		var game = MonopolyGame.Instance;
+		var game = GameController.Instance;
 		var board = Board.Instance;
 		if ( game is null || board?.SpaceDefs is null )
 			return CommandResult.Fail( "No active Monopoly board." );
@@ -75,7 +75,7 @@ public sealed class GameCommandManager : Component
 
 	public static CommandResult RollDice( Connection caller, int amount = -1, string playerName = "self" )
 	{
-		var game = MonopolyGame.Instance;
+		var game = GameController.Instance;
 		if ( game is null )
 			return CommandResult.Fail( "No active Monopoly game." );
 
@@ -106,7 +106,7 @@ public sealed class GameCommandManager : Component
 		if ( !CanUseCheatCommand( caller ) )
 			return CommandResult.Fail( "sv_cheats must be enabled to change player money." );
 
-		var game = MonopolyGame.Instance;
+		var game = GameController.Instance;
 		if ( game is null )
 			return CommandResult.Fail( "No active Monopoly game." );
 
@@ -121,7 +121,7 @@ public sealed class GameCommandManager : Component
 
 	public static CommandResult DebugRefactorStageTest(Connection caller, string  playerName = "self")
 	{
-		var game = MonopolyGame.Instance;
+		var game = GameController.Instance;
 		if ( game is null )
 			return CommandResult.Fail( "No active Monopoly game." );
 
@@ -143,7 +143,7 @@ public sealed class GameCommandManager : Component
 		return Game.CheatsEnabled;
 	}
 
-	private static bool HasUnresolvedPendingBuyDecision( MonopolyGame game, PlayerState player )
+	private static bool HasUnresolvedPendingBuyDecision( GameController game, PlayerState player )
 	{
 		return game is not null &&
 			player is not null &&
@@ -152,7 +152,7 @@ public sealed class GameCommandManager : Component
 			game.PendingPurchaseSpaceIndex >= 0;
 	}
 
-	private static string GetPendingBuyDecisionMessage( MonopolyGame game )
+	private static string GetPendingBuyDecisionMessage( GameController game )
 	{
 		var pendingDef = game?.Board?.GetSpaceDef( game.PendingPurchaseSpaceIndex );
 		var pendingName = pendingDef?.DisplayName ?? "the pending property";

@@ -1733,7 +1733,7 @@
       "__guid": "fea6eff6-6d1e-449a-9db4-b7b69983f12e",
       "__version": 2,
       "Flags": 0,
-      "Name": "MonopolyGameObject",
+      "Name": "GameControllerObject",
       "Position": "-164.933258,-245.719589,-26.4039001",
       "Rotation": "0,0,0,1",
       "Scale": "1,1,1",
@@ -1750,7 +1750,7 @@
           "__guid": "3926108a-01b6-40be-beb6-9bf93b305607",
           "__version": 2,
           "Flags": 0,
-          "Name": "MonopolyGame",
+          "Name": "GameController",
           "Position": "109.507507,2.57521057,39.5788727",
           "Rotation": "0,0,0,1",
           "Scale": "1,1,1",
@@ -1763,7 +1763,7 @@
           "OwnerTransfer": 0,
           "Components": [
             {
-              "__type": "MonopolyGame",
+              "__type": "GameController",
               "__guid": "3a5d8d0c-7021-45c2-91d8-0de80778aae3",
               "__enabled": true,
               "Flags": 0,
@@ -2076,7 +2076,7 @@
                 "_type": "component",
                 "component_id": "3a5d8d0c-7021-45c2-91d8-0de80778aae3",
                 "go": "3926108a-01b6-40be-beb6-9bf93b305607",
-                "component_type": "MonopolyGame"
+                "component_type": "GameController"
               },
               "OnComponentDestroy": null,
               "OnComponentDisabled": null,

@@ -32,7 +32,7 @@ public static class HudUi
 		};
 	}
 
-	public static int GetPlayersHash( MonopolyGame game )
+	public static int GetPlayersHash( GameController game )
 	{
 		if ( game?.Players is null )
 			return 0;
@@ -53,7 +53,7 @@ public static class HudUi
 		return hash.ToHashCode();
 	}
 
-	public static int GetPropertyOwnersHash( MonopolyGame game )
+	public static int GetPropertyOwnersHash( GameController game )
 	{
 		if ( game is null )
 			return 0;
@@ -69,7 +69,7 @@ public static class HudUi
 		return hash.ToHashCode();
 	}
 
-	public static int GetMortgagedPropertiesHash( MonopolyGame game )
+	public static int GetMortgagedPropertiesHash( GameController game )
 	{
 		if ( game?.MortgagedProperties is null )
 			return 0;

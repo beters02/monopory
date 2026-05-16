@@ -21,7 +21,7 @@ public enum MonopolyMatchState
 	GameOver
 }
 
-public sealed partial class MonopolyGame : Component
+public sealed partial class GameController : Component
 {
 	[Property] public List<PlayerState> Players { get; set; } = new();
 	[Property] public MatchConfig Config { get; set; } = new();
@@ -72,7 +72,7 @@ public sealed partial class MonopolyGame : Component
 	public PlayerState Winner =>
 		WinnerPlayerIndex >= 0 ? Players.ElementAtOrDefault( WinnerPlayerIndex ) : null;
 
-	private static MonopolyGame instance;
+	private static GameController instance;
 	private int nextPopupId = 1;
 	private readonly List<GamePopup> popups = new();
 	private readonly List<GameObject> spawnedTokenObjects = new();
@@ -80,7 +80,7 @@ public sealed partial class MonopolyGame : Component
 	private float pausedAuctionRemainingSeconds;
 	private bool currentRollDrewCard;
 
-	public static MonopolyGame Instance => instance;
+	public static GameController Instance => instance;
 	public IReadOnlyList<GamePopup> Popups => popups;
 
 

@@ -3,7 +3,7 @@ using System;
 using System.Text.RegularExpressions;
 using Sandbox;
 
-public sealed partial class MonopolyGame : Component
+public sealed partial class GameController : Component
 {
 
 	private void SpawnTokensForPlayers( IReadOnlyList<PlayerState> activePlayers )
@@ -13,7 +13,7 @@ public sealed partial class MonopolyGame : Component
 
 		if ( TokenPrefab is null )
 		{
-			Log.Warning( "MonopolyGame has no TokenPrefab assigned, so player tokens were not spawned." );
+			Log.Warning( "GameController has no TokenPrefab assigned, so player tokens were not spawned." );
 			return;
 		}
 

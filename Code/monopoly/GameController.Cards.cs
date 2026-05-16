@@ -3,7 +3,7 @@ using System;
 using System.Text.RegularExpressions;
 using Sandbox;
 
-public sealed partial class MonopolyGame : Component
+public sealed partial class GameController : Component
 {
 
 	private void ResolveCardLanding( PlayerState player, CardDeck deck )
