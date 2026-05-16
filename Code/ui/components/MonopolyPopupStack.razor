@@ -33,10 +33,10 @@
 
 @code
 {
-	[Parameter] public List<MonopolyPopup> Popups { get; set; } = new();
+	[Parameter] public List<GamePopup> Popups { get; set; } = new();
 	[Parameter] public Action<int> OnDismiss { get; set; }
 
-	private static string GetPopupClasses( MonopolyPopup popup )
+	private static string GetPopupClasses( GamePopup popup )
 	{
 		return $"game-popup {popup.Kind.ToString().ToLower()}";
 	}

@@ -1,4 +1,4 @@
-public sealed class MonopolyLobbyPlayer
+public sealed class LobbyPlayer
 {
 	public long OwnerId { get; set; }
 	public string Name { get; set; } = "";

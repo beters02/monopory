@@ -57,7 +57,7 @@ public sealed partial class MonopolyGame : Component
 		MatchState = MonopolyMatchState.InGame;
 		StartTurnTimer();
 
-		SendPopupToAll( "Game started", "The first turn is live.", MonopolyPopupKind.Success, true, 4f );
+		SendPopupToAll( "Game started", "The first turn is live.", PopupKind.Success, true, 4f );
 		return true;
 	}
 
@@ -83,7 +83,7 @@ public sealed partial class MonopolyGame : Component
 		CurrentTurnEndsAt = 0f;
 		AuctionEndsAt = 0f;
 		MatchState = MonopolyMatchState.Paused;
-		SendPopupToAll( "Paused", "The host paused the game.", MonopolyPopupKind.Info, true, 4f );
+		SendPopupToAll( "Paused", "The host paused the game.", PopupKind.Info, true, 4f );
 		return true;
 	}
 
@@ -101,7 +101,7 @@ public sealed partial class MonopolyGame : Component
 		pausedTurnRemainingSeconds = 0f;
 		pausedAuctionRemainingSeconds = 0f;
 		MatchState = MonopolyMatchState.InGame;
-		SendPopupToAll( "Resumed", "Back to the board.", MonopolyPopupKind.Success, true, 3f );
+		SendPopupToAll( "Resumed", "Back to the board.", PopupKind.Success, true, 3f );
 		return true;
 	}
 
@@ -136,7 +136,7 @@ public sealed partial class MonopolyGame : Component
 		SendPopupToAll(
 			"Game ended",
 			"The game hit a fatal rules error and was ended by the host.",
-			MonopolyPopupKind.Danger,
+			PopupKind.Danger,
 			true,
 			8f
 		);

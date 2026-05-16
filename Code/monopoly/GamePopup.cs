@@ -1,4 +1,4 @@
-public enum MonopolyPopupKind
+public enum PopupKind
 {
 	Info,
 	Success,
@@ -6,12 +6,12 @@ public enum MonopolyPopupKind
 	Danger
 }
 
-public sealed class MonopolyPopup
+public sealed class GamePopup
 {
 	public int Id { get; set; }
 	public string Title { get; set; } = "";
 	public string Message { get; set; } = "";
-	public MonopolyPopupKind Kind { get; set; } = MonopolyPopupKind.Info;
+	public PopupKind Kind { get; set; } = PopupKind.Info;
 	public bool CanDismiss { get; set; } = true;
 	public float Lifetime { get; set; } = 5f;
 	public bool SoundEnabled { get; set; } = true;

@@ -16,13 +16,13 @@ public static class MonopolyAssets
 			public static readonly MonopolySound Warning = Error;
 			public static readonly MonopolySound Danger = Error;
 
-			public static MonopolySound ForKind( MonopolyPopupKind kind )
+			public static MonopolySound ForKind( PopupKind kind )
 			{
 				return kind switch
 				{
-					MonopolyPopupKind.Success => Success,
-					MonopolyPopupKind.Warning => Warning,
-					MonopolyPopupKind.Danger => Danger,
+					PopupKind.Success => Success,
+					PopupKind.Warning => Warning,
+					PopupKind.Danger => Danger,
 					_ => Info
 				};
 			}

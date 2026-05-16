@@ -52,7 +52,7 @@ public sealed partial class MonopolyGame : Component
 		AuctionEndsAt = Time.Now + 15f;
 		Phase = MonopolyGamePhase.Auctioning;
 
-		SendPopupToAll( "Auction started", $"{def.DisplayName} is up for auction.", MonopolyPopupKind.Info, true, 4f );
+		SendPopupToAll( "Auction started", $"{def.DisplayName} is up for auction.", PopupKind.Info, true, 4f );
 		Log.Info( $"Auction started for {def.DisplayName}." );
 	}
 
@@ -69,13 +69,13 @@ public sealed partial class MonopolyGame : Component
 			if ( winner is not null && winner.IsAssigned && winner.Money >= AuctionCurrentBid && PayBank( winner, AuctionCurrentBid ) )
 			{
 				PropertyOwners[def.Index] = AuctionHighBidderIndex;
-				SendPopupToAll( "Auction won", $"{winner.PlayerName} won {def.DisplayName} for ${AuctionCurrentBid}.", MonopolyPopupKind.Success, true, 5f );
+				SendPopupToAll( "Auction won", $"{winner.PlayerName} won {def.DisplayName} for ${AuctionCurrentBid}.", PopupKind.Success, true, 5f );
 				Log.Info( $"{winner.PlayerName} won {def.DisplayName} for ${AuctionCurrentBid}." );
 			}
 		}
 		else if ( def is not null )
 		{
-			SendPopupToAll( "Auction ended", $"{def.DisplayName} received no bids.", MonopolyPopupKind.Warning, true, 5f );
+			SendPopupToAll( "Auction ended", $"{def.DisplayName} received no bids.", PopupKind.Warning, true, 5f );
 			Log.Info( $"Auction for {def.DisplayName} ended with no bids." );
 		}
 

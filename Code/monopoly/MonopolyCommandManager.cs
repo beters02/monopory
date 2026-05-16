@@ -119,6 +119,22 @@ public sealed class MonopolyCommandManager : Component
 			: MonopolyCommandResult.Fail( message );
 	}
 
+	public static MonopolyCommandResult DebugRefactorStageTest(Connection caller, string  playerName = "self")
+	{
+		var game = MonopolyGame.Instance;
+		if ( game is null )
+			return MonopolyCommandResult.Fail( "No active Monopoly game." );
+
+		var player = game.ResolvePlayerReference( playerName, caller );
+		if ( player is null )
+			return MonopolyCommandResult.Fail( $"Could not find player \"{playerName}\"." );
+
+		ConsoleSystem.Run("buy_property_set pink boot");
+		ConsoleSystem.Run("buy_property_set red boot");
+		ConsoleSystem.Run("change_money 1500 boot");
+		return MonopolyCommandResult.Success();
+	}
+
 	private static bool CanUseCheatCommand( Connection caller )
 	{
 		if ( Networking.IsHost && (caller is null || caller == Connection.Local) )

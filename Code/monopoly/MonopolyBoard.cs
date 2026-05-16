@@ -337,7 +337,7 @@ public sealed class MonopolyBoard : Component
 			GameRef.ShowLocalPopup(
 				"Decision required",
 				$"Buy or auction {def.DisplayName} before closing this card.",
-				MonopolyPopupKind.Warning,
+				PopupKind.Warning,
 				true,
 				3f
 			);

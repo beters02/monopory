@@ -16,7 +16,7 @@
 	[Parameter] public bool ShowBlockedPopup { get; set; } = true;
 	[Parameter] public string BlockedPopupTitle { get; set; } = "Action blocked";
 	[Parameter] public string BlockedPopupMessage { get; set; } = "This action is not available right now.";
-	[Parameter] public MonopolyPopupKind BlockedPopupKind { get; set; } = MonopolyPopupKind.Warning;
+	[Parameter] public PopupKind BlockedPopupKind { get; set; } = PopupKind.Warning;
 	[Parameter] public float BlockedPopupLifetime { get; set; } = 3f;
 	[Parameter] public MonopolySound Sound { get; set; } = MonopolyAssets.Sounds.Click;
 	[Parameter] public MonopolySound BlockedSound { get; set; } = MonopolyAssets.Sounds.Error;
@@ -65,7 +65,7 @@
 		if ( !ShowBlockedPopup )
 			return;
 
-		MonopolyLocalPopups.Show(
+		LocalPopups.Show(
 			BlockedPopupTitle,
 			BlockedPopupMessage,
 			BlockedPopupKind,

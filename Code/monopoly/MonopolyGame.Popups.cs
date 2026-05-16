@@ -23,7 +23,7 @@ public sealed partial class MonopolyGame : Component
 		}
 	}
 
-	public void SendPopupToAll( string title, string message, MonopolyPopupKind kind = MonopolyPopupKind.Info, bool canDismiss = true, float lifetime = 5f, bool soundEnabled = true )
+	public void SendPopupToAll( string title, string message, PopupKind kind = PopupKind.Info, bool canDismiss = true, float lifetime = 5f, bool soundEnabled = true )
 	{
 		if ( !Networking.IsHost )
 			return;
@@ -31,7 +31,7 @@ public sealed partial class MonopolyGame : Component
 		ShowPopup( nextPopupId++, title, message, kind, canDismiss, lifetime, soundEnabled );
 	}
 
-	public void SendPopupToPlayer( int playerIndex, string title, string message, MonopolyPopupKind kind = MonopolyPopupKind.Info, bool canDismiss = true, float lifetime = 5f, bool soundEnabled = true )
+	public void SendPopupToPlayer( int playerIndex, string title, string message, PopupKind kind = PopupKind.Info, bool canDismiss = true, float lifetime = 5f, bool soundEnabled = true )
 	{
 		if ( !Networking.IsHost )
 			return;
@@ -43,7 +43,7 @@ public sealed partial class MonopolyGame : Component
 		SendPopupToPlayer( player, title, message, kind, canDismiss, lifetime, soundEnabled );
 	}
 
-	public void SendPopupToPlayer( MonopolyPlayerState player, string title, string message, MonopolyPopupKind kind = MonopolyPopupKind.Info, bool canDismiss = true, float lifetime = 5f, bool soundEnabled = true )
+	public void SendPopupToPlayer( MonopolyPlayerState player, string title, string message, PopupKind kind = PopupKind.Info, bool canDismiss = true, float lifetime = 5f, bool soundEnabled = true )
 	{
 		if ( !Networking.IsHost )
 			return;
@@ -55,7 +55,7 @@ public sealed partial class MonopolyGame : Component
 		SendPopupToConnection( connection, title, message, kind, canDismiss, lifetime, soundEnabled );
 	}
 
-	public void SendPopupToConnection( Connection connection, string title, string message, MonopolyPopupKind kind = MonopolyPopupKind.Info, bool canDismiss = true, float lifetime = 5f, bool soundEnabled = true )
+	public void SendPopupToConnection( Connection connection, string title, string message, PopupKind kind = PopupKind.Info, bool canDismiss = true, float lifetime = 5f, bool soundEnabled = true )
 	{
 		if ( !Networking.IsHost || connection is null )
 			return;
@@ -71,21 +71,21 @@ public sealed partial class MonopolyGame : Component
 		popups.RemoveAll( popup => popup.Id == popupId );
 	}
 
-	public void ShowLocalPopup( string title, string message, MonopolyPopupKind kind = MonopolyPopupKind.Info, bool canDismiss = true, float lifetime = 5f, bool soundEnabled = true )
+	public void ShowLocalPopup( string title, string message, PopupKind kind = PopupKind.Info, bool canDismiss = true, float lifetime = 5f, bool soundEnabled = true )
 	{
 		ShowPopupLocal( nextPopupId++, title, message, kind, canDismiss, lifetime, soundEnabled );
 	}
 
 	[Rpc.Broadcast]
-	private void ShowPopup( int popupId, string title, string message, MonopolyPopupKind kind, bool canDismiss, float lifetime, bool soundEnabled )
+	private void ShowPopup( int popupId, string title, string message, PopupKind kind, bool canDismiss, float lifetime, bool soundEnabled )
 	{
 		ShowPopupLocal( popupId, title, message, kind, canDismiss, lifetime, soundEnabled );
 	}
 
-	private void ShowPopupLocal( int popupId, string title, string message, MonopolyPopupKind kind, bool canDismiss, float lifetime, bool soundEnabled )
+	private void ShowPopupLocal( int popupId, string title, string message, PopupKind kind, bool canDismiss, float lifetime, bool soundEnabled )
 	{
 		popups.RemoveAll( popup => popup.Id == popupId );
-		popups.Add( new MonopolyPopup
+		popups.Add( new GamePopup
 		{
 			Id = popupId,
 			Title = title ?? "",

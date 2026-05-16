@@ -74,14 +74,14 @@ public sealed partial class MonopolyGame : Component
 
 	private static MonopolyGame instance;
 	private int nextPopupId = 1;
-	private readonly List<MonopolyPopup> popups = new();
+	private readonly List<GamePopup> popups = new();
 	private readonly List<GameObject> spawnedTokenObjects = new();
 	private float pausedTurnRemainingSeconds;
 	private float pausedAuctionRemainingSeconds;
 	private bool currentRollDrewCard;
 
 	public static MonopolyGame Instance => instance;
-	public IReadOnlyList<MonopolyPopup> Popups => popups;
+	public IReadOnlyList<GamePopup> Popups => popups;
 
 
 	protected override void OnStart()

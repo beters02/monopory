@@ -13,9 +13,9 @@ public sealed partial class MonopolyLobbyController : Component
 	public int MaxPlayers => Math.Max( HostedMaxPlayers, MinPlayers );
 	public bool OnlyHostStartsGame => HostedOnlyHostStartsGame;
 
-	public List<MonopolyLobbyPlayer> Players { get; private set; } = new();
+	public List<LobbyPlayer> Players { get; private set; } = new();
 
-	public MonopolyLobbyPlayer LocalPlayer =>
+	public LobbyPlayer LocalPlayer =>
 		GetLocalPlayer();
 
 	public bool CanStartGame =>

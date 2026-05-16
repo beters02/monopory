@@ -15,9 +15,9 @@ public sealed partial class MonopolyLobbyController
 		return true;
 	}
 
-	private List<MonopolyLobbyPlayer> BuildPlayers()
+	private List<LobbyPlayer> BuildPlayers()
 	{
-		var players = new List<MonopolyLobbyPlayer>();
+		var players = new List<LobbyPlayer>();
 		var connections = GetConnections();
 		var localSteamId = GetLocalSteamId();
 		var limit = Math.Min( MaxPlayers, connections.Count );
@@ -25,7 +25,7 @@ public sealed partial class MonopolyLobbyController
 		for ( var i = 0; i < limit; i++ )
 		{
 			var connection = connections[i];
-			var player = new MonopolyLobbyPlayer
+			var player = new LobbyPlayer
 			{
 				OwnerId = connection.SteamId,
 				Name = connection.DisplayName ?? "Player",
@@ -41,7 +41,7 @@ public sealed partial class MonopolyLobbyController
 		return players;
 	}
 
-	private MonopolyLobbyPlayer GetLocalPlayer()
+	private LobbyPlayer GetLocalPlayer()
 	{
 		var localSteamId = GetLocalSteamId();
 		if ( !localSteamId.HasValue )
@@ -57,7 +57,7 @@ public sealed partial class MonopolyLobbyController
 		return null;
 	}
 
-	private bool CanStartWithPlayers( List<MonopolyLobbyPlayer> players )
+	private bool CanStartWithPlayers( List<LobbyPlayer> players )
 	{
 		if ( players is null || players.Count < MinPlayers || players.Count == 0 )
 			return false;

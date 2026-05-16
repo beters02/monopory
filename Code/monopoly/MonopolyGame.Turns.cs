@@ -61,7 +61,7 @@ public sealed partial class MonopolyGame : Component
 			BankruptPlayer( skippedPlayerIndex, Players.ElementAtOrDefault( PendingForcedPaymentReceiverIndex ) );
 
 		Log.Info( $"{skippedPlayer.PlayerName}'s turn timed out and was skipped." );
-		SendPopupToAll( "Turn skipped", $"{skippedPlayer.PlayerName}'s turn timed out.", MonopolyPopupKind.Warning, true, 4f );
+		SendPopupToAll( "Turn skipped", $"{skippedPlayer.PlayerName}'s turn timed out.", PopupKind.Warning, true, 4f );
 
 		AdvanceTurn();
 	}

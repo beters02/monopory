@@ -35,9 +35,9 @@
 
 	private bool IsEscapeMenuOpen;
 
-	private List<MonopolyPopup> Popups =>
-		(GameRef?.Popups ?? Enumerable.Empty<MonopolyPopup>())
-			.Concat( MonopolyLocalPopups.Popups )
+	private List<GamePopup> Popups =>
+		(GameRef?.Popups ?? Enumerable.Empty<GamePopup>())
+			.Concat( LocalPopups.Popups )
 			.ToList();
 
 	protected override void OnUpdate()
@@ -110,7 +110,7 @@
 
 	private void DismissPopup( int popupId )
 	{
-		MonopolyLocalPopups.Dismiss( popupId );
+		LocalPopups.Dismiss( popupId );
 		GameRef?.DismissPopup( popupId );
 	}
 

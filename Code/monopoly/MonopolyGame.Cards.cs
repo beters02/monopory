@@ -14,7 +14,7 @@ public sealed partial class MonopolyGame : Component
 
 		string cardDisplayText = GetCardDisplayText( card );
 		ShowCardForPlayerWhoLanded( player, cardDisplayText );
-		SendPopupToAll( card.Title, card.Description, MonopolyPopupKind.Info, true, 6f );
+		SendPopupToAll( card.Title, card.Description, PopupKind.Info, true, 6f );
 		currentRollDrewCard = true;
 		Log.Info( $"{player.PlayerName} drew {deck}: {card.Title}." );
 		ApplyCard( player, card );

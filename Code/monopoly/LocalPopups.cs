@@ -1,12 +1,12 @@
 using Sandbox;
 
-public static class MonopolyLocalPopups
+public static class LocalPopups
 {
 	private static int nextPopupId = 1;
-	private static readonly List<MonopolyPopup> popups = new();
+	private static readonly List<GamePopup> popups = new();
 	private static readonly Dictionary<int, float> expiresAt = new();
 
-	public static IReadOnlyList<MonopolyPopup> Popups
+	public static IReadOnlyList<GamePopup> Popups
 	{
 		get
 		{
@@ -15,11 +15,11 @@ public static class MonopolyLocalPopups
 		}
 	}
 
-	public static void Show( string title, string message, MonopolyPopupKind kind = MonopolyPopupKind.Warning, bool canDismiss = true, float lifetime = 3f, bool soundEnabled = true )
+	public static void Show( string title, string message, PopupKind kind = PopupKind.Warning, bool canDismiss = true, float lifetime = 3f, bool soundEnabled = true )
 	{
 		Update();
 
-		var popup = new MonopolyPopup
+		var popup = new GamePopup
 		{
 			Id = nextPopupId++,
 			Title = title ?? "",
