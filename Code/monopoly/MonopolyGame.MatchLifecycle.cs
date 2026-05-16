@@ -61,7 +61,7 @@ public sealed partial class MonopolyGame : Component
 		return true;
 	}
 
-	public bool TrySetReady( MonopolyPlayerState player, bool isReady )
+	public bool TrySetReady( PlayerState player, bool isReady )
 	{
 		if ( !Networking.IsHost || MatchState != MonopolyMatchState.Lobby )
 			return false;

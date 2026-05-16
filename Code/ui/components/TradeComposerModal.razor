@@ -81,7 +81,7 @@
 	[Parameter] public Action<int> OnToggleReceiverProperty { get; set; }
 	[Parameter] public Action OnSend { get; set; }
 
-	private List<MonopolyPlayerState> TradeTargets =>
+	private List<PlayerState> TradeTargets =>
 		GameRef?.Players?
 			.Where( player => player is not null && player.IsAssigned && GameRef.GetPlayerIndex( player ) != GameRef.LocalPlayerIndex )
 			.ToList() ?? new();

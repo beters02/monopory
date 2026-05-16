@@ -6,21 +6,21 @@ using Sandbox;
 public sealed partial class MonopolyGame : Component
 {
 
-	public MonopolyPlayerState LocalPlayer => Players.FirstOrDefault( p => p.OwnerId == Connection.Local.SteamId );
+	public PlayerState LocalPlayer => Players.FirstOrDefault( p => p.OwnerId == Connection.Local.SteamId );
 
 	public int LocalPlayerIndex => Players.IndexOf( LocalPlayer );
 
-	public int GetPlayerIndex( MonopolyPlayerState player )
+	public int GetPlayerIndex( PlayerState player )
 	{
 		return Players.IndexOf( player );
 	}
 
-	public MonopolyPlayerState GetPlayerForString( string playerString )
+	public PlayerState GetPlayerForString( string playerString )
 	{
 		return ResolvePlayerReference( playerString, null );
 	}
 
-	public MonopolyPlayerState ResolvePlayerReference( string playerString, Connection caller = null )
+	public PlayerState ResolvePlayerReference( string playerString, Connection caller = null )
 	{
 		if ( string.IsNullOrWhiteSpace( playerString ) )
 			return null;
@@ -75,7 +75,7 @@ public sealed partial class MonopolyGame : Component
 		RegexNormalizedPartial
 	}
 
-	private bool TryResolvePlayerByName( string playerName, PlayerNameMatchMode matchMode, out MonopolyPlayerState match )
+	private bool TryResolvePlayerByName( string playerName, PlayerNameMatchMode matchMode, out PlayerState match )
 	{
 		match = null;
 

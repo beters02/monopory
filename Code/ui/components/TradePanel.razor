@@ -93,7 +93,7 @@
 	private int ComposerReceiverMoney;
 	private int ViewedTradeId = -1;
 
-	private MonopolyPlayerState LocalPlayer => GameRef?.LocalPlayer;
+	private PlayerState LocalPlayer => GameRef?.LocalPlayer;
 	private int LocalPlayerMoney => LocalPlayer?.Money ?? 0;
 
 	private List<TradeRequest> Trades =>
@@ -104,7 +104,7 @@
 			? null
 			: trade;
 
-	private List<MonopolyPlayerState> TradeTargets =>
+	private List<PlayerState> TradeTargets =>
 		GameRef?.Players?
 			.Where( player => player is not null && player.IsAssigned && GameRef.GetPlayerIndex( player ) != GameRef.LocalPlayerIndex )
 			.ToList() ?? new();

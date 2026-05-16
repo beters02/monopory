@@ -35,8 +35,8 @@
 {
 	[Parameter] public MonopolyGame GameRef { get; set; }
 
-	private MonopolyPlayerState CurrentPlayer => GameRef?.CurrentPlayer;
-	private MonopolyPlayerState LocalPlayer => GameRef?.LocalPlayer;
+	private PlayerState CurrentPlayer => GameRef?.CurrentPlayer;
+	private PlayerState LocalPlayer => GameRef?.LocalPlayer;
 	private string CurrentPlayerName => CurrentPlayer?.PlayerName ?? "None";
 	private int LocalPlayerMoney => LocalPlayer?.Money ?? 0;
 	private SpaceDef PendingDef => GameRef?.Board?.GetSpaceDef( GameRef.PendingPurchaseSpaceIndex );

@@ -143,7 +143,7 @@ public sealed class GameCommandManager : Component
 		return Game.CheatsEnabled;
 	}
 
-	private static bool HasUnresolvedPendingBuyDecision( MonopolyGame game, MonopolyPlayerState player )
+	private static bool HasUnresolvedPendingBuyDecision( MonopolyGame game, PlayerState player )
 	{
 		return game is not null &&
 			player is not null &&

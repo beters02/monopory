@@ -23,7 +23,7 @@ public enum MonopolyMatchState
 
 public sealed partial class MonopolyGame : Component
 {
-	[Property] public List<MonopolyPlayerState> Players { get; set; } = new();
+	[Property] public List<PlayerState> Players { get; set; } = new();
 	[Property] public MatchConfig Config { get; set; } = new();
 	[Property] public GameObject TokenPrefab { get; set; }
 
@@ -40,7 +40,7 @@ public sealed partial class MonopolyGame : Component
 	[Property, Sync] public NetDictionary<int, string> PendingTrades { get; set; } = new();
 	[Property] public MonopolyBoard Board { get; set; }
 
-	public MonopolyPlayerState CurrentPlayer =>
+	public PlayerState CurrentPlayer =>
 		Players.Count == 0 || CurrentPlayerIndex < 0 || CurrentPlayerIndex >= Players.Count ? null : Players[CurrentPlayerIndex];
 
 	[Property, Sync] public MonopolyGamePhase Phase { get; set; } = MonopolyGamePhase.WaitingToRoll;
@@ -69,7 +69,7 @@ public sealed partial class MonopolyGame : Component
 	public bool CanStartGame => GetLobbyPlayers().Count >= MinPlayers && GetLobbyPlayers().All( player => player.IsReady );
 	public int MinPlayers => Math.Max( Config?.MinPlayers ?? 2, 1 );
 	public int MaxPlayers => Math.Max( Config?.MaxPlayers ?? Players.Count, MinPlayers );
-	public MonopolyPlayerState Winner =>
+	public PlayerState Winner =>
 		WinnerPlayerIndex >= 0 ? Players.ElementAtOrDefault( WinnerPlayerIndex ) : null;
 
 	private static MonopolyGame instance;

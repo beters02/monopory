@@ -6,7 +6,7 @@ using Sandbox;
 public sealed partial class MonopolyGame : Component
 {
 
-	private bool TryMakeForcedPayment( MonopolyPlayerState player, int amount, int receiverIndex, bool toBank )
+	private bool TryMakeForcedPayment( PlayerState player, int amount, int receiverIndex, bool toBank )
 	{
 		if ( player is null || amount <= 0 )
 			return true;

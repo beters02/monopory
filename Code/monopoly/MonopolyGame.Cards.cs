@@ -6,7 +6,7 @@ using Sandbox;
 public sealed partial class MonopolyGame : Component
 {
 
-	private void ResolveCardLanding( MonopolyPlayerState player, CardDeck deck )
+	private void ResolveCardLanding( PlayerState player, CardDeck deck )
 	{
 		var card = DrawCard( deck );
 		if ( player is null || card is null )
@@ -46,7 +46,7 @@ public sealed partial class MonopolyGame : Component
 		return cards[Game.Random.Int( 0, cards.Count - 1 )];
 	}
 
-	private void ApplyCard( MonopolyPlayerState player, CardDef card )
+	private void ApplyCard( PlayerState player, CardDef card )
 	{
 		if ( player is null || card is null )
 			return;
@@ -92,7 +92,7 @@ public sealed partial class MonopolyGame : Component
 		}
 	}
 
-	private void MovePlayerToCardDestination( MonopolyPlayerState player, int targetSpaceIndex, bool collectGo, bool resolveDestination )
+	private void MovePlayerToCardDestination( PlayerState player, int targetSpaceIndex, bool collectGo, bool resolveDestination )
 	{
 		if ( player is null || Board is null || targetSpaceIndex < 0 )
 			return;
@@ -109,7 +109,7 @@ public sealed partial class MonopolyGame : Component
 			ResolveLanding( player );
 	}
 
-	private void MovePlayerByCardOffset( MonopolyPlayerState player, int relativeSpaces, bool collectGo, bool resolveDestination )
+	private void MovePlayerByCardOffset( PlayerState player, int relativeSpaces, bool collectGo, bool resolveDestination )
 	{
 		if ( player is null )
 			return;
@@ -126,7 +126,7 @@ public sealed partial class MonopolyGame : Component
 			ResolveLanding( player );
 	}
 
-	private void PayPerImprovementForCard( MonopolyPlayerState player, int houseAmount, int hotelAmount )
+	private void PayPerImprovementForCard( PlayerState player, int houseAmount, int hotelAmount )
 	{
 		var playerIndex = GetPlayerIndex( player );
 		if ( playerIndex < 0 )
@@ -154,7 +154,7 @@ public sealed partial class MonopolyGame : Component
 			Log.Info( $"{player.PlayerName} paid ${amount} for repairs." );
 	}
 
-	private void PayEachPlayerForCard( MonopolyPlayerState player, int amountPerPlayer )
+	private void PayEachPlayerForCard( PlayerState player, int amountPerPlayer )
 	{
 		var playerIndex = GetPlayerIndex( player );
 		var receivers = GetAssignedPlayerIndexes()
@@ -181,7 +181,7 @@ public sealed partial class MonopolyGame : Component
 		BeginPendingForcedPaymentToEachPlayer( playerIndex, amount );
 	}
 
-	private void CollectFromEachPlayerForCard( MonopolyPlayerState player, int amountPerPlayer )
+	private void CollectFromEachPlayerForCard( PlayerState player, int amountPerPlayer )
 	{
 		var receiverIndex = GetPlayerIndex( player );
 		var amount = Math.Max( amountPerPlayer, 0 );

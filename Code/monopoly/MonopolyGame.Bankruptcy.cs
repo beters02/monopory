@@ -27,7 +27,7 @@ public sealed partial class MonopolyGame : Component
 		return total;
 	}
 
-	private void BankruptPlayer( int playerIndex, MonopolyPlayerState creditor )
+	private void BankruptPlayer( int playerIndex, PlayerState creditor )
 	{
 		if ( playerIndex < 0 )
 			return;

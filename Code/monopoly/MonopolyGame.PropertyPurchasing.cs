@@ -6,14 +6,14 @@ using Sandbox;
 public sealed partial class MonopolyGame : Component
 {
 
-	public bool CanBuyPendingProperty( MonopolyPlayerState player, int spaceIndex )
+	public bool CanBuyPendingProperty( PlayerState player, int spaceIndex )
 	{
 		return Phase == MonopolyGamePhase.WaitingForBuyDecision &&
 			CurrentPlayer == player &&
 			PendingPurchaseSpaceIndex == spaceIndex;
 	}
 
-	public bool TryBuyPendingPropertyForPlayer( MonopolyPlayerState player, out string message )
+	public bool TryBuyPendingPropertyForPlayer( PlayerState player, out string message )
 	{
 		message = "";
 
@@ -47,7 +47,7 @@ public sealed partial class MonopolyGame : Component
 		return true;
 	}
 
-	public bool TryBuyPropertyForPlayer( MonopolyPlayerState player, int index, bool useMoney, out string message )
+	public bool TryBuyPropertyForPlayer( PlayerState player, int index, bool useMoney, out string message )
 	{
 		message = "";
 
@@ -104,7 +104,7 @@ public sealed partial class MonopolyGame : Component
 		return true;
 	}
 
-	public bool TryBuyPropertySetForPlayer( MonopolyPlayerState player, IReadOnlyList<SpaceDef> properties, bool useMoney, out string message )
+	public bool TryBuyPropertySetForPlayer( PlayerState player, IReadOnlyList<SpaceDef> properties, bool useMoney, out string message )
 	{
 		message = "";
 
@@ -229,7 +229,7 @@ public sealed partial class MonopolyGame : Component
 		Phase = MonopolyGamePhase.TurnEnded;
 	}
 
-	private void BuyUnownedPropertyForPlayer( MonopolyPlayerState player, SpaceDef def, int ownerIndex )
+	private void BuyUnownedPropertyForPlayer( PlayerState player, SpaceDef def, int ownerIndex )
 	{
 		if ( !PayBank( player, def.Price ) )
 			return;

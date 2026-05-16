@@ -6,7 +6,7 @@ using Sandbox;
 public sealed partial class MonopolyGame : Component
 {
 
-	private void SpawnTokensForPlayers( IReadOnlyList<MonopolyPlayerState> activePlayers )
+	private void SpawnTokensForPlayers( IReadOnlyList<PlayerState> activePlayers )
 	{
 		ClearSpawnedTokens();
 		ClearExistingTokenObjects();
@@ -30,7 +30,7 @@ public sealed partial class MonopolyGame : Component
 			tokenObject.Name = $"Token_{i + 1:00}";
 			tokenObject.SetParent( GameObject );
 
-			var token = tokenObject.Components.Get<MonopolyToken>() ?? tokenObject.Components.Create<MonopolyToken>();
+			var token = tokenObject.Components.Get<PlayerToken>() ?? tokenObject.Components.Create<PlayerToken>();
 			token.Board = Board;
 			token.PlayerState = player;
 
@@ -43,7 +43,7 @@ public sealed partial class MonopolyGame : Component
 
 	private void ClearExistingTokenObjects()
 	{
-		foreach ( var token in Scene.GetAllComponents<MonopolyToken>().ToList() )
+		foreach ( var token in Scene.GetAllComponents<PlayerToken>().ToList() )
 		{
 			if ( token?.GameObject is null || token.GameObject == TokenPrefab )
 				continue;

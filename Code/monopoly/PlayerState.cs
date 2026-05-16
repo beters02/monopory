@@ -1,7 +1,7 @@
 using System;
 using Sandbox;
 
-public sealed class MonopolyPlayerState : Component
+public sealed class PlayerState : Component
 {
 	[Property, Sync] public long OwnerId {get; set;}
 

@@ -41,7 +41,7 @@ public sealed partial class MonopolyGame : Component
 			LocalSelectedSpaceIndex != PendingPurchaseSpaceIndex;
 	}
 
-	private void ShowCardForPlayerWhoLanded( MonopolyPlayerState player, string drawnCardText = "" )
+	private void ShowCardForPlayerWhoLanded( PlayerState player, string drawnCardText = "" )
 	{
 		var spaceIndex = player.SpaceIndex;
 		var connection = GetConnectionForPlayer( player );

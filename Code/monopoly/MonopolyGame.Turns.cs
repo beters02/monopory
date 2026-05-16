@@ -154,7 +154,7 @@ public sealed partial class MonopolyGame : Component
 		}
 	}
 
-	private async Task MovePlayerSteps(MonopolyPlayerState player, int steps)
+	private async Task MovePlayerSteps(PlayerState player, int steps)
 	{
 		for ( int i = 0; i < steps; i++ )
 		{
@@ -169,7 +169,7 @@ public sealed partial class MonopolyGame : Component
 		ResolveLanding( player );
 	}
 
-	private void SendPlayerToJail( MonopolyPlayerState player )
+	private void SendPlayerToJail( PlayerState player )
 	{
 		player.SpaceIndex = 10;
 		player.IsInJail = true;

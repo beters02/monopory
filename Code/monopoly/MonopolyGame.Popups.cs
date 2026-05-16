@@ -43,7 +43,7 @@ public sealed partial class MonopolyGame : Component
 		SendPopupToPlayer( player, title, message, kind, canDismiss, lifetime, soundEnabled );
 	}
 
-	public void SendPopupToPlayer( MonopolyPlayerState player, string title, string message, PopupKind kind = PopupKind.Info, bool canDismiss = true, float lifetime = 5f, bool soundEnabled = true )
+	public void SendPopupToPlayer( PlayerState player, string title, string message, PopupKind kind = PopupKind.Info, bool canDismiss = true, float lifetime = 5f, bool soundEnabled = true )
 	{
 		if ( !Networking.IsHost )
 			return;

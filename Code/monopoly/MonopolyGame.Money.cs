@@ -6,7 +6,7 @@ using Sandbox;
 public sealed partial class MonopolyGame : Component
 {
 
-	public bool TryChangeMoneyForPlayer( MonopolyPlayerState player, int amount, out string message )
+	public bool TryChangeMoneyForPlayer( PlayerState player, int amount, out string message )
 	{
 		message = "";
 
@@ -44,7 +44,7 @@ public sealed partial class MonopolyGame : Component
 		return true;
 	}
 
-	private bool PayBank( MonopolyPlayerState player, int amount )
+	private bool PayBank( PlayerState player, int amount )
 	{
 		if ( player is null || amount <= 0 )
 			return true;
@@ -55,7 +55,7 @@ public sealed partial class MonopolyGame : Component
 		return true;
 	}
 
-	private bool PayPlayer( MonopolyPlayerState player, MonopolyPlayerState receiver, int amount )
+	private bool PayPlayer( PlayerState player, PlayerState receiver, int amount )
 	{
 		if ( player is null || receiver is null || player == receiver || amount <= 0 )
 			return true;

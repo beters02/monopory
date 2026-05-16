@@ -6,7 +6,7 @@ using Sandbox;
 public sealed partial class MonopolyGame : Component
 {
 
-	private void ResolveLanding( MonopolyPlayerState player )
+	private void ResolveLanding( PlayerState player )
 	{
 		if ( player is null || Board is null )
 		{
@@ -78,7 +78,7 @@ public sealed partial class MonopolyGame : Component
 		}
 	}
 
-	private void ResolvePropertyLanding( MonopolyPlayerState player, SpaceDef def )
+	private void ResolvePropertyLanding( PlayerState player, SpaceDef def )
 	{
 		if (!PropertyOwners.ContainsKey(def.Index))
 		{
@@ -106,7 +106,7 @@ public sealed partial class MonopolyGame : Component
 		}
 	}
 
-	private void ResolveUnownedPropertyLanding( MonopolyPlayerState player, SpaceDef def )
+	private void ResolveUnownedPropertyLanding( PlayerState player, SpaceDef def )
 	{
 		switch ( Config?.LandedUnownedMode ?? UnownedLandingMode.SkipOrAuction )
 		{
@@ -134,7 +134,7 @@ public sealed partial class MonopolyGame : Component
 		}
 	}
 
-	private void ResolveFreeParkingLanding( MonopolyPlayerState player )
+	private void ResolveFreeParkingLanding( PlayerState player )
 	{
 		if ( Config?.VacationCash != true )
 		{

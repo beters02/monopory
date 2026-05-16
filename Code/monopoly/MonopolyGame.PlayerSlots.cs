@@ -6,7 +6,7 @@ using Sandbox;
 public sealed partial class MonopolyGame : Component
 {
 
-	private MonopolyPlayerState GetPlayerForConnection( Connection connection )
+	private PlayerState GetPlayerForConnection( Connection connection )
 	{
 		if ( connection is null )
 			return null;
@@ -14,12 +14,12 @@ public sealed partial class MonopolyGame : Component
 		return Players.FirstOrDefault( x => x.OwnerId == connection.SteamId );
 	}
 
-	private Connection GetConnectionForPlayer( MonopolyPlayerState player )
+	private Connection GetConnectionForPlayer( PlayerState player )
 	{
 		return Connection.All.FirstOrDefault( c => c.SteamId == player.OwnerId );
 	}
 
-	public List<MonopolyPlayerState> GetLobbyPlayers()
+	public List<PlayerState> GetLobbyPlayers()
 	{
 		return Players
 			.Where( player => player is not null && player.IsAssigned )
@@ -27,7 +27,7 @@ public sealed partial class MonopolyGame : Component
 			.ToList();
 	}
 
-	private List<MonopolyPlayerState> GetAssignedPlayers()
+	private List<PlayerState> GetAssignedPlayers()
 	{
 		return Players
 			.Where( player => player is not null && player.IsAssigned )
@@ -82,11 +82,11 @@ public sealed partial class MonopolyGame : Component
 			EnsurePlayerStateObject( i );
 	}
 
-	private MonopolyPlayerState CreatePlayerStateObject( int slotNumber )
+	private PlayerState CreatePlayerStateObject( int slotNumber )
 	{
 		var playerObject = new GameObject( true, $"PlayerState_{slotNumber:00}" );
 		playerObject.SetParent( GameObject );
-		return playerObject.Components.Create<MonopolyPlayerState>();
+		return playerObject.Components.Create<PlayerState>();
 	}
 
 	private void EnsurePlayerStateObject( int playerIndex )
@@ -105,7 +105,7 @@ public sealed partial class MonopolyGame : Component
 		player.GameObject.SetParent( GameObject );
 	}
 
-	private void ClearPlayerSlot( MonopolyPlayerState player )
+	private void ClearPlayerSlot( PlayerState player )
 	{
 		if ( player is null )
 			return;
@@ -116,7 +116,7 @@ public sealed partial class MonopolyGame : Component
 		ResetPlayerForGame( player );
 	}
 
-	private void ResetPlayerForGame( MonopolyPlayerState player )
+	private void ResetPlayerForGame( PlayerState player )
 	{
 		if ( player is null )
 			return;

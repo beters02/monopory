@@ -16,7 +16,7 @@
     "OwnerTransfer": 1,
     "Components": [
       {
-        "__type": "MonopolyToken",
+        "__type": "PlayerToken",
         "__guid": "a692d01e-2baf-4bba-94b5-34ea4d36028c",
         "__enabled": true,
         "Flags": 0,
@@ -38,7 +38,7 @@
           "_type": "component",
           "component_id": "a460fd92-38a9-4656-8a32-31b00ec6d91a",
           "go": "9283ae9e-16e2-4c32-91b7-1551b4000a6a",
-          "component_type": "MonopolyPlayerState"
+          "component_type": "PlayerState"
         }
       }
     ],

@@ -64,7 +64,7 @@
 {
 	[Parameter] public MonopolyGame GameRef { get; set; }
 
-	private MonopolyPlayerState LocalPlayer => GameRef?.LocalPlayer;
+	private PlayerState LocalPlayer => GameRef?.LocalPlayer;
 
 	private SpaceDef AuctionSpace =>
 		GameRef?.Board?.GetSpaceDef( GameRef.AuctionSpaceIndex );

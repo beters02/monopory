@@ -1,9 +1,9 @@
 using Sandbox;
 
-public sealed class MonopolyToken : Component
+public sealed class PlayerToken : Component
 {
 	[Property] public MonopolyBoard Board { get; set; }
-	[Property] public MonopolyPlayerState PlayerState { get; set; }
+	[Property] public PlayerState PlayerState { get; set; }
 
 	[Property] public float HeightOffset { get; set; } = 8f;
 	[Property] public float MoveSpeed { get; set; } = 15f;
