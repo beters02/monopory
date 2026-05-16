@@ -1,3 +1,264 @@
 @import "../MonopolyTheme.scss";
 @import "HudPanel/HudPanel.razor.scss";
 @import "buttons/MonopolyButton.razor.scss";
+
+
+.property-hud-card {
+	position: absolute;
+	top: 32px;
+	right: 32px;
+	z-index: 8;
+	padding: 0px;
+	width: 100px;
+	background-color: #ffffff00;
+	
+	//width: 220px;
+
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	//gap: 8px;
+
+	pointer-events: all;
+}
+
+.property-player-panel {
+	position: relative;
+	//left: 32px;
+	//top: 0px;
+	width: 100px;
+	padding: 0px;
+	min-height: 56px;
+	gap: 0px;
+
+	background-color: $monopoly-panel-strong;
+	border: 2px solid $monopoly-panel-line;
+	border-radius: $monopoly-radius-board;
+	align-self: flex-end;
+
+	color: $monopoly-text;
+	font-family: $monopoly-font-family;
+
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+
+	transform-origin: right top;
+
+	transition:
+		min-height 0.16s ease 0.03s,
+		gap 0.16s ease 0.03s,
+		width 0.16s ease 0.03s;
+}
+
+.property-player-panel.expanded {
+	width: 220px;
+	min-height: 178px;
+	gap: 5px;
+
+	transition:
+		min-height 0.16s ease,
+		gap 0.16s ease,
+		width 0.16s ease;
+}
+
+.property-player-panel.local-player {
+	border-color: $monopoly-gold;
+}
+
+.property-player-panel.current-player {
+	box-shadow: 0 0 0 2px rgba(217, 180, 95, 0.45);
+}
+
+.property-player-button {
+	width: 100%;
+	min-height: 52px;
+	margin: 0;
+	padding: 8px 10px;
+
+	background-color: rgba(255, 255, 255, 0.04);
+	border: 0;
+	border-radius: 0;
+	color: $monopoly-text;
+
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 1px;
+
+	cursor: pointer;
+}
+
+.property-player-button:hover {
+	background-color: rgba(255, 255, 255, 0.12);
+}
+
+.property-player-name {
+	width: 100%;
+
+	text-align: center;
+	font-size: 15px;
+	font-weight: 800;
+	line-height: 17px;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
+}
+
+.property-player-money {
+	width: 100%;
+
+	text-align: center;
+	font-size: 12px;
+	font-weight: 700;
+	line-height: 14px;
+	color: rgba(255, 255, 255, 0.72);
+}
+
+.property-grid {
+	//position: relative;
+	opacity: 0;
+	max-height: 0;
+	padding: 0px;
+	overflow: hidden;
+	transform: translateY(-4px);
+
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0px;
+
+	transition:
+		max-height 0.16s ease 0.03s,
+		transform 0.16s ease 0.03s,
+		gap 0.016s ease 0.03s,
+		padding 0.016s ease 0.03s,
+		opacity 0.016s ease;
+}
+
+.property-player-panel.expanded .property-grid {
+	opacity: 1;
+	padding: 10px;
+	max-height: 120px;
+	transform: translateY(0);
+	gap: 5px;
+
+	transition:
+		max-height 0.16s ease,
+		transform 0.16s ease,
+		gap 0.016s ease,
+		padding 0.016s ease,
+		opacity 0.12s ease 0.16s;
+}
+
+.property-square {
+	width: 17px;
+	height: 17px;
+	margin: 0;
+	padding: 0;
+
+	border: 2px solid rgba(0, 0, 0, 0.72);
+	border-radius: 2px;
+
+	cursor: pointer;
+	opacity: 0.28;
+
+	align-items: center;
+	justify-content: center;
+}
+
+.property-square:hover {
+	opacity: 0.85;
+	border-color: white;
+}
+
+.property-square.owned-by-panel-player {
+	opacity: 1;
+	box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.52);
+}
+
+.property-square.owned-by-other-player {
+	opacity: 0.14;
+}
+
+.property-square.unowned {
+	filter: saturate(0.45);
+}
+
+.property-square.pending-purchase {
+	border-color: $monopoly-gold-soft;
+	box-shadow: 0 0 0 2px rgba(255, 217, 106, 0.7);
+	opacity: 1;
+}
+
+.property-square.mortgaged {
+	filter: saturate(0.32) brightness(0.72);
+	background-image: linear-gradient(135deg, rgba(0, 0, 0, 0.42) 0%, rgba(0, 0, 0, 0.42) 50%, rgba(255, 255, 255, 0.16) 50%, rgba(255, 255, 255, 0.16) 100%);
+}
+
+.property-mortgage-marker {
+	width: 13px;
+	height: 13px;
+
+	align-items: center;
+	justify-content: center;
+
+	background-color: $monopoly-ink;
+	border: 1px solid rgba(255, 255, 255, 0.72);
+	border-radius: 2px;
+	color: $monopoly-gold-soft;
+
+	font-size: 8px;
+	font-weight: 900;
+	line-height: 10px;
+}
+
+.property-square.selected {
+	border-color: white;
+	box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.78);
+	opacity: 1;
+}
+
+.property-square.color-brown {
+	background-color: $property-brown;
+}
+
+.property-square.color-light_blue {
+	background-color: $property-light-blue;
+}
+
+.property-square.color-pink {
+	background-color: $property-pink;
+}
+
+.property-square.color-orange {
+	background-color: $property-orange;
+}
+
+.property-square.color-red {
+	background-color: $property-red;
+}
+
+.property-square.color-yellow {
+	background-color: $property-yellow;
+}
+
+.property-square.color-green {
+	background-color: $property-green;
+}
+
+.property-square.color-dark_blue {
+	background-color: $property-dark-blue;
+}
+
+.property-square.color-railroad {
+	background-color: $property-railroad;
+}
+
+.property-square.color-utility {
+	background-color: $property-utility;
+}
+
+.property-square.color-none {
+	background-color: $property-none;
+}

@@ -1,3 +1,162 @@
 @import "../MonopolyTheme.scss";
 @import "buttons/MonopolyButton.razor.scss";
 @import "buttons/MonopolyCloseButton.razor.scss";
+
+
+.trade-create-button {
+	width: 116px;
+	height: 38px;
+	padding: 6px 5px;
+	align-items: flex-start;
+	flex-direction: column;
+	//margin: 0;
+	//padding: 0 12px;
+
+	background-color: $monopoly-gold;
+	color: $monopoly-ink;
+	border-radius: $monopoly-radius-board;
+
+	//font-size: 15px;
+}
+
+.trade-create-button:hover {
+	background-color: $monopoly-gold-hover;
+}
+
+
+.trade-panel {
+	position: absolute;
+	left: 32px;
+	bottom: 32px;
+	z-index: 7;
+
+	width: 400px;
+	min-height: 126px;
+	padding: 12px;
+
+	background-color: $monopoly-panel-strong;
+	border: 2px solid $monopoly-panel-line;
+	border-color: $monopoly-gold;
+	color: $monopoly-text;
+	font-family: $monopoly-font-family;
+
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+
+	pointer-events: all;
+}
+
+.trade-panel-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.trade-panel-title {
+	flex: 1;
+	text-align: center;
+	font-size: 18px;
+	font-weight: 800;
+	color: rgba(255, 255, 255, 0.82);
+}
+
+
+
+.trade-empty {
+	justify-content: center;
+	align-items: center;
+	min-height: 52px;
+
+	color: rgba(255, 255, 255, 0.52);
+	font-size: 15px;
+	font-weight: 700;
+}
+
+.trade-list {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.trade-row {
+	min-height: 42px;
+
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.trade-row-main {
+	flex: 1;
+	min-width: 0;
+	height: 38px;
+	margin: 0;
+	padding: 0 8px;
+
+	background-color: rgba(255, 255, 255, 0.05);
+	color: white;
+	border-radius: 4px;
+
+	display: flex;
+	align-items: center;
+	gap: 7px;
+
+	font-size: 15px;
+	font-weight: 700;
+}
+
+.trade-row-main:hover {
+	background-color: rgba(255, 255, 255, 0.12);
+}
+
+.trade-mini-box {
+	width: 22px;
+	height: 22px;
+
+	align-items: center;
+	justify-content: center;
+
+	background-color: rgba(255, 255, 255, 0.12);
+	border-radius: 3px;
+	color: rgba(255, 255, 255, 0.84);
+	font-size: 13px;
+	font-weight: 900;
+}
+
+.trade-arrow {
+	color: rgba(255, 255, 255, 0.66);
+}
+
+.trade-looking {
+	margin-left: auto;
+	padding: 4px 7px;
+
+	background-color: rgba(217, 180, 95, 0.22);
+	border: 1px solid rgba(217, 180, 95, 0.48);
+	border-radius: 3px;
+
+	color: $monopoly-gold-hover;
+	font-size: 11px;
+	text-transform: uppercase;
+}
+
+.trade-icon-button {
+	width: 42px;
+	height: 34px;
+	margin: 0;
+	padding: 0;
+
+	border-radius: 4px;
+	color: white;
+	font-size: 12px;
+}
+
+.trade-icon-button.accept {
+	background-color: $monopoly-success;
+}
+
+.trade-icon-button.deny {
+	background-color: $monopoly-danger;
+}
+
