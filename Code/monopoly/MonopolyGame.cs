@@ -38,7 +38,7 @@ public sealed partial class MonopolyGame : Component
 	[Property, Sync] public NetDictionary<int, int> PropertyImprovements { get; set; } = new();
 	[Property, Sync] public NetDictionary<int, bool> MortgagedProperties { get; set; } = new();
 	[Property, Sync] public NetDictionary<int, string> PendingTrades { get; set; } = new();
-	[Property] public MonopolyBoard Board { get; set; }
+	[Property] public Board Board { get; set; }
 
 	public PlayerState CurrentPlayer =>
 		Players.Count == 0 || CurrentPlayerIndex < 0 || CurrentPlayerIndex >= Players.Count ? null : Players[CurrentPlayerIndex];

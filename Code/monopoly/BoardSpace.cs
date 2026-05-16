@@ -2,7 +2,7 @@ using System;
 using Sandbox;
 using Sandbox.UI;
 
-public sealed class MonopolySpace : Component
+public sealed class BoardSpace : Component
 {
 
 	[Property] public int Index { get; set; }
@@ -36,7 +36,7 @@ public sealed class MonopolySpace : Component
 	{
 		BoxCollider collider = Components.Get<BoxCollider>() ?? Components.Create<BoxCollider>();
 
-		collider.Scale = MonopolyBoard.GetHitboxSize(Index);
+		collider.Scale = Board.GetHitboxSize(Index);
 		collider.Center = new Vector3(0, 0, -2f);
 		collider.IsTrigger = true;
 
@@ -71,7 +71,7 @@ public sealed class MonopolySpace : Component
 		if (Collider == null)
 			return;
 
-		SpaceDef def = MonopolyBoard.GetSpaceDefStatic( Index );
+		SpaceDef def = Board.GetSpaceDefStatic( Index );
 		if (def == null)
 		{
 			Log.Info("Cannot modify collider width: SpaceDef is null");
@@ -99,7 +99,7 @@ public sealed class MonopolySpace : Component
 		if (Collider == null)
 			return;
 
-		SpaceDef def = MonopolyBoard.GetSpaceDefStatic( Index );
+		SpaceDef def = Board.GetSpaceDefStatic( Index );
 		if (def == null)
 		{
 			Log.Info("Cannot modify collider width: SpaceDef is null");

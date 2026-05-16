@@ -106,7 +106,7 @@
           "__guid": "469cf384-89f4-4353-99dd-4b89667eff1f",
           "__version": 2,
           "Flags": 0,
-          "Name": "MonopolyBoard",
+          "Name": "Board",
           "Position": "0,0,0",
           "Rotation": "0,0,0,1",
           "Scale": "1,1,1",
@@ -119,7 +119,7 @@
           "OwnerTransfer": 1,
           "Components": [
             {
-              "__type": "MonopolyBoard",
+              "__type": "Board",
               "__guid": "4b9cd09b-a167-40b7-a17a-0c958e771b55",
               "__enabled": true,
               "Flags": 0,
@@ -144,241 +144,241 @@
                   "_type": "component",
                   "component_id": "116f2a3e-cf85-4204-9e0c-b03a2abd84a6",
                   "go": "cdd2d717-f1b6-4375-b9b6-6158e52ff550",
-                  "component_type": "MonopolySpace"
+                  "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
                   "component_id": "0049a5a5-1e62-43cc-8f99-3b4eab6dee89",
                   "go": "886edcee-b55a-4047-b1bf-63c875051d8c",
-                  "component_type": "MonopolySpace"
+                  "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
                   "component_id": "e5d36746-7e46-4435-b282-070242449ad9",
                   "go": "89b61455-e5d3-41fc-ab95-3143437d28d3",
-                  "component_type": "MonopolySpace"
+                  "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
                   "component_id": "958b3cb1-afd3-4d8f-97aa-afe35fb2222d",
                   "go": "4f4229b9-b2c3-47dc-9d1e-1480718a9db3",
-                  "component_type": "MonopolySpace"
+                  "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
                   "component_id": "cd0c0018-ed6d-4154-b327-c7692e7afec7",
                   "go": "751e01fd-1378-4805-9ffc-536acbf87869",
-                  "component_type": "MonopolySpace"
+                  "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
                   "component_id": "3cdeeac4-c164-40a9-a4ca-9ce830fa00de",
                   "go": "a3e7815f-fd0f-46ec-b3e1-7234b941d9a9",
-                  "component_type": "MonopolySpace"
+                  "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
                   "component_id": "31744d93-40db-448d-b9f7-44e49cf279d2",
                   "go": "130014ce-80a5-453d-bdd8-940838bcca75",
-                  "component_type": "MonopolySpace"
+                  "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
                   "component_id": "39a68c9d-fac0-44a2-891a-70fae072a074",
                   "go": "ad9479fe-666b-41db-b6de-7ce7c16c618e",
-                  "component_type": "MonopolySpace"
+                  "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
                   "component_id": "ec0befdf-a7ec-4b8e-9cb3-85464c773767",
                   "go": "2b318778-6838-476d-b293-1bfb7900133e",
-                  "component_type": "MonopolySpace"
+                  "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
                   "component_id": "d3a72d59-f6d9-4bdf-8d56-8ec433c8eba6",
                   "go": "55318d63-162a-49ab-8dfb-211552700bef",
-                  "component_type": "MonopolySpace"
+                  "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
                   "component_id": "b3291ed6-c08c-4a2e-a261-61b8848a435e",
                   "go": "e0d7aad5-4050-4966-80c0-96a45f72f255",
-                  "component_type": "MonopolySpace"
+                  "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
                   "component_id": "c8ca53f3-05c3-4720-a1bd-4f41783119ef",
                   "go": "c795630d-33b3-4c38-ae7e-8a37df0f793b",
-                  "component_type": "MonopolySpace"
+                  "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
                   "component_id": "c11d417c-5708-492e-a4cf-b3ce6168bf5f",
                   "go": "b1948f2f-56d0-48ef-94f9-9e9d30807a81",
-                  "component_type": "MonopolySpace"
+                  "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
                   "component_id": "ad93f487-7a5c-46e1-8050-81e8f9abdf11",
                   "go": "08724c5c-27b4-44be-b6a5-f6f62e21e209",
-                  "component_type": "MonopolySpace"
+                  "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
                   "component_id": "5ff60c02-48fd-45d2-a3d6-ad3a029c7a53",
                   "go": "85f8a32b-18b3-4efd-b249-1a75541fa8bd",
-                  "component_type": "MonopolySpace"
+                  "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
                   "component_id": "5d15d3e9-4e6d-4333-a307-0972464a0674",
                   "go": "14cbef9c-cd5c-4bcc-9c97-ed831440f59b",
-                  "component_type": "MonopolySpace"
+                  "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
                   "component_id": "26137398-04f7-4082-92cb-1b7b63c2b721",
                   "go": "37e73386-4e1d-4b48-ab86-dfbfaf5eac79",
-                  "component_type": "MonopolySpace"
+                  "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
                   "component_id": "e0437f59-eec7-4286-83e1-2409d27730c1",
                   "go": "7c15b257-63d0-471d-9638-f20db53e5965",
-                  "component_type": "MonopolySpace"
+                  "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
                   "component_id": "198d1643-36f0-4e9b-bd8b-e92b987a38f5",
                   "go": "157cc0d2-c79f-4051-8fb1-53040f1ce082",
-                  "component_type": "MonopolySpace"
+                  "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
                   "component_id": "362c1ee5-b9fd-47e8-8e4d-0aadeeea0123",
                   "go": "73062ac3-bf39-492c-8f92-4b50c427d8fa",
-                  "component_type": "MonopolySpace"
+                  "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
                   "component_id": "fb7e337f-3f11-4da3-af6f-403bc75f06d7",
                   "go": "fc45cd1d-c606-4923-aa7d-a1c299b77eee",
-                  "component_type": "MonopolySpace"
+                  "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
                   "component_id": "48680848-14bb-4567-b406-dfe36a8288c2",
                   "go": "f6913f92-3337-4fb0-aa6b-3fb48cc11b81",
-                  "component_type": "MonopolySpace"
+                  "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
                   "component_id": "2e1e0fa1-9039-48b7-b540-75e78a944f23",
                   "go": "bf56248f-89da-42d4-aca5-2e273055f530",
-                  "component_type": "MonopolySpace"
+                  "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
                   "component_id": "5719480a-5bd9-4f72-bb8c-616167e13c5a",
                   "go": "152aff1a-19a6-4d68-84c2-c734800094aa",
-                  "component_type": "MonopolySpace"
+                  "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
                   "component_id": "641029df-1de1-429e-b0fb-834924f41743",
                   "go": "920385cc-def8-4a53-8e07-9c016a0c5152",
-                  "component_type": "MonopolySpace"
+                  "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
                   "component_id": "6e3cd055-ff3d-4056-8646-f4fc113f09a9",
                   "go": "37b1d2e3-ad40-41e2-a829-a75429f5f660",
-                  "component_type": "MonopolySpace"
+                  "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
                   "component_id": "d9493d9d-c4f8-4a96-b850-3443245af942",
                   "go": "442dbdbc-3f0b-4848-92fc-9967ce04cdbd",
-                  "component_type": "MonopolySpace"
+                  "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
                   "component_id": "18f7f8b4-63ee-435d-b113-7927b8c0ec50",
                   "go": "ca2cf0a3-be9a-419b-a8d7-3ee080db499e",
-                  "component_type": "MonopolySpace"
+                  "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
                   "component_id": "6d6bd43a-fc6f-47f3-ab15-c536df8d6443",
                   "go": "0150bfb2-72f7-4022-a570-fd02e8ed9c1b",
-                  "component_type": "MonopolySpace"
+                  "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
                   "component_id": "641e2ec4-5ee9-4026-9e24-d51466d31546",
                   "go": "5ee51f5d-55ab-4e95-8e92-b86a4a3a35ad",
-                  "component_type": "MonopolySpace"
+                  "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
                   "component_id": "515f5785-387d-4cbc-955c-fe29e949ca82",
                   "go": "9516ef25-32df-46b6-9980-82cd00763646",
-                  "component_type": "MonopolySpace"
+                  "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
                   "component_id": "73d61d33-0b62-4ca4-8570-c8c7114588ad",
                   "go": "55888486-1998-47f6-a2bc-48a10844836b",
-                  "component_type": "MonopolySpace"
+                  "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
                   "component_id": "a84bf6dd-3312-4360-aa54-e5668c71ec84",
                   "go": "63338a2d-5824-490c-ac3f-c6b0d01bcf25",
-                  "component_type": "MonopolySpace"
+                  "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
                   "component_id": "80180ac4-591b-4726-9910-22a773e555b5",
                   "go": "97ddbd56-9b74-4d36-87b7-fb4362edee8c",
-                  "component_type": "MonopolySpace"
+                  "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
                   "component_id": "1cbfcb68-1dcb-4c39-bb03-c322771ab08f",
                   "go": "bc7f0a74-c2f4-46dd-8e47-dcb9ae19cc74",
-                  "component_type": "MonopolySpace"
+                  "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
                   "component_id": "9cd00aa2-8c81-4be0-bd84-a010fe47486c",
                   "go": "32ff94a9-e03e-4d57-9c08-e4b18771656d",
-                  "component_type": "MonopolySpace"
+                  "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
                   "component_id": "5330f8e1-6cc9-44bc-b069-a3eb5473a343",
                   "go": "b4e51c57-9582-4c34-8bf0-efd9691bb9f9",
-                  "component_type": "MonopolySpace"
+                  "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
                   "component_id": "8e2d628b-6126-4b01-a470-88bd1061a56b",
                   "go": "d90f2223-7594-416a-b9d7-bb0bf3799d9f",
-                  "component_type": "MonopolySpace"
+                  "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
                   "component_id": "70c0a717-f54b-42f7-ab03-00f803b5e443",
                   "go": "bae526ad-288e-45ff-ac79-4dcee4ca34a9",
-                  "component_type": "MonopolySpace"
+                  "component_type": "BoardSpace"
                 },
                 {
                   "_type": "component",
                   "component_id": "a20454cd-5730-4287-a465-20bf4095c754",
                   "go": "cf704dcb-3007-4bbb-9062-62d29ff3054c",
-                  "component_type": "MonopolySpace"
+                  "component_type": "BoardSpace"
                 }
               ],
               "UseWorldPanelLabels": true
@@ -420,7 +420,7 @@
               "OwnerTransfer": 1,
               "Components": [
                 {
-                  "__type": "MonopolySpace",
+                  "__type": "BoardSpace",
                   "__guid": "116f2a3e-cf85-4204-9e0c-b03a2abd84a6",
                   "__enabled": true,
                   "Flags": 0,
@@ -452,7 +452,7 @@
               "OwnerTransfer": 1,
               "Components": [
                 {
-                  "__type": "MonopolySpace",
+                  "__type": "BoardSpace",
                   "__guid": "0049a5a5-1e62-43cc-8f99-3b4eab6dee89",
                   "__enabled": true,
                   "Flags": 0,
@@ -484,7 +484,7 @@
               "OwnerTransfer": 1,
               "Components": [
                 {
-                  "__type": "MonopolySpace",
+                  "__type": "BoardSpace",
                   "__guid": "e5d36746-7e46-4435-b282-070242449ad9",
                   "__enabled": true,
                   "Flags": 0,
@@ -516,7 +516,7 @@
               "OwnerTransfer": 1,
               "Components": [
                 {
-                  "__type": "MonopolySpace",
+                  "__type": "BoardSpace",
                   "__guid": "958b3cb1-afd3-4d8f-97aa-afe35fb2222d",
                   "__enabled": true,
                   "Flags": 0,
@@ -548,7 +548,7 @@
               "OwnerTransfer": 1,
               "Components": [
                 {
-                  "__type": "MonopolySpace",
+                  "__type": "BoardSpace",
                   "__guid": "cd0c0018-ed6d-4154-b327-c7692e7afec7",
                   "__enabled": true,
                   "Flags": 0,
@@ -580,7 +580,7 @@
               "OwnerTransfer": 1,
               "Components": [
                 {
-                  "__type": "MonopolySpace",
+                  "__type": "BoardSpace",
                   "__guid": "3cdeeac4-c164-40a9-a4ca-9ce830fa00de",
                   "__enabled": true,
                   "Flags": 0,
@@ -612,7 +612,7 @@
               "OwnerTransfer": 1,
               "Components": [
                 {
-                  "__type": "MonopolySpace",
+                  "__type": "BoardSpace",
                   "__guid": "31744d93-40db-448d-b9f7-44e49cf279d2",
                   "__enabled": true,
                   "Flags": 0,
@@ -644,7 +644,7 @@
               "OwnerTransfer": 1,
               "Components": [
                 {
-                  "__type": "MonopolySpace",
+                  "__type": "BoardSpace",
                   "__guid": "39a68c9d-fac0-44a2-891a-70fae072a074",
                   "__enabled": true,
                   "Flags": 0,
@@ -676,7 +676,7 @@
               "OwnerTransfer": 1,
               "Components": [
                 {
-                  "__type": "MonopolySpace",
+                  "__type": "BoardSpace",
                   "__guid": "ec0befdf-a7ec-4b8e-9cb3-85464c773767",
                   "__enabled": true,
                   "Flags": 0,
@@ -708,7 +708,7 @@
               "OwnerTransfer": 1,
               "Components": [
                 {
-                  "__type": "MonopolySpace",
+                  "__type": "BoardSpace",
                   "__guid": "d3a72d59-f6d9-4bdf-8d56-8ec433c8eba6",
                   "__enabled": true,
                   "Flags": 0,
@@ -740,7 +740,7 @@
               "OwnerTransfer": 1,
               "Components": [
                 {
-                  "__type": "MonopolySpace",
+                  "__type": "BoardSpace",
                   "__guid": "b3291ed6-c08c-4a2e-a261-61b8848a435e",
                   "__enabled": true,
                   "Flags": 0,
@@ -772,7 +772,7 @@
               "OwnerTransfer": 1,
               "Components": [
                 {
-                  "__type": "MonopolySpace",
+                  "__type": "BoardSpace",
                   "__guid": "c8ca53f3-05c3-4720-a1bd-4f41783119ef",
                   "__enabled": true,
                   "Flags": 0,
@@ -804,7 +804,7 @@
               "OwnerTransfer": 1,
               "Components": [
                 {
-                  "__type": "MonopolySpace",
+                  "__type": "BoardSpace",
                   "__guid": "c11d417c-5708-492e-a4cf-b3ce6168bf5f",
                   "__enabled": true,
                   "Flags": 0,
@@ -836,7 +836,7 @@
               "OwnerTransfer": 1,
               "Components": [
                 {
-                  "__type": "MonopolySpace",
+                  "__type": "BoardSpace",
                   "__guid": "ad93f487-7a5c-46e1-8050-81e8f9abdf11",
                   "__enabled": true,
                   "Flags": 0,
@@ -868,7 +868,7 @@
               "OwnerTransfer": 1,
               "Components": [
                 {
-                  "__type": "MonopolySpace",
+                  "__type": "BoardSpace",
                   "__guid": "5ff60c02-48fd-45d2-a3d6-ad3a029c7a53",
                   "__enabled": true,
                   "Flags": 0,
@@ -900,7 +900,7 @@
               "OwnerTransfer": 1,
               "Components": [
                 {
-                  "__type": "MonopolySpace",
+                  "__type": "BoardSpace",
                   "__guid": "5d15d3e9-4e6d-4333-a307-0972464a0674",
                   "__enabled": true,
                   "Flags": 0,
@@ -932,7 +932,7 @@
               "OwnerTransfer": 1,
               "Components": [
                 {
-                  "__type": "MonopolySpace",
+                  "__type": "BoardSpace",
                   "__guid": "26137398-04f7-4082-92cb-1b7b63c2b721",
                   "__enabled": true,
                   "Flags": 0,
@@ -964,7 +964,7 @@
               "OwnerTransfer": 1,
               "Components": [
                 {
-                  "__type": "MonopolySpace",
+                  "__type": "BoardSpace",
                   "__guid": "e0437f59-eec7-4286-83e1-2409d27730c1",
                   "__enabled": true,
                   "Flags": 0,
@@ -996,7 +996,7 @@
               "OwnerTransfer": 1,
               "Components": [
                 {
-                  "__type": "MonopolySpace",
+                  "__type": "BoardSpace",
                   "__guid": "198d1643-36f0-4e9b-bd8b-e92b987a38f5",
                   "__enabled": true,
                   "Flags": 0,
@@ -1028,7 +1028,7 @@
               "OwnerTransfer": 1,
               "Components": [
                 {
-                  "__type": "MonopolySpace",
+                  "__type": "BoardSpace",
                   "__guid": "362c1ee5-b9fd-47e8-8e4d-0aadeeea0123",
                   "__enabled": true,
                   "Flags": 0,
@@ -1060,7 +1060,7 @@
               "OwnerTransfer": 1,
               "Components": [
                 {
-                  "__type": "MonopolySpace",
+                  "__type": "BoardSpace",
                   "__guid": "fb7e337f-3f11-4da3-af6f-403bc75f06d7",
                   "__enabled": true,
                   "Flags": 0,
@@ -1092,7 +1092,7 @@
               "OwnerTransfer": 1,
               "Components": [
                 {
-                  "__type": "MonopolySpace",
+                  "__type": "BoardSpace",
                   "__guid": "48680848-14bb-4567-b406-dfe36a8288c2",
                   "__enabled": true,
                   "Flags": 0,
@@ -1124,7 +1124,7 @@
               "OwnerTransfer": 1,
               "Components": [
                 {
-                  "__type": "MonopolySpace",
+                  "__type": "BoardSpace",
                   "__guid": "2e1e0fa1-9039-48b7-b540-75e78a944f23",
                   "__enabled": true,
                   "Flags": 0,
@@ -1156,7 +1156,7 @@
               "OwnerTransfer": 1,
               "Components": [
                 {
-                  "__type": "MonopolySpace",
+                  "__type": "BoardSpace",
                   "__guid": "5719480a-5bd9-4f72-bb8c-616167e13c5a",
                   "__enabled": true,
                   "Flags": 0,
@@ -1188,7 +1188,7 @@
               "OwnerTransfer": 1,
               "Components": [
                 {
-                  "__type": "MonopolySpace",
+                  "__type": "BoardSpace",
                   "__guid": "641029df-1de1-429e-b0fb-834924f41743",
                   "__enabled": true,
                   "Flags": 0,
@@ -1220,7 +1220,7 @@
               "OwnerTransfer": 1,
               "Components": [
                 {
-                  "__type": "MonopolySpace",
+                  "__type": "BoardSpace",
                   "__guid": "6e3cd055-ff3d-4056-8646-f4fc113f09a9",
                   "__enabled": true,
                   "Flags": 0,
@@ -1252,7 +1252,7 @@
               "OwnerTransfer": 1,
               "Components": [
                 {
-                  "__type": "MonopolySpace",
+                  "__type": "BoardSpace",
                   "__guid": "d9493d9d-c4f8-4a96-b850-3443245af942",
                   "__enabled": true,
                   "Flags": 0,
@@ -1284,7 +1284,7 @@
               "OwnerTransfer": 1,
               "Components": [
                 {
-                  "__type": "MonopolySpace",
+                  "__type": "BoardSpace",
                   "__guid": "18f7f8b4-63ee-435d-b113-7927b8c0ec50",
                   "__enabled": true,
                   "Flags": 0,
@@ -1316,7 +1316,7 @@
               "OwnerTransfer": 1,
               "Components": [
                 {
-                  "__type": "MonopolySpace",
+                  "__type": "BoardSpace",
                   "__guid": "6d6bd43a-fc6f-47f3-ab15-c536df8d6443",
                   "__enabled": true,
                   "Flags": 0,
@@ -1348,7 +1348,7 @@
               "OwnerTransfer": 1,
               "Components": [
                 {
-                  "__type": "MonopolySpace",
+                  "__type": "BoardSpace",
                   "__guid": "641e2ec4-5ee9-4026-9e24-d51466d31546",
                   "__enabled": true,
                   "Flags": 0,
@@ -1380,7 +1380,7 @@
               "OwnerTransfer": 1,
               "Components": [
                 {
-                  "__type": "MonopolySpace",
+                  "__type": "BoardSpace",
                   "__guid": "515f5785-387d-4cbc-955c-fe29e949ca82",
                   "__enabled": true,
                   "Flags": 0,
@@ -1412,7 +1412,7 @@
               "OwnerTransfer": 1,
               "Components": [
                 {
-                  "__type": "MonopolySpace",
+                  "__type": "BoardSpace",
                   "__guid": "73d61d33-0b62-4ca4-8570-c8c7114588ad",
                   "__enabled": true,
                   "Flags": 0,
@@ -1444,7 +1444,7 @@
               "OwnerTransfer": 1,
               "Components": [
                 {
-                  "__type": "MonopolySpace",
+                  "__type": "BoardSpace",
                   "__guid": "a84bf6dd-3312-4360-aa54-e5668c71ec84",
                   "__enabled": true,
                   "Flags": 0,
@@ -1476,7 +1476,7 @@
               "OwnerTransfer": 1,
               "Components": [
                 {
-                  "__type": "MonopolySpace",
+                  "__type": "BoardSpace",
                   "__guid": "80180ac4-591b-4726-9910-22a773e555b5",
                   "__enabled": true,
                   "Flags": 0,
@@ -1508,7 +1508,7 @@
               "OwnerTransfer": 1,
               "Components": [
                 {
-                  "__type": "MonopolySpace",
+                  "__type": "BoardSpace",
                   "__guid": "1cbfcb68-1dcb-4c39-bb03-c322771ab08f",
                   "__enabled": true,
                   "Flags": 0,
@@ -1540,7 +1540,7 @@
               "OwnerTransfer": 1,
               "Components": [
                 {
-                  "__type": "MonopolySpace",
+                  "__type": "BoardSpace",
                   "__guid": "9cd00aa2-8c81-4be0-bd84-a010fe47486c",
                   "__enabled": true,
                   "Flags": 0,
@@ -1572,7 +1572,7 @@
               "OwnerTransfer": 1,
               "Components": [
                 {
-                  "__type": "MonopolySpace",
+                  "__type": "BoardSpace",
                   "__guid": "5330f8e1-6cc9-44bc-b069-a3eb5473a343",
                   "__enabled": true,
                   "Flags": 0,
@@ -1604,7 +1604,7 @@
               "OwnerTransfer": 1,
               "Components": [
                 {
-                  "__type": "MonopolySpace",
+                  "__type": "BoardSpace",
                   "__guid": "8e2d628b-6126-4b01-a470-88bd1061a56b",
                   "__enabled": true,
                   "Flags": 0,
@@ -1636,7 +1636,7 @@
               "OwnerTransfer": 1,
               "Components": [
                 {
-                  "__type": "MonopolySpace",
+                  "__type": "BoardSpace",
                   "__guid": "70c0a717-f54b-42f7-ab03-00f803b5e443",
                   "__enabled": true,
                   "Flags": 0,
@@ -1668,7 +1668,7 @@
               "OwnerTransfer": 1,
               "Components": [
                 {
-                  "__type": "MonopolySpace",
+                  "__type": "BoardSpace",
                   "__guid": "a20454cd-5730-4287-a465-20bf4095c754",
                   "__enabled": true,
                   "Flags": 0,
@@ -1775,7 +1775,7 @@
                 "_type": "component",
                 "component_id": "4b9cd09b-a167-40b7-a17a-0c958e771b55",
                 "go": "469cf384-89f4-4353-99dd-4b89667eff1f",
-                "component_type": "MonopolyBoard"
+                "component_type": "Board"
               },
               "Config": {
                 "MinPlayers": 1,

@@ -53,7 +53,7 @@ public sealed class GameCommandManager : Component
 			return CommandResult.Fail( $"Property set \"{propertySet}\" does not exist." );
 
 		var game = MonopolyGame.Instance;
-		var board = MonopolyBoard.Instance;
+		var board = Board.Instance;
 		if ( game is null || board?.SpaceDefs is null )
 			return CommandResult.Fail( "No active Monopoly board." );
 

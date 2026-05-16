@@ -18,7 +18,7 @@ public sealed partial class MonopolyGame : Component
 		}
 
 		if ( Board is null )
-			Board = Scene.GetAllComponents<MonopolyBoard>().FirstOrDefault();
+			Board = Scene.GetAllComponents<Board>().FirstOrDefault();
 
 		for ( var i = 0; i < activePlayers.Count; i++ )
 		{

@@ -3,15 +3,15 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Sandbox;
 
-public sealed class MonopolyBoard : Component
+public sealed class Board : Component
 {
-	private static MonopolyBoard instance;
-	public static MonopolyBoard Instance => instance;
+	private static Board instance;
+	public static Board Instance => instance;
 	private MonopolyGame GameRef;
 	private Logger logger = new("Board");
 	private Logger boardSpace = new("BoardSpace");
 
-	[Property] public List<MonopolySpace> Spaces { get; set; } = new();
+	[Property] public List<BoardSpace> Spaces { get; set; } = new();
 	public List<SpaceDef> SpaceDefs { get; private set; } = new();
 
 	[Property] public Vector3 HitboxSize { get; set; } = new Vector3( 96f, 96f, 12f );
@@ -42,7 +42,7 @@ public sealed class MonopolyBoard : Component
 		if (DebugEnabled && !debugConvar)
 		{
 			DebugEnabled = false;
-			Log.Warning("Game was published with MonopolyBoard DebugEnabled!");
+			Log.Warning("Game was published with Board DebugEnabled!");
 		}
 		#endif
 
@@ -83,7 +83,7 @@ public sealed class MonopolyBoard : Component
 		}
 	}
 
-	private void ApplySpaceModifications(MonopolySpace space)
+	private void ApplySpaceModifications(BoardSpace space)
 	{
 		var quad = space.Def.GetQuadrant();
 		if (quad == 0)
@@ -110,9 +110,9 @@ public sealed class MonopolyBoard : Component
 		}
 	}
 
-	private void ColliderSizeMod1or3(MonopolySpace space) => space.ModifyColliderSize(0.5f);
-	private void ColliderSizeMod2or4(MonopolySpace space) => space.ModifyColliderSize(1f);
-	private void ColliderSizeModNon0(MonopolySpace space) => space.ModifyColliderSize(0f, 3f);
+	private void ColliderSizeMod1or3(BoardSpace space) => space.ModifyColliderSize(0.5f);
+	private void ColliderSizeMod2or4(BoardSpace space) => space.ModifyColliderSize(1f);
+	private void ColliderSizeModNon0(BoardSpace space) => space.ModifyColliderSize(0f, 3f);
 
 	private void UpdateSpaceImprovements()
 	{
@@ -146,7 +146,7 @@ public sealed class MonopolyBoard : Component
 	}
 
 
-	private void TryCreateLabel(MonopolySpace space)
+	private void TryCreateLabel(BoardSpace space)
 	{
 		if (!ShouldCreateLabel(space))
 			return;
@@ -156,7 +156,7 @@ public sealed class MonopolyBoard : Component
 		else
 			space.CreateLabel();
 	}
-	private bool ShouldCreateLabel( MonopolySpace space )
+	private bool ShouldCreateLabel( BoardSpace space )
 	{
 		switch ( space.Def.Type )
 		{
@@ -173,7 +173,7 @@ public sealed class MonopolyBoard : Component
 	}
 
 	// Space Helpers
-	public MonopolySpace GetSpace( int index )
+	public BoardSpace GetSpace( int index )
 	{
 		int originalIndex = index;
 
@@ -326,7 +326,7 @@ public sealed class MonopolyBoard : Component
 		if ( DebugEnabled )
 			DebugOverlay.Trace( traceResult, 5f, true );
 
-		HandleTraceResult( traceResult, out MonopolySpace space, out SpaceDef _ );
+		HandleTraceResult( traceResult, out BoardSpace space, out SpaceDef _ );
 
 		if ( GameRef is null || space is null )
 			return;
@@ -366,12 +366,12 @@ public sealed class MonopolyBoard : Component
 			traceResult.HasValue &&
 			traceResult.Value.Hit &&
 			traceResult.Value.GameObject is not null &&
-			traceResult.Value.GameObject.Components.TryGet<MonopolySpace>( out _ );
+			traceResult.Value.GameObject.Components.TryGet<BoardSpace>( out _ );
 
 		Mouse.CursorType = isHoveringSpace ? "pointer" : null;
 	}
 
-	private void HandleTraceResult(SceneTraceResult traceResult, out MonopolySpace foundSpace, out SpaceDef foundSpaceDef)
+	private void HandleTraceResult(SceneTraceResult traceResult, out BoardSpace foundSpace, out SpaceDef foundSpaceDef)
 	{
 		foundSpace = null;
 		foundSpaceDef = null;
@@ -385,7 +385,7 @@ public sealed class MonopolyBoard : Component
 			return;
 		}
 
-		if ( !traceResult.GameObject.Components.TryGet<MonopolySpace>( out var space ) )
+		if ( !traceResult.GameObject.Components.TryGet<BoardSpace>( out var space ) )
 		{
 			logger.Info(str + " (not a space)");
 			return;

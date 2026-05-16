@@ -2,7 +2,7 @@ using Sandbox;
 
 public sealed class PlayerToken : Component
 {
-	[Property] public MonopolyBoard Board { get; set; }
+	[Property] public Board Board { get; set; }
 	[Property] public PlayerState PlayerState { get; set; }
 
 	[Property] public float HeightOffset { get; set; } = 8f;

@@ -24,7 +24,7 @@
           "_type": "component",
           "component_id": "4b9cd09b-a167-40b7-a17a-0c958e771b55",
           "go": "469cf384-89f4-4353-99dd-4b89667eff1f",
-          "component_type": "MonopolyBoard"
+          "component_type": "Board"
         },
         "HeightOffset": 4.809978,
         "MoveSpeed": 15,
