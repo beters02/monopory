@@ -1,5 +1,6 @@
 @using Sandbox;
 @using Sandbox.UI;
+@using Sandbox.ui.components;
 @using Sandbox.ui.components.HudPanel;
 @using System;
 @using Sandbox.ui.components.buttons
@@ -8,28 +9,7 @@
 <root class="monopoly-hud">
 	@if ( GameRef is not null )
 	{
-		@if ( Popups.Count > 0 )
-		{
-			<div class="popup-stack">
-				@foreach ( var popup in Popups )
-				{
-					<div class="@GetPopupClasses( popup )">
-						<div class="popup-content">
-							@if ( !string.IsNullOrWhiteSpace( popup.Title ) )
-							{
-								<div class="popup-title">@popup.Title</div>
-							}
-							<div class="popup-message">@popup.Message</div>
-						</div>
-
-						@if ( popup.CanDismiss )
-						{
-							<MonopolyCloseButton OnClick="@(() => DismissPopup( popup.Id ))"></MonopolyCloseButton>
-						}
-					</div>
-				}
-			</div>
-		}
+		<MonopolyPopupStack Popups="@Popups" OnDismiss="@DismissPopup"></MonopolyPopupStack>
 
 		@if ( GameRef.MatchState == MonopolyMatchState.GameOver )
 		{
@@ -65,7 +45,7 @@
 				}
 				@if ( GameRef.MatchState == MonopolyMatchState.InGame && CurrentPlayer == LocalPlayer )
 				{
-					<MonopolyButton Variant="@EndTurnButtonClasses" CanClick="@CanEndTurn" OnClick="@EndTurn" OnBlocked="@ShowEndTurnBlocked">End Turn</MonopolyButton>
+					<MonopolyButton Variant="@EndTurnButtonClasses" CanClick="@CanEndTurn" OnClick="@EndTurn" BlockedPopupTitle="Cannot end turn yet" BlockedPopupMessage="@GetEndTurnBlockedMessage()">End Turn</MonopolyButton>
 				}
 				@if ( GameRef.MatchState == MonopolyMatchState.InGame )
 				{
@@ -378,7 +358,7 @@
 		@if ( SelectedSpace is not null )
 		{
 			<div class="@SpaceCardClasses">
-				<MonopolyCloseButton Variant="@SpaceCardCloseButtonClasses" CanClick="@CanCloseSelectedSpace" OnClick="@CloseSelectedSpace" OnBlocked="@ShowSelectedSpaceCloseBlocked"></MonopolyCloseButton>
+				<MonopolyCloseButton Variant="@SpaceCardCloseButtonClasses" CanClick="@CanCloseSelectedSpace" OnClick="@CloseSelectedSpace" BlockedPopupTitle="Decision required" BlockedPopupMessage="@SelectedSpaceCloseBlockedMessage"></MonopolyCloseButton>
 
 				<div class="space-card-header">
 					<div class="space-color-band"></div>
@@ -451,7 +431,6 @@
 @code
 {
 	[Property] public MonopolyGame GameRef { get; set; }
-	[Property] public string PendingDecisionBlockedSound { get; set; } = "";
 
 	private const string SpaceCardThemeClass = "space-card-board";
 
@@ -566,7 +545,9 @@
 	private void log(string msg) => Log.Info(msg);
 
 	private List<MonopolyPopup> Popups =>
-		GameRef?.Popups?.ToList() ?? new();
+		(GameRef?.Popups ?? Enumerable.Empty<MonopolyPopup>())
+			.Concat( MonopolyLocalPopups.Popups )
+			.ToList();
 
 	private MonopolySpaceDef PendingDef =>
 		GameRef?.Board?.GetSpaceDef( GameRef.PendingPurchaseSpaceIndex );
@@ -583,18 +564,6 @@
 	private void EndTurn()
 	{
 		GameRef?.RequestEndTurn();
-	}
-
-	private void ShowEndTurnBlocked()
-	{
-		PlayBlockedActionSound();
-		GameRef?.ShowLocalPopup(
-			"Cannot end turn yet",
-			GetEndTurnBlockedMessage(),
-			MonopolyPopupKind.Warning,
-			true,
-			3f
-		);
 	}
 
 	private string EndTurnButtonClasses =>
@@ -781,17 +750,8 @@
 		SelectPropertySpace( -1 );
 	}
 
-	private void ShowSelectedSpaceCloseBlocked()
-	{
-		PlayBlockedActionSound();
-		GameRef?.ShowLocalPopup(
-			"Decision required",
-			$"Buy or auction {SelectedSpace?.DisplayName ?? "this property"} before closing this card.",
-			MonopolyPopupKind.Warning,
-			true,
-			3f
-		);
-	}
+	private string SelectedSpaceCloseBlockedMessage =>
+		$"Buy or auction {SelectedSpace?.DisplayName ?? "this property"} before closing this card.";
 
 	private string GetPropertyPanelClasses( int playerIndex, bool isExpanded )
 	{
@@ -1259,12 +1219,8 @@
 
 	private void DismissPopup( int popupId )
 	{
+		MonopolyLocalPopups.Dismiss( popupId );
 		GameRef?.DismissPopup( popupId );
-	}
-
-	private static string GetPopupClasses( MonopolyPopup popup )
-	{
-		return $"game-popup {popup.Kind.ToString().ToLower()}";
 	}
 
 	private string GetTradeRowClasses( MonopolyTradeRequest trade )
@@ -1369,14 +1325,6 @@
 			MonopolyGamePhase.Auctioning => "Wait for the auction to finish before ending your turn.",
 			_ => "Finish the current action before ending your turn."
 		};
-	}
-
-	private void PlayBlockedActionSound()
-	{
-		if ( string.IsNullOrWhiteSpace( PendingDecisionBlockedSound ) )
-			return;
-
-		Sound.Play( PendingDecisionBlockedSound );
 	}
 
 }

@@ -1,0 +1,50 @@
+@using Sandbox;
+@using Sandbox.UI;
+@using Sandbox.ui.components.buttons
+@using System;
+@inherits Panel
+
+<root class="monopoly-popup-stack-root">
+	@if ( Popups.Count > 0 )
+	{
+		<div class="popup-stack">
+			@foreach ( var popup in Popups )
+			{
+				<div class="@GetPopupClasses( popup )">
+					<div class="popup-content">
+						@if ( !string.IsNullOrWhiteSpace( popup.Title ) )
+						{
+							<div class="popup-title">@popup.Title</div>
+						}
+						<div class="popup-message">@popup.Message</div>
+					</div>
+
+					@if ( popup.CanDismiss )
+					{
+						<div class="popup-dismiss">
+							<MonopolyCloseButton OnClick="@(() => Dismiss( popup.Id ))"></MonopolyCloseButton>
+						</div>
+					}
+				</div>
+			}
+		</div>
+	}
+</root>
+
+@code
+{
+	[Parameter] public List<MonopolyPopup> Popups { get; set; } = new();
+	[Parameter] public Action<int> OnDismiss { get; set; }
+
+	private static string GetPopupClasses( MonopolyPopup popup )
+	{
+		return $"game-popup {popup.Kind.ToString().ToLower()}";
+	}
+
+	private void Dismiss( int popupId )
+	{
+		OnDismiss?.Invoke( popupId );
+		Popups.RemoveAll( popup => popup.Id == popupId );
+		StateHasChanged();
+	}
+}

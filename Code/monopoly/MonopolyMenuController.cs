@@ -20,10 +20,13 @@ public sealed class MonopolyMenuController : Component
 		if ( Networking.IsActive )
 			Networking.Disconnect();
 
+		var hostedConfig = MonopolyMatchBootstrap.CloneConfig( Config );
+		MonopolyMatchBootstrap.PrepareLobby( hostedConfig );
+
 		Networking.CreateLobby( new LobbyConfig
 		{
 			Name = "Monopory Lobby",
-			MaxPlayers = Math.Max( Config.MaxPlayers, Config.MinPlayers ),
+			MaxPlayers = Math.Max( hostedConfig.MaxPlayers, hostedConfig.MinPlayers ),
 			Privacy = LobbyPrivacy.FriendsOnly,
 			DestroyWhenHostLeaves = false
 		} );

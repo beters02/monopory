@@ -16,10 +16,14 @@ public sealed class MonopolyLobbyPlayer
 public sealed class MonopolyLobbyController : Component
 {
 	[Property] public MonopolyGameConfig Config { get; set; } = new();
+	[Property, Sync] public int HostedMinPlayers { get; set; } = 1;
+	[Property, Sync] public int HostedMaxPlayers { get; set; } = 6;
+	[Property, Sync] public bool HostedOnlyHostStartsGame { get; set; } = true;
 	[Property, Sync] public NetDictionary<string, bool> ReadyPlayers { get; set; } = new();
 
-	public int MinPlayers => Math.Max( Config.MinPlayers, 1 );
-	public int MaxPlayers => Math.Max( Config.MaxPlayers, MinPlayers );
+	public int MinPlayers => Math.Max( HostedMinPlayers, 1 );
+	public int MaxPlayers => Math.Max( HostedMaxPlayers, MinPlayers );
+	public bool OnlyHostStartsGame => HostedOnlyHostStartsGame;
 
 	public List<MonopolyLobbyPlayer> Players { get; private set; } = new();
 
@@ -29,9 +33,16 @@ public sealed class MonopolyLobbyController : Component
 	public bool CanStartGame =>
 		CanStartWithPlayers( Players );
 
+	public bool CanLocalPlayerStartGame =>
+		CanStartGame && (!OnlyHostStartsGame || Networking.IsHost);
+
 	protected override void OnStart()
 	{
 		MonopolySteamInviteBridge.Register( Scene );
+
+		if ( Networking.IsHost )
+			ApplyHostedConfig();
+
 		Players = BuildPlayers();
 	}
 
@@ -171,13 +182,33 @@ public sealed class MonopolyLobbyController : Component
 			return null;
 		}
 	}
+
+	private void ApplyHostedConfig()
+	{
+		var bootstrap = MonopolyMatchBootstrap.Current;
+		if ( bootstrap?.HasConfig == true )
+			Config = MonopolyMatchBootstrap.CloneConfig( bootstrap.Config );
+
+		HostedMinPlayers = Math.Max( Config?.MinPlayers ?? 1, 1 );
+		HostedMaxPlayers = Math.Max( Config?.MaxPlayers ?? HostedMinPlayers, HostedMinPlayers );
+		HostedOnlyHostStartsGame = Config?.OnlyHostStartsGame ?? true;
+	}
+
+	private MonopolyGameConfig GetGameConfig()
+	{
+		var config = MonopolyMatchBootstrap.CloneConfig( Config );
+		config.MinPlayers = MinPlayers;
+		config.MaxPlayers = MaxPlayers;
+		config.OnlyHostStartsGame = OnlyHostStartsGame;
+		return config;
+	}
 	
 	public bool TryStartGame()
 	{
 		if ( !Networking.IsHost || !CanStartGame )
 			return false;
 
-		MonopolyMatchBootstrap.PrepareGame( Config, Players.Count );
+		MonopolyMatchBootstrap.PrepareGame( GetGameConfig(), Players.Count );
 		LoadGameScene();
 		return true;
 	}
@@ -342,7 +373,15 @@ public sealed class MonopolyLobbyController : Component
 	[Rpc.Host]
 	public void RequestStartGame()
 	{
+		if ( OnlyHostStartsGame && !IsHostCaller( Rpc.Caller ) )
+			return;
+
 		TryStartGame();
+	}
+
+	private bool IsHostCaller( Connection caller )
+	{
+		return Networking.IsHost && (caller is null || caller == Connection.Local);
 	}
 
 	public void LeaveLobby()

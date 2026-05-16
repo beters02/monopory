@@ -196,6 +196,7 @@
           "Config": {
             "MinPlayers": 1,
             "MaxPlayers": 6,
+            "OnlyHostStartsGame": true,
             "LandedUnownedMode": "SkipOrAuction",
             "StartingMoney": 1500,
             "DoublesGoesAgain": false,
@@ -239,6 +240,9 @@
       "CustomBounds": false
     },
     "GameObjectSystems": {
+      "Sandbox.MovieMaker.MovieRecorderSystem": {
+        "DisableClientRecording": false
+      },
       "Sandbox.SelectionSetsSystem": {
         "Data": {
           "SelectionSets": []
@@ -248,9 +252,6 @@
         "Storage": {
           "$blob": "1038bcfc-1f47-4964-962a-e0cb2849ee20"
         }
-      },
-      "Sandbox.MovieMaker.MovieRecorderSystem": {
-        "DisableClientRecording": false
       }
     }
   },

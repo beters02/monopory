@@ -13,7 +13,13 @@
 	[Parameter] public string Title { get; set; } = "";
 	[Parameter] public bool SoundEnabled { get; set; } = true;
 	[Parameter] public bool CanClick { get; set; } = true;
+	[Parameter] public bool ShowBlockedPopup { get; set; } = true;
+	[Parameter] public string BlockedPopupTitle { get; set; } = "Action blocked";
+	[Parameter] public string BlockedPopupMessage { get; set; } = "This action is not available right now.";
+	[Parameter] public MonopolyPopupKind BlockedPopupKind { get; set; } = MonopolyPopupKind.Warning;
+	[Parameter] public float BlockedPopupLifetime { get; set; } = 3f;
 	[Parameter] public MonopolySound Sound { get; set; } = MonopolyAssets.Sounds.Click;
+	[Parameter] public MonopolySound BlockedSound { get; set; } = MonopolyAssets.Sounds.Error;
 	[Parameter] public new Action OnClick { get; set; }
 	[Parameter] public Action OnBlocked { get; set; }
 	[Parameter] public new RenderFragment ChildContent { get; set; }
@@ -34,6 +40,8 @@
 
 		if ( !CanClick )
 		{
+			PlayBlockedActionSound();
+			ShowBlockedActionPopup();
 			OnBlocked?.Invoke();
 			return;
 		}
@@ -50,5 +58,28 @@
 			return false;
 
 		return $" {Variant} ".Contains( $" {className} " );
+	}
+
+	private void ShowBlockedActionPopup()
+	{
+		if ( !ShowBlockedPopup )
+			return;
+
+		MonopolyLocalPopups.Show(
+			BlockedPopupTitle,
+			BlockedPopupMessage,
+			BlockedPopupKind,
+			true,
+			BlockedPopupLifetime,
+			false
+		);
+	}
+
+	private void PlayBlockedActionSound()
+	{
+		if ( !SoundEnabled )
+			return;
+
+		BlockedSound.Play();
 	}
 }

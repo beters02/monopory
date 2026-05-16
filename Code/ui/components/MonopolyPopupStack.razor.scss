@@ -1,0 +1,101 @@
+@import "../MonopolyTheme.scss";
+
+.monopoly-popup-stack-root {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	z-index: 80;
+
+	pointer-events: none;
+}
+
+.popup-stack {
+	position: absolute;
+	top: 28px;
+	left: 50%;
+	z-index: 80;
+	transform: translateX(-50%);
+
+	width: 440px;
+	max-width: 80%;
+
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+
+	pointer-events: all;
+}
+
+.game-popup {
+	min-height: 72px;
+	padding: 13px 14px 13px 18px;
+
+	background-color: $monopoly-board;
+	border: 3px solid $monopoly-ink;
+	border-left-width: 10px;
+	border-radius: $monopoly-radius-board;
+	box-shadow: 0 8px 30px rgba(0, 0, 0, 0.34);
+
+	color: $monopoly-ink;
+	font-family: $monopoly-font-family;
+
+	display: flex;
+	align-items: center;
+	gap: 12px;
+
+	pointer-events: all;
+}
+
+.game-popup.info {
+	border-left-color: $monopoly-gold;
+}
+
+.game-popup.success {
+	border-left-color: $monopoly-success;
+}
+
+.game-popup.warning {
+	border-left-color: $monopoly-gold-hover;
+}
+
+.game-popup.danger {
+	border-left-color: $monopoly-danger;
+}
+
+.popup-content {
+	flex: 1;
+	min-width: 0;
+
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.popup-title {
+	font-size: 17px;
+	font-weight: 900;
+	line-height: 20px;
+}
+
+.popup-message {
+	font-size: 14px;
+	font-weight: 700;
+	line-height: 18px;
+	opacity: 0.82;
+}
+
+.popup-dismiss {
+	position: relative;
+	z-index: 2;
+
+	flex-shrink: 0;
+
+	pointer-events: all;
+}
+
+.popup-dismiss .monopoly-close-button {
+	cursor: pointer;
+	pointer-events: all;
+}

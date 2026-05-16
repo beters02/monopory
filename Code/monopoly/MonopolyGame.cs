@@ -121,7 +121,7 @@ public sealed class MonopolyGame : Component
 			return;
 
 		var bootstrap = MonopolyMatchBootstrap.Current;
-		if ( bootstrap?.Config is not null )
+		if ( bootstrap?.HasConfig == true )
 			Config = bootstrap.Config;
 
 		EnsurePlayerSlots();
