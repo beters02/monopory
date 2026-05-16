@@ -1,0 +1,78 @@
+@using Sandbox;
+@using Sandbox.UI;
+@using Sandbox.ui.components.buttons
+@using System;
+@inherits Panel
+
+<root>
+	@if ( GameRef?.MatchState == MonopolyMatchState.GameOver )
+	{
+		<div class="session-screen game-over-screen">
+			<div class="session-panel">
+				<div class="session-kicker">Game Over</div>
+				<div class="session-title">@WinnerName Wins</div>
+				<div class="session-copy">Return to the lobby to change players or start another round with the same table.</div>
+				<div class="session-actions">
+					<MonopolyButton Variant="session-primary-button" OnClick="@ReturnToLobby">Back To Lobby</MonopolyButton>
+				</div>
+			</div>
+		</div>
+	}
+
+	@if ( IsEscapeMenuOpen )
+	{
+		<div class="session-screen escape-menu-screen">
+			<div class="session-panel escape-menu-panel">
+				<div class="session-kicker">Menu</div>
+				<div class="session-title">Game Menu</div>
+				<div class="session-actions escape-menu-actions">
+					<MonopolyButton Variant="session-secondary-button" OnClick="@LeaveLobby">Leave Lobby</MonopolyButton>
+					<MonopolyButton Variant="session-danger-button" OnClick="@ExitGame">Exit Game</MonopolyButton>
+				</div>
+			</div>
+		</div>
+	}
+
+	@if ( GameRef?.MatchState == MonopolyMatchState.Paused )
+	{
+		<div class="session-screen pause-screen">
+			<div class="session-panel">
+				<div class="session-kicker">Paused</div>
+				<div class="session-title">Game Paused</div>
+				<div class="session-copy">The table is frozen until the host resumes or returns everyone to the lobby.</div>
+				<div class="session-actions">
+					<MonopolyButton Variant="session-primary-button" OnClick="@ResumeGame">Resume</MonopolyButton>
+					<MonopolyButton Variant="session-secondary-button" OnClick="@ReturnToLobby">Back To Lobby</MonopolyButton>
+				</div>
+			</div>
+		</div>
+	}
+</root>
+
+@code
+{
+	[Parameter] public MonopolyGame GameRef { get; set; }
+	[Parameter] public bool IsEscapeMenuOpen { get; set; }
+	[Parameter] public Action OnResumeGame { get; set; }
+	[Parameter] public Action OnReturnToLobby { get; set; }
+	[Parameter] public Action OnLeaveLobby { get; set; }
+	[Parameter] public Action OnExitGame { get; set; }
+
+	private string WinnerName =>
+		GameRef?.Winner?.PlayerName ?? "No One";
+
+	private void ResumeGame() => OnResumeGame?.Invoke();
+	private void ReturnToLobby() => OnReturnToLobby?.Invoke();
+	private void LeaveLobby() => OnLeaveLobby?.Invoke();
+	private void ExitGame() => OnExitGame?.Invoke();
+
+	protected override int BuildHash()
+	{
+		return HashCode.Combine(
+			GameRef?.MatchState ?? 0,
+			GameRef?.WinnerPlayerIndex ?? -1,
+			WinnerName,
+			IsEscapeMenuOpen
+		);
+	}
+}

@@ -1,0 +1,10 @@
+@import "../MonopolyTheme.scss";
+@import "HudPanel/HudPanel.razor.scss";
+@import "buttons/MonopolyButton.razor.scss";
+
+GameStatusPanel {
+	.hud-card {
+		top: 32px;
+		left: 32px;
+	}
+}

@@ -4,6 +4,14 @@
 @import "components/buttons/MonopolyCloseButton.razor.scss";
 @import "components/MonopolyPopupStack.razor.scss";
 @import "components/MonopolySpaceCard.razor.scss";
+@import "components/GameStatusPanel.razor.scss";
+@import "components/SessionOverlay.razor.scss";
+@import "components/PropertyOwnershipPanel.razor.scss";
+@import "components/TradePanel.razor.scss";
+@import "components/TradeComposerModal.razor.scss";
+@import "components/TradeViewerModal.razor.scss";
+@import "components/AuctionModal.razor.scss";
+@import "components/SelectedSpacePanel.razor.scss";
 
 MonopolyHud {
 	position: absolute;

@@ -1,0 +1,147 @@
+@using Sandbox;
+@using Sandbox.UI;
+@using Sandbox.ui.components.buttons
+@using System;
+@inherits Panel
+
+<root>
+	@if ( IsOpen )
+	{
+		<div class="trade-modal-backdrop">
+			<div class="trade-modal">
+				<MonopolyCloseButton Variant="trade-modal-close" OnClick="@Close"></MonopolyCloseButton>
+				<div class="trade-modal-title">Create a trade</div>
+
+				<div class="trade-editor">
+					<div class="trade-side">
+						<div class="trade-player-name">@GetPlayerName( GameRef.LocalPlayerIndex )</div>
+						<div class="trade-money-row">
+							<MonopolyButton OnClick="@(() => AdjustSenderMoney( -50 ))">-</MonopolyButton>
+							<div class="trade-money-pill">$@SenderMoney</div>
+							<MonopolyButton OnClick="@(() => AdjustSenderMoney( 50 ))">+</MonopolyButton>
+						</div>
+						<div class="trade-property-picker">
+							@foreach ( var propertyIndex in LocalOwnedPropertyIndexes )
+							{
+								var property = GameRef.Board.GetSpaceDef( propertyIndex );
+								<MonopolyButton Variant="@GetComposerPropertyClasses( propertyIndex, true )" OnClick="@(() => ToggleSenderProperty( propertyIndex ))">
+									@property?.DisplayName
+								</MonopolyButton>
+							}
+						</div>
+					</div>
+
+					<div class="trade-swap-column">&lt;-&gt;</div>
+
+					<div class="trade-side">
+						<div class="trade-player-select">
+							@foreach ( var player in TradeTargets )
+							{
+								var index = GameRef.GetPlayerIndex( player );
+								<MonopolyButton Variant="@GetTradeTargetClasses( index )" OnClick="@(() => SelectTradeTarget( index ))">@player.PlayerName</MonopolyButton>
+							}
+						</div>
+						<div class="trade-money-row">
+							<MonopolyButton OnClick="@(() => AdjustReceiverMoney( -50 ))">-</MonopolyButton>
+							<div class="trade-money-pill">$@ReceiverMoney</div>
+							<MonopolyButton OnClick="@(() => AdjustReceiverMoney( 50 ))">+</MonopolyButton>
+						</div>
+						<div class="trade-property-picker">
+							@foreach ( var propertyIndex in ReceiverOwnedPropertyIndexes )
+							{
+								var property = GameRef.Board.GetSpaceDef( propertyIndex );
+								<MonopolyButton Variant="@GetComposerPropertyClasses( propertyIndex, false )" OnClick="@(() => ToggleReceiverProperty( propertyIndex ))">
+									@property?.DisplayName
+								</MonopolyButton>
+							}
+						</div>
+					</div>
+				</div>
+
+				<MonopolyButton Variant="trade-send-button" OnClick="@Send">Send trade</MonopolyButton>
+			</div>
+		</div>
+	}
+</root>
+
+@code
+{
+	[Parameter] public MonopolyGame GameRef { get; set; }
+	[Parameter] public bool IsOpen { get; set; }
+	[Parameter] public int ReceiverPlayerIndex { get; set; } = -1;
+	[Parameter] public int SenderMoney { get; set; }
+	[Parameter] public int ReceiverMoney { get; set; }
+	[Parameter] public HashSet<int> SenderPropertyIndexes { get; set; } = new();
+	[Parameter] public HashSet<int> ReceiverPropertyIndexes { get; set; } = new();
+	[Parameter] public Action OnClose { get; set; }
+	[Parameter] public Action<int> OnSelectReceiver { get; set; }
+	[Parameter] public Action<int> OnAdjustSenderMoney { get; set; }
+	[Parameter] public Action<int> OnAdjustReceiverMoney { get; set; }
+	[Parameter] public Action<int> OnToggleSenderProperty { get; set; }
+	[Parameter] public Action<int> OnToggleReceiverProperty { get; set; }
+	[Parameter] public Action OnSend { get; set; }
+
+	private List<MonopolyPlayerState> TradeTargets =>
+		GameRef?.Players?
+			.Where( player => player is not null && player.IsAssigned && GameRef.GetPlayerIndex( player ) != GameRef.LocalPlayerIndex )
+			.ToList() ?? new();
+
+	private List<int> LocalOwnedPropertyIndexes =>
+		GameRef is null ? new() : GameRef.GetOwnedPropertyIndexes( GameRef.LocalPlayerIndex );
+
+	private List<int> ReceiverOwnedPropertyIndexes =>
+		GameRef is null || ReceiverPlayerIndex < 0 ? new() : GameRef.GetOwnedPropertyIndexes( ReceiverPlayerIndex );
+
+	private void Close() => OnClose?.Invoke();
+	private void SelectTradeTarget( int playerIndex ) => OnSelectReceiver?.Invoke( playerIndex );
+	private void AdjustSenderMoney( int amount ) => OnAdjustSenderMoney?.Invoke( amount );
+	private void AdjustReceiverMoney( int amount ) => OnAdjustReceiverMoney?.Invoke( amount );
+	private void ToggleSenderProperty( int propertyIndex ) => OnToggleSenderProperty?.Invoke( propertyIndex );
+	private void ToggleReceiverProperty( int propertyIndex ) => OnToggleReceiverProperty?.Invoke( propertyIndex );
+	private void Send() => OnSend?.Invoke();
+
+	private string GetComposerPropertyClasses( int propertyIndex, bool senderSide )
+	{
+		var selected = senderSide
+			? SenderPropertyIndexes.Contains( propertyIndex )
+			: ReceiverPropertyIndexes.Contains( propertyIndex );
+
+		var def = GameRef?.Board?.GetSpaceDef( propertyIndex );
+		var colorGroup = MonopolyHudUi.GetPropertyColorClass( def );
+		var classes = $"trade-property-chip color-{colorGroup}";
+
+		if ( selected )
+			classes += " selected";
+
+		return classes;
+	}
+
+	private string GetTradeTargetClasses( int playerIndex )
+	{
+		return playerIndex == ReceiverPlayerIndex ? "trade-target selected" : "trade-target";
+	}
+
+	private string GetPlayerName( int playerIndex )
+	{
+		return GameRef?.Players?.ElementAtOrDefault( playerIndex )?.PlayerName ?? "Player";
+	}
+
+	protected override int BuildHash()
+	{
+		var hash = new HashCode();
+		hash.Add( IsOpen );
+		hash.Add( ReceiverPlayerIndex );
+		hash.Add( SenderMoney );
+		hash.Add( ReceiverMoney );
+		hash.Add( MonopolyHudUi.GetPlayersHash( GameRef ) );
+		hash.Add( MonopolyHudUi.GetPropertyOwnersHash( GameRef ) );
+
+		foreach ( var index in SenderPropertyIndexes.OrderBy( x => x ) )
+			hash.Add( index );
+
+		foreach ( var index in ReceiverPropertyIndexes.OrderBy( x => x ) )
+			hash.Add( index );
+
+		return hash.ToHashCode();
+	}
+}

@@ -1,0 +1,284 @@
+@using Sandbox;
+@using Sandbox.UI;
+@using Sandbox.ui.components.buttons
+@using System;
+@inherits Panel
+
+<root>
+	@if ( SelectedSpace is not null )
+	{
+		<div class="selected-space-card-panel">
+			<MonopolySpaceCard
+				Space="@SelectedSpace"
+				Variant="selected-space-card"
+				ColorClass="@MonopolyHudUi.GetPropertyColorClass( SelectedSpace )"
+				IsMortgaged="@IsSelectedSpaceMortgaged"
+				ShowFreeParkingBank="@ShowFreeParkingMoney"
+				FreeParkingBank="@(GameRef?.FreeParkingBank ?? 0)"
+				ShowImprovementCount="@IsProperty"
+				HasActions="@false"
+				ImprovementLabel="@SelectedImprovementAmountLabel"
+				DrawnCardText="@SelectedDrawnCardText">
+				<OverlayContent>
+					<MonopolyCloseButton Variant="@SpaceCardCloseButtonClasses" CanClick="@CanCloseSelectedSpace" OnClick="@CloseSelectedSpace" BlockedPopupTitle="Decision required" BlockedPopupMessage="@SelectedSpaceCloseBlockedMessage"></MonopolyCloseButton>
+				</OverlayContent>
+				<FooterContent>
+					<div>
+						<span>Price</span>
+						<strong>@SelectedSpacePriceLabel</strong>
+					</div>
+					<div>
+						<span>Rent</span>
+						<strong>@SelectedSpaceRentLabel</strong>
+					</div>
+					@if ( IsProperty )
+					{
+						<div>
+							<span>House</span>
+							<strong>@SelectedHousePriceLabel</strong>
+						</div>
+					}
+				</FooterContent>
+			</MonopolySpaceCard>
+
+			@if ( CanBuySelectedSpace || CanManageSelectedSpace )
+			{
+				<div class="selected-space-actions">
+					@if ( CanBuySelectedSpace )
+					{
+						<div class="space-buttons">
+							<MonopolyButton OnClick="@BuyProperty">Buy</MonopolyButton>
+							<MonopolyButton OnClick="@AuctionProperty">Auction</MonopolyButton>
+						</div>
+					}
+
+					@if ( CanManageSelectedSpace )
+					{
+						<div class="space-management">
+							@if ( IsProperty )
+							{
+								<div class="space-buttons improvement-buttons">
+									<MonopolyButton Variant="@BuildImprovementButtonClasses" OnClick="@BuildImprovement">
+										<ChildContent>
+											<span>+</span>
+											<img class="space-action-house-icon" src="ui/house-placeholder.svg" />
+										</ChildContent>
+									</MonopolyButton>
+									<MonopolyButton Variant="@SellImprovementButtonClasses" OnClick="@SellImprovement">
+										<ChildContent>
+											<span>-</span>
+											<img class="space-action-house-icon" src="ui/house-placeholder.svg" />
+										</ChildContent>
+									</MonopolyButton>
+								</div>
+							}
+							<div class="space-buttons mortgage-buttons">
+								<MonopolyButton Variant="@MortgageButtonClasses" OnClick="@Mortgage">@MortgageActionLabel</MonopolyButton>
+							</div>
+						</div>
+					}
+				</div>
+			}
+		</div>
+	}
+</root>
+
+@code
+{
+	[Parameter] public MonopolyGame GameRef { get; set; }
+
+	private MonopolySpaceDef SelectedSpace =>
+		GameRef?.SelectedSpace;
+
+	private string SelectedDrawnCardText =>
+		IsSelectedCardSpace
+			? GameRef?.LocalSelectedDrawnCardText ?? ""
+			: "";
+
+	private string SpaceCardCloseButtonClasses =>
+		ShouldBlockSelectedSpaceClose ? "space-card-close blocked-action-button" : "space-card-close";
+
+	private bool CanCloseSelectedSpace =>
+		!ShouldBlockSelectedSpaceClose;
+
+	private int SelectedSpaceIndex =>
+		GameRef?.LocalSelectedSpaceIndex ?? -1;
+
+	private bool IsPurchasable =>
+		SelectedSpace is not null && SelectedSpace.Price > 0;
+
+	private bool IsProperty =>
+		SelectedSpace is not null &&
+		SelectedSpace.HotelRent > 0;
+
+	private bool IsSelectedCardSpace =>
+		SelectedSpace?.Type is SpaceType.Chance or SpaceType.CommunityChest;
+
+	private bool ShowFreeParkingMoney =>
+		GameRef?.Config?.VacationCash == true &&
+		SelectedSpace?.Type == SpaceType.FreeParking;
+
+	private bool IsSelectedPendingPurchase =>
+		GameRef is not null &&
+		SelectedSpaceIndex == GameRef.PendingPurchaseSpaceIndex;
+
+	private bool ShouldBlockSelectedSpaceClose =>
+		GameRef?.CanLeaveCurrentSelectedSpace() == false;
+
+	private bool IsUnownedSelectedSpace =>
+		IsPurchasable &&
+		GetSelectedOwnerIndex() < 0;
+
+	private bool IsOwnedByLocalPlayer =>
+		IsPurchasable &&
+		GameRef is not null &&
+		GameRef.LocalPlayerIndex >= 0 &&
+		GetSelectedOwnerIndex() == GameRef.LocalPlayerIndex;
+
+	private bool CanBuySelectedSpace =>
+		IsPurchasable &&
+		GameRef?.Phase == MonopolyGamePhase.WaitingForBuyDecision &&
+		IsSelectedPendingPurchase &&
+		IsUnownedSelectedSpace;
+
+	private bool CanManageSelectedSpace =>
+		IsOwnedByLocalPlayer;
+
+	private int SelectedImprovementCount =>
+		SelectedSpaceIndex < 0 ? 0 : GameRef?.GetImprovementCount( SelectedSpaceIndex ) ?? 0;
+
+	private bool IsSelectedSpaceMortgaged =>
+		SelectedSpaceIndex >= 0 && GameRef?.IsMortgaged( SelectedSpaceIndex ) == true;
+
+	private int SelectedImprovementCost =>
+		SelectedSpaceIndex < 0 ? 0 : GameRef?.GetImprovementCost( SelectedSpaceIndex ) ?? 0;
+
+	private int SelectedSpaceRent =>
+		SelectedSpaceIndex < 0 ? 0 : GameRef?.GetRentForSpace( SelectedSpaceIndex ) ?? 0;
+
+	private string SelectedSpacePriceLabel =>
+		SelectedSpace?.Price > 0 ? $"${SelectedSpace.Price}" : "-";
+
+	private string SelectedSpaceRentLabel =>
+		SelectedSpaceRent > 0 ? $"${SelectedSpaceRent}" : "-";
+
+	private string SelectedHousePriceLabel =>
+		SelectedImprovementCost > 0 ? $"${SelectedImprovementCost}" : "-";
+
+	private string SelectedImprovementAmountLabel =>
+		SelectedImprovementCount >= 5 ? "Hotel" : SelectedImprovementCount.ToString();
+
+	private string BuildImprovementButtonClasses =>
+		CanBuildSelectedImprovement ? "improvement-action" : "improvement-action disabled";
+
+	private string SellImprovementButtonClasses =>
+		CanSellSelectedImprovement ? "improvement-action" : "improvement-action disabled";
+
+	private bool CanBuildSelectedImprovement =>
+		GameRef is not null &&
+		GameRef.LocalPlayerIndex >= 0 &&
+		GameRef.CanBuildImprovement( GameRef.LocalPlayerIndex, SelectedSpaceIndex );
+
+	private bool CanSellSelectedImprovement =>
+		GameRef is not null &&
+		GameRef.LocalPlayerIndex >= 0 &&
+		GameRef.CanSellImprovement( GameRef.LocalPlayerIndex, SelectedSpaceIndex );
+
+	private int SelectedMortgageValue =>
+		SelectedSpaceIndex < 0 ? 0 : GameRef?.GetMortgageValue( SelectedSpaceIndex ) ?? 0;
+
+	private int SelectedUnmortgageCost =>
+		SelectedSpaceIndex < 0 ? 0 : GameRef?.GetUnmortgageCost( SelectedSpaceIndex ) ?? 0;
+
+	private bool CanMortgageSelectedSpace =>
+		GameRef is not null &&
+		GameRef.LocalPlayerIndex >= 0 &&
+		GameRef.CanMortgageProperty( GameRef.LocalPlayerIndex, SelectedSpaceIndex );
+
+	private bool CanUnmortgageSelectedSpace =>
+		GameRef is not null &&
+		GameRef.LocalPlayerIndex >= 0 &&
+		GameRef.CanUnmortgageProperty( GameRef.LocalPlayerIndex, SelectedSpaceIndex );
+
+	private string MortgageActionLabel =>
+		IsSelectedSpaceMortgaged
+			? $"Unmortgage -${SelectedUnmortgageCost}"
+			: $"Mortgage +${SelectedMortgageValue}";
+
+	private string MortgageButtonClasses =>
+		CanMortgageSelectedSpace || CanUnmortgageSelectedSpace ? "mortgage-action" : "mortgage-action disabled";
+
+	private string SelectedSpaceCloseBlockedMessage =>
+		$"Buy or auction {SelectedSpace?.DisplayName ?? "this property"} before closing this card.";
+
+	private int GetSelectedOwnerIndex()
+	{
+		if ( GameRef is null || SelectedSpaceIndex < 0 )
+			return -1;
+
+		return GameRef.GetOwnerIndexForSpace( SelectedSpaceIndex );
+	}
+
+	private void CloseSelectedSpace()
+	{
+		GameRef?.SelectSpace( -1 );
+	}
+
+	private void BuyProperty()
+	{
+		GameRef?.RequestBuyPendingProperty();
+	}
+
+	private void AuctionProperty()
+	{
+		GameRef?.RequestStartPendingAuction();
+	}
+
+	private void BuildImprovement()
+	{
+		if ( SelectedSpaceIndex < 0 || !CanBuildSelectedImprovement )
+			return;
+
+		GameRef?.RequestBuildImprovement( SelectedSpaceIndex );
+	}
+
+	private void SellImprovement()
+	{
+		if ( SelectedSpaceIndex < 0 || !CanSellSelectedImprovement )
+			return;
+
+		GameRef?.RequestSellImprovement( SelectedSpaceIndex );
+	}
+
+	private void Mortgage()
+	{
+		if ( SelectedSpaceIndex < 0 )
+			return;
+
+		if ( IsSelectedSpaceMortgaged )
+		{
+			if ( CanUnmortgageSelectedSpace )
+				GameRef?.RequestUnmortgageProperty( SelectedSpaceIndex );
+
+			return;
+		}
+
+		if ( CanMortgageSelectedSpace )
+			GameRef?.RequestMortgageProperty( SelectedSpaceIndex );
+	}
+
+	protected override int BuildHash()
+	{
+		var hash = new HashCode();
+		hash.Add( GameRef?.LocalSelectedSpaceIndex ?? -1 );
+		hash.Add( GameRef?.LocalSelectedDrawnCardText ?? "" );
+		hash.Add( GameRef?.Phase ?? 0 );
+		hash.Add( GameRef?.PendingPurchaseSpaceIndex ?? -1 );
+		hash.Add( GameRef?.FreeParkingBank ?? 0 );
+		hash.Add( GameRef?.Config?.VacationCash ?? false );
+		hash.Add( MonopolyHudUi.GetPropertyOwnersHash( GameRef ) );
+		hash.Add( MonopolyHudUi.GetMortgagedPropertiesHash( GameRef ) );
+		hash.Add( SelectedImprovementCount );
+		return hash.ToHashCode();
+	}
+}

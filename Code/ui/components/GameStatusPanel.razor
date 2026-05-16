@@ -1,0 +1,101 @@
+@using Sandbox;
+@using Sandbox.UI;
+@using Sandbox.ui.components.HudPanel;
+@using Sandbox.ui.components.buttons
+@using System;
+@inherits Panel
+
+<root>
+	<Sandbox.ui.components.HudPanel.HudPanel Variant="hud-card">
+		<ChildContent>
+			<HudPanelTitle>Grand Casinopoly</HudPanelTitle>
+			<HudPanelSubtitle>Local</HudPanelSubtitle>
+			<HudPanelBody>Money: $@LocalPlayerMoney</HudPanelBody>
+			<HudPanelEmptyLine></HudPanelEmptyLine>
+			<HudPanelEmptyLine></HudPanelEmptyLine>
+			<HudPanelSubtitle>Game</HudPanelSubtitle>
+			<HudPanelBody>Time Left: @CurrentTurnTimeText</HudPanelBody>
+			<HudPanelBody>Current Player: @CurrentPlayerName</HudPanelBody>
+			<HudPanelBody>Last Roll: @GameRef.LastDieA + @GameRef.LastDieB</HudPanelBody>
+			<HudPanelBody>Phase: @GameRef.Phase</HudPanelBody>
+
+			@if ( GameRef.MatchState == MonopolyMatchState.InGame && GameRef.Phase == MonopolyGamePhase.WaitingToRoll && CurrentPlayer == LocalPlayer )
+			{
+				<MonopolyButton OnClick="@RollDice">Roll Dice</MonopolyButton>
+			}
+			@if ( GameRef.MatchState == MonopolyMatchState.InGame && CurrentPlayer == LocalPlayer )
+			{
+				<MonopolyButton Variant="@EndTurnButtonClasses" CanClick="@CanEndTurn" OnClick="@EndTurn" BlockedPopupTitle="Cannot end turn yet" BlockedPopupMessage="@GetEndTurnBlockedMessage()">End Turn</MonopolyButton>
+			}
+		</ChildContent>
+	</Sandbox.ui.components.HudPanel.HudPanel>
+</root>
+
+@code
+{
+	[Parameter] public MonopolyGame GameRef { get; set; }
+
+	private MonopolyPlayerState CurrentPlayer => GameRef?.CurrentPlayer;
+	private MonopolyPlayerState LocalPlayer => GameRef?.LocalPlayer;
+	private string CurrentPlayerName => CurrentPlayer?.PlayerName ?? "None";
+	private int LocalPlayerMoney => LocalPlayer?.Money ?? 0;
+	private MonopolySpaceDef PendingDef => GameRef?.Board?.GetSpaceDef( GameRef.PendingPurchaseSpaceIndex );
+	private string PendingPropertyName => PendingDef?.DisplayName ?? "Unknown Property";
+
+	private int CurrentTurnRemainingSeconds =>
+		GameRef is null || GameRef.CurrentTurnEndsAt <= 0f
+			? -1
+			: Math.Max( 0, (int)MathF.Ceiling( GameRef.CurrentTurnEndsAt - Time.Now ) );
+
+	private string CurrentTurnTimeText =>
+		CurrentTurnRemainingSeconds < 0
+			? "Off"
+			: $"{CurrentTurnRemainingSeconds / 60:00}:{CurrentTurnRemainingSeconds % 60:00}";
+
+	private string EndTurnButtonClasses =>
+		CanEndTurn ? "" : "blocked-action-button";
+
+	private bool CanEndTurn =>
+		GameRef?.Phase == MonopolyGamePhase.TurnEnded &&
+		GameRef.HasPendingForcedPayment != true;
+
+	private void RollDice()
+	{
+		Log.Info( "Roll dice button clicked." );
+		GameRef?.RequestRollDice();
+	}
+
+	private void EndTurn()
+	{
+		GameRef?.RequestEndTurn();
+	}
+
+	private string GetEndTurnBlockedMessage()
+	{
+		if ( GameRef?.HasPendingForcedPayment == true )
+			return $"Raise ${GameRef.PendingForcedPaymentAmount} before ending your turn.";
+
+		return GameRef?.Phase switch
+		{
+			MonopolyGamePhase.WaitingToRoll => "Roll the dice before ending your turn.",
+			MonopolyGamePhase.ResolvingSpace => "Wait for your move to finish resolving.",
+			MonopolyGamePhase.WaitingForBuyDecision => $"Buy or auction {PendingPropertyName} before ending your turn.",
+			MonopolyGamePhase.Auctioning => "Wait for the auction to finish before ending your turn.",
+			_ => "Finish the current action before ending your turn."
+		};
+	}
+
+	protected override int BuildHash()
+	{
+		return HashCode.Combine(
+			GameRef?.MatchState ?? 0,
+			GameRef?.Phase ?? 0,
+			GameRef?.CurrentPlayerIndex ?? -1,
+			GameRef?.LastDieA ?? 0,
+			GameRef?.LastDieB ?? 0,
+			LocalPlayerMoney,
+			CurrentTurnRemainingSeconds,
+			GameRef?.HasPendingForcedPayment ?? false
+		);
+	}
+}

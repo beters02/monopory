@@ -1,0 +1,176 @@
+@using Sandbox;
+@using Sandbox.UI;
+@using Sandbox.ui.components.HudPanel;
+@using Sandbox.ui.components.buttons
+@using System;
+@inherits Panel
+
+<root>
+	@if ( PropertyHudPlayers.Count > 0 )
+	{
+		<Sandbox.ui.components.HudPanel.HudPanel Variant="property-hud-card">
+			<ChildContent>
+				@foreach ( var player in PropertyHudPlayers )
+				{
+					var playerIndex = GameRef.GetPlayerIndex( player );
+					var isExpanded = IsPropertyPanelExpanded( playerIndex );
+
+					<Sandbox.ui.components.HudPanel.HudPanel Variant="@GetPropertyPanelClasses( playerIndex, isExpanded )">
+						<ChildContent>
+							<MonopolyButton Variant="property-player-button" OnClick="@(() => TogglePropertyPanel( playerIndex ))" Sound="@(GetPropertyPanelSound( playerIndex ))">
+								<ChildContent>
+									<div class="property-player-name">@player.PlayerName</div>
+									<div class="property-player-money">$@player.Money</div>
+								</ChildContent>
+							</MonopolyButton>
+
+							<div class="property-grid">
+								@foreach ( var property in PropertySpaces )
+								{
+									<MonopolyButton
+										Variant="@GetPropertySquareClasses( property, playerIndex )"
+										Title="@property.DisplayName"
+										OnClick="@(() => SelectPropertySpace( property.Index ))">
+										<ChildContent>
+											@if ( GameRef.IsMortgaged( property.Index ) )
+											{
+												<div class="property-mortgage-marker">M</div>
+											}
+										</ChildContent>
+									</MonopolyButton>
+								}
+							</div>
+						</ChildContent>
+					</Sandbox.ui.components.HudPanel.HudPanel>
+				}
+			</ChildContent>
+		</Sandbox.ui.components.HudPanel.HudPanel>
+	}
+</root>
+
+@code
+{
+	[Parameter] public MonopolyGame GameRef { get; set; }
+
+	private readonly HashSet<int> ExpandedPropertyPanels = new();
+
+	private List<MonopolyPlayerState> PropertyHudPlayers
+	{
+		get
+		{
+			if ( GameRef is null )
+				return new();
+
+			var assignedPlayers = GameRef.Players
+				.Where( player => player is not null && player.IsAssigned )
+				.ToList();
+
+			var localIndex = GameRef.LocalPlayerIndex;
+			if ( localIndex < 0 )
+				return assignedPlayers;
+
+			return assignedPlayers
+				.OrderBy( player =>
+				{
+					var index = GameRef.GetPlayerIndex( player );
+					return index == localIndex ? -1 : index;
+				} )
+				.ToList();
+		}
+	}
+
+	private List<MonopolySpaceDef> PropertySpaces =>
+		GameRef?.Board?.SpaceDefs?
+			.Where( MonopolyHudUi.IsPurchasableSpace )
+			.ToList() ?? new();
+
+	private bool IsPropertyPanelExpanded( int playerIndex )
+	{
+		return ExpandedPropertyPanels.Contains( playerIndex );
+	}
+
+	private void TogglePropertyPanel( int playerIndex )
+	{
+		if ( playerIndex < 0 )
+			return;
+
+		if ( !ExpandedPropertyPanels.Add( playerIndex ) )
+			ExpandedPropertyPanels.Remove( playerIndex );
+	}
+
+	private MonopolySound GetPropertyPanelSound( int playerIndex )
+	{
+		if ( IsPropertyPanelExpanded( playerIndex ) )
+			return MonopolyAssets.Sounds.ClickAndClose;
+
+		return MonopolyAssets.Sounds.ClickAndOpen;
+	}
+
+	private void SelectPropertySpace( int spaceIndex ) => GameRef?.SelectSpace( spaceIndex );
+
+	private string GetPropertyPanelClasses( int playerIndex, bool isExpanded )
+	{
+		var classes = $"property-player-panel player-{playerIndex}";
+
+		if ( isExpanded )
+			classes += " expanded";
+
+		if ( GameRef?.LocalPlayerIndex == playerIndex )
+			classes += " local-player";
+
+		if ( GameRef?.CurrentPlayerIndex == playerIndex )
+			classes += " current-player";
+
+		return classes;
+	}
+
+	private string GetPropertySquareClasses( MonopolySpaceDef property, int playerIndex )
+	{
+		var ownerIndex = GameRef?.GetOwnerIndexForSpace( property.Index ) ?? -1;
+		var colorGroup = MonopolyHudUi.GetPropertyColorClass( property );
+		var classes = $"property-square color-{colorGroup} space-{property.Index}";
+
+		if ( ownerIndex == playerIndex )
+			classes += " owned-by-panel-player";
+		else if ( ownerIndex >= 0 )
+			classes += " owned-by-other-player";
+		else
+			classes += " unowned";
+
+		if ( GameRef?.PendingPurchaseSpaceIndex == property.Index )
+			classes += " pending-purchase";
+
+		if ( GameRef?.IsMortgaged( property.Index ) == true )
+			classes += " mortgaged";
+
+		if ( GameRef?.LocalSelectedSpaceIndex == property.Index )
+			classes += " selected";
+
+		return classes;
+	}
+
+	private int GetExpandedPanelsHash()
+	{
+		var hash = new HashCode();
+
+		foreach ( var playerIndex in ExpandedPropertyPanels.OrderBy( x => x ) )
+		{
+			hash.Add( playerIndex );
+		}
+
+		return hash.ToHashCode();
+	}
+
+	protected override int BuildHash()
+	{
+		return HashCode.Combine(
+			GameRef?.CurrentPlayerIndex ?? -1,
+			GameRef?.PendingPurchaseSpaceIndex ?? -1,
+			GameRef?.LocalSelectedSpaceIndex ?? -1,
+			MonopolyHudUi.GetPropertyOwnersHash( GameRef ),
+			MonopolyHudUi.GetMortgagedPropertiesHash( GameRef ),
+			MonopolyHudUi.GetPlayersHash( GameRef ),
+			GetExpandedPanelsHash()
+		);
+	}
+}

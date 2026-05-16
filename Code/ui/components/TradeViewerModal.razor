@@ -1,0 +1,77 @@
+@using Sandbox;
+@using Sandbox.UI;
+@using Sandbox.ui.components.buttons
+@using System;
+@inherits Panel
+
+<root>
+	@if ( Trade is not null )
+	{
+		<div class="trade-modal-backdrop">
+			<div class="trade-modal trade-view-modal">
+				<MonopolyCloseButton Variant="trade-modal-close" OnClick="@Close"></MonopolyCloseButton>
+				<div class="trade-modal-title">@GetPlayerName( Trade.SenderPlayerIndex ) -&gt; @GetPlayerName( Trade.ReceiverPlayerIndex )</div>
+
+				<div class="trade-summary-grid">
+					<div class="trade-summary-side">
+						<div class="trade-player-name">@GetPlayerName( Trade.SenderPlayerIndex ) gives</div>
+						<div class="trade-money-pill">$@Trade.SenderMoney</div>
+						@foreach ( var propertyIndex in Trade.SenderPropertyIndexes )
+						{
+							<div class="trade-summary-property">@GetPropertyName( propertyIndex )</div>
+						}
+					</div>
+					<div class="trade-summary-side">
+						<div class="trade-player-name">@GetPlayerName( Trade.ReceiverPlayerIndex ) gives</div>
+						<div class="trade-money-pill">$@Trade.ReceiverMoney</div>
+						@foreach ( var propertyIndex in Trade.ReceiverPropertyIndexes )
+						{
+							<div class="trade-summary-property">@GetPropertyName( propertyIndex )</div>
+						}
+					</div>
+				</div>
+
+				@if ( Trade.ReceiverPlayerIndex == GameRef.LocalPlayerIndex )
+				{
+					<div class="trade-modal-actions">
+						<MonopolyButton Variant="trade-send-button" OnClick="@(() => AcceptTrade( Trade.Id ))">Accept</MonopolyButton>
+						<MonopolyButton Variant="trade-deny-button" OnClick="@(() => DenyTrade( Trade.Id ))">Deny</MonopolyButton>
+					</div>
+				}
+			</div>
+		</div>
+	}
+</root>
+
+@code
+{
+	[Parameter] public MonopolyGame GameRef { get; set; }
+	[Parameter] public MonopolyTradeRequest Trade { get; set; }
+	[Parameter] public Action OnClose { get; set; }
+	[Parameter] public Action<int> OnAccept { get; set; }
+	[Parameter] public Action<int> OnDeny { get; set; }
+
+	private void Close() => OnClose?.Invoke();
+	private void AcceptTrade( int tradeId ) => OnAccept?.Invoke( tradeId );
+	private void DenyTrade( int tradeId ) => OnDeny?.Invoke( tradeId );
+
+	private string GetPlayerName( int playerIndex )
+	{
+		return GameRef?.Players?.ElementAtOrDefault( playerIndex )?.PlayerName ?? "Player";
+	}
+
+	private string GetPropertyName( int propertyIndex )
+	{
+		return GameRef?.Board?.GetSpaceDef( propertyIndex )?.DisplayName ?? $"Space {propertyIndex}";
+	}
+
+	protected override int BuildHash()
+	{
+		return HashCode.Combine(
+			Trade?.Id ?? -1,
+			Trade?.Serialize() ?? "",
+			GameRef?.LocalPlayerIndex ?? -1,
+			MonopolyHudUi.GetPlayersHash( GameRef )
+		);
+	}
+}
