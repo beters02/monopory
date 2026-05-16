@@ -545,7 +545,7 @@
 	private void LeaveLobby()
 	{
 		IsEscapeMenuOpen = false;
-		ReturnToLobby();
+		MonopolyNetworkSession.LeaveCurrentLobby( Scene );
 	}
 
 	private void ExitGame()

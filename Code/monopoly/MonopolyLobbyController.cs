@@ -330,12 +330,6 @@ public sealed class MonopolyLobbyController : Component
 		MonopolySceneFlow.LoadGame( Scene );
 	}
 
-	[Rpc.Broadcast]
-	private void LoadMenuScene()
-	{
-		MonopolySceneFlow.LoadMenu( Scene );
-	}
-
 	[Rpc.Host]
 	public void RequestSetReady( bool isReady )
 	{
@@ -351,12 +345,8 @@ public sealed class MonopolyLobbyController : Component
 		TryStartGame();
 	}
 
-	[Rpc.Host]
-	public void RequestBackToMenu()
+	public void LeaveLobby()
 	{
-		if ( !Networking.IsHost )
-			return;
-
-		LoadMenuScene();
+		MonopolyNetworkSession.LeaveCurrentLobby( Scene );
 	}
 }

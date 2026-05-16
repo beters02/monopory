@@ -17,19 +17,16 @@ public sealed class MonopolyMenuController : Component
 
 	public bool TryOpenLobby()
 	{
-		if ( !Networking.IsHost )
-			return false;
+		if ( Networking.IsActive )
+			Networking.Disconnect();
 
-		if ( !Networking.IsActive )
+		Networking.CreateLobby( new LobbyConfig
 		{
-			Networking.CreateLobby( new LobbyConfig
-			{
-				Name = "Monopory Lobby",
-				MaxPlayers = Math.Max( Config.MaxPlayers, Config.MinPlayers ),
-				Privacy = LobbyPrivacy.FriendsOnly,
-				DestroyWhenHostLeaves = true
-			} );
-		}
+			Name = "Monopory Lobby",
+			MaxPlayers = Math.Max( Config.MaxPlayers, Config.MinPlayers ),
+			Privacy = LobbyPrivacy.FriendsOnly,
+			DestroyWhenHostLeaves = false
+		} );
 
 		LoadLobbyScene();
 		return true;
@@ -39,12 +36,6 @@ public sealed class MonopolyMenuController : Component
 	{
 		if ( ConsoleSystem.GetValue("debug") == "True" )
 			Log.Info("Game was launched with +Debug.");
-	}
-
-	[Rpc.Host]
-	public void RequestOpenLobby()
-	{
-		TryOpenLobby();
 	}
 
 	[Rpc.Broadcast]
