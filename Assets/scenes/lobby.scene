@@ -202,8 +202,8 @@
           "OwnerTransfer": 1,
           "Components": [
             {
-              "__type": "Sandbox.ui.MonopolyLobbyMenu",
-              "__guid": "65a5c099-eb16-4422-8e2a-d6b7863f6f67",
+              "__type": "Sandbox.ui.LobbyMenu",
+              "__guid": "df5088e5-7631-4196-9579-c4096e55529a",
               "__enabled": true,
               "Flags": 0,
               "LobbyRef": {
@@ -249,17 +249,14 @@
       "CustomBounds": false
     },
     "GameObjectSystems": {
-      "Sandbox.MovieMaker.MovieRecorderSystem": {
-        "DisableClientRecording": false
+      "Sandbox.Clutter.ClutterGridSystem": {
+        "Storage": {
+          "$blob": "91fafa63-ca27-4189-9e6c-d496e8792c15"
+        }
       },
       "Sandbox.SelectionSetsSystem": {
         "Data": {
           "SelectionSets": []
-        }
-      },
-      "Sandbox.Clutter.ClutterGridSystem": {
-        "Storage": {
-          "$blob": "91fafa63-ca27-4189-9e6c-d496e8792c15"
         }
       },
       "Sandbox.MovieMaker.MovieRecorderSystem": {

@@ -2068,7 +2068,7 @@
           "OwnerTransfer": 1,
           "Components": [
             {
-              "__type": "Sandbox.ui.MonopolyHud",
+              "__type": "Sandbox.ui.GameHud",
               "__guid": "9ce2777c-21c5-496b-929f-52b85c8fa6b4",
               "__enabled": true,
               "Flags": 0,

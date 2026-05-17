@@ -140,11 +140,16 @@
           "OwnerTransfer": 1,
           "Components": [
             {
-              "__type": "Sandbox.ui.MonopolyMainMenu",
-              "__guid": "9271f2b2-3c6d-4a93-a551-f1e451f69b41",
+              "__type": "Sandbox.ui.MainMenu",
+              "__guid": "8072c49a-f419-413f-aaba-733f8d43a695",
               "__enabled": true,
               "Flags": 0,
-              "MenuRef": null,
+              "MenuRef": {
+                "_type": "component",
+                "component_id": "187c46d3-7999-4b29-8704-6c7c48c74b89",
+                "go": "0caebde4-34ea-4442-acc6-17ef10d14dce",
+                "component_type": "MenuController"
+              },
               "OnComponentDestroy": null,
               "OnComponentDisabled": null,
               "OnComponentEnabled": null,

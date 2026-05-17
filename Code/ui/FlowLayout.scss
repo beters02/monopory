@@ -2,8 +2,8 @@
 @import "components/buttons/GameButton.razor.scss";
 @import "components/PopupStack.razor.scss";
 
-MonopolyMainMenu,
-MonopolyLobbyMenu {
+MainMenu,
+LobbyMenu {
 	position: absolute;
 	top: 0;
 	left: 0;
