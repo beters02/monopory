@@ -112,6 +112,9 @@ public sealed partial class GameController : Component
 		if ( IsMortgaged( spaceIndex ) )
 			return false;
 
+		if ( ColorGroupHasMortgages( def.ColorGroup ) )
+			return false;
+
 		var cost = GetImprovementCost( spaceIndex );
 		if ( cost <= 0 || player.Money < cost )
 			return false;
@@ -237,6 +240,15 @@ public sealed partial class GameController : Component
 
 		return GetColorGroupProperties( colorGroup )
 			.Any( property => GetImprovementCount( property.Index ) > 0 );
+	}
+
+	private bool ColorGroupHasMortgages( ColorGroup colorGroup )
+	{
+		if ( colorGroup == ColorGroup.None )
+			return false;
+
+		return GetColorGroupProperties( colorGroup )
+			.Any( property => IsMortgaged( property.Index ) );
 	}
 
 	private bool CanAddEvenly( int spaceIndex )

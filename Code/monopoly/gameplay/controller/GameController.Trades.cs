@@ -6,6 +6,7 @@ using Sandbox;
 public sealed partial class GameController : Component
 {
 
+	[Rpc.Host]
 	public void RequestCreateTrade( int receiverPlayerIndex, int senderMoney, int receiverMoney, string senderPropertyIndexes, string receiverPropertyIndexes )
 	{
 		if ( !CanAcceptGameplayInput() )
@@ -30,6 +31,7 @@ public sealed partial class GameController : Component
 			return;
 
 		PendingTrades[request.Id] = request.Serialize();
+		TradeViewers.Remove( request.Id );
 		Log.Info( $"{Players[senderPlayerIndex].PlayerName} offered a trade to {Players[receiverPlayerIndex].PlayerName}." );
 	}
 
@@ -48,6 +50,7 @@ public sealed partial class GameController : Component
 		if ( !IsTradeValid( trade ) )
 		{
 			PendingTrades.Remove( tradeId );
+			TradeViewers.Remove( tradeId );
 			return;
 		}
 
@@ -67,6 +70,7 @@ public sealed partial class GameController : Component
 			PropertyOwners[spaceIndex] = trade.SenderPlayerIndex;
 
 		PendingTrades.Remove( tradeId );
+		TradeViewers.Remove( tradeId );
 		RemoveInvalidTrades();
 
 		Log.Info( $"{receiver.PlayerName} accepted a trade from {sender.PlayerName}." );
@@ -86,6 +90,35 @@ public sealed partial class GameController : Component
 			return;
 
 		PendingTrades.Remove( tradeId );
+		TradeViewers.Remove( tradeId );
+	}
+
+	[Rpc.Host]
+	public void RequestSetTradeViewing( int tradeId, bool isViewing )
+	{
+		if ( !CanAcceptGameplayInput() )
+			return;
+
+		if ( !TryGetTrade( tradeId, out var trade ) )
+		{
+			TradeViewers.Remove( tradeId );
+			return;
+		}
+
+		var viewerIndex = GetPlayerIndexForCaller( Rpc.Caller );
+		if ( !trade.InvolvesPlayer( viewerIndex ) )
+			return;
+
+		var viewers = GetTradeViewerIndexes( tradeId ).ToHashSet();
+		if ( isViewing )
+			viewers.Add( viewerIndex );
+		else
+			viewers.Remove( viewerIndex );
+
+		if ( viewers.Count == 0 )
+			TradeViewers.Remove( tradeId );
+		else
+			TradeViewers[tradeId] = string.Join( ",", viewers.OrderBy( index => index ) );
 	}
 
 	public List<TradeRequest> GetTrades()
@@ -105,6 +138,11 @@ public sealed partial class GameController : Component
 			return false;
 
 		return TradeRequest.TryDeserialize( tradeId, value, out trade );
+	}
+
+	public bool IsPlayerViewingTrade( int tradeId, int playerIndex )
+	{
+		return GetTradeViewerIndexes( tradeId ).Contains( playerIndex );
 	}
 
 	public bool IsTradeValid( TradeRequest trade )
@@ -147,8 +185,24 @@ public sealed partial class GameController : Component
 		foreach ( var trade in GetTrades() )
 		{
 			if ( !IsTradeValid( trade ) )
+			{
 				PendingTrades.Remove( trade.Id );
+				TradeViewers.Remove( trade.Id );
+			}
 		}
+	}
+
+	private List<int> GetTradeViewerIndexes( int tradeId )
+	{
+		if ( !TradeViewers.TryGetValue( tradeId, out var value ) || string.IsNullOrWhiteSpace( value ) )
+			return new();
+
+		return value.Split( ',', StringSplitOptions.RemoveEmptyEntries )
+			.Select( part => int.TryParse( part, out var index ) ? index : -1 )
+			.Where( index => index >= 0 )
+			.Distinct()
+			.OrderBy( index => index )
+			.ToList();
 	}
 
 	private static List<int> ParseSpaceIndexList( string value )

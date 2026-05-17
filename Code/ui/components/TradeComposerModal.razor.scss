@@ -3,7 +3,7 @@
 @import "buttons/CloseButton.razor.scss";
 
 
-.trade-modal-backdrop {
+.trade-composer-backdrop {
 	position: absolute;
 	left: 0;
 	top: 0;
@@ -18,7 +18,7 @@
 	pointer-events: all;
 }
 
-.trade-modal {
+.trade-composer-modal {
 	position: relative;
 
 	width: 680px;
@@ -38,11 +38,7 @@
 	gap: 18px;
 }
 
-.trade-view-modal {
-	width: 580px;
-}
-
-.trade-modal-close {
+.trade-composer-modal .trade-modal-close {
 	position: absolute;
 	top: -18px;
 	right: 18px;
@@ -61,21 +57,19 @@
 	font-size: 16px;
 }
 
-.trade-modal-title {
+.trade-composer-modal .trade-modal-title {
 	text-align: center;
 	color: $monopoly-ink;
 	font-size: 18px;
 	font-weight: 800;
 }
 
-.trade-editor,
-.trade-summary-grid {
+.trade-composer-modal .trade-editor {
 	display: flex;
 	gap: 22px;
 }
 
-.trade-side,
-.trade-summary-side {
+.trade-composer-modal .trade-side {
 	flex: 1;
 	min-width: 0;
 
@@ -84,50 +78,114 @@
 	gap: 12px;
 }
 
-.trade-player-name {
+.trade-composer-modal .trade-player-name {
 	text-align: center;
 	font-size: 17px;
 	font-weight: 900;
 	white-space: nowrap;
 	text-overflow: ellipsis;
-	overflow: hidden;
+	overflow: visible;
 }
 
-.trade-player-select {
+.trade-composer-modal .trade-player-select {
+	width: 100%;
 	display: flex;
+	flex-wrap: wrap;
 	gap: 6px;
 }
 
-.trade-target {
-	flex: 1;
+.trade-composer-modal .trade-target-empty {
+	width: 100%;
+	height: 32px;
+	align-items: center;
+	justify-content: center;
+
+	background-color: rgba(5, 5, 5, 0.08);
+	border: 2px solid rgba(5, 5, 5, 0.14);
+	border-radius: $monopoly-radius-board;
+	color: rgba(5, 5, 5, 0.58);
+
+	font-size: 13px;
+	font-weight: 800;
+	text-transform: uppercase;
+}
+
+.trade-composer-modal .trade-target {
+	width: 100%;
 	min-width: 0;
 	height: 32px;
 	margin: 0;
 	padding: 0 8px;
+	cursor: pointer;
+	pointer-events: all;
 
 	background-color: rgba(5, 5, 5, 0.08);
 	color: $monopoly-ink;
 	border: 2px solid rgba(5, 5, 5, 0.22);
 	border-radius: $monopoly-radius-board;
 
-	font-size: 13px;
+	flex-direction: row;
+	align-items: center;
+	justify-content: center;
+
+	font-size: 20px;
+	font-weight: 900;
+	text-align: center;
 	white-space: nowrap;
-	text-overflow: ellipsis;
-	overflow: hidden;
+	text-overflow: clip;
+	overflow: visible;
 }
 
-.trade-target.selected {
+.trade-composer-modal .trade-target:hover {
+	background-color: rgba(5, 5, 5, 0.14);
+}
+
+.trade-composer-modal .trade-target-label {
+	flex: 1;
+	min-width: 0;
+	width: 100%;
+	height: 100%;
+	flex-direction: row;
+	align-items: center;
+	justify-content: center;
+
+	color: $monopoly-ink;
+	text-align: center;
+	white-space: nowrap;
+	text-overflow: clip;
+	overflow: visible;
+}
+
+.trade-composer-modal .trade-target-label .label {
+	width: 100%;
+	min-width: 0;
+	flex-grow: 1;
+	flex-shrink: 1;
+
+	color: $monopoly-ink;
+	text-align: center;
+	white-space: nowrap;
+	text-overflow: clip;
+	overflow: visible;
+}
+
+.trade-composer-modal .trade-target.selected {
 	background-color: $monopoly-gold;
+	color: $monopoly-ink;
 }
 
-.trade-money-row {
+.trade-composer-modal .trade-target.selected:hover {
+	background-color: $monopoly-gold-hover;
+}
+
+.trade-composer-modal .trade-money-row {
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	gap: 8px;
 }
 
-.trade-money-row .monopoly-button {
+.trade-composer-modal .trade-money-row .monopoly-button {
 	width: 34px;
 	height: 30px;
 	margin: 0;
@@ -141,7 +199,7 @@
 	border-radius: $monopoly-radius-board;
 }
 
-.trade-money-pill {
+.trade-composer-modal .trade-money-pill {
 	min-width: 82px;
 	height: 34px;
 	padding: 0 12px;
@@ -158,7 +216,7 @@
 	font-weight: 900;
 }
 
-.trade-swap-column {
+.trade-composer-modal .trade-swap-column {
 	width: 54px;
 	min-height: 190px;
 
@@ -173,7 +231,7 @@
 	font-weight: 900;
 }
 
-.trade-property-picker {
+.trade-composer-modal .trade-property-picker {
 	min-height: 96px;
 
 	display: flex;
@@ -182,8 +240,7 @@
 	gap: 6px;
 }
 
-.trade-property-chip,
-.trade-summary-property {
+.trade-composer-modal .trade-property-chip {
 	min-height: 30px;
 	margin: 0;
 	padding: 5px 8px;
@@ -197,7 +254,7 @@
 	text-align: center;
 }
 
-.trade-property-chip {
+.trade-composer-modal .trade-property-chip {
 	max-width: 132px;
 	color: $monopoly-text;
 	white-space: nowrap;
@@ -205,52 +262,51 @@
 	overflow: hidden;
 }
 
-.trade-property-chip.selected {
+.trade-composer-modal .trade-property-chip.selected {
 	border-color: $monopoly-ink;
 	box-shadow: 0 0 0 2px rgba(5, 5, 5, 0.25);
 }
 
-.trade-summary-property {
-	background-color: rgba(255, 255, 255, 0.28);
-}
+.trade-composer-modal .trade-property-chip.color-brown { background-color: $property-brown; }
+.trade-composer-modal .trade-property-chip.color-light_blue { background-color: $property-light-blue; }
+.trade-composer-modal .trade-property-chip.color-pink { background-color: $property-pink; }
+.trade-composer-modal .trade-property-chip.color-orange { background-color: $property-orange; }
+.trade-composer-modal .trade-property-chip.color-red { background-color: $property-red; }
+.trade-composer-modal .trade-property-chip.color-yellow { background-color: $property-yellow; color: $monopoly-ink; }
+.trade-composer-modal .trade-property-chip.color-green { background-color: $property-green; }
+.trade-composer-modal .trade-property-chip.color-dark_blue { background-color: $property-dark-blue; }
+.trade-composer-modal .trade-property-chip.color-railroad { background-color: $monopoly-ink-hover; }
+.trade-composer-modal .trade-property-chip.color-utility { background-color: $property-utility; color: $monopoly-ink; }
+.trade-composer-modal .trade-property-chip.color-none { background-color: $property-none; }
 
-.trade-property-chip.color-brown { background-color: $property-brown; }
-.trade-property-chip.color-light_blue { background-color: $property-light-blue; }
-.trade-property-chip.color-pink { background-color: $property-pink; }
-.trade-property-chip.color-orange { background-color: $property-orange; }
-.trade-property-chip.color-red { background-color: $property-red; }
-.trade-property-chip.color-yellow { background-color: $property-yellow; color: $monopoly-ink; }
-.trade-property-chip.color-green { background-color: $property-green; }
-.trade-property-chip.color-dark_blue { background-color: $property-dark-blue; }
-.trade-property-chip.color-railroad { background-color: $monopoly-ink-hover; }
-.trade-property-chip.color-utility { background-color: $property-utility; color: $monopoly-ink; }
-.trade-property-chip.color-none { background-color: $property-none; }
-
-.trade-send-button,
-.trade-deny-button {
+.trade-composer-modal .trade-send-button {
 	align-self: center;
-	min-width: 150px;
-	height: 50px;
+	min-width: 0;
+	width: 104px;
+	height: 42px;
 	margin: 0;
-	padding: 0 18px;
+	padding: 0 10px;
 
-	border-radius: 5px;
-	color: white;
-	font-size: 17px;
-}
-
-.trade-send-button {
 	background-color: $monopoly-gold;
+	border-radius: $monopoly-radius-board;
 	color: $monopoly-ink;
+	font-size: 17px;
+	font-weight: 900;
+	text-align: left;
+	align-items: center;
+	justify-content: flex-start;
 }
 
-.trade-deny-button {
-	background-color: $monopoly-danger;
+.trade-composer-modal .trade-send-button .label {
+	width: 100%;
+	color: $monopoly-ink;
+	font-weight: 900;
+	text-align: left;
+	white-space: nowrap;
+	text-overflow: clip;
+	overflow: hidden;
 }
 
-.trade-modal-actions {
-	display: flex;
-	justify-content: center;
-	gap: 12px;
+.trade-composer-modal .trade-send-button:hover {
+	background-color: $monopoly-gold-hover;
 }
-

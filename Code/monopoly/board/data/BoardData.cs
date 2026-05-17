@@ -239,7 +239,7 @@ public static class BoardData
 				TwoHouseRent = 220,
 				ThreeHouseRent = 600,
 				FourHouseRent = 800,
-				HotelRent = 100,
+				HotelRent = 1000,
 				ColorGroup = ColorGroup.Orange
 			},
 			new()

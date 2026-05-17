@@ -38,6 +38,7 @@ public sealed partial class GameController : Component
 	[Property, Sync] public NetDictionary<int, int> PropertyImprovements { get; set; } = new();
 	[Property, Sync] public NetDictionary<int, bool> MortgagedProperties { get; set; } = new();
 	[Property, Sync] public NetDictionary<int, string> PendingTrades { get; set; } = new();
+	[Property, Sync] public NetDictionary<int, string> TradeViewers { get; set; } = new();
 	[Property] public Board Board { get; set; }
 
 	public PlayerState CurrentPlayer =>

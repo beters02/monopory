@@ -7,7 +7,7 @@ public sealed class PlayerToken : Component
 	public Board Board {get; set;}
 	public PlayerState PlayerState;
 
-	[Property] public float HeightOffset { get; set; } = 8f;
+	[Property] public float HeightOffset { get; set; } = 4f;
 	[Property] public float MoveSpeed { get; set; } = 15f;
 	[Property] public float RotationSpeed {get; set;} = 10f;
 

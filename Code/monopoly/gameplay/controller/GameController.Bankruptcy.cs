@@ -55,7 +55,10 @@ public sealed partial class GameController : Component
 		foreach ( var trade in GetTrades() )
 		{
 			if ( trade.SenderPlayerIndex == playerIndex || trade.ReceiverPlayerIndex == playerIndex )
+			{
 				PendingTrades.Remove( trade.Id );
+				TradeViewers.Remove( trade.Id );
+			}
 		}
 
 		if ( AuctionHighBidderIndex == playerIndex )

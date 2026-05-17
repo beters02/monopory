@@ -30,6 +30,11 @@ public sealed partial class GameController : Component
 		return ResolvePlayerReference( playerString, null );
 	}
 
+	public PlayerState GetPlayerForIndex( int index )
+	{
+		return Players[index];
+	}
+
 	public PlayerState ResolvePlayerReference( string playerString, Connection caller = null )
 	{
 		if ( string.IsNullOrWhiteSpace( playerString ) )

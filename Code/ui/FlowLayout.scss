@@ -105,6 +105,22 @@ LobbyMenu {
 		text-transform: uppercase;
 	}
 
+	.lobby-panel .flow-actions {
+		width: 100%;
+		flex-wrap: wrap;
+	}
+
+	.lobby-panel .flow-actions .monopoly-button {
+		flex: 1 1 0;
+		min-width: 0;
+		padding-left: 10px;
+		padding-right: 10px;
+
+		justify-content: center;
+		text-align: center;
+		white-space: nowrap;
+	}
+
 	.flow-primary-button {
 		background-color: $monopoly-gold;
 		color: $monopoly-ink;

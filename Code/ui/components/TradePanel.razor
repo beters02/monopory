@@ -26,19 +26,33 @@
 					var isSender = trade.SenderPlayerIndex == GameRef.LocalPlayerIndex;
 
 					<div class="@GetTradeRowClasses( trade )">
-						<GameButton Variant="trade-row-main" OnClick="@(() => OpenTradeViewer( trade.Id ))">
-							<ChildContent>
-								<span class="trade-mini-box">@GetTradeSideLabel( trade, true )</span>
-								<span class="trade-mini-box">@GetTradeSideLabel( trade, false )</span>
-								<span>@sender</span>
-								<span class="trade-arrow">-&gt;</span>
-								<span>@receiver</span>
-								@if ( isReceiver )
-								{
-									<span class="trade-looking">looking</span>
-								}
-							</ChildContent>
-						</GameButton>
+						<div class="trade-row-main" onclick="@(() => OpenTradeViewer( trade.Id ))">
+							<div class="trade-party">
+								<div class="@GetTradeViewingClasses( trade.Id, trade.SenderPlayerIndex )" title="@GetTradeViewingTitle( trade.Id, trade.SenderPlayerIndex )">
+									<div class="trade-eye-outline">
+										<div class="trade-eye-pupil"></div>
+									</div>
+									@if ( !IsViewingTrade( trade.Id, trade.SenderPlayerIndex ) )
+									{
+										<div class="trade-eye-slash"></div>
+									}
+								</div>
+								<div class="trade-party-name">@sender</div>
+							</div>
+							<div class="trade-arrow">-&gt;</div>
+							<div class="trade-party">
+								<div class="@GetTradeViewingClasses( trade.Id, trade.ReceiverPlayerIndex )" title="@GetTradeViewingTitle( trade.Id, trade.ReceiverPlayerIndex )">
+									<div class="trade-eye-outline">
+										<div class="trade-eye-pupil"></div>
+									</div>
+									@if ( !IsViewingTrade( trade.Id, trade.ReceiverPlayerIndex ) )
+									{
+										<div class="trade-eye-slash"></div>
+									}
+								</div>
+								<div class="trade-party-name">@receiver</div>
+							</div>
+						</div>
 
 						@if ( isReceiver )
 						{
@@ -104,9 +118,11 @@
 			? null
 			: trade;
 
-	private List<PlayerState> TradeTargets =>
+	private List<int> TradeTargetIndexes =>
 		GameRef?.Players?
-			.Where( player => player is not null && player.IsAssigned && GameRef.GetPlayerIndex( player ) != GameRef.LocalPlayerIndex )
+			.Select( ( player, index ) => new { player, index } )
+			.Where( entry => entry.player is not null && entry.player.IsAssigned && !entry.player.IsBankrupt && entry.index != GameRef.LocalPlayerIndex )
+			.Select( entry => entry.index )
 			.ToList() ?? new();
 
 	private List<int> LocalOwnedPropertyIndexes =>
@@ -117,11 +133,11 @@
 
 	private void OpenTradeComposer()
 	{
+		ClearViewedTrade();
 		IsTradeComposerOpen = true;
-		ViewedTradeId = -1;
 
-		if ( ComposerReceiverPlayerIndex < 0 || TradeTargets.All( player => GameRef.GetPlayerIndex( player ) != ComposerReceiverPlayerIndex ) )
-			ComposerReceiverPlayerIndex = TradeTargets.Count > 0 ? GameRef.GetPlayerIndex( TradeTargets[0] ) : -1;
+		if ( ComposerReceiverPlayerIndex < 0 || !TradeTargetIndexes.Contains( ComposerReceiverPlayerIndex ) )
+			ComposerReceiverPlayerIndex = TradeTargetIndexes.Count > 0 ? TradeTargetIndexes[0] : -1;
 
 		ComposerReceiverPropertyIndexes.RemoveWhere( index => !ReceiverOwnedPropertyIndexes.Contains( index ) );
 		ComposerSenderPropertyIndexes.RemoveWhere( index => !LocalOwnedPropertyIndexes.Contains( index ) );
@@ -138,12 +154,24 @@
 
 	private void OpenTradeViewer( int tradeId )
 	{
+		if ( ViewedTradeId >= 0 && ViewedTradeId != tradeId )
+			GameRef?.RequestSetTradeViewing( ViewedTradeId, false );
+
 		ViewedTradeId = tradeId;
 		IsTradeComposerOpen = false;
+		GameRef?.RequestSetTradeViewing( tradeId, true );
 	}
 
 	private void CloseTradeViewer()
 	{
+		ClearViewedTrade();
+	}
+
+	private void ClearViewedTrade()
+	{
+		if ( ViewedTradeId >= 0 )
+			GameRef?.RequestSetTradeViewing( ViewedTradeId, false );
+
 		ViewedTradeId = -1;
 	}
 
@@ -198,12 +226,20 @@
 
 	private void AcceptTrade( int tradeId )
 	{
+		if ( ViewedTradeId == tradeId )
+			ViewedTradeId = -1;
+
+		GameRef?.RequestSetTradeViewing( tradeId, false );
 		GameRef?.RequestAcceptTrade( tradeId );
 		ViewedTradeId = -1;
 	}
 
 	private void DenyTrade( int tradeId )
 	{
+		if ( ViewedTradeId == tradeId )
+			ViewedTradeId = -1;
+
+		GameRef?.RequestSetTradeViewing( tradeId, false );
 		GameRef?.RequestDenyTrade( tradeId );
 		ViewedTradeId = -1;
 	}
@@ -221,18 +257,32 @@
 		return classes;
 	}
 
-	private static string GetTradeSideLabel( TradeRequest trade, bool senderSide )
+	private bool IsViewingTrade( int tradeId, int playerIndex )
 	{
-		var money = senderSide ? trade.SenderMoney : trade.ReceiverMoney;
-		var properties = senderSide ? trade.SenderPropertyIndexes.Count : trade.ReceiverPropertyIndexes.Count;
-		var total = properties + (money > 0 ? 1 : 0);
+		if ( ViewedTradeId == tradeId && playerIndex == GameRef?.LocalPlayerIndex )
+			return true;
 
-		return total.ToString();
+		return GameRef?.IsPlayerViewingTrade( tradeId, playerIndex ) == true;
+	}
+
+	private string GetTradeViewingClasses( int tradeId, int playerIndex )
+	{
+		return IsViewingTrade( tradeId, playerIndex )
+			? "trade-view-status viewing"
+			: "trade-view-status";
+	}
+
+	private string GetTradeViewingTitle( int tradeId, int playerIndex )
+	{
+		return IsViewingTrade( tradeId, playerIndex )
+			? $"{GetPlayerName( playerIndex )} has this trade open"
+			: $"{GetPlayerName( playerIndex )} does not have this trade open";
 	}
 
 	private string GetPlayerName( int playerIndex )
 	{
-		return GameRef?.Players?.ElementAtOrDefault( playerIndex )?.PlayerName ?? "Player";
+		var playerName = GameRef?.Players?.ElementAtOrDefault( playerIndex )?.PlayerName;
+		return string.IsNullOrWhiteSpace( playerName ) ? $"Player {playerIndex + 1}" : playerName;
 	}
 
 	private int GetPlayerMoney( int playerIndex )
@@ -257,6 +307,7 @@
 			hash.Add( trade.Id );
 			hash.Add( trade.Serialize() );
 			hash.Add( GameRef.IsTradeValid( trade ) );
+			hash.Add( GameRef.TradeViewers.TryGetValue( trade.Id, out var viewers ) ? viewers : "" );
 		}
 
 		return hash.ToHashCode();

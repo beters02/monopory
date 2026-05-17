@@ -107,6 +107,9 @@ public sealed partial class GameController : Component
 		if ( bidder is null || !bidder.IsAssigned || bidder.IsBankrupt || def is null )
 			return;
 
+		if ( bidderIndex == AuctionHighBidderIndex )
+			return;
+
 		if ( bidAmount <= AuctionCurrentBid || bidAmount > bidder.Money )
 			return;
 

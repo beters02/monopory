@@ -80,7 +80,7 @@
 }
 
 .trade-row {
-	min-height: 42px;
+	min-height: 44px;
 
 	display: flex;
 	align-items: center;
@@ -90,66 +90,135 @@
 .trade-row-main {
 	flex: 1;
 	min-width: 0;
-	height: 38px;
+	min-height: 40px;
 	margin: 0;
-	padding: 0 8px;
+	padding: 6px 8px;
+	cursor: pointer;
+	pointer-events: all;
 
-	background-color: rgba(255, 255, 255, 0.05);
-	color: white;
+	background-color: rgba(207, 232, 226, 0.72);
+	border: 2px solid $monopoly-board-outline;
 	border-radius: 4px;
+	color: $monopoly-ink;
 
 	display: flex;
 	align-items: center;
-	gap: 7px;
+	justify-content: space-between;
+	gap: 8px;
 
-	font-size: 15px;
+	font-size: 14px;
 	font-weight: 700;
 }
 
 .trade-row-main:hover {
-	background-color: rgba(255, 255, 255, 0.12);
+	background-color: rgba(221, 241, 236, 0.84);
 }
 
-.trade-mini-box {
-	width: 22px;
-	height: 22px;
+.trade-party {
+	flex: 1;
+	min-width: 0;
 
+	display: flex;
 	align-items: center;
-	justify-content: center;
+	gap: 6px;
+}
 
-	background-color: rgba(255, 255, 255, 0.12);
-	border-radius: 3px;
-	color: rgba(255, 255, 255, 0.84);
+.trade-party-name {
+	flex: 1;
+	min-width: 0;
+	color: $monopoly-ink;
+	font-size: 14px;
+	font-weight: 800;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
+}
+
+.trade-arrow {
+	flex-shrink: 0;
+	color: rgba(5, 5, 5, 0.48);
 	font-size: 13px;
 	font-weight: 900;
 }
 
-.trade-arrow {
-	color: rgba(255, 255, 255, 0.66);
+.trade-view-status {
+	position: relative;
+	flex-shrink: 0;
+	width: 24px;
+	height: 24px;
+
+	align-items: center;
+	justify-content: center;
+
+	background-color: rgba(5, 5, 5, 0.07);
+	border: 1px solid rgba(5, 5, 5, 0.18);
+	border-radius: 3px;
 }
 
-.trade-looking {
-	margin-left: auto;
-	padding: 4px 7px;
+.trade-view-status.viewing {
+	background-color: rgba(19, 153, 214, 0.18);
+	border-color: rgba(19, 153, 214, 0.54);
+}
 
-	background-color: rgba(217, 180, 95, 0.22);
-	border: 1px solid rgba(217, 180, 95, 0.48);
-	border-radius: 3px;
+.trade-eye-outline {
+	width: 15px;
+	height: 10px;
+	border: 2px solid rgba(5, 5, 5, 0.48);
+	border-radius: 50%;
 
-	color: $monopoly-gold-hover;
-	font-size: 11px;
-	text-transform: uppercase;
+	align-items: center;
+	justify-content: center;
+}
+
+.trade-eye-pupil {
+	width: 4px;
+	height: 4px;
+	background-color: rgba(5, 5, 5, 0.48);
+	border-radius: 50%;
+}
+
+.trade-view-status.viewing .trade-eye-outline {
+	border-color: $monopoly-board-outline;
+}
+
+.trade-view-status.viewing .trade-eye-pupil {
+	background-color: $monopoly-board-outline;
+}
+
+.trade-eye-slash {
+	position: absolute;
+	width: 20px;
+	height: 3px;
+
+	background-color: $monopoly-danger-hover;
+	transform: rotate(-35deg);
 }
 
 .trade-icon-button {
-	width: 42px;
+	width: 48px;
 	height: 34px;
 	margin: 0;
 	padding: 0;
 
+	align-items: center;
+	justify-content: center;
+
 	border-radius: 4px;
 	color: white;
 	font-size: 12px;
+	font-weight: 900;
+	text-align: center;
+	white-space: nowrap;
+	text-overflow: clip;
+	overflow: hidden;
+}
+
+.trade-icon-button .label {
+	width: 100%;
+	text-align: center;
+	white-space: nowrap;
+	text-overflow: clip;
+	overflow: hidden;
 }
 
 .trade-icon-button.accept {

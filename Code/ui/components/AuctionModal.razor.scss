@@ -19,6 +19,7 @@
 }
 
 .auction-modal {
+	position: relative;
 	width: 780px;
 	min-height: 520px;
 	padding: 22px 30px 28px;
@@ -37,35 +38,16 @@
 }
 
 .auction-kicker {
+	position: absolute;
+	top: 22px;
+	left: 30px;
+	right: 30px;
+
 	text-align: center;
 	color: $monopoly-gold-soft;
-	font-size: 18px;
+	font-size: 40px;
 	font-weight: 800;
-}
-
-.auction-title-row {
-	align-items: center;
-	justify-content: center;
-	gap: 14px;
-}
-
-.auction-title-dot {
-	width: 38px;
-	height: 38px;
-	border: 3px solid rgba(255, 255, 255, 0.78);
-	border-radius: 19px;
-	box-shadow: 0 4px 14px rgba(0, 0, 0, 0.32);
-}
-
-.auction-title {
-	max-width: 560px;
-	text-align: center;
-	font-size: 34px;
-	font-weight: 900;
-	line-height: 38px;
-	white-space: nowrap;
-	text-overflow: ellipsis;
-	overflow: hidden;
+	pointer-events: none;
 }
 
 .auction-content {
@@ -264,26 +246,14 @@
 	font-weight: 900;
 }
 
-.auction-title-dot.color-brown,
 .auction-property-card.color-brown .auction-card-header { background-color: $property-brown; color: $monopoly-text; }
-.auction-title-dot.color-light_blue,
 .auction-property-card.color-light_blue .auction-card-header { background-color: $property-light-blue; }
-.auction-title-dot.color-pink,
 .auction-property-card.color-pink .auction-card-header { background-color: $property-pink; color: $monopoly-text; }
-.auction-title-dot.color-orange,
 .auction-property-card.color-orange .auction-card-header { background-color: $property-orange; }
-.auction-title-dot.color-red,
 .auction-property-card.color-red .auction-card-header { background-color: $property-red; color: $monopoly-text; }
-.auction-title-dot.color-yellow,
 .auction-property-card.color-yellow .auction-card-header { background-color: $property-yellow; }
-.auction-title-dot.color-green,
 .auction-property-card.color-green .auction-card-header { background-color: $property-green; color: $monopoly-text; }
-.auction-title-dot.color-dark_blue,
 .auction-property-card.color-dark_blue .auction-card-header { background-color: $property-dark-blue; color: $monopoly-text; }
-.auction-title-dot.color-railroad,
 .auction-property-card.color-railroad .auction-card-header { background-color: $property-railroad; }
-.auction-title-dot.color-utility,
 .auction-property-card.color-utility .auction-card-header { background-color: $property-utility; }
-.auction-title-dot.color-none,
 .auction-property-card.color-none .auction-card-header { background-color: $property-none; color: $monopoly-text; }
-

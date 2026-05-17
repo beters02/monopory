@@ -18,7 +18,7 @@
 						<div class="trade-money-pill">$@Trade.SenderMoney</div>
 						@foreach ( var propertyIndex in Trade.SenderPropertyIndexes )
 						{
-							<div class="trade-summary-property">@GetPropertyName( propertyIndex )</div>
+							<div class="@GetPropertyChipClasses( propertyIndex )">@GetPropertyName( propertyIndex )</div>
 						}
 					</div>
 					<div class="trade-summary-side">
@@ -26,7 +26,7 @@
 						<div class="trade-money-pill">$@Trade.ReceiverMoney</div>
 						@foreach ( var propertyIndex in Trade.ReceiverPropertyIndexes )
 						{
-							<div class="trade-summary-property">@GetPropertyName( propertyIndex )</div>
+							<div class="@GetPropertyChipClasses( propertyIndex )">@GetPropertyName( propertyIndex )</div>
 						}
 					</div>
 				</div>
@@ -63,6 +63,12 @@
 	private string GetPropertyName( int propertyIndex )
 	{
 		return GameRef?.Board?.GetSpaceDef( propertyIndex )?.DisplayName ?? $"Space {propertyIndex}";
+	}
+
+	private string GetPropertyChipClasses( int propertyIndex )
+	{
+		var def = GameRef?.Board?.GetSpaceDef( propertyIndex );
+		return $"trade-property-chip color-{HudUi.GetPropertyColorClass( def )}";
 	}
 
 	protected override int BuildHash()
