@@ -1,7 +1,7 @@
 using System;
 using Sandbox;
 
-public static class MonopolySpaceSettings
+public static class SpaceLayoutSettings
 {
 	public static readonly float DefaultScale = 0.009f;
 	public static readonly float WorldPanelLabelZOffset = 0.75f;

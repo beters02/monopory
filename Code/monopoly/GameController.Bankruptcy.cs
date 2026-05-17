@@ -71,7 +71,7 @@ public sealed partial class GameController : Component
 
 	private void CheckForGameOver()
 	{
-		if ( MatchState != MonopolyMatchState.InGame )
+		if ( MatchState != MatchLifecycleState.InGame )
 			return;
 
 		if ( StartingPlayerCount <= 1 )
@@ -90,8 +90,8 @@ public sealed partial class GameController : Component
 		ClearAuction();
 		ClearPendingForcedPayment();
 		PendingPurchaseSpaceIndex = -1;
-		Phase = MonopolyGamePhase.TurnEnded;
-		MatchState = MonopolyMatchState.GameOver;
+		Phase = GamePhase.TurnEnded;
+		MatchState = MatchLifecycleState.GameOver;
 
 		var winnerName = Winner?.PlayerName ?? "No one";
 		SendPopupToAll( "Game over", $"{winnerName} won the game.", PopupKind.Success, true, 8f );

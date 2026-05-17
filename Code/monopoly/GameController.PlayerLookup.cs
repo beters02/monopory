@@ -6,7 +6,17 @@ using Sandbox;
 public sealed partial class GameController : Component
 {
 
-	public PlayerState LocalPlayer => Players.FirstOrDefault( p => p.OwnerId == Connection.Local.SteamId );
+	public PlayerState LocalPlayer
+	{
+		get
+		{
+			var localSteamId = GetLocalSteamId();
+			if ( !localSteamId.HasValue || Players is null )
+				return null;
+
+			return Players.FirstOrDefault( p => p is not null && p.OwnerId == localSteamId.Value );
+		}
+	}
 
 	public int LocalPlayerIndex => Players.IndexOf( LocalPlayer );
 
@@ -143,6 +153,18 @@ public sealed partial class GameController : Component
 			return "";
 
 		return Regex.Replace( playerString, @"[\W_]+", "" ).ToLowerInvariant();
+	}
+
+	private static long? GetLocalSteamId()
+	{
+		try
+		{
+			return Connection.Local?.SteamId;
+		}
+		catch
+		{
+			return null;
+		}
 	}
 
 	public bool TryNormalizePlayerIndex( int index, out int normalizedIndex )

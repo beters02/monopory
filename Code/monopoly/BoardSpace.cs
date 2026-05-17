@@ -303,7 +303,7 @@ public sealed class BoardSpace : Component
 		var worldPanel = labelObject.Components.Create<Sandbox.WorldPanel>();
 		worldPanel.InteractionRange = 0f;
 		worldPanel.PanelSize = GetWorldPanelLabelPanelSizeForQuadrant( Collider.Scale );
-		worldPanel.RenderScale = MonopolySpaceSettings.WorldPanelLabelRenderScale; //1f / MonopolySpaceSettings.WorldPanelLabelPixelsPerWorldUnit;
+		worldPanel.RenderScale = SpaceLayoutSettings.WorldPanelLabelRenderScale; //1f / SpaceLayoutSettings.WorldPanelLabelPixelsPerWorldUnit;
 		worldPanel.VerticalAlign = Sandbox.WorldPanel.VAlignment.Center;
 		worldPanel.HorizontalAlign = Sandbox.WorldPanel.HAlignment.Center;
 
@@ -320,23 +320,23 @@ public sealed class BoardSpace : Component
 	{
 		if ( Def.Index >= 0 && Def.Index < 11 )
 		{
-			labelObject.LocalPosition = MonopolySpaceSettings.FirstQuadrantLocalPosition;
-			labelObject.LocalRotation = MonopolySpaceSettings.FirstQuadrantLocalRotation;
+			labelObject.LocalPosition = SpaceLayoutSettings.FirstQuadrantLocalPosition;
+			labelObject.LocalRotation = SpaceLayoutSettings.FirstQuadrantLocalRotation;
 		}
 		else if ( Def.Index >= 11 && Def.Index < 20 )
 		{
-			labelObject.LocalPosition = MonopolySpaceSettings.SecondQuadrantLocalPosition;
-			labelObject.LocalRotation = MonopolySpaceSettings.SecondQuadrantLocalRotation;
+			labelObject.LocalPosition = SpaceLayoutSettings.SecondQuadrantLocalPosition;
+			labelObject.LocalRotation = SpaceLayoutSettings.SecondQuadrantLocalRotation;
 		}
 		else if ( Def.Index >= 20 && Def.Index < 30 )
 		{
-			labelObject.LocalPosition = MonopolySpaceSettings.ThirdQuadrantLocalPosition;
-			labelObject.LocalRotation = MonopolySpaceSettings.ThirdQuadrantLocalRotation;
+			labelObject.LocalPosition = SpaceLayoutSettings.ThirdQuadrantLocalPosition;
+			labelObject.LocalRotation = SpaceLayoutSettings.ThirdQuadrantLocalRotation;
 		}
 		else
 		{
-			labelObject.LocalPosition = MonopolySpaceSettings.FourthQuadrantLocalPosition;
-			labelObject.LocalRotation = MonopolySpaceSettings.FourthQuadrantLocalRotation;
+			labelObject.LocalPosition = SpaceLayoutSettings.FourthQuadrantLocalPosition;
+			labelObject.LocalRotation = SpaceLayoutSettings.FourthQuadrantLocalRotation;
 		}
 	}
 
@@ -352,9 +352,9 @@ public sealed class BoardSpace : Component
 		labelObject.LocalPosition = new Vector3(
 			colliderCenter.x,
 			colliderCenter.y,
-			MonopolySpaceSettings.WorldPanelLabelZOffset
+			SpaceLayoutSettings.WorldPanelLabelZOffset
 		);
-		labelObject.LocalRotation = MonopolySpaceSettings.WorldLabelRotations[quad];
+		labelObject.LocalRotation = SpaceLayoutSettings.WorldLabelRotations[quad];
 		labelObject.LocalScale = Vector3.One;
 	}
 
@@ -370,9 +370,9 @@ public sealed class BoardSpace : Component
 
 	private Vector2 GetWorldPanelLabelPanelSizeForQuadrant( Vector3 hitboxSize )
 	{
-		return MonopolySpaceSettings.WorldPanelSizePixels;
+		return SpaceLayoutSettings.WorldPanelSizePixels;
 		//return GetWorldPanelLabelSizeForQuadrant( hitboxSize ) *
-		//	MonopolySpaceSettings.WorldPanelLabelPixelsPerWorldUnit;
+		//	SpaceLayoutSettings.WorldPanelLabelPixelsPerWorldUnit;
 	}
 
 }

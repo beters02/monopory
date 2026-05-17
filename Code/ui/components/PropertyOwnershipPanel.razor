@@ -17,17 +17,17 @@
 
 					<Sandbox.ui.components.HudPanel.HudPanel Variant="@GetPropertyPanelClasses( playerIndex, isExpanded )">
 						<ChildContent>
-							<MonopolyButton Variant="property-player-button" OnClick="@(() => TogglePropertyPanel( playerIndex ))" Sound="@(GetPropertyPanelSound( playerIndex ))">
+							<GameButton Variant="property-player-button" OnClick="@(() => TogglePropertyPanel( playerIndex ))" Sound="@(GetPropertyPanelSound( playerIndex ))">
 								<ChildContent>
 									<div class="property-player-name">@player.PlayerName</div>
 									<div class="property-player-money">$@player.Money</div>
 								</ChildContent>
-							</MonopolyButton>
+							</GameButton>
 
 							<div class="property-grid">
 								@foreach ( var property in PropertySpaces )
 								{
-									<MonopolyButton
+									<GameButton
 										Variant="@GetPropertySquareClasses( property, playerIndex )"
 										Title="@property.DisplayName"
 										OnClick="@(() => SelectPropertySpace( property.Index ))">
@@ -37,7 +37,7 @@
 												<div class="property-mortgage-marker">M</div>
 											}
 										</ChildContent>
-									</MonopolyButton>
+									</GameButton>
 								}
 							</div>
 						</ChildContent>

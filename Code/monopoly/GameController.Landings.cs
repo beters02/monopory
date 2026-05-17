@@ -46,7 +46,7 @@ public sealed partial class GameController : Component
 			case SpaceType.GoToJail:
 				SendPlayerToJail( player );
 				CompleteTurn();
-				Phase = MonopolyGamePhase.WaitingToRoll;
+				Phase = GamePhase.WaitingToRoll;
 				break;
 
 			case SpaceType.Property:
@@ -72,7 +72,7 @@ public sealed partial class GameController : Component
 				if ( Config?.VacationCash == true )
 				{
 					CompleteTurn();
-					Phase = MonopolyGamePhase.WaitingToRoll;
+					Phase = GamePhase.WaitingToRoll;
 				}
 				break;
 		}
@@ -127,7 +127,7 @@ public sealed partial class GameController : Component
 			case UnownedLandingMode.SkipOrAuction:
 			default:
 				PendingPurchaseSpaceIndex = def.Index;
-				Phase = MonopolyGamePhase.WaitingForBuyDecision;
+				Phase = GamePhase.WaitingForBuyDecision;
 
 				Log.Info( $"{player.PlayerName} can buy {def.DisplayName} for ${def.Price}." );
 				return;

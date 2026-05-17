@@ -1,0 +1,113 @@
+@import "../../MonopolyTheme.scss";
+
+.monopoly-button {
+    margin-top: 10px;
+    padding: 10px 14px;
+
+    background-color: $monopoly-gold;
+    color: $monopoly-ink;
+
+    border-radius: $monopoly-radius-control;
+    font-weight: 800;
+    font-size: 16px;
+
+    cursor: pointer;
+    pointer-events: all;
+}
+
+.monopoly-button:hover {
+    background-color: $monopoly-gold-hover;
+}
+
+.monopoly-button.blocked-action-button {
+    background-color: $monopoly-blocked-action;
+    color: $monopoly-text;
+    cursor: not-allowed;
+}
+
+.monopoly-button.blocked-action-button:hover {
+    background-color: $monopoly-blocked-action-hover;
+}
+
+.monopoly-button.property-player-button {
+    width: 100%;
+    min-height: 52px;
+    margin: 0;
+    padding: 8px 10px;
+
+    background-color: rgba(255, 255, 255, 0.04);
+    border: 0;
+    border-radius: 0;
+    color: $monopoly-text;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1px;
+}
+
+.monopoly-button.property-player-button:hover {
+    background-color: rgba(255, 255, 255, 0.12);
+}
+
+.monopoly-button.property-square {
+    width: 17px;
+    height: 17px;
+    margin: 0;
+    padding: 0;
+
+    border: 2px solid rgba(0, 0, 0, 0.72);
+    border-radius: 2px;
+
+    align-items: center;
+    justify-content: center;
+    opacity: 0.28;
+}
+
+.monopoly-button.property-square:hover {
+    opacity: 0.85;
+    border-color: white;
+}
+
+.monopoly-button.property-square.owned-by-panel-player {
+    opacity: 1;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.52);
+}
+
+.monopoly-button.property-square.owned-by-other-player {
+    opacity: 0.14;
+}
+
+.monopoly-button.property-square.unowned {
+    filter: saturate(0.45);
+}
+
+.monopoly-button.property-square.pending-purchase {
+    border-color: $monopoly-gold-soft;
+    box-shadow: 0 0 0 2px rgba(255, 217, 106, 0.7);
+    opacity: 1;
+}
+
+.monopoly-button.property-square.mortgaged {
+    filter: saturate(0.32) brightness(0.72);
+    background-image: linear-gradient(135deg, rgba(0, 0, 0, 0.42) 0%, rgba(0, 0, 0, 0.42) 50%, rgba(255, 255, 255, 0.16) 50%, rgba(255, 255, 255, 0.16) 100%);
+}
+
+.monopoly-button.property-square.selected {
+    border-color: white;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.78);
+    opacity: 1;
+}
+
+.monopoly-button.property-square.color-brown { background-color: $property-brown; }
+.monopoly-button.property-square.color-light_blue { background-color: $property-light-blue; }
+.monopoly-button.property-square.color-pink { background-color: $property-pink; }
+.monopoly-button.property-square.color-orange { background-color: $property-orange; }
+.monopoly-button.property-square.color-red { background-color: $property-red; }
+.monopoly-button.property-square.color-yellow { background-color: $property-yellow; }
+.monopoly-button.property-square.color-green { background-color: $property-green; }
+.monopoly-button.property-square.color-dark_blue { background-color: $property-dark-blue; }
+.monopoly-button.property-square.color-railroad { background-color: $property-railroad; }
+.monopoly-button.property-square.color-utility { background-color: $property-utility; }
+.monopoly-button.property-square.color-none { background-color: $property-none; }

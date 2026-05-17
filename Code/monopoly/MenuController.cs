@@ -17,22 +17,23 @@ public sealed class MenuController : Component
 
 	public bool TryOpenLobby()
 	{
-		if ( !Networking.IsHost )
-			return false;
+		//if ( Networking.IsActive )
+		//	Networking.Disconnect();
 
 		var hostedConfig = MatchBootstrap.CloneConfig( Config );
 		MatchBootstrap.PrepareLobby( hostedConfig );
 
-		if ( !Networking.IsActive )
+		if (!Networking.IsActive)
 		{
 			Networking.CreateLobby( new LobbyConfig
 			{
 				Name = "Monopory Lobby",
 				MaxPlayers = Math.Max( hostedConfig.MaxPlayers, hostedConfig.MinPlayers ),
 				Privacy = LobbyPrivacy.FriendsOnly,
-				DestroyWhenHostLeaves = true
+				DestroyWhenHostLeaves = false
 			} );
 		}
+		
 
 		LoadLobbyScene();
 		return true;
@@ -50,7 +51,6 @@ public sealed class MenuController : Component
 			Log.Info("Game was launched with +Debug.");
 	}
 
-	[Rpc.Broadcast]
 	private void LoadLobbyScene()
 	{
 		SceneFlow.LoadLobby( Scene );

@@ -3,7 +3,7 @@
     "__guid": "31d8e098-4a39-421a-9a2e-1c4a6b3ed131",
     "__version": 2,
     "Flags": 0,
-    "Name": "Token_01",
+    "Name": "token_01",
     "Position": "0,0,0",
     "Rotation": "0,0,0,1",
     "Scale": "1,1,1",
@@ -20,12 +20,6 @@
         "__guid": "a692d01e-2baf-4bba-94b5-34ea4d36028c",
         "__enabled": true,
         "Flags": 0,
-        "Board": {
-          "_type": "component",
-          "component_id": "4b9cd09b-a167-40b7-a17a-0c958e771b55",
-          "go": "469cf384-89f4-4353-99dd-4b89667eff1f",
-          "component_type": "Board"
-        },
         "HeightOffset": 4.809978,
         "MoveSpeed": 15,
         "OnComponentDestroy": null,
@@ -33,13 +27,7 @@
         "OnComponentEnabled": null,
         "OnComponentFixedUpdate": null,
         "OnComponentStart": null,
-        "OnComponentUpdate": null,
-        "PlayerState": {
-          "_type": "component",
-          "component_id": "a460fd92-38a9-4656-8a32-31b00ec6d91a",
-          "go": "9283ae9e-16e2-4c32-91b7-1551b4000a6a",
-          "component_type": "PlayerState"
-        }
+        "OnComponentUpdate": null
       }
     ],
     "Children": [
@@ -108,7 +96,28 @@
           }
         ]
       }
-    ]
+    ],
+    "__properties": {
+      "NetworkInterpolation": true,
+      "TimeScale": 1,
+      "WantsSystemScene": true,
+      "Metadata": {},
+      "NavMesh": {
+        "Enabled": false,
+        "IncludeStaticBodies": true,
+        "IncludeKeyframedBodies": true,
+        "EditorAutoUpdate": false,
+        "AgentHeight": 64,
+        "AgentRadius": 16,
+        "AgentStepSize": 18,
+        "AgentMaxSlope": 40,
+        "ExcludedBodies": "",
+        "IncludedBodies": "",
+        "DeferGeneration": false,
+        "CustomBounds": false
+      }
+    },
+    "__variables": []
   },
   "ResourceVersion": 2,
   "ShowInMenu": false,

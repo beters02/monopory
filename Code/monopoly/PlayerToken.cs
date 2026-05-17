@@ -2,8 +2,9 @@ using Sandbox;
 
 public sealed class PlayerToken : Component
 {
-	[Property] public Board Board { get; set; }
-	[Property] public PlayerState PlayerState { get; set; }
+
+	public Board Board {get; set;}
+	public PlayerState PlayerState;
 
 	[Property] public float HeightOffset { get; set; } = 8f;
 	[Property] public float MoveSpeed { get; set; } = 15f;

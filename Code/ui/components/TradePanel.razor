@@ -8,7 +8,7 @@
 	<div class="trade-panel">
 		<div class="trade-panel-header">
 			<div class="trade-panel-title">Trades</div>
-			<MonopolyButton Variant="trade-create-button" OnClick="@OpenTradeComposer">+ Create</MonopolyButton>
+			<GameButton Variant="trade-create-button" OnClick="@OpenTradeComposer">+ Create</GameButton>
 		</div>
 
 		@if ( Trades.Count == 0 )
@@ -26,7 +26,7 @@
 					var isSender = trade.SenderPlayerIndex == GameRef.LocalPlayerIndex;
 
 					<div class="@GetTradeRowClasses( trade )">
-						<MonopolyButton Variant="trade-row-main" OnClick="@(() => OpenTradeViewer( trade.Id ))">
+						<GameButton Variant="trade-row-main" OnClick="@(() => OpenTradeViewer( trade.Id ))">
 							<ChildContent>
 								<span class="trade-mini-box">@GetTradeSideLabel( trade, true )</span>
 								<span class="trade-mini-box">@GetTradeSideLabel( trade, false )</span>
@@ -38,16 +38,16 @@
 									<span class="trade-looking">looking</span>
 								}
 							</ChildContent>
-						</MonopolyButton>
+						</GameButton>
 
 						@if ( isReceiver )
 						{
-							<MonopolyButton Variant="trade-icon-button accept" OnClick="@(() => AcceptTrade( trade.Id ))">OK</MonopolyButton>
-							<MonopolyButton Variant="trade-icon-button deny" OnClick="@(() => DenyTrade( trade.Id ))">X</MonopolyButton>
+							<GameButton Variant="trade-icon-button accept" OnClick="@(() => AcceptTrade( trade.Id ))">OK</GameButton>
+							<GameButton Variant="trade-icon-button deny" OnClick="@(() => DenyTrade( trade.Id ))">X</GameButton>
 						}
 						else if ( isSender )
 						{
-							<MonopolyButton Variant="trade-icon-button deny" OnClick="@(() => DenyTrade( trade.Id ))">X</MonopolyButton>
+							<GameButton Variant="trade-icon-button deny" OnClick="@(() => DenyTrade( trade.Id ))">X</GameButton>
 						}
 					</div>
 				}

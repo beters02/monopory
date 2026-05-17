@@ -147,7 +147,7 @@ public sealed class GameCommandManager : Component
 	{
 		return game is not null &&
 			player is not null &&
-			game.Phase == MonopolyGamePhase.WaitingForBuyDecision &&
+			game.Phase == GamePhase.WaitingForBuyDecision &&
 			game.CurrentPlayer == player &&
 			game.PendingPurchaseSpaceIndex >= 0;
 	}

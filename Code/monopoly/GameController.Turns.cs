@@ -22,7 +22,7 @@ public sealed partial class GameController : Component
 			return;
 		}
 
-		if ( Phase == MonopolyGamePhase.ResolvingSpace )
+		if ( Phase == GamePhase.ResolvingSpace )
 			return;
 
 		if ( CurrentTurnEndsAt <= 0f )
@@ -45,7 +45,7 @@ public sealed partial class GameController : Component
 
 		PendingPurchaseSpaceIndex = -1;
 
-		if ( Phase == MonopolyGamePhase.Auctioning )
+		if ( Phase == GamePhase.Auctioning )
 			ClearAuction();
 
 		CurrentTurnGetsExtraRoll = false;
@@ -78,7 +78,7 @@ public sealed partial class GameController : Component
 		if ( CurrentPlayer is null )
 			return;
 
-		if ( Phase != MonopolyGamePhase.WaitingToRoll )
+		if ( Phase != GamePhase.WaitingToRoll )
 			return;
 
 		if ( CurrentPlayer is null || !CurrentPlayer.IsAssigned || CurrentPlayer.IsBankrupt )
@@ -87,7 +87,7 @@ public sealed partial class GameController : Component
 			return;
 		}
 
-		Phase = MonopolyGamePhase.ResolvingSpace;
+		Phase = GamePhase.ResolvingSpace;
 		CurrentTurnGetsExtraRoll = false;
 		currentRollDrewCard = false;
 
@@ -117,7 +117,7 @@ public sealed partial class GameController : Component
 					CurrentPlayer.ConsecutiveDoubles = 0;
 					Log.Info( $"{CurrentPlayer.PlayerName} rolled three doubles in a row and went to Jail." );
 					CompleteTurn();
-					Phase = MonopolyGamePhase.WaitingToRoll;
+					Phase = GamePhase.WaitingToRoll;
 					return;
 				}
 
@@ -135,21 +135,21 @@ public sealed partial class GameController : Component
 
 		Log.Info( $"Player {CurrentPlayerIndex + 1} rolled {LastDieA} + {LastDieB} = {total}" );
 
-		if ( Phase == MonopolyGamePhase.ResolvingSpace )
+		if ( Phase == GamePhase.ResolvingSpace )
 		{
 			if ( CurrentPlayer is not null && CurrentPlayer.IsBankrupt )
 			{
 				CompleteTurn();
-				Phase = MonopolyGamePhase.WaitingToRoll;
+				Phase = GamePhase.WaitingToRoll;
 			}
 			else if ( amount >= 0 && !currentRollDrewCard && !HasPendingForcedPayment )
 			{
 				CompleteTurn();
-				Phase = MonopolyGamePhase.WaitingToRoll;
+				Phase = GamePhase.WaitingToRoll;
 			}
 			else
 			{
-				Phase = MonopolyGamePhase.TurnEnded;
+				Phase = GamePhase.TurnEnded;
 			}
 		}
 	}
@@ -201,21 +201,21 @@ public sealed partial class GameController : Component
 		if ( !CanAcceptGameplayInput() )
 			return;
 
-		if ( Phase != MonopolyGamePhase.TurnEnded )
+		if ( Phase != GamePhase.TurnEnded )
 			return;
 
 		if ( HasPendingForcedPayment )
 			return;
 
 		CompleteTurn();
-		Phase = MonopolyGamePhase.WaitingToRoll;
+		Phase = GamePhase.WaitingToRoll;
 		StartTurnTimer();
 	}
 
 	private void AdvanceTurn()
 	{
 		CheckForGameOver();
-		if ( MatchState == MonopolyMatchState.GameOver )
+		if ( MatchState == MatchLifecycleState.GameOver )
 			return;
 
 		if ( Players.Count == 0 )
@@ -239,7 +239,7 @@ public sealed partial class GameController : Component
 
 			if ( player.IsAssigned && !player.IsBankrupt )
 			{
-				Phase = MonopolyGamePhase.WaitingToRoll;
+				Phase = GamePhase.WaitingToRoll;
 				StartTurnTimer();
 				return;
 			}
@@ -252,7 +252,7 @@ public sealed partial class GameController : Component
 
 			if ( Players[CurrentPlayerIndex].IsAssigned && !Players[CurrentPlayerIndex].IsBankrupt )
 			{
-				Phase = MonopolyGamePhase.WaitingToRoll;
+				Phase = GamePhase.WaitingToRoll;
 				StartTurnTimer();
 				return;
 			}

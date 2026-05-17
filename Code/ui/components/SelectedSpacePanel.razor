@@ -8,7 +8,7 @@
 	@if ( SelectedSpace is not null )
 	{
 		<div class="selected-space-card-panel">
-			<MonopolySpaceCard
+			<SpaceCard
 				Space="@SelectedSpace"
 				Variant="selected-space-card"
 				ColorClass="@HudUi.GetPropertyColorClass( SelectedSpace )"
@@ -20,7 +20,7 @@
 				ImprovementLabel="@SelectedImprovementAmountLabel"
 				DrawnCardText="@SelectedDrawnCardText">
 				<OverlayContent>
-					<MonopolyCloseButton Variant="@SpaceCardCloseButtonClasses" CanClick="@CanCloseSelectedSpace" OnClick="@CloseSelectedSpace" BlockedPopupTitle="Decision required" BlockedPopupMessage="@SelectedSpaceCloseBlockedMessage"></MonopolyCloseButton>
+					<CloseButton Variant="@SpaceCardCloseButtonClasses" CanClick="@CanCloseSelectedSpace" OnClick="@CloseSelectedSpace" BlockedPopupTitle="Decision required" BlockedPopupMessage="@SelectedSpaceCloseBlockedMessage"></CloseButton>
 				</OverlayContent>
 				<FooterContent>
 					<div>
@@ -39,7 +39,7 @@
 						</div>
 					}
 				</FooterContent>
-			</MonopolySpaceCard>
+			</SpaceCard>
 
 			@if ( CanBuySelectedSpace || CanManageSelectedSpace )
 			{
@@ -47,8 +47,8 @@
 					@if ( CanBuySelectedSpace )
 					{
 						<div class="space-buttons">
-							<MonopolyButton OnClick="@BuyProperty">Buy</MonopolyButton>
-							<MonopolyButton OnClick="@AuctionProperty">Auction</MonopolyButton>
+							<GameButton OnClick="@BuyProperty">Buy</GameButton>
+							<GameButton OnClick="@AuctionProperty">Auction</GameButton>
 						</div>
 					}
 
@@ -58,22 +58,22 @@
 							@if ( IsProperty )
 							{
 								<div class="space-buttons improvement-buttons">
-									<MonopolyButton Variant="@BuildImprovementButtonClasses" OnClick="@BuildImprovement">
+									<GameButton Variant="@BuildImprovementButtonClasses" OnClick="@BuildImprovement">
 										<ChildContent>
 											<span>+</span>
 											<img class="space-action-house-icon" src="ui/house-placeholder.svg" />
 										</ChildContent>
-									</MonopolyButton>
-									<MonopolyButton Variant="@SellImprovementButtonClasses" OnClick="@SellImprovement">
+									</GameButton>
+									<GameButton Variant="@SellImprovementButtonClasses" OnClick="@SellImprovement">
 										<ChildContent>
 											<span>-</span>
 											<img class="space-action-house-icon" src="ui/house-placeholder.svg" />
 										</ChildContent>
-									</MonopolyButton>
+									</GameButton>
 								</div>
 							}
 							<div class="space-buttons mortgage-buttons">
-								<MonopolyButton Variant="@MortgageButtonClasses" OnClick="@Mortgage">@MortgageActionLabel</MonopolyButton>
+								<GameButton Variant="@MortgageButtonClasses" OnClick="@Mortgage">@MortgageActionLabel</GameButton>
 							</div>
 						</div>
 					}
@@ -137,7 +137,7 @@
 
 	private bool CanBuySelectedSpace =>
 		IsPurchasable &&
-		GameRef?.Phase == MonopolyGamePhase.WaitingForBuyDecision &&
+		GameRef?.Phase == GamePhase.WaitingForBuyDecision &&
 		IsSelectedPendingPurchase &&
 		IsUnownedSelectedSpace;
 
