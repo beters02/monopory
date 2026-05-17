@@ -21,17 +21,13 @@
 			else if ( IsDrawnCardSpace )
 			{
 				<div class="@CardSpaceArtClasses">
-					@if ( Space.Type == SpaceType.Chance )
+					@if ( GetSpaceCardIconType() == SpaceCardIconType.Image )
 					{
-						<div class="monopoly-chance-mark">?</div>
+						<img class="monopoly-card-space-image-icon" src="@GetSpaceCardIconImagePath()" />
 					}
 					else
 					{
-						<div class="monopoly-chest-art">
-							<div class="monopoly-chest-lid"></div>
-							<div class="monopoly-chest-body"></div>
-							<div class="monopoly-chest-lock"></div>
-						</div>
+						@RenderChestArt()
 					}
 				</div>
 			}
@@ -169,6 +165,49 @@
 		Space.Type == SpaceType.Chance
 			? "monopoly-card-space-art chance-space-art"
 			: "monopoly-card-space-art chest-space-art";
+
+	private enum SpaceCardIconType
+	{
+		Image,
+		Text
+	}
+
+	private SpaceCardIconType GetSpaceCardIconType()
+	{
+		return Space.Type switch
+		{
+			SpaceType.Chance => SpaceCardIconType.Image,
+			SpaceType.CommunityChest => SpaceCardIconType.Text,
+			_ => SpaceCardIconType.Text
+		};
+	}
+
+	private string GetSpaceCardIconText()
+	{
+		return Space.Type switch
+		{
+			SpaceType.Chance => "?",
+			_ => ""
+		};
+	}
+
+	private RenderFragment RenderChestArt() => builder =>
+	{
+		builder.AddMarkupContent(
+			0,
+			"<div class=\"monopoly-chest-art\">" +
+			"<div class=\"monopoly-chest-lid\"></div>" +
+			"<div class=\"monopoly-chest-body\"></div>" +
+			"<div class=\"monopoly-chest-lock\"></div>" +
+			"</div>" );
+	};
+
+	private string GetSpaceCardIconImagePath()
+	{
+		return Space.Type == SpaceType.Chance
+			? GameAssets.Images.Chance.Path
+			: "";
+	}
 
 	private bool HasSpecialTitle =>
 		Space.Type is SpaceType.Railroad or SpaceType.Utility;

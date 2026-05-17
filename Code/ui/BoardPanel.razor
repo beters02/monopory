@@ -38,7 +38,11 @@
 									}
 								</div>
 
-								@if ( GetIconType(space) == IconType.Text )
+								@if ( space.Type == SpaceType.CommunityChest )
+								{
+									@RenderChestArt()
+								}
+								else if ( GetIconType(space) == IconType.Text )
 								{
 									<div class="space-icon" style="@GetSpaceIconStyle( space )">@GetSpaceIconText( space )</div>
 								}
@@ -52,7 +56,11 @@
 						{
 							@if ( HasIcon( space ) )
 							{
-								@if ( GetIconType(space) == IconType.Text )
+								@if ( space.Type == SpaceType.CommunityChest )
+								{
+									@RenderChestArt()
+								}
+								else if ( GetIconType(space) == IconType.Text )
 								{
 									<div class="space-icon" style="@GetSpaceIconStyle( space )">@GetSpaceIconText( space )</div>
 								}
@@ -264,6 +272,17 @@
 	{
 		return space.Type is SpaceType.Chance or SpaceType.CommunityChest;
 	}
+
+	private RenderFragment RenderChestArt() => builder =>
+	{
+		builder.AddMarkupContent(
+			0,
+			"<div class=\"monopoly-chest-art board-chest-art\">" +
+			"<div class=\"monopoly-chest-lid\"></div>" +
+			"<div class=\"monopoly-chest-body\"></div>" +
+			"<div class=\"monopoly-chest-lock\"></div>" +
+			"</div>" );
+	};
 
 	private enum IconType
 	{

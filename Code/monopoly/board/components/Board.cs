@@ -24,10 +24,14 @@ public sealed class Board : Component
 	[Property] public float ProceduralSpaceZOffset { get; set; } = 0f;
 	[Property] public float ProceduralReferencePanelSize { get; set; } = 2000f;
 	[Property] public float ProceduralBoardWorldScale { get; set; } = 1f;
-	[Property] public Model HouseModel { get; set; }
-	[Property] public Model HotelModel { get; set; }
-	[Property] public Vector3 ImprovementModelScale { get; set; } = Vector3.One;
-	[Property] public float ImprovementModelZOffset { get; set; } = 0.9f;
+	[Property] public GameObject HousePrefab { get; set; }
+	[Property] public GameObject HotelPrefab { get; set; }
+	[Property] public Vector3 HouseImprovementPrefabScale { get; set; } = Vector3.One;
+	[Property] public Vector3 HotelImprovementPrefabScale { get; set; } = Vector3.One;
+	[Property] public float ImprovementPrefabZOffset { get; set; } = 0.9f;
+	[Property] public float ImprovementPrefabEdgeInset { get; set; } = 2.12f;
+	[Property] public float ImprovementPrefabSideInset { get; set; } = 2.23f;
+	[Property] public float ImprovementPrefabSpacing { get; set; } = 3.52f;
 	[Property] public WorldPanel BoardWorldPanel {get; set;}
 
 	public List<CardDef> ChanceCards { get; private set; } = new();
@@ -223,10 +227,14 @@ public sealed class Board : Component
 
 			space.SetImprovementVisuals(
 				GameRef.GetImprovementCount( space.Index ),
-				HouseModel,
-				HotelModel,
-				ImprovementModelScale,
-				ImprovementModelZOffset
+				HousePrefab,
+				HotelPrefab,
+				HouseImprovementPrefabScale,
+				HotelImprovementPrefabScale,
+				ImprovementPrefabZOffset,
+				ImprovementPrefabEdgeInset,
+				ImprovementPrefabSideInset,
+				ImprovementPrefabSpacing
 			);
 		}
 	}

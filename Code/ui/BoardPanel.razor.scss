@@ -250,6 +250,51 @@
 	transform: translateY(-20px);
 }
 
+.board-chest-art {
+	position: relative;
+	width: 50px;
+	height: 40px;
+	flex-shrink: 0;
+	align-items: center;
+	justify-content: center;
+}
+
+.board-chest-art .monopoly-chest-lid {
+	position: absolute;
+	left: 4px;
+	top: 1px;
+	width: 42px;
+	height: 14px;
+
+	background-color: $property-light-blue;
+	border: 3px solid $monopoly-ink;
+	border-radius: 3px 3px 1px 1px;
+}
+
+.board-chest-art .monopoly-chest-body {
+	position: absolute;
+	left: 0;
+	top: 13px;
+	width: 50px;
+	height: 25px;
+
+	background-color: $property-light-blue;
+	border: 3px solid $monopoly-ink;
+	border-radius: 2px 2px 4px 4px;
+}
+
+.board-chest-art .monopoly-chest-lock {
+	position: absolute;
+	left: 20px;
+	top: 17px;
+	width: 10px;
+	height: 13px;
+
+	background-color: $monopoly-gold;
+	border: 2px solid $monopoly-ink;
+	border-radius: 2px;
+}
+
 .type-communitychest .space-icon {
 	font-size: 32px;
 	color: #296c9e;

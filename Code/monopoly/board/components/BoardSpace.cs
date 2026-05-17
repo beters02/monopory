@@ -23,10 +23,14 @@ public sealed class BoardSpace : Component
 
 	private readonly List<GameObject> ImprovementVisuals = new();
 	private int visibleImprovementCount = -1;
-	private Model visibleHouseModel;
-	private Model visibleHotelModel;
-	private Vector3 visibleImprovementScale;
+	private GameObject visibleHousePrefab;
+	private GameObject visibleHotelPrefab;
+	private Vector3 houseVisibleImprovementScale;
+	private Vector3 hotelVisibleImprovementScale;
 	private float visibleImprovementZOffset;
+	private float visibleImprovementEdgeInset;
+	private float visibleImprovementSideInset;
+	private float visibleImprovementSpacing;
 
 	protected override void OnStart()
 	{
@@ -174,15 +178,19 @@ public sealed class BoardSpace : Component
 		return collider != null && collider.Enabled;
 	}
 
-	public void SetImprovementVisuals( int improvementCount, Model houseModel, Model hotelModel, Vector3 modelScale, float zOffset )
+	public void SetImprovementVisuals( int improvementCount, GameObject housePrefab, GameObject hotelPrefab, Vector3 housePrefabScale, Vector3 hotelPrefabScale, float zOffset, float edgeInset, float sideInset, float spacing )
 	{
 		improvementCount = Math.Clamp( improvementCount, 0, 5 );
 
 		if ( improvementCount == visibleImprovementCount &&
-			houseModel == visibleHouseModel &&
-			hotelModel == visibleHotelModel &&
-			modelScale == visibleImprovementScale &&
-			MathF.Abs( zOffset - visibleImprovementZOffset ) < 0.001f )
+			housePrefab == visibleHousePrefab &&
+			hotelPrefab == visibleHotelPrefab &&
+			housePrefabScale == houseVisibleImprovementScale &&
+			hotelPrefabScale == hotelVisibleImprovementScale &&
+			MathF.Abs( zOffset - visibleImprovementZOffset ) < 0.001f &&
+			MathF.Abs( edgeInset - visibleImprovementEdgeInset ) < 0.001f &&
+			MathF.Abs( sideInset - visibleImprovementSideInset ) < 0.001f &&
+			MathF.Abs( spacing - visibleImprovementSpacing ) < 0.001f )
 		{
 			return;
 		}
@@ -190,25 +198,29 @@ public sealed class BoardSpace : Component
 		ClearImprovementVisuals();
 
 		visibleImprovementCount = improvementCount;
-		visibleHouseModel = houseModel;
-		visibleHotelModel = hotelModel;
-		visibleImprovementScale = modelScale;
+		visibleHousePrefab = housePrefab;
+		visibleHotelPrefab = hotelPrefab;
+		houseVisibleImprovementScale = housePrefabScale;
+		hotelVisibleImprovementScale = hotelPrefabScale;
 		visibleImprovementZOffset = zOffset;
+		visibleImprovementEdgeInset = edgeInset;
+		visibleImprovementSideInset = sideInset;
+		visibleImprovementSpacing = spacing;
 
 		if ( Def is null || Def.Type != SpaceType.Property || Collider is null || improvementCount <= 0 )
 			return;
 
 		if ( improvementCount >= 5 )
 		{
-			CreateImprovementVisual( 0, 1, hotelModel ?? houseModel, modelScale, zOffset, true );
+			CreateImprovementVisual( 0, 1, hotelPrefab ?? housePrefab, housePrefabScale, hotelPrefabScale, zOffset, edgeInset, sideInset, spacing, true );
 			return;
 		}
 
-		if ( houseModel is null )
+		if ( housePrefab is null )
 			return;
 
 		for ( var i = 0; i < improvementCount; i++ )
-			CreateImprovementVisual( i, improvementCount, houseModel, modelScale, zOffset, false );
+			CreateImprovementVisual( i, improvementCount, housePrefab, housePrefabScale, hotelPrefabScale, zOffset, edgeInset, sideInset, spacing, false );
 	}
 
 	private void ClearImprovementVisuals()
@@ -219,29 +231,31 @@ public sealed class BoardSpace : Component
 		ImprovementVisuals.Clear();
 	}
 
-	private void CreateImprovementVisual( int slot, int total, Model model, Vector3 modelScale, float zOffset, bool isHotel )
+	private void CreateImprovementVisual( int slot, int total, GameObject prefab, Vector3 housePrefabScale, Vector3 hotelPrefabScale, float zOffset, float edgeInset, float sideInset, float spacing, bool isHotel )
 	{
-		if ( model is null )
+		if ( prefab is null )
 			return;
 
-		var visualObject = new GameObject( true, $"{(isHotel ? "Hotel" : "House")}_{Index}_{slot}" );
+		var visualObject = prefab.Clone();
+		visualObject.Name = $"{(isHotel ? "Hotel" : "House")}_{Index}_{slot}";
 		visualObject.SetParent( GameObject );
-		visualObject.LocalPosition = GetImprovementLocalPosition( slot, total, zOffset, isHotel );
+		visualObject.LocalPosition = GetImprovementLocalPosition( slot, total, zOffset, edgeInset, sideInset, spacing, isHotel );
 		visualObject.LocalRotation = GetImprovementLocalRotation();
-		visualObject.LocalScale = modelScale;
+		visualObject.LocalScale = isHotel ? hotelPrefabScale : housePrefabScale;
 
-		var renderer = visualObject.Components.Create<ModelRenderer>();
-		renderer.Model = model;
+		ModelRenderer modelRenderer = visualObject.GetComponentInChildren<ModelRenderer>();
+		if (modelRenderer != null)
+			modelRenderer.MaterialOverride = isHotel ? GameAssets.Materials.Hotel.Material : GameAssets.Materials.House.Material;
 
 		ImprovementVisuals.Add( visualObject );
 	}
 
-	private Vector3 GetImprovementLocalPosition( int slot, int total, float zOffset, bool isHotel )
+	private Vector3 GetImprovementLocalPosition( int slot, int total, float zOffset, float edgeInset, float sideInset, float spacing, bool isHotel )
 	{
 		var center = Collider.Center;
 		var quadrant = Board.GetSpaceQuadrant( Def.Index );
-		var across = GetImprovementAcrossOffset( slot, total, isHotel );
-		var inward = isHotel ? 1.15f : 1.35f;
+		var across = GetImprovementAcrossOffset( slot, quadrant, sideInset, spacing, isHotel );
+		var inward = GetImprovementInwardOffset( quadrant, edgeInset );
 		var position = new Vector3( center.x, center.y, zOffset );
 
 		switch ( quadrant )
@@ -267,23 +281,32 @@ public sealed class BoardSpace : Component
 		return position;
 	}
 
-	private static float GetImprovementAcrossOffset( int slot, int total, bool isHotel )
+	private float GetImprovementInwardOffset( int quadrant, float edgeInset )
 	{
-		if ( isHotel || total <= 1 )
+		var size = Collider.Scale;
+		var inwardSize = quadrant is 1 or 3 ? size.x : size.y;
+		return MathF.Max( 0f, (inwardSize * 0.5f) - edgeInset );
+	}
+
+	private float GetImprovementAcrossOffset( int slot, int quadrant, float sideInset, float spacing, bool isHotel )
+	{
+		if ( isHotel )
 			return 0f;
 
-		const float spacing = 0.7f;
-		return (slot - ((total - 1) * 0.5f)) * spacing;
+		var size = Collider.Scale;
+		var acrossSize = quadrant is 1 or 3 ? size.y : size.x;
+		var start = MathF.Max( 0f, (acrossSize * 0.5f) - sideInset );
+		return start - (slot * spacing);
 	}
 
 	private Rotation GetImprovementLocalRotation()
 	{
 		return Board.GetSpaceQuadrant( Def.Index ) switch
 		{
-			2 => Rotation.FromYaw( -90f ),
-			3 => Rotation.FromYaw( 180f ),
-			4 => Rotation.FromYaw( 90f ),
-			_ => Rotation.Identity
+			2 => Rotation.From(180, 90, 0),
+			3 => Rotation.From(180, 0, 0),
+			4 => Rotation.From(180, 90, 0),
+			_ => Rotation.From(180, 0, 0),
 		};
 	}
 

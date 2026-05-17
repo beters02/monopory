@@ -135,10 +135,20 @@
               },
               "DebugEnabled": true,
               "HitboxSize": "96,96,12",
-              "HotelModel": null,
-              "HouseModel": null,
-              "ImprovementModelScale": "1,1,1",
-              "ImprovementModelZOffset": 0.9,
+              "HotelImprovementPrefabScale": "0.200000003,0.300000012,0.200000003",
+              "HotelPrefab": {
+                "_type": "gameobject",
+                "prefab": "prefabs/house.prefab"
+              },
+              "HouseImprovementPrefabScale": "0.200000003,0.200000003,0.200000003",
+              "HousePrefab": {
+                "_type": "gameobject",
+                "prefab": "prefabs/house.prefab"
+              },
+              "ImprovementPrefabEdgeInset": 2.12,
+              "ImprovementPrefabSideInset": 2.23,
+              "ImprovementPrefabSpacing": 3.52,
+              "ImprovementPrefabZOffset": 0.9,
               "OnComponentDestroy": null,
               "OnComponentDisabled": null,
               "OnComponentEnabled": null,
