@@ -36,7 +36,7 @@ public sealed partial class GameController : Component
 	public bool CanLeaveCurrentSelectedSpace()
 	{
 		return CurrentPlayerIndex != LocalPlayerIndex ||
-			Phase != MonopolyGamePhase.WaitingForBuyDecision ||
+			Phase != GamePhase.WaitingForBuyDecision ||
 			PendingPurchaseSpaceIndex < 0 ||
 			LocalSelectedSpaceIndex != PendingPurchaseSpaceIndex;
 	}

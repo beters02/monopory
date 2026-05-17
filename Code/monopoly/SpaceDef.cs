@@ -24,7 +24,7 @@ public sealed class SpaceDef
 	public int TaxAmount { get; set; }
 
 	// Text info
-	public float TextScale = MonopolySpaceSettings.DefaultScale;
+	public float TextScale = SpaceLayoutSettings.DefaultScale;
 
 	private int Quadrant {get; set;}
 

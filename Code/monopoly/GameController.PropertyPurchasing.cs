@@ -8,7 +8,7 @@ public sealed partial class GameController : Component
 
 	public bool CanBuyPendingProperty( PlayerState player, int spaceIndex )
 	{
-		return Phase == MonopolyGamePhase.WaitingForBuyDecision &&
+		return Phase == GamePhase.WaitingForBuyDecision &&
 			CurrentPlayer == player &&
 			PendingPurchaseSpaceIndex == spaceIndex;
 	}
@@ -23,7 +23,7 @@ public sealed partial class GameController : Component
 			return false;
 		}
 
-		if ( Phase != MonopolyGamePhase.WaitingForBuyDecision || CurrentPlayer != player )
+		if ( Phase != GamePhase.WaitingForBuyDecision || CurrentPlayer != player )
 		{
 			message = "That player does not have a pending buy decision.";
 			return false;
@@ -193,7 +193,7 @@ public sealed partial class GameController : Component
 		if ( !CanAcceptGameplayInput() )
 			return;
 
-		if ( Phase != MonopolyGamePhase.WaitingForBuyDecision )
+		if ( Phase != GamePhase.WaitingForBuyDecision )
 			return;
 
 		var player = CurrentPlayer;
@@ -208,7 +208,7 @@ public sealed partial class GameController : Component
 		}
 
 		PendingPurchaseSpaceIndex = -1;
-		Phase = MonopolyGamePhase.TurnEnded;
+		Phase = GamePhase.TurnEnded;
 	}
 
 	[Button( "Skip Pending Property" )]
@@ -220,13 +220,13 @@ public sealed partial class GameController : Component
 		if ( !CanAcceptGameplayInput() )
 			return;
 
-		if ( Phase != MonopolyGamePhase.WaitingForBuyDecision )
+		if ( Phase != GamePhase.WaitingForBuyDecision )
 			return;
 
 		Log.Info( $"{CurrentPlayer?.PlayerName} skipped buying." );
 
 		PendingPurchaseSpaceIndex = -1;
-		Phase = MonopolyGamePhase.TurnEnded;
+		Phase = GamePhase.TurnEnded;
 	}
 
 	private void BuyUnownedPropertyForPlayer( PlayerState player, SpaceDef def, int ownerIndex )

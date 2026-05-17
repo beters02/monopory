@@ -7,7 +7,7 @@
 <root class="monopoly-hud">
 	@if ( GameRef is not null )
 	{
-		<MonopolyPopupStack Popups="@Popups" OnDismiss="@DismissPopup"></MonopolyPopupStack>
+		<PopupStack Popups="@Popups" OnDismiss="@DismissPopup"></PopupStack>
 
 		<SessionOverlay
 			GameRef="@GameRef"
@@ -18,7 +18,7 @@
 			OnExitGame="@ExitGame">
 		</SessionOverlay>
 
-		@if ( GameRef.MatchState != MonopolyMatchState.GameOver )
+		@if ( GameRef.MatchState != MatchLifecycleState.GameOver )
 		{
 			<GameStatusPanel GameRef="@GameRef"></GameStatusPanel>
 			<PropertyOwnershipPanel GameRef="@GameRef"></PropertyOwnershipPanel>
@@ -44,7 +44,7 @@
 	{
 		base.OnUpdate();
 
-		if ( GameRef is null || GameRef.MatchState == MonopolyMatchState.GameOver )
+		if ( GameRef is null || GameRef.MatchState == MatchLifecycleState.GameOver )
 		{
 			IsEscapeMenuOpen = false;
 			return;

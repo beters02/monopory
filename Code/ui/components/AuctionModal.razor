@@ -32,17 +32,17 @@
 							@foreach ( var increment in AuctionBidIncrements )
 							{
 								var bid = GameRef.AuctionCurrentBid + increment;
-								<MonopolyButton Variant="@GetAuctionBidButtonClasses( bid )" OnClick="@(() => BidAuction( bid ))">
+								<GameButton Variant="@GetAuctionBidButtonClasses( bid )" OnClick="@(() => BidAuction( bid ))">
 									<ChildContent>
 										<span>$@bid</span>
 										<span>+$@increment</span>
 									</ChildContent>
-								</MonopolyButton>
+								</GameButton>
 							}
 						</div>
 					</div>
 
-					<MonopolySpaceCard Space="@AuctionSpace" Variant="auction-space-card" ColorClass="@HudUi.GetPropertyColorClass( AuctionSpace )">
+					<SpaceCard Space="@AuctionSpace" Variant="auction-space-card" ColorClass="@HudUi.GetPropertyColorClass( AuctionSpace )">
 						<FooterContent>
 							<div>
 								<span>Price</span>
@@ -53,7 +53,7 @@
 								<strong>$@GameRef.AuctionCurrentBid</strong>
 							</div>
 						</FooterContent>
-					</MonopolySpaceCard>
+					</SpaceCard>
 				</div>
 			</div>
 		</div>
@@ -70,7 +70,7 @@
 		GameRef?.Board?.GetSpaceDef( GameRef.AuctionSpaceIndex );
 
 	private bool IsAuctionActive =>
-		GameRef?.Phase == MonopolyGamePhase.Auctioning && AuctionSpace is not null;
+		GameRef?.Phase == GamePhase.Auctioning && AuctionSpace is not null;
 
 	private int AuctionRemainingSeconds =>
 		!IsAuctionActive ? 0 : Math.Max( 0, (int)MathF.Ceiling( GameRef.AuctionEndsAt - Time.Now ) );

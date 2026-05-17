@@ -37,6 +37,7 @@ public sealed partial class GameController : Component
 			if ( Board is not null )
 				tokenObject.WorldPosition = Board.GetSpacePosition( player.SpaceIndex ) + Vector3.Up * token.HeightOffset;
 
+			tokenObject.NetworkSpawn();
 			spawnedTokenObjects.Add( tokenObject );
 		}
 	}

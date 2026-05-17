@@ -9,7 +9,7 @@
 	{
 		<div class="trade-modal-backdrop">
 			<div class="trade-modal trade-view-modal">
-				<MonopolyCloseButton Variant="trade-modal-close" OnClick="@Close"></MonopolyCloseButton>
+				<CloseButton Variant="trade-modal-close" OnClick="@Close"></CloseButton>
 				<div class="trade-modal-title">@GetPlayerName( Trade.SenderPlayerIndex ) -&gt; @GetPlayerName( Trade.ReceiverPlayerIndex )</div>
 
 				<div class="trade-summary-grid">
@@ -34,8 +34,8 @@
 				@if ( Trade.ReceiverPlayerIndex == GameRef.LocalPlayerIndex )
 				{
 					<div class="trade-modal-actions">
-						<MonopolyButton Variant="trade-send-button" OnClick="@(() => AcceptTrade( Trade.Id ))">Accept</MonopolyButton>
-						<MonopolyButton Variant="trade-deny-button" OnClick="@(() => DenyTrade( Trade.Id ))">Deny</MonopolyButton>
+						<GameButton Variant="trade-send-button" OnClick="@(() => AcceptTrade( Trade.Id ))">Accept</GameButton>
+						<GameButton Variant="trade-deny-button" OnClick="@(() => DenyTrade( Trade.Id ))">Deny</GameButton>
 					</div>
 				}
 			</div>

@@ -205,7 +205,7 @@ public sealed partial class GameController : Component
 			CanAcceptGameplayInput() &&
 			CurrentPlayerIndex == playerIndex &&
 			Players.ElementAtOrDefault( playerIndex )?.IsBankrupt != true &&
-			(Phase == MonopolyGamePhase.WaitingToRoll || Phase == MonopolyGamePhase.TurnEnded);
+			(Phase == GamePhase.WaitingToRoll || Phase == GamePhase.TurnEnded);
 	}
 
 	private bool HasPendingForcedPaymentForPlayer( int playerIndex )

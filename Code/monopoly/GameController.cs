@@ -3,7 +3,7 @@ using System;
 using System.Text.RegularExpressions;
 using Sandbox;
 
-public enum MonopolyGamePhase
+public enum GamePhase
 {
 	WaitingToRoll,
 	ResolvingSpace,
@@ -12,7 +12,7 @@ public enum MonopolyGamePhase
 	TurnEnded
 }
 
-public enum MonopolyMatchState
+public enum MatchLifecycleState
 {
 	Lobby,
 	Starting,
@@ -27,7 +27,7 @@ public sealed partial class GameController : Component
 	[Property] public MatchConfig Config { get; set; } = new();
 	[Property] public GameObject TokenPrefab { get; set; }
 
-	[Property, Sync] public MonopolyMatchState MatchState { get; set; } = MonopolyMatchState.Lobby;
+	[Property, Sync] public MatchLifecycleState MatchState { get; set; } = MatchLifecycleState.Lobby;
 	[Property, Sync] public int WinnerPlayerIndex { get; set; } = -1;
 	[Property, Sync] public float GameStartedAt { get; set; }
 	[Property, Sync] public int StartingPlayerCount { get; set; }
@@ -43,7 +43,7 @@ public sealed partial class GameController : Component
 	public PlayerState CurrentPlayer =>
 		Players.Count == 0 || CurrentPlayerIndex < 0 || CurrentPlayerIndex >= Players.Count ? null : Players[CurrentPlayerIndex];
 
-	[Property, Sync] public MonopolyGamePhase Phase { get; set; } = MonopolyGamePhase.WaitingToRoll;
+	[Property, Sync] public GamePhase Phase { get; set; } = GamePhase.WaitingToRoll;
 	[Property, Sync] public int PendingPurchaseSpaceIndex { get; set; } = -1;
 	[Property, Sync] public int AuctionSpaceIndex { get; set; } = -1;
 	[Property, Sync] public int AuctionCurrentBid { get; set; }
@@ -63,9 +63,9 @@ public sealed partial class GameController : Component
 	public bool HasPendingForcedPayment =>
 		PendingForcedPaymentPlayerIndex >= 0 && PendingForcedPaymentAmount > 0;
 
-	public bool IsInGame => MatchState == MonopolyMatchState.InGame;
-	public bool IsPaused => MatchState == MonopolyMatchState.Paused;
-	public bool HasStarted => MatchState is MonopolyMatchState.InGame or MonopolyMatchState.Paused or MonopolyMatchState.GameOver;
+	public bool IsInGame => MatchState == MatchLifecycleState.InGame;
+	public bool IsPaused => MatchState == MatchLifecycleState.Paused;
+	public bool HasStarted => MatchState is MatchLifecycleState.InGame or MatchLifecycleState.Paused or MatchLifecycleState.GameOver;
 	public bool CanStartGame => GetLobbyPlayers().Count >= MinPlayers && GetLobbyPlayers().All( player => player.IsReady );
 	public int MinPlayers => Math.Max( Config?.MinPlayers ?? 2, 1 );
 	public int MaxPlayers => Math.Max( Config?.MaxPlayers ?? Players.Count, MinPlayers );
@@ -88,6 +88,7 @@ public sealed partial class GameController : Component
 	{
 		instance = this;
 		SteamInviteBridge.Register( Scene );
+		RefreshReplicatedPlayerSlots();
 
 		if ( !Networking.IsHost )
 			return;
@@ -110,6 +111,7 @@ public sealed partial class GameController : Component
 
 	protected override void OnUpdate()
 	{
+		RefreshReplicatedPlayerSlots();
 		UpdatePopups();
 
 		if ( !Networking.IsHost )
@@ -117,7 +119,7 @@ public sealed partial class GameController : Component
 
 		SyncLobbyConnections();
 
-		if ( MatchState != MonopolyMatchState.InGame )
+		if ( MatchState != MatchLifecycleState.InGame )
 			return;
 
 		RemoveInvalidTrades();

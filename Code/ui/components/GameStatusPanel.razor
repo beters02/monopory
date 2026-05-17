@@ -19,13 +19,13 @@
 			<HudPanelBody>Last Roll: @GameRef.LastDieA + @GameRef.LastDieB</HudPanelBody>
 			<HudPanelBody>Phase: @GameRef.Phase</HudPanelBody>
 
-			@if ( GameRef.MatchState == MonopolyMatchState.InGame && GameRef.Phase == MonopolyGamePhase.WaitingToRoll && CurrentPlayer == LocalPlayer )
+			@if ( GameRef.MatchState == MatchLifecycleState.InGame && GameRef.Phase == GamePhase.WaitingToRoll && CurrentPlayer == LocalPlayer )
 			{
-				<MonopolyButton OnClick="@RollDice">Roll Dice</MonopolyButton>
+				<GameButton OnClick="@RollDice">Roll Dice</GameButton>
 			}
-			@if ( GameRef.MatchState == MonopolyMatchState.InGame && CurrentPlayer == LocalPlayer )
+			@if ( GameRef.MatchState == MatchLifecycleState.InGame && CurrentPlayer == LocalPlayer )
 			{
-				<MonopolyButton Variant="@EndTurnButtonClasses" CanClick="@CanEndTurn" OnClick="@EndTurn" BlockedPopupTitle="Cannot end turn yet" BlockedPopupMessage="@GetEndTurnBlockedMessage()">End Turn</MonopolyButton>
+				<GameButton Variant="@EndTurnButtonClasses" CanClick="@CanEndTurn" OnClick="@EndTurn" BlockedPopupTitle="Cannot end turn yet" BlockedPopupMessage="@GetEndTurnBlockedMessage()">End Turn</GameButton>
 			}
 		</ChildContent>
 	</Sandbox.ui.components.HudPanel.HudPanel>
@@ -56,7 +56,7 @@
 		CanEndTurn ? "" : "blocked-action-button";
 
 	private bool CanEndTurn =>
-		GameRef?.Phase == MonopolyGamePhase.TurnEnded &&
+		GameRef?.Phase == GamePhase.TurnEnded &&
 		GameRef.HasPendingForcedPayment != true;
 
 	private void RollDice()
@@ -77,10 +77,10 @@
 
 		return GameRef?.Phase switch
 		{
-			MonopolyGamePhase.WaitingToRoll => "Roll the dice before ending your turn.",
-			MonopolyGamePhase.ResolvingSpace => "Wait for your move to finish resolving.",
-			MonopolyGamePhase.WaitingForBuyDecision => $"Buy or auction {PendingPropertyName} before ending your turn.",
-			MonopolyGamePhase.Auctioning => "Wait for the auction to finish before ending your turn.",
+			GamePhase.WaitingToRoll => "Roll the dice before ending your turn.",
+			GamePhase.ResolvingSpace => "Wait for your move to finish resolving.",
+			GamePhase.WaitingForBuyDecision => $"Buy or auction {PendingPropertyName} before ending your turn.",
+			GamePhase.Auctioning => "Wait for the auction to finish before ending your turn.",
 			_ => "Finish the current action before ending your turn."
 		};
 	}

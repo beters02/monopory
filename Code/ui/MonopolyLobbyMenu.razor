@@ -6,7 +6,7 @@
 @inherits PanelComponent
 
 <root class="monopoly-flow-ui">
-	<MonopolyPopupStack Popups="@LocalPopupList" OnDismiss="@DismissLocalPopup"></MonopolyPopupStack>
+	<PopupStack Popups="@LocalPopupList" OnDismiss="@DismissLocalPopup"></PopupStack>
 	<div class="flow-screen lobby-screen">
 		<div class="flow-panel lobby-panel">
 			<div class="flow-kicker">Lobby</div>
@@ -33,10 +33,10 @@
 
 				<div class="flow-copy">@LobbyStatusText</div>
 				<div class="flow-actions">
-					<MonopolyButton Variant="@ReadyButtonClasses" OnClick="@ToggleReady">@ReadyButtonLabel</MonopolyButton>
-					<MonopolyButton Variant="@StartButtonClasses" CanClick="@CanClickStartGame" OnClick="@StartGame" BlockedPopupTitle="Cannot start game" BlockedPopupMessage="@StartBlockedMessage">Start Game</MonopolyButton>
-					<MonopolyButton Variant="flow-secondary-button" OnClick="@InviteFriends">Invite Friends</MonopolyButton>
-					<MonopolyButton Variant="flow-secondary-button" OnClick="@BackToMenu">Back</MonopolyButton>
+					<GameButton Variant="@ReadyButtonClasses" OnClick="@ToggleReady">@ReadyButtonLabel</GameButton>
+					<GameButton Variant="@StartButtonClasses" CanClick="@CanClickStartGame" OnClick="@StartGame" BlockedPopupTitle="Cannot start game" BlockedPopupMessage="@StartBlockedMessage">Start Game</GameButton>
+					<GameButton Variant="flow-secondary-button" OnClick="@InviteFriends">Invite Friends</GameButton>
+					<GameButton Variant="flow-secondary-button" OnClick="@BackToMenu">Back</GameButton>
 				</div>
 			}
 		</div>

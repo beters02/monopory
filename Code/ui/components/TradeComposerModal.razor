@@ -9,24 +9,24 @@
 	{
 		<div class="trade-modal-backdrop">
 			<div class="trade-modal">
-				<MonopolyCloseButton Variant="trade-modal-close" OnClick="@Close"></MonopolyCloseButton>
+				<CloseButton Variant="trade-modal-close" OnClick="@Close"></CloseButton>
 				<div class="trade-modal-title">Create a trade</div>
 
 				<div class="trade-editor">
 					<div class="trade-side">
 						<div class="trade-player-name">@GetPlayerName( GameRef.LocalPlayerIndex )</div>
 						<div class="trade-money-row">
-							<MonopolyButton OnClick="@(() => AdjustSenderMoney( -50 ))">-</MonopolyButton>
+							<GameButton OnClick="@(() => AdjustSenderMoney( -50 ))">-</GameButton>
 							<div class="trade-money-pill">$@SenderMoney</div>
-							<MonopolyButton OnClick="@(() => AdjustSenderMoney( 50 ))">+</MonopolyButton>
+							<GameButton OnClick="@(() => AdjustSenderMoney( 50 ))">+</GameButton>
 						</div>
 						<div class="trade-property-picker">
 							@foreach ( var propertyIndex in LocalOwnedPropertyIndexes )
 							{
 								var property = GameRef.Board.GetSpaceDef( propertyIndex );
-								<MonopolyButton Variant="@GetComposerPropertyClasses( propertyIndex, true )" OnClick="@(() => ToggleSenderProperty( propertyIndex ))">
+								<GameButton Variant="@GetComposerPropertyClasses( propertyIndex, true )" OnClick="@(() => ToggleSenderProperty( propertyIndex ))">
 									@property?.DisplayName
-								</MonopolyButton>
+								</GameButton>
 							}
 						</div>
 					</div>
@@ -38,27 +38,27 @@
 							@foreach ( var player in TradeTargets )
 							{
 								var index = GameRef.GetPlayerIndex( player );
-								<MonopolyButton Variant="@GetTradeTargetClasses( index )" OnClick="@(() => SelectTradeTarget( index ))">@player.PlayerName</MonopolyButton>
+								<GameButton Variant="@GetTradeTargetClasses( index )" OnClick="@(() => SelectTradeTarget( index ))">@player.PlayerName</GameButton>
 							}
 						</div>
 						<div class="trade-money-row">
-							<MonopolyButton OnClick="@(() => AdjustReceiverMoney( -50 ))">-</MonopolyButton>
+							<GameButton OnClick="@(() => AdjustReceiverMoney( -50 ))">-</GameButton>
 							<div class="trade-money-pill">$@ReceiverMoney</div>
-							<MonopolyButton OnClick="@(() => AdjustReceiverMoney( 50 ))">+</MonopolyButton>
+							<GameButton OnClick="@(() => AdjustReceiverMoney( 50 ))">+</GameButton>
 						</div>
 						<div class="trade-property-picker">
 							@foreach ( var propertyIndex in ReceiverOwnedPropertyIndexes )
 							{
 								var property = GameRef.Board.GetSpaceDef( propertyIndex );
-								<MonopolyButton Variant="@GetComposerPropertyClasses( propertyIndex, false )" OnClick="@(() => ToggleReceiverProperty( propertyIndex ))">
+								<GameButton Variant="@GetComposerPropertyClasses( propertyIndex, false )" OnClick="@(() => ToggleReceiverProperty( propertyIndex ))">
 									@property?.DisplayName
-								</MonopolyButton>
+								</GameButton>
 							}
 						</div>
 					</div>
 				</div>
 
-				<MonopolyButton Variant="trade-send-button" OnClick="@Send">Send trade</MonopolyButton>
+				<GameButton Variant="trade-send-button" OnClick="@Send">Send trade</GameButton>
 			</div>
 		</div>
 	}

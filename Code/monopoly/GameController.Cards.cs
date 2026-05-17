@@ -75,7 +75,7 @@ public sealed partial class GameController : Component
 			case CardAction.GoToJail:
 				SendPlayerToJail( player );
 				CompleteTurn();
-				Phase = MonopolyGamePhase.WaitingToRoll;
+				Phase = GamePhase.WaitingToRoll;
 				break;
 
 			case CardAction.CollectFromEachPlayer:

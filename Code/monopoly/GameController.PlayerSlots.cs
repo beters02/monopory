@@ -39,7 +39,7 @@ public sealed partial class GameController : Component
 		if ( !Networking.IsHost )
 			return;
 
-		if ( HasStarted && MatchState != MonopolyMatchState.GameOver )
+		if ( HasStarted && MatchState != MatchLifecycleState.GameOver )
 			return;
 
 		EnsurePlayerSlots();
@@ -86,7 +86,54 @@ public sealed partial class GameController : Component
 	{
 		var playerObject = new GameObject( true, $"PlayerState_{slotNumber:00}" );
 		playerObject.SetParent( GameObject );
-		return playerObject.Components.Create<PlayerState>();
+		playerObject.NetworkMode = NetworkMode.Object;
+
+		var player = playerObject.Components.Create<PlayerState>();
+		playerObject.NetworkSpawn();
+		return player;
+	}
+
+	private void RefreshReplicatedPlayerSlots()
+	{
+		if ( Networking.IsHost )
+			return;
+
+		var replicatedPlayers = Scene.GetAllComponents<PlayerState>()
+			.Where( player => player?.GameObject is not null )
+			.Where( player => player.GameObject.Name.StartsWith( "PlayerState_", StringComparison.OrdinalIgnoreCase ) )
+			.OrderBy( player => GetPlayerSlotSortValue( player.GameObject.Name ) )
+			.ToList();
+
+		if ( replicatedPlayers.Count == 0 )
+			return;
+
+		if ( AreSamePlayerSlots( replicatedPlayers ) )
+			return;
+
+		Players = replicatedPlayers;
+	}
+
+	private bool AreSamePlayerSlots( List<PlayerState> replicatedPlayers )
+	{
+		if ( Players is null || Players.Count != replicatedPlayers.Count )
+			return false;
+
+		for ( var i = 0; i < replicatedPlayers.Count; i++ )
+		{
+			if ( Players[i] != replicatedPlayers[i] )
+				return false;
+		}
+
+		return true;
+	}
+
+	private static int GetPlayerSlotSortValue( string objectName )
+	{
+		var match = Regex.Match( objectName ?? "", @"PlayerState_(\d+)", RegexOptions.IgnoreCase );
+		if ( match.Success && int.TryParse( match.Groups[1].Value, out var slotNumber ) )
+			return slotNumber;
+
+		return int.MaxValue;
 	}
 
 	private void EnsurePlayerStateObject( int playerIndex )
@@ -134,7 +181,7 @@ public sealed partial class GameController : Component
 		CurrentPlayerIndex = 0;
 		LastDieA = 0;
 		LastDieB = 0;
-		Phase = MonopolyGamePhase.WaitingToRoll;
+		Phase = GamePhase.WaitingToRoll;
 		PendingPurchaseSpaceIndex = -1;
 		ClearAuction();
 		NextTradeId = 1;

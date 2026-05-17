@@ -5,7 +5,7 @@
 @inherits Panel
 
 <root>
-	@if ( GameRef?.MatchState == MonopolyMatchState.GameOver )
+	@if ( GameRef?.MatchState == MatchLifecycleState.GameOver )
 	{
 		<div class="session-screen game-over-screen">
 			<div class="session-panel">
@@ -13,7 +13,7 @@
 				<div class="session-title">@WinnerName Wins</div>
 				<div class="session-copy">Return to the lobby to change players or start another round with the same table.</div>
 				<div class="session-actions">
-					<MonopolyButton Variant="session-primary-button" OnClick="@ReturnToLobby">Back To Lobby</MonopolyButton>
+					<GameButton Variant="session-primary-button" OnClick="@ReturnToLobby">Back To Lobby</GameButton>
 				</div>
 			</div>
 		</div>
@@ -26,14 +26,14 @@
 				<div class="session-kicker">Menu</div>
 				<div class="session-title">Game Menu</div>
 				<div class="session-actions escape-menu-actions">
-					<MonopolyButton Variant="session-secondary-button" OnClick="@LeaveLobby">Leave Lobby</MonopolyButton>
-					<MonopolyButton Variant="session-danger-button" OnClick="@ExitGame">Exit Game</MonopolyButton>
+					<GameButton Variant="session-secondary-button" OnClick="@LeaveLobby">Leave Lobby</GameButton>
+					<GameButton Variant="session-danger-button" OnClick="@ExitGame">Exit Game</GameButton>
 				</div>
 			</div>
 		</div>
 	}
 
-	@if ( GameRef?.MatchState == MonopolyMatchState.Paused )
+	@if ( GameRef?.MatchState == MatchLifecycleState.Paused )
 	{
 		<div class="session-screen pause-screen">
 			<div class="session-panel">
@@ -41,8 +41,8 @@
 				<div class="session-title">Game Paused</div>
 				<div class="session-copy">The table is frozen until the host resumes or returns everyone to the lobby.</div>
 				<div class="session-actions">
-					<MonopolyButton Variant="session-primary-button" OnClick="@ResumeGame">Resume</MonopolyButton>
-					<MonopolyButton Variant="session-secondary-button" OnClick="@ReturnToLobby">Back To Lobby</MonopolyButton>
+					<GameButton Variant="session-primary-button" OnClick="@ResumeGame">Resume</GameButton>
+					<GameButton Variant="session-secondary-button" OnClick="@ReturnToLobby">Back To Lobby</GameButton>
 				</div>
 			</div>
 		</div>

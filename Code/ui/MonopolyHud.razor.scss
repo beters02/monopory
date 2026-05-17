@@ -1,9 +1,9 @@
 @import "MonopolyTheme.scss";
 @import "components/HudPanel/HudPanel.razor.scss";
-@import "components/buttons/MonopolyButton.razor.scss";
-@import "components/buttons/MonopolyCloseButton.razor.scss";
-@import "components/MonopolyPopupStack.razor.scss";
-@import "components/MonopolySpaceCard.razor.scss";
+@import "components/buttons/GameButton.razor.scss";
+@import "components/buttons/CloseButton.razor.scss";
+@import "components/PopupStack.razor.scss";
+@import "components/SpaceCard.razor.scss";
 @import "components/GameStatusPanel.razor.scss";
 @import "components/SessionOverlay.razor.scss";
 @import "components/PropertyOwnershipPanel.razor.scss";

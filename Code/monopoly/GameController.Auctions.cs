@@ -8,7 +8,7 @@ public sealed partial class GameController : Component
 
 	private void UpdateAuction()
 	{
-		if ( Phase != MonopolyGamePhase.Auctioning )
+		if ( Phase != GamePhase.Auctioning )
 			return;
 
 		if ( AuctionSpaceIndex < 0 || Time.Now < AuctionEndsAt )
@@ -26,7 +26,7 @@ public sealed partial class GameController : Component
 		if ( !CanAcceptGameplayInput() )
 			return;
 
-		if ( Phase != MonopolyGamePhase.WaitingForBuyDecision )
+		if ( Phase != GamePhase.WaitingForBuyDecision )
 			return;
 
 		StartAuction( PendingPurchaseSpaceIndex );
@@ -41,7 +41,7 @@ public sealed partial class GameController : Component
 		if ( def is null || !IsPurchasableSpace( def ) || GetOwnerIndexForSpace( spaceIndex ) >= 0 )
 		{
 			PendingPurchaseSpaceIndex = -1;
-			Phase = MonopolyGamePhase.TurnEnded;
+			Phase = GamePhase.TurnEnded;
 			return;
 		}
 
@@ -50,7 +50,7 @@ public sealed partial class GameController : Component
 		AuctionCurrentBid = 0;
 		AuctionHighBidderIndex = -1;
 		AuctionEndsAt = Time.Now + 15f;
-		Phase = MonopolyGamePhase.Auctioning;
+		Phase = GamePhase.Auctioning;
 
 		SendPopupToAll( "Auction started", $"{def.DisplayName} is up for auction.", PopupKind.Info, true, 4f );
 		Log.Info( $"Auction started for {def.DisplayName}." );
@@ -80,7 +80,7 @@ public sealed partial class GameController : Component
 		}
 
 		ClearAuction();
-		Phase = MonopolyGamePhase.TurnEnded;
+		Phase = GamePhase.TurnEnded;
 	}
 
 	private void ClearAuction()
@@ -99,7 +99,7 @@ public sealed partial class GameController : Component
 		if ( !CanAcceptGameplayInput() )
 			return;
 
-		if ( Phase != MonopolyGamePhase.Auctioning )
+		if ( Phase != GamePhase.Auctioning )
 			return;
 
 		var bidder = Players.ElementAtOrDefault( bidderIndex );

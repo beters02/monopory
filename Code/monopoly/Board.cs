@@ -282,8 +282,8 @@ public sealed class Board : Component
 			SpaceIndex == 20 ||
 			SpaceIndex == 30;
 
-		var cornHbs = MonopolySpaceSettings.CornerHitboxSize;
-		var regHbs = MonopolySpaceSettings.HitboxSize;
+		var cornHbs = SpaceLayoutSettings.CornerHitboxSize;
+		var regHbs = SpaceLayoutSettings.HitboxSize;
 
 		if (isCorner)
 			return cornHbs;
