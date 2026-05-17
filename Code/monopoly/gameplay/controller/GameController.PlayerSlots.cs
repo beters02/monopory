@@ -221,7 +221,7 @@ public sealed partial class GameController : Component
 
 		if ( emptySlot is null )
 		{
-			Log.Warning( $"No available Monopoly player slot for {connection.DisplayName}" );
+			Log.Warning( $"No available player slot for {connection.DisplayName}" );
 			return;
 		}
 
@@ -230,6 +230,6 @@ public sealed partial class GameController : Component
 		emptySlot.IsReady = false;
 		ResetPlayerForGame( emptySlot );
 
-		Log.Info( $"Assigned {connection.DisplayName} to Monopoly player slot {Players.IndexOf( emptySlot )}" );
+		Log.Info( $"Assigned {connection.DisplayName} to player slot {Players.IndexOf( emptySlot )}" );
 	}
 }

@@ -95,6 +95,6 @@ public sealed partial class GameController : Component
 
 		var winnerName = Winner?.PlayerName ?? "No one";
 		SendPopupToAll( "Game over", $"{winnerName} won the game.", PopupKind.Success, true, 8f );
-		Log.Info( $"Monopoly game over. Winner: {winnerName}." );
+		Log.Info( $"Game over. Winner: {winnerName}." );
 	}
 }

@@ -166,7 +166,7 @@
       "__guid": "0caebde4-34ea-4442-acc6-17ef10d14dce",
       "__version": 2,
       "Flags": 0,
-      "Name": "MonopolyMenuController",
+      "Name": "MenuController",
       "Position": "233.042664,-115.29248,120.323067",
       "Rotation": "0,0,0,1",
       "Scale": "1,1,1",

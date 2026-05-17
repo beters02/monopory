@@ -111,7 +111,7 @@ public sealed partial class GameController : Component
 
 		if ( matches.Count > 1 )
 		{
-			Log.Warning( $"Multiple Monopoly players matched \"{playerName}\" with {matchMode} matching." );
+			Log.Warning( $"Multiple players matched \"{playerName}\" with {matchMode} matching." );
 			return false;
 		}
 

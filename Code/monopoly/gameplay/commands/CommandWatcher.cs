@@ -40,12 +40,6 @@ public sealed class CommandWatcher : Component
 		LogCommandResult( "change_money", GameCommandManager.ChangeMoney( connection, amount, JoinPlayerName( playerName, playerNameTail ) ) );
 	}
 
-	[ConCmd( "debug_refactor_stage_test" )]
-	private static void DebugRefactorStageTest( Connection connection, string playerName = "self", params string[] playerNameTail )
-	{
-		LogCommandResult( "debug_refactor_stage_test", GameCommandManager.DebugRefactorStageTest(connection, JoinPlayerName(playerName, playerNameTail)));
-	}
-
 	[ConVar( "debug" )]
 	public static bool Debug { get; set; } = false;
 

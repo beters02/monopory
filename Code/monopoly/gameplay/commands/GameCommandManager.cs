@@ -22,7 +22,7 @@ public sealed class GameCommandManager : Component
 	{
 		var game = GameController.Instance;
 		if ( game is null )
-			return CommandResult.Fail( "No active Monopoly game." );
+			return CommandResult.Fail( "No active game." );
 
 		var player = game.ResolvePlayerReference( playerName, caller );
 		if ( player is null )
@@ -55,7 +55,7 @@ public sealed class GameCommandManager : Component
 		var game = GameController.Instance;
 		var board = Board.Instance;
 		if ( game is null || board?.SpaceDefs is null )
-			return CommandResult.Fail( "No active Monopoly board." );
+			return CommandResult.Fail( "No active board." );
 
 		var player = game.ResolvePlayerReference( playerName, caller );
 		if ( player is null )
@@ -77,7 +77,7 @@ public sealed class GameCommandManager : Component
 	{
 		var game = GameController.Instance;
 		if ( game is null )
-			return CommandResult.Fail( "No active Monopoly game." );
+			return CommandResult.Fail( "No active game." );
 
 		var player = game.ResolvePlayerReference( playerName, caller );
 		if ( player is null )
@@ -108,7 +108,7 @@ public sealed class GameCommandManager : Component
 
 		var game = GameController.Instance;
 		if ( game is null )
-			return CommandResult.Fail( "No active Monopoly game." );
+			return CommandResult.Fail( "No active game." );
 
 		var player = game.ResolvePlayerReference( playerName, caller );
 		if ( player is null )
@@ -117,22 +117,6 @@ public sealed class GameCommandManager : Component
 		return game.TryChangeMoneyForPlayer( player, amount, out var message )
 			? CommandResult.Success( message )
 			: CommandResult.Fail( message );
-	}
-
-	public static CommandResult DebugRefactorStageTest(Connection caller, string  playerName = "self")
-	{
-		var game = GameController.Instance;
-		if ( game is null )
-			return CommandResult.Fail( "No active Monopoly game." );
-
-		var player = game.ResolvePlayerReference( playerName, caller );
-		if ( player is null )
-			return CommandResult.Fail( $"Could not find player \"{playerName}\"." );
-
-		ConsoleSystem.Run("buy_property_set pink boot");
-		ConsoleSystem.Run("buy_property_set red boot");
-		ConsoleSystem.Run("change_money 1500 boot");
-		return CommandResult.Success();
 	}
 
 	private static bool CanUseCheatCommand( Connection caller )
