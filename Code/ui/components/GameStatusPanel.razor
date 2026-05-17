@@ -67,6 +67,9 @@
 
 	private void EndTurn()
 	{
+		if ( CanEndTurn )
+			GameRef?.ClearSelectedSpace();
+
 		GameRef?.RequestEndTurn();
 	}
 

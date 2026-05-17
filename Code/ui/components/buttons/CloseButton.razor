@@ -18,6 +18,11 @@
 {
 	[Parameter] public string CloseLabel { get; set; } = "X";
 
+	public CloseButton()
+	{
+		Sound = GameAssets.Sounds.ClosingClick;
+	}
+
 	private string CloseRootClasses => string.IsNullOrWhiteSpace( Variant )
 		? "monopoly-button monopoly-close-button"
 		: $"monopoly-button monopoly-close-button {Variant}";

@@ -18,8 +18,20 @@ public sealed partial class GameController : Component
 
 	private void SelectSpaceAsync( int spaceIndex, string drawnCardText = "" )
 	{
+
+		//if ( LocalSelectedSpaceIndex == -1 && spaceIndex != -1 )
+		//	GameAssets.Sounds.CardFlip.Play();
+
+		if (spaceIndex != -1 )
+			GameAssets.Sounds.CardFlip.Play();
+		
 		LocalSelectedSpaceIndex = spaceIndex;
 		LocalSelectedDrawnCardText = drawnCardText ?? "";
+	}
+
+	public void ClearSelectedSpace()
+	{
+		SelectSpaceAsync( -1 );
 	}
 
 	public void SelectSpace( int spaceIndex )
@@ -59,5 +71,24 @@ public sealed partial class GameController : Component
 	private void ShowLandedSpaceCard( int spaceIndex, string drawnCardText )
 	{
 		SelectSpaceAsync( spaceIndex, drawnCardText );
+	}
+
+	private void ClearSelectedSpaceForPlayer( PlayerState player )
+	{
+		var connection = GetConnectionForPlayer( player );
+
+		if ( connection is null )
+			return;
+
+		using ( Rpc.FilterInclude( connection ) )
+		{
+			ClearLocalSelectedSpaceCard();
+		}
+	}
+
+	[Rpc.Broadcast]
+	private void ClearLocalSelectedSpaceCard()
+	{
+		ClearSelectedSpace();
 	}
 }

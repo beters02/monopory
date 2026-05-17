@@ -2,6 +2,7 @@ using System.Threading.Tasks;
 using System;
 using System.Text.RegularExpressions;
 using Sandbox;
+using Sandbox.UI;
 
 public sealed partial class GameController : Component
 {
@@ -99,6 +100,7 @@ public sealed partial class GameController : Component
 		}
 		
 		PropertyOwners[def.Index] = playerIndex;
+		ShowPropertyBoughtPopup( player, def );
 		Log.Info( $"{player.PlayerName} bought {def.DisplayName} for ${def.Price}." );
 		message = $"{player.PlayerName} bought {def.DisplayName}.";
 		return true;
@@ -177,6 +179,7 @@ public sealed partial class GameController : Component
 		foreach ( var def in propertiesToBuy )
 		{
 			PropertyOwners[def.Index] = playerIndex;
+			ShowPropertyBoughtPopup( player, def );
 			Log.Info( $"{player.PlayerName} bought {def.DisplayName} for ${def.Price}." );
 		}
 
@@ -205,6 +208,7 @@ public sealed partial class GameController : Component
 		if ( player.Money >= def.Price )
 		{
 			BuyUnownedPropertyForPlayer( player, def, CurrentPlayerIndex );
+			ShowPropertyBoughtPopup( player, def );
 		}
 
 		PendingPurchaseSpaceIndex = -1;
@@ -238,4 +242,5 @@ public sealed partial class GameController : Component
 
 		Log.Info( $"{player.PlayerName} bought {def.DisplayName} for ${def.Price}." );
 	}
+
 }

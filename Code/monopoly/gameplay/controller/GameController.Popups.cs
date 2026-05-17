@@ -92,17 +92,24 @@ public sealed partial class GameController : Component
 			Message = message ?? "",
 			Kind = kind,
 			CanDismiss = canDismiss,
-			Lifetime = lifetime,
-			SoundEnabled = soundEnabled
+			Lifetime = lifetime
 		} );
 
-		//TODO: add dismiss sound
-
-		if (soundEnabled)
-			GameAssets.Sounds.Popup.ForKind(kind).Play();
-			
+		if ( soundEnabled )
+			GameAssets.Sounds.Popup.ForKind( kind ).Play();
 
 		while ( popups.Count > 4 )
 			popups.RemoveAt( 0 );
 	}
+
+	// Custom Game Popups
+	public void ShowPropertyBoughtPopup( PlayerState player, SpaceDef def )
+	{
+		SendPopupToAll(
+			"Property purchased",
+			$"{player.PlayerName} has purchased {def.DisplayName} for {def.Price}!",
+			PopupKind.Success
+		);
+	}
+
 }

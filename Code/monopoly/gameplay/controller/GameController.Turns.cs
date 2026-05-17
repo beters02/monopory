@@ -62,6 +62,7 @@ public sealed partial class GameController : Component
 
 		Log.Info( $"{skippedPlayer.PlayerName}'s turn timed out and was skipped." );
 		SendPopupToAll( "Turn skipped", $"{skippedPlayer.PlayerName}'s turn timed out.", PopupKind.Warning, true, 4f );
+		ClearSelectedSpaceForPlayer( skippedPlayer );
 
 		AdvanceTurn();
 	}
@@ -188,6 +189,7 @@ public sealed partial class GameController : Component
 			return;
 		}
 
+		ClearSelectedSpaceForPlayer( CurrentPlayer );
 		CurrentPlayer.ConsecutiveDoubles = 0;
 		AdvanceTurn();
 	}

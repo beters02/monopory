@@ -26,8 +26,7 @@ public static class LocalPopups
 			Message = string.IsNullOrWhiteSpace( message ) ? "This action is not available right now." : message,
 			Kind = kind,
 			CanDismiss = canDismiss,
-			Lifetime = lifetime,
-			SoundEnabled = soundEnabled
+			Lifetime = lifetime
 		};
 
 		popups.Add( popup );
