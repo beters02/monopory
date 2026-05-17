@@ -1,0 +1,473 @@
+@using System
+@using Sandbox
+@using Sandbox.UI
+@inherits PanelComponent
+
+<root class="board-panel-root" style="@RootStyle">
+	@if ( ShouldShowBoard )
+	{
+		<div class="board-center" style="@CenterStyle"></div>
+
+		@foreach ( var space in SpaceDefs )
+		{
+			<div class="@GetSpaceClasses( space )" style="@GetSpaceStyle( space.Index )">
+				@if ( HasColorBar( space ) )
+				{
+					<div class="@GetColorBarClasses( space )" style="@GetColorBarStyle( space )"></div>
+				}
+
+				<div class="space-content" style="@ContentStyle">
+					@if ( IsCorner( space ) )
+					{
+						<div class="corner-icon">@GetCornerIcon( space )</div>
+						<div class="corner-title">@GetCornerTitle( space )</div>
+						@if ( space.Type == SpaceType.Go )
+						{
+							<div class="go-arrow" style="@GoArrowStyle">&lt;-</div>
+						}
+					}
+					else
+					{
+						@if ( ShouldOverlayTitleOnIcon( space ) )
+						{
+							<div class="space-icon-stack">
+								<div class="space-title space-title-overlay" style="@SpaceTitleStyle">
+									@foreach ( var line in GetSpaceNameLines( space ) )
+									{
+										<div>@line</div>
+									}
+								</div>
+
+								@if ( GetIconType(space) == IconType.Text )
+								{
+									<div class="space-icon" style="@GetSpaceIconStyle( space )">@GetSpaceIconText( space )</div>
+								}
+								else
+								{
+									<img class="space-icon space-icon-image" src="@GetSpaceIconImagePath( space )" />
+								}
+							</div>
+						}
+						else
+						{
+							@if ( HasIcon( space ) )
+							{
+								@if ( GetIconType(space) == IconType.Text )
+								{
+									<div class="space-icon" style="@GetSpaceIconStyle( space )">@GetSpaceIconText( space )</div>
+								}
+								else
+								{
+									<img class="space-icon space-icon-image" src="@GetSpaceIconImagePath( space )" />
+								}
+							}
+
+							<div class="space-title" style="@SpaceTitleStyle">
+								@foreach ( var line in GetSpaceNameLines( space ) )
+								{
+									<div>@line</div>
+								}
+							</div>
+						}
+					}
+				</div>
+			</div>
+		}
+	}
+</root>
+
+@code
+{
+	private const int MaxLineLength = 10;
+
+	[Property] public float CornerSizePercent { get; set; } = 15f;
+	[Property] public float TrackDepthPercent { get; set; } = 15f;
+	[Property] public List<float> SpaceLengthWeights { get; set; } = CreateDefaultSpaceLengthWeights();
+	[Property] public string BoardEdgeColor { get; set; } = "#1399d6";
+	[Property] public string CenterColor { get; set; } = "#9d9d9d";
+	[Property] public string SpaceColor { get; set; } = "#b9cfca";
+	[Property] public string BorderColor { get; set; } = "#050505";
+	[Property] public string TextColor { get; set; } = "#050505";
+	[Property] public string BrownLabelColor { get; set; } = "#8b3a00";
+	[Property] public string LightBlueLabelColor { get; set; } = "#7fa1d0";
+	[Property] public string PinkLabelColor { get; set; } = "#ed1978";
+	[Property] public string OrangeLabelColor { get; set; } = "#ff7f0e";
+	[Property] public string RedLabelColor { get; set; } = "#f22520";
+	[Property] public string YellowLabelColor { get; set; } = "#ffe21a";
+	[Property] public string GreenLabelColor { get; set; } = "#07a64f";
+	[Property] public string DarkBlueLabelColor { get; set; } = "#06469a";
+	[Property] public string ChestIconColor { get; set; } = "#296c9e";
+	[Property] public string GoColor { get; set; } = "#c51e24";
+	[Property] public string FreeParkingColor { get; set; } = "#e8df6a";
+	[Property] public string GoToJailColor { get; set; } = "#1f4f8f";
+	[Property] public float OuterBorderThicknessPx { get; set; } = 8f;
+	[Property] public float SpaceBorderThicknessPx { get; set; } = 3f;
+	[Property] public float CenterBorderThicknessPx { get; set; } = 6f;
+	[Property] public float ColorBarThicknessPercent { get; set; } = 18f;
+	[Property] public float ContentPaddingPx { get; set; } = 6f;
+	[Property] public float SpaceTextFontSizePx { get; set; } = 17f;
+	[Property] public float SpaceTextLineHeightPx { get; set; } = 17f;
+	[Property] public float SpaceIconFontSizePx { get; set; } = 40f;
+	[Property] public float ChanceIconFontSizePx { get; set; } = 58f;
+	[Property] public float CommunityChestIconFontSizePx { get; set; } = 32f;
+	[Property] public float UtilityIconFontSizePx { get; set; } = 28f;
+	[Property] public float CornerIconFontSizePx { get; set; } = 32f;
+	[Property] public float GoIconFontSizePx { get; set; } = 44f;
+	[Property] public float GoToJailIconFontSizePx { get; set; } = 42f;
+	[Property] public float CornerTitleFontSizePx { get; set; } = 13f;
+	[Property] public float FreeParkingIconSizePx { get; set; } = 58f;
+
+	private bool ShouldShowBoard => Board.Instance is null || Board.Instance.UseProceduralBoardPanel;
+
+	private string RootStyle =>
+		$"background: {BoardEdgeColor}; border: {OuterBorderThicknessPx}px solid {BoardEdgeColor}; color: {TextColor};";
+
+	private string CenterStyle =>
+		$"left: {TrackDepth}%; top: {TrackDepth}%; width: {100f - (TrackDepth * 2f)}%; height: {100f - (TrackDepth * 2f)}%; background: {CenterColor}; border: {CenterBorderThicknessPx}px solid {BorderColor};";
+
+	private string ContentStyle =>
+		$"padding: {ContentPaddingPx}px;";
+
+	private string SpaceTitleStyle =>
+		$"font-size: {SpaceTextFontSizePx}px; line-height: {SpaceTextLineHeightPx}px; color: {TextColor};";
+
+	private string CornerTitleStyle =>
+		$"font-size: {CornerTitleFontSizePx}px; line-height: {CornerTitleFontSizePx}px; color: {TextColor};";
+
+	private string GoArrowStyle =>
+		$"font-size: {GoIconFontSizePx * 0.64f}px; color: {GoColor};";
+
+	private IEnumerable<SpaceDef> SpaceDefs =>
+		(Board.Instance?.SpaceDefs?.Count > 0 ? Board.Instance.SpaceDefs : BoardData.CreateSpaceDefs())
+			.OrderBy( space => space.Index );
+
+	public float CornerSize => Math.Clamp( CornerSizePercent, 5f, 35f );
+	public float TrackDepth => Math.Clamp( TrackDepthPercent, 5f, CornerSize );
+	public float SideRegularLength => Math.Max( 0f, 100f - (CornerSize * 2f) );
+
+	private static string GetSpaceClasses( SpaceDef space )
+	{
+		var side = GetSideClass( space.Index );
+		var corner = IsCorner( space ) ? "corner" : "standard";
+		return $"board-space {side} {corner} type-{space.Type.ToString().ToLowerInvariant()} color-{space.ColorGroupClass} space-{space.Index} key-{space.Key}";
+	}
+
+	private static string GetSpaceContentClasses( SpaceDef space )
+	{
+		var str = $"space-content";
+		if (IsCorner( space ))
+		{
+			str += " corner";
+		}
+		return str;
+	}
+
+	private static string GetColorBarClasses( SpaceDef space )
+	{
+		return $"space-color-bar color-bar-{space.ColorGroupClass}";
+	}
+
+	private string GetColorBarStyle( SpaceDef space )
+	{
+		var thickness = Math.Clamp( ColorBarThicknessPercent, 2f, 80f );
+		var color = GetLabelColor( space.ColorGroup );
+
+		if ( GetSideClass( space.Index ) is "side-left" or "side-right" )
+			return $"width: {thickness}%; height: 100%; background-color: {color}; border-color: {BorderColor};";
+
+		return $"height: {thickness}%; background-color: {color}; border-color: {BorderColor};";
+	}
+
+	private string GetLabelColor( ColorGroup colorGroup )
+	{
+		return colorGroup switch
+		{
+			ColorGroup.Brown => BrownLabelColor,
+			ColorGroup.LightBlue => LightBlueLabelColor,
+			ColorGroup.Pink => PinkLabelColor,
+			ColorGroup.Orange => OrangeLabelColor,
+			ColorGroup.Red => RedLabelColor,
+			ColorGroup.Yellow => YellowLabelColor,
+			ColorGroup.Green => GreenLabelColor,
+			ColorGroup.DarkBlue => DarkBlueLabelColor,
+			_ => SpaceColor
+		};
+	}
+
+	private static string GetSideClass( int spaceIndex )
+	{
+		if ( spaceIndex <= 10 )
+			return "side-bottom";
+
+		if ( spaceIndex <= 20 )
+			return "side-left";
+
+		if ( spaceIndex <= 30 )
+			return "side-top";
+
+		return "side-right";
+	}
+
+	private string GetSpaceStyle( int spaceIndex )
+	{
+		Rect rect = BoardMath.GetSpaceRect( spaceIndex, this );
+		return $"left: {rect.Left}%; top: {rect.Top}%; width: {rect.Width}%; height: {rect.Height}%; background-color: {SpaceColor}; border: {SpaceBorderThicknessPx}px solid {BorderColor};";
+	}
+
+	public float GetSideWeightTotal( int firstIndex, int lastIndex )
+	{
+		var total = 0f;
+
+		for ( var index = firstIndex; index <= lastIndex; index++ )
+			total += GetSpaceLengthWeight( index );
+
+		return Math.Max( 0.001f, total );
+	}
+
+	public float GetSpaceLengthWeight( int spaceIndex )
+	{
+		if ( SpaceLengthWeights is null ||
+			spaceIndex < 0 ||
+			spaceIndex >= SpaceLengthWeights.Count ||
+			SpaceLengthWeights[spaceIndex] <= 0f )
+		{
+			return 1f;
+		}
+
+		return SpaceLengthWeights[spaceIndex];
+	}
+
+	private static List<float> CreateDefaultSpaceLengthWeights()
+	{
+		return Enumerable.Repeat( 1f, 40 ).ToList();
+	}
+
+	private static bool IsCorner( SpaceDef space )
+	{
+		return space.Type == SpaceType.Go ||
+			space.Type == SpaceType.Jail ||
+			space.Type == SpaceType.FreeParking ||
+			space.Type == SpaceType.GoToJail;
+	}
+
+	private static bool HasColorBar( SpaceDef space )
+	{
+		return space.Type == SpaceType.Property && space.ColorGroup != ColorGroup.None;
+	}
+
+	private static bool HasIcon( SpaceDef space )
+	{
+		return space.Type != SpaceType.Property;
+	}
+
+	private static bool ShouldOverlayTitleOnIcon( SpaceDef space )
+	{
+		return space.Type is SpaceType.Chance or SpaceType.CommunityChest;
+	}
+
+	private enum IconType
+	{
+		Image,
+		Text
+	}
+
+	private static IconType GetIconType( SpaceDef space )
+	{
+		return space.Type switch
+		{
+			SpaceType.Railroad => IconType.Text,
+			SpaceType.Utility => IconType.Text,
+			SpaceType.Chance => IconType.Image,
+			SpaceType.CommunityChest => IconType.Text,
+			SpaceType.Tax => IconType.Text,
+			_ => IconType.Text
+		};
+	}
+
+	private static string GetSpaceIconText( SpaceDef space )
+	{
+		return space.Type switch
+		{
+			SpaceType.Railroad => "RR",
+			SpaceType.Utility => "UTIL",
+			SpaceType.Chance => "?",
+			SpaceType.CommunityChest => "CHEST",
+			SpaceType.Tax => "$",
+			_ => ""
+		};
+	}
+
+	private static Texture GetSpaceIconImage( SpaceDef space )
+	{
+		return GameAssets.Images.Chance.Texture;
+	}
+
+	private static string GetSpaceIconImagePath( SpaceDef space )
+	{
+		return GameAssets.Images.Chance.Path;
+	}
+
+	private string GetSpaceIconStyle( SpaceDef space )
+	{
+		var fontSize = space.Type switch
+		{
+			SpaceType.Chance => ChanceIconFontSizePx,
+			SpaceType.CommunityChest => CommunityChestIconFontSizePx,
+			SpaceType.Utility => UtilityIconFontSizePx,
+			_ => SpaceIconFontSizePx
+		};
+
+		var color = space.Type == SpaceType.CommunityChest ? ChestIconColor : TextColor;
+		return $"font-size: {fontSize}px; line-height: {fontSize + 2f}px; color: {color};";
+	}
+
+	private static string GetCornerIcon( SpaceDef space )
+	{
+		return space.Type switch
+		{
+			SpaceType.Go => "GO",
+			SpaceType.Jail => "JAIL",
+			SpaceType.FreeParking => "P",
+			SpaceType.GoToJail => "GO",
+			_ => ""
+		};
+	}
+
+	private string GetCornerIconStyle( SpaceDef space )
+	{
+		var fontSize = space.Type switch
+		{
+			SpaceType.Go => GoIconFontSizePx,
+			SpaceType.GoToJail => GoToJailIconFontSizePx,
+			_ => CornerIconFontSizePx
+		};
+
+		var color = space.Type switch
+		{
+			SpaceType.Go => GoColor,
+			SpaceType.GoToJail => GoToJailColor,
+			_ => TextColor
+		};
+
+		var style = $"font-size: {fontSize}px; line-height: {fontSize + 2f}px; color: {color};";
+
+		if ( space.Type == SpaceType.FreeParking )
+		{
+			style += $" width: {FreeParkingIconSizePx}px; height: {FreeParkingIconSizePx}px; border-radius: {FreeParkingIconSizePx * 0.5f}px; background-color: {FreeParkingColor}; border-color: {BorderColor};";
+		}
+
+		return style;
+	}
+
+	private static string GetCornerTitle( SpaceDef space )
+	{
+		return space.Type switch
+		{
+			SpaceType.Go => "Collect salary as you pass",
+			SpaceType.Jail => "Just visiting",
+			SpaceType.FreeParking => "Free parking",
+			SpaceType.GoToJail => "Go to jail",
+			_ => space.DisplayName
+		};
+	}
+
+	private static IEnumerable<string> GetSpaceNameLines( SpaceDef space )
+	{
+		return space.DisplayName
+			.Split( '\n' )
+			.SelectMany( WrapLine );
+	}
+
+	private static IEnumerable<string> WrapLine( string line )
+	{
+		var words = line.Split( ' ', StringSplitOptions.RemoveEmptyEntries );
+		var currentLine = "";
+
+		foreach ( var word in words )
+		{
+			if ( currentLine.Length == 0 )
+			{
+				currentLine = word;
+				continue;
+			}
+
+			if ( currentLine.Length + 1 + word.Length > MaxLineLength )
+			{
+				yield return currentLine;
+				currentLine = word;
+				continue;
+			}
+
+			currentLine += $" {word}";
+		}
+
+		if ( currentLine.Length > 0 )
+			yield return currentLine;
+	}
+
+	protected override int BuildHash()
+	{
+		var board = Board.Instance;
+		return HashCode.Combine(
+			board?.UseProceduralBoardPanel ?? true,
+			board?.SpaceDefs?.Count ?? 0,
+			CornerSizePercent,
+			TrackDepthPercent,
+			GetWeightsHash(),
+			GetStyleHash()
+		);
+	}
+
+	private int GetWeightsHash()
+	{
+		var hash = new HashCode();
+		hash.Add( SpaceLengthWeights?.Count ?? 0 );
+
+		if ( SpaceLengthWeights is not null )
+		{
+			foreach ( var weight in SpaceLengthWeights )
+				hash.Add( weight );
+		}
+
+		return hash.ToHashCode();
+	}
+
+	private int GetStyleHash()
+	{
+		var hash = new HashCode();
+		hash.Add( BoardEdgeColor );
+		hash.Add( CenterColor );
+		hash.Add( SpaceColor );
+		hash.Add( BorderColor );
+		hash.Add( TextColor );
+		hash.Add( BrownLabelColor );
+		hash.Add( LightBlueLabelColor );
+		hash.Add( PinkLabelColor );
+		hash.Add( OrangeLabelColor );
+		hash.Add( RedLabelColor );
+		hash.Add( YellowLabelColor );
+		hash.Add( GreenLabelColor );
+		hash.Add( DarkBlueLabelColor );
+		hash.Add( ChestIconColor );
+		hash.Add( GoColor );
+		hash.Add( FreeParkingColor );
+		hash.Add( GoToJailColor );
+		hash.Add( OuterBorderThicknessPx );
+		hash.Add( SpaceBorderThicknessPx );
+		hash.Add( CenterBorderThicknessPx );
+		hash.Add( ColorBarThicknessPercent );
+		hash.Add( ContentPaddingPx );
+		hash.Add( SpaceTextFontSizePx );
+		hash.Add( SpaceTextLineHeightPx );
+		hash.Add( SpaceIconFontSizePx );
+		hash.Add( ChanceIconFontSizePx );
+		hash.Add( CommunityChestIconFontSizePx );
+		hash.Add( UtilityIconFontSizePx );
+		hash.Add( CornerIconFontSizePx );
+		hash.Add( GoIconFontSizePx );
+		hash.Add( GoToJailIconFontSizePx );
+		hash.Add( CornerTitleFontSizePx );
+		hash.Add( FreeParkingIconSizePx );
+		return hash.ToHashCode();
+	}
+}

@@ -1,5 +1,11 @@
 public static class GameAssets
 {
+
+	public static class Images
+	{
+		public static readonly GameImage Chance = new ( "textures/Chance.png" );
+	}
+
 	public static class Sounds
 	{
 		public static readonly GameSound Click = new ( "sounds/effects/click.sound" );

@@ -84,14 +84,11 @@
 	{
 		if ( GameRef is null )
 			return;
+		
+		if (!Networking.IsHost)
+			return;
 
-		if ( Networking.IsHost )
-		{
-			GameRef.TryReturnToLobby();
-			SceneFlow.LoadLobby( Scene );
-		}
-		else
-			GameRef.RequestReturnToLobby();
+		GameRef.TryReturnToLobby();
 	}
 
 	private void LeaveLobby()

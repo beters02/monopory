@@ -12,7 +12,8 @@ public sealed class BoardSpace : Component
 	public TextRenderer LabelRenderer { get; private set; }
 	public Sandbox.ui.SpaceLabel WorldPanelLabel { get; private set; }
 
-	//[Property] public int SpaceIndex { get; set; }
+	public Vector3? OverrideHitboxSize { get; set; }
+	public Vector3? OverrideHitboxCenter { get; set; }
 
 	public BoxCollider Collider {get; private set;}
 
@@ -32,15 +33,34 @@ public sealed class BoardSpace : Component
 		Tags.Add( "monopoly_space" );
 	}
 
+	protected override void OnUpdate()
+	{
+	}
+
 	public void EnsureHitbox()
 	{
 		BoxCollider collider = Components.Get<BoxCollider>() ?? Components.Create<BoxCollider>();
 
-		collider.Scale = Board.GetHitboxSize(Index);
-		collider.Center = new Vector3(0, 0, -2f);
+		collider.Scale = OverrideHitboxSize ?? Board.GetHitboxSize(Index);
+		collider.Center = OverrideHitboxCenter ?? new Vector3(0, 0, -2f);
 		collider.IsTrigger = true;
 
 		Collider = collider;
+	}
+
+	public void SetHitboxOverride( Vector3? size = null, Vector3? center = null )
+	{
+		OverrideHitboxSize = size;
+		OverrideHitboxCenter = center;
+
+		if ( Collider is null )
+			return;
+
+		if ( OverrideHitboxSize is not null )
+			Collider.Scale = OverrideHitboxSize.Value;
+
+		if ( OverrideHitboxCenter is not null )
+			Collider.Center = OverrideHitboxCenter.Value;
 	}
 
 	public void EnsureDef(SpaceDef def)
@@ -55,7 +75,6 @@ public sealed class BoardSpace : Component
 			return null;
 
 		return GameObject.WorldTransform.PointToWorld(Collider.Center);
-		//return Collider.Center;
 	}
 
 	public Vector3? GetColliderSize()
@@ -79,7 +98,7 @@ public sealed class BoardSpace : Component
 		}
 
 		var size = Collider.Scale;
-		int quad = def.GetQuadrant();
+		int quad = Board.GetSpaceQuadrant( def.Index );
 
 		if (quad == 1 || quad == 3)
 		{
@@ -107,7 +126,7 @@ public sealed class BoardSpace : Component
 		}
 
 		var center = Collider.Center;
-		int quad = def.GetQuadrant();
+		int quad = Board.GetSpaceQuadrant( def.Index );
 
 		if (quad == 4)
 		{
@@ -220,7 +239,7 @@ public sealed class BoardSpace : Component
 	private Vector3 GetImprovementLocalPosition( int slot, int total, float zOffset, bool isHotel )
 	{
 		var center = Collider.Center;
-		var quadrant = Def.GetQuadrant();
+		var quadrant = Board.GetSpaceQuadrant( Def.Index );
 		var across = GetImprovementAcrossOffset( slot, total, isHotel );
 		var inward = isHotel ? 1.15f : 1.35f;
 		var position = new Vector3( center.x, center.y, zOffset );
@@ -259,7 +278,7 @@ public sealed class BoardSpace : Component
 
 	private Rotation GetImprovementLocalRotation()
 	{
-		return Def.GetQuadrant() switch
+		return Board.GetSpaceQuadrant( Def.Index ) switch
 		{
 			2 => Rotation.FromYaw( -90f ),
 			3 => Rotation.FromYaw( 180f ),
@@ -302,7 +321,7 @@ public sealed class BoardSpace : Component
 
 		var worldPanel = labelObject.Components.Create<Sandbox.WorldPanel>();
 		worldPanel.InteractionRange = 0f;
-		worldPanel.PanelSize = GetWorldPanelLabelPanelSizeForQuadrant( Collider.Scale );
+		worldPanel.PanelSize = GetWorldPanelLabelPanelSizeForQuadrant();
 		worldPanel.RenderScale = SpaceLayoutSettings.WorldPanelLabelRenderScale; //1f / SpaceLayoutSettings.WorldPanelLabelPixelsPerWorldUnit;
 		worldPanel.VerticalAlign = Sandbox.WorldPanel.VAlignment.Center;
 		worldPanel.HorizontalAlign = Sandbox.WorldPanel.HAlignment.Center;
@@ -342,7 +361,7 @@ public sealed class BoardSpace : Component
 
 	private void ApplyWorldLabelTransform( GameObject labelObject )
 	{
-		int quad = Def.GetQuadrant();
+		int quad = Board.GetSpaceQuadrant( Def.Index );
 		if (quad == 0)
 			quad = 1;
 		else
@@ -354,25 +373,18 @@ public sealed class BoardSpace : Component
 			colliderCenter.y,
 			SpaceLayoutSettings.WorldPanelLabelZOffset
 		);
-		labelObject.LocalRotation = SpaceLayoutSettings.WorldLabelRotations[quad];
+
+		if (Board.UseProceduralBoardPanelStatic)
+			labelObject.LocalRotation = SpaceLayoutSettings.WorldLabelRotations[quad];
+			//labelObject.LocalRotation = SpaceLayoutSettings.WorldLabelRotationsProcedural[quad];
+		else
+			labelObject.LocalRotation = SpaceLayoutSettings.WorldLabelRotations[quad];
+			
+
+		//labelObject.LocalRotation = SpaceLayoutSettings.WorldLabelRotations[quad];
 		labelObject.LocalScale = Vector3.One;
 	}
 
-	private Vector2 GetWorldPanelLabelSizeForQuadrant( Vector3 hitboxSize )
-	{
-		var quad = Def.GetQuadrant();
-
-		if ( quad == 2 || quad == 4 )
-			return new Vector2( hitboxSize.y, hitboxSize.x );
-
-		return new Vector2( hitboxSize.x, hitboxSize.y );
-	}
-
-	private Vector2 GetWorldPanelLabelPanelSizeForQuadrant( Vector3 hitboxSize )
-	{
-		return SpaceLayoutSettings.WorldPanelSizePixels;
-		//return GetWorldPanelLabelSizeForQuadrant( hitboxSize ) *
-		//	SpaceLayoutSettings.WorldPanelLabelPixelsPerWorldUnit;
-	}
+	private Vector2 GetWorldPanelLabelPanelSizeForQuadrant() => SpaceLayoutSettings.WorldPanelSizePixels;
 
 }

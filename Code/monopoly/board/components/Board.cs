@@ -15,18 +15,31 @@ public sealed class Board : Component
 	public List<SpaceDef> SpaceDefs { get; private set; } = new();
 
 	[Property] public Vector3 HitboxSize { get; set; } = new Vector3( 96f, 96f, 12f );
-	[Property] public GameObject BoardPlaneGameObject {get; set;}
 	[Property] public bool UseWorldPanelLabels { get; set; } = false;
+	[Property, Change(nameof(OnUseProceduralBoardPanelChanged))] public bool UseProceduralBoardPanel { get; set; } = false;
+	[Property] public Sandbox.ui.BoardPanel ProceduralBoardPanel { get; set; }
+	[Property] public float ProceduralBoardHalfSize { get; set; } = 43f;
+	[Property] public float ProceduralCornerSize { get; set; } = 13f;
+	[Property] public float ProceduralRegularSpaceLength { get; set; } = 8f;
+	[Property] public float ProceduralSpaceZOffset { get; set; } = 0f;
+	[Property] public float ProceduralReferencePanelSize { get; set; } = 2000f;
+	[Property] public float ProceduralBoardWorldScale { get; set; } = 1f;
 	[Property] public Model HouseModel { get; set; }
 	[Property] public Model HotelModel { get; set; }
 	[Property] public Vector3 ImprovementModelScale { get; set; } = Vector3.One;
 	[Property] public float ImprovementModelZOffset { get; set; } = 0.9f;
+	[Property] public WorldPanel BoardWorldPanel {get; set;}
 
 	public List<CardDef> ChanceCards { get; private set; } = new();
 	public List<CardDef> CommunityChestCards { get; private set; } = new();
+	
+	public static bool UseProceduralBoardPanelStatic => Instance.UseProceduralBoardPanel;
 
 	[Property, Change("OnDebugEnabledChanged")] public bool DebugEnabled {get; set;} = false;
 	private void OnDebugEnabledChanged(bool _, bool newValue) => logger.SetEnabled(newValue);
+
+	private float lastProcBoardWorldScale;
+	private float lastProcRefPanelSize;
 
 	// Component
 
@@ -37,6 +50,9 @@ public sealed class Board : Component
 		var debugConvarParsed = bool.TryParse(ConsoleSystem.GetValue( "debug" ), out bool debugConvar);
 		if (debugConvarParsed && debugConvar)
 			DebugEnabled = true;
+
+		lastProcBoardWorldScale = ProceduralBoardWorldScale;
+		lastProcRefPanelSize = ProceduralReferencePanelSize;
 
 		#if STANDALONE
 		if (DebugEnabled && !debugConvar)
@@ -52,6 +68,7 @@ public sealed class Board : Component
 
 		LoadBoardDefinitions();
 		LoadCardDefinitions();
+		RefreshProceduralBoardPanel();
 		InitSpaces();
 	}
 
@@ -61,11 +78,87 @@ public sealed class Board : Component
 		UpdateSpaceHoverCursor();
 		UpdateLocalSpaceSelection();
 		UpdateSpaceImprovements();
+
+		if (lastProcBoardWorldScale != ProceduralBoardWorldScale || lastProcRefPanelSize != ProceduralReferencePanelSize)
+		{
+			UpdateSpacesPosAndSize();
+		}
+	}
+
+	private void OnUseProceduralBoardPanelChanged( bool _, bool __ )
+	{
+		RefreshProceduralBoardPanel();
+	}
+
+	private void RefreshProceduralBoardPanel()
+	{
+		ProceduralBoardPanel ??= Scene.GetAllComponents<Sandbox.ui.BoardPanel>().FirstOrDefault();
+		BoardWorldPanel ??= Scene.GetAllComponents<WorldPanel>().FirstOrDefault();
+		ProceduralBoardPanel?.StateHasChanged();
+	}
+
+	private Vector3 GetProceduralSpacePosition( Rect spaceRect )
+	{
+		return BoardMath.RectPercentToLocal( spaceRect, GetBoardWorldSize(), ProceduralSpaceZOffset );
+	}
+
+	private Vector3 GetProceduralSpaceSize( Rect rect )
+	{
+		return BoardMath.RectPercentToColliderSize( rect, GetBoardWorldSize() );
+	}
+
+	private float GetBoardWorldSize()
+	{
+		var baseBoardSize = ProceduralBoardHalfSize * 2f;
+
+		if ( BoardWorldPanel is not null && BoardWorldPanel.PanelSize.x > 0f )
+		{
+			baseBoardSize *= BoardWorldPanel.PanelSize.x / ProceduralReferencePanelSize;
+		}
+
+		return baseBoardSize * ProceduralBoardWorldScale;
+	}
+
+	private void UpdateSpacesPosAndSize()
+	{
+		foreach ( var space in Spaces )
+		{
+			if ( space?.Def is null )
+				continue;
+
+			Rect spaceRect = BoardMath.GetSpaceRect( space.Def.Index, ProceduralBoardPanel );
+			space.GameObject.LocalPosition = GetProceduralSpacePosition( spaceRect );
+			space.SetHitboxOverride( GetProceduralSpaceSize( spaceRect ) );
+		}
+
+		lastProcBoardWorldScale = ProceduralBoardWorldScale;
+		lastProcRefPanelSize = ProceduralReferencePanelSize;
 	}
 
 	// Spaces & Defs initializing
 	private void InitSpaces()
 	{
+
+		if (UseProceduralBoardPanel)
+		{
+			Spaces = new();
+			foreach ( var def in SpaceDefs.OrderBy( space => space.Index ) )
+			{
+				Rect spaceRect = BoardMath.GetSpaceRect( def.Index, ProceduralBoardPanel );
+				var spaceObject = new GameObject( true, $"Space_{def.Index:00}_{def.Key}" );
+				spaceObject.SetParent( GameObject );
+				spaceObject.LocalPosition = GetProceduralSpacePosition( spaceRect );
+				spaceObject.LocalRotation = Rotation.Identity;
+				spaceObject.LocalScale = Vector3.One;
+
+				var boardSpace = spaceObject.Components.Create<BoardSpace>();
+				boardSpace.Index = def.Index;
+				boardSpace.SetHitboxOverride( GetProceduralSpaceSize( spaceRect ) );
+
+				Spaces.Add( boardSpace );
+			}
+		}
+
 		foreach ( var space in Spaces )
 		{
 			space.EnsureHitbox();
@@ -78,14 +171,18 @@ public sealed class Board : Component
 				continue;
 			}
 
-			ApplySpaceModifications(space);
-			TryCreateLabel(space);
+			if (!UseProceduralBoardPanel)
+			{
+				ApplySpaceModifications(space);
+				TryCreateLabel(space);
+			}
+			
 		}
 	}
 
 	private void ApplySpaceModifications(BoardSpace space)
 	{
-		var quad = space.Def.GetQuadrant();
+		var quad = GetSpaceQuadrant( space.Index );
 		if (quad == 0)
 			space.ModifyColliderSize(1f, 1f);
 		else if (quad == 1)
@@ -148,6 +245,9 @@ public sealed class Board : Component
 
 	private void TryCreateLabel(BoardSpace space)
 	{
+		//if (UseProceduralBoardPanel)
+		//	return;
+		
 		if (!ShouldCreateLabel(space))
 			return;
 
@@ -274,6 +374,29 @@ public sealed class Board : Component
 		return space?.TokenPosition ?? Vector3.Zero;
 	}
 
+	public static int GetSpaceQuadrant( int index )
+	{
+		return index switch
+		{
+			10 or 20 or 30 or 40 => 0,
+			< 10 => 1,
+			< 20 => 2,
+			< 30 => 3,
+			_ => 4
+		};
+	}
+
+	public static int GetSpaceQuadrantIncludeCorners( int index )
+	{
+		return index switch
+		{
+			< 10 => 1,
+			< 20 => 2,
+			< 30 => 3,
+			_ => 4
+		};
+	}
+
 	public static Vector3 GetHitboxSize(int SpaceIndex)
 	{
 		var isCorner =
@@ -398,7 +521,7 @@ public sealed class Board : Component
 		}
 
 		var def = GetSpaceDef(space.Index);
-		str += $", SpaceDef: {def?.DisplayName} (Quad: {def?.GetQuadrant()} Index: {def?.Index}, Type: {def?.Type})";
+		str += $", SpaceDef: {def?.DisplayName} (Quad: {GetSpaceQuadrant( def.Index )} Index: {def?.Index}, Type: {def?.Type})";
 		logger.Info(str);
 		
 		foundSpace = space;

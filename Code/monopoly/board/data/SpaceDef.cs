@@ -26,33 +26,5 @@ public sealed class SpaceDef
 	// Text info
 	public float TextScale = SpaceLayoutSettings.DefaultScale;
 
-	private int Quadrant {get; set;}
-
-	public int GetQuadrant()
-	{
-		if (Quadrant == 0 && !IsCorner)
-		{
-			if (Index == 0 || Index == 10 || Index == 20 || Index == 30)
-			{
-				Quadrant = 0; // Corners don't have a quadrant
-				IsCorner = true;
-			} else if(Index < 10)
-			{
-				Quadrant = 1;
-			} else if (Index < 20)
-			{
-				Quadrant = 2;
-			} else if (Index < 30)
-			{
-				Quadrant = 3;
-			} else if (Index < 40)
-			{
-				Quadrant = 4;
-			}
-		}
-
-		return Quadrant;
-	}
-
 	public bool IsCorner {get; set;} = false;
 }

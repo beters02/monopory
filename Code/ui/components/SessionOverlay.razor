@@ -11,10 +11,19 @@
 			<div class="session-panel">
 				<div class="session-kicker">Game Over</div>
 				<div class="session-title">@WinnerName Wins</div>
-				<div class="session-copy">Return to the lobby to change players or start another round with the same table.</div>
-				<div class="session-actions">
-					<GameButton Variant="session-primary-button" OnClick="@ReturnToLobby">Back To Lobby</GameButton>
-				</div>
+				@if (Networking.IsHost)
+				{
+					<div class="session-copy">Return your group back to the lobby, or leave lobby.</div>
+					<div class="session-actions">
+						<GameButton Variant="session-primary-button" OnClick="@ReturnToLobby">Back To Lobby</GameButton>
+						<GameButton Variant="session-primary-button" OnClick="@LeaveLobby">Leave Lobby</GameButton>
+					</div>
+				} else {
+					<div class="session-copy">Wait for the host to return the group to lobby, or leave lobby (you will have to get invited back).</div>
+					<div class="session-actions">
+						<GameButton Variant="session-primary-button" OnClick="@LeaveLobby">Leave Lobby</GameButton>
+					</div>
+				}
 			</div>
 		</div>
 	}
@@ -42,7 +51,12 @@
 				<div class="session-copy">The table is frozen until the host resumes or returns everyone to the lobby.</div>
 				<div class="session-actions">
 					<GameButton Variant="session-primary-button" OnClick="@ResumeGame">Resume</GameButton>
-					<GameButton Variant="session-secondary-button" OnClick="@ReturnToLobby">Back To Lobby</GameButton>
+					@if ( Networking.IsHost )
+					{
+						<GameButton Variant="session-secondary-button" OnClick="@ReturnToLobby">Back To Lobby</GameButton>
+					} else {
+						<GameButton Variant="session-secondary-button" OnClick="@LeaveLobby">Leave Lobby</GameButton>
+					}
 				</div>
 			</div>
 		</div>

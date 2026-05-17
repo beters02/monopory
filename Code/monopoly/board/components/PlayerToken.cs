@@ -1,3 +1,4 @@
+using System.Numerics;
 using Sandbox;
 
 public sealed class PlayerToken : Component
@@ -8,6 +9,7 @@ public sealed class PlayerToken : Component
 
 	[Property] public float HeightOffset { get; set; } = 8f;
 	[Property] public float MoveSpeed { get; set; } = 15f;
+	[Property] public float RotationSpeed {get; set;} = 10f;
 
 	protected override void OnUpdate()
 	{
@@ -15,6 +17,7 @@ public sealed class PlayerToken : Component
 			return;
 
 		var target = Board.GetSpacePosition( PlayerState.SpaceIndex ) + Vector3.Up * HeightOffset;
+		var targetRot = GetRotation( PlayerState.SpaceIndex );
 
         if (GameObject.WorldPosition != target)
         {
@@ -24,6 +27,25 @@ public sealed class PlayerToken : Component
             );
         }
 
-		
+		if (GameObject.LocalRotation != targetRot)
+		{
+			GameObject.LocalRotation = GameObject.LocalRotation.LerpTo(
+				targetRot,
+				Time.Delta * RotationSpeed
+			);
+		}
 	}
+
+	private static Rotation GetRotation( int index )
+	{
+		int quad = Board.GetSpaceQuadrantIncludeCorners( index );
+		return quad switch
+		{
+			1 => Rotation.From(0, 90, 0),
+			2 => Rotation.From(0, 0, 0),
+			3 => Rotation.From(1, -90, 1),
+			_ => Rotation.From(0, 180, 0)
+		};
+	}
+
 }

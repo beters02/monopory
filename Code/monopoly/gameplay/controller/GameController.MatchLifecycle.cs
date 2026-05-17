@@ -114,16 +114,31 @@ public sealed partial class GameController : Component
 		ResetGameState( false );
 		SyncLobbyConnections();
 		MatchState = MatchLifecycleState.Lobby;
+		SceneFlow.LoadLobby( Scene );
 		return true;
 	}
+
+	private bool tempGameEnded = false;
+	private float timePassedSinceGameEnded = 0f;
 
 	internal void ForceEndGameFromException( Exception ex )
 	{
 		if ( !Networking.IsHost )
 			return;
 
+		if (tempGameEnded)
+		{
+			timePassedSinceGameEnded += Time.Delta;
+			if (timePassedSinceGameEnded >= 3)
+			{
+				TryReturnToLobby();
+			}
+			return;
+		}
+		
 		Log.Error( ex );
-
+		tempGameEnded = true;
+		
 		CurrentTurnEndsAt = 0f;
 		ClearAuction();
 		ClearPendingForcedPayment();
@@ -135,7 +150,7 @@ public sealed partial class GameController : Component
 
 		SendPopupToAll(
 			"Game ended",
-			"The game hit a fatal rules error and was ended by the host.",
+			"The game hit a fatal rules error and was ended by the host. Returning everyone to lobby in 3 seconds.",
 			PopupKind.Danger,
 			true,
 			8f

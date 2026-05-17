@@ -41,6 +41,14 @@ public static class SpaceLayoutSettings
 		new (-0.49999997f, -0.49999997f, -0.49999997f, 0.49999997f)
 	];
 
+	public static readonly List<Rotation> WorldLabelRotationsProcedural =
+	[
+		WorldLabelRotations[0],
+		WorldLabelRotations[3],
+		WorldLabelRotations[2],
+		WorldLabelRotations[1]
+	];
+
 	public static readonly Vector3 WorldLabelLocalPosition = new (-1.39999998f, 0, 0.749999762f);
 	public static readonly Rotation WorldLabelLocalRotation = new (0.707106769f, 3.09086197E-08f, 0.707106769f, -3.09086197E-08f);
 
