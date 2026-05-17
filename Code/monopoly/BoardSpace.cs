@@ -10,7 +10,7 @@ public sealed class BoardSpace : Component
 	public Vector3 TokenPosition => GameObject.WorldPosition;
 
 	public TextRenderer LabelRenderer { get; private set; }
-	public Sandbox.ui.MonopolySpaceLabel WorldPanelLabel { get; private set; }
+	public Sandbox.ui.SpaceLabel WorldPanelLabel { get; private set; }
 
 	//[Property] public int SpaceIndex { get; set; }
 
@@ -307,7 +307,7 @@ public sealed class BoardSpace : Component
 		worldPanel.VerticalAlign = Sandbox.WorldPanel.VAlignment.Center;
 		worldPanel.HorizontalAlign = Sandbox.WorldPanel.HAlignment.Center;
 
-		WorldPanelLabel = labelObject.Components.Create<Sandbox.ui.MonopolySpaceLabel>();
+		WorldPanelLabel = labelObject.Components.Create<Sandbox.ui.SpaceLabel>();
 		WorldPanelLabel.SpaceName = Def.DisplayName;
 		WorldPanelLabel.ColorGroup = Def.ColorGroupClass;
 		WorldPanelLabel.SpaceType = Def.Type;
