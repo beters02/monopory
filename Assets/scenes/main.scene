@@ -1780,6 +1780,7 @@
                   "BoardEdgeColor": "#1399d6",
                   "BorderColor": "#050505",
                   "BrownLabelColor": "#8b3a00",
+                  "BrownLabelMaterial": "materials/board_plastic/board_plastic_color_label_brown.vmat",
                   "CenterBorderThicknessPx": 6,
                   "CenterColor": "#9d9d9d",
                   "ChanceIconFontSizePx": 58,
@@ -1790,7 +1791,9 @@
                   "CornerIconFontSizePx": 32,
                   "CornerSizePercent": 15,
                   "CornerTitleFontSizePx": 13,
+                  "CreateMaterialColorLabels": true,
                   "DarkBlueLabelColor": "#06469a",
+                  "DarkBlueLabelMaterial": null,
                   "FreeParkingColor": "#e8df6a",
                   "FreeParkingIconSizePx": 58,
                   "GoColor": "#c51e24",
@@ -1798,7 +1801,11 @@
                   "GoToJailColor": "#1f4f8f",
                   "GoToJailIconFontSizePx": 42,
                   "GreenLabelColor": "#07a64f",
+                  "GreenLabelMaterial": null,
                   "LightBlueLabelColor": "#7fa1d0",
+                  "LightBlueLabelMaterial": null,
+                  "MaterialColorLabelBorderInsetPercent": 0.35,
+                  "MaterialColorLabelZOffset": 0.08,
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
                   "OnComponentEnabled": null,
@@ -1806,9 +1813,12 @@
                   "OnComponentStart": null,
                   "OnComponentUpdate": null,
                   "OrangeLabelColor": "#ff7f0e",
+                  "OrangeLabelMaterial": null,
                   "OuterBorderThicknessPx": 8,
                   "PinkLabelColor": "#ed1978",
+                  "PinkLabelMaterial": null,
                   "RedLabelColor": "#f22520",
+                  "RedLabelMaterial": null,
                   "SpaceBorderThicknessPx": 3,
                   "SpaceColor": "#b9cfca",
                   "SpaceIconFontSizePx": 40,
@@ -1859,7 +1869,8 @@
                   "TextColor": "#050505",
                   "TrackDepthPercent": 15,
                   "UtilityIconFontSizePx": 28,
-                  "YellowLabelColor": "#ffe21a"
+                  "YellowLabelColor": "#ffe21a",
+                  "YellowLabelMaterial": null
                 }
               ],
               "Children": []
@@ -2456,6 +2467,9 @@
       "CustomBounds": false
     },
     "GameObjectSystems": {
+      "Sandbox.MovieMaker.MovieRecorderSystem": {
+        "DisableClientRecording": false
+      },
       "Sandbox.SelectionSetsSystem": {
         "Data": {
           "SelectionSets": []
@@ -2465,9 +2479,6 @@
         "Storage": {
           "$blob": "7664decd-7b1f-4214-a5a2-850285e10057"
         }
-      },
-      "Sandbox.MovieMaker.MovieRecorderSystem": {
-        "DisableClientRecording": false
       }
     }
   },

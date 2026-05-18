@@ -104,6 +104,14 @@
 	[Property] public string YellowLabelColor { get; set; } = "#ffe21a";
 	[Property] public string GreenLabelColor { get; set; } = "#07a64f";
 	[Property] public string DarkBlueLabelColor { get; set; } = "#06469a";
+	[Property] public Material BrownLabelMaterial { get; set; }
+	[Property] public Material LightBlueLabelMaterial { get; set; }
+	[Property] public Material PinkLabelMaterial { get; set; }
+	[Property] public Material OrangeLabelMaterial { get; set; }
+	[Property] public Material RedLabelMaterial { get; set; }
+	[Property] public Material YellowLabelMaterial { get; set; }
+	[Property] public Material GreenLabelMaterial { get; set; }
+	[Property] public Material DarkBlueLabelMaterial { get; set; }
 	[Property] public string ChestIconColor { get; set; } = "#296c9e";
 	[Property] public string GoColor { get; set; } = "#c51e24";
 	[Property] public string FreeParkingColor { get; set; } = "#e8df6a";
@@ -124,8 +132,23 @@
 	[Property] public float GoToJailIconFontSizePx { get; set; } = 42f;
 	[Property] public float CornerTitleFontSizePx { get; set; } = 13f;
 	[Property] public float FreeParkingIconSizePx { get; set; } = 58f;
+	[Property] public bool CreateMaterialColorLabels { get; set; } = true;
+	[Property] public float MaterialColorLabelZOffset { get; set; } = 0.08f;
+	[Property] public float MaterialColorLabelBorderInsetPercent { get; set; } = 0.35f;
 
 	private bool ShouldShowBoard => Board.Instance is null || Board.Instance.UseProceduralBoardPanel;
+	private readonly List<GameObject> materialColorLabels = new();
+	private int materialColorLabelsHash;
+
+	protected override void OnUpdate()
+	{
+		UpdateMaterialColorLabels();
+	}
+
+	protected override void OnDisabled()
+	{
+		ClearMaterialColorLabels();
+	}
 
 	private string RootStyle =>
 		$"background: {BoardEdgeColor}; border: {OuterBorderThicknessPx}px solid {BoardEdgeColor}; color: {TextColor};";
@@ -199,6 +222,22 @@
 			ColorGroup.Green => GreenLabelColor,
 			ColorGroup.DarkBlue => DarkBlueLabelColor,
 			_ => SpaceColor
+		};
+	}
+
+	private Material GetLabelMaterial( ColorGroup colorGroup )
+	{
+		return colorGroup switch
+		{
+			ColorGroup.Brown => BrownLabelMaterial,
+			ColorGroup.LightBlue => LightBlueLabelMaterial,
+			ColorGroup.Pink => PinkLabelMaterial,
+			ColorGroup.Orange => OrangeLabelMaterial,
+			ColorGroup.Red => RedLabelMaterial,
+			ColorGroup.Yellow => YellowLabelMaterial,
+			ColorGroup.Green => GreenLabelMaterial,
+			ColorGroup.DarkBlue => DarkBlueLabelMaterial,
+			_ => null
 		};
 	}
 
@@ -488,5 +527,170 @@
 		hash.Add( CornerTitleFontSizePx );
 		hash.Add( FreeParkingIconSizePx );
 		return hash.ToHashCode();
+	}
+
+	private void UpdateMaterialColorLabels()
+	{
+		var hash = GetMaterialColorLabelsHash();
+		if ( hash == materialColorLabelsHash )
+			return;
+
+		materialColorLabelsHash = hash;
+		RebuildMaterialColorLabels();
+	}
+
+	private int GetMaterialColorLabelsHash()
+	{
+		var board = Board.Instance;
+		var hash = new HashCode();
+		hash.Add( ShouldShowBoard );
+		hash.Add( CreateMaterialColorLabels );
+		hash.Add( board?.ProceduralBoardWorldScale ?? 1f );
+		hash.Add( board?.ProceduralReferencePanelSize ?? 2000f );
+		hash.Add( board?.BoardWorldPanel?.PanelSize.x ?? 0f );
+		hash.Add( GetMaterialColorLabelParent() );
+		hash.Add( CornerSizePercent );
+		hash.Add( TrackDepthPercent );
+		hash.Add( GetWeightsHash() );
+		hash.Add( ColorBarThicknessPercent );
+		hash.Add( MaterialColorLabelZOffset );
+		hash.Add( MaterialColorLabelBorderInsetPercent );
+		hash.Add( BrownLabelMaterial );
+		hash.Add( LightBlueLabelMaterial );
+		hash.Add( PinkLabelMaterial );
+		hash.Add( OrangeLabelMaterial );
+		hash.Add( RedLabelMaterial );
+		hash.Add( YellowLabelMaterial );
+		hash.Add( GreenLabelMaterial );
+		hash.Add( DarkBlueLabelMaterial );
+		return hash.ToHashCode();
+	}
+
+	private void RebuildMaterialColorLabels()
+	{
+		ClearMaterialColorLabels();
+
+		if ( !ShouldShowBoard || !CreateMaterialColorLabels )
+			return;
+
+		var boardWorldSize = GetBoardWorldSize();
+		if ( boardWorldSize <= 0f )
+			return;
+
+		foreach ( var space in SpaceDefs )
+		{
+			if ( !HasColorBar( space ) )
+				continue;
+
+			var material = GetLabelMaterial( space.ColorGroup );
+			if ( material is null )
+				continue;
+
+			CreateMaterialColorLabel( space, material, boardWorldSize );
+		}
+	}
+
+	private void ClearMaterialColorLabels()
+	{
+		foreach ( var label in materialColorLabels )
+			label.Destroy();
+
+		materialColorLabels.Clear();
+	}
+
+	private void CreateMaterialColorLabel( SpaceDef space, Material material, float boardWorldSize )
+	{
+		var rect = GetColorBarRect( space );
+		var center = BoardMath.RectPercentToLocal( rect, boardWorldSize, MaterialColorLabelZOffset );
+		var size = BoardMath.RectPercentToColliderSize( rect, boardWorldSize, 0f );
+		var color = Color.Parse( GetLabelColor( space.ColorGroup ) ) ?? Color.White;
+
+		var labelObject = new GameObject( true, $"MaterialColorLabel_{space.Index:00}_{space.ColorGroup}" );
+		labelObject.SetParent( GetMaterialColorLabelParent() );
+		labelObject.LocalPosition = center;
+		labelObject.LocalRotation = Rotation.Identity;
+		labelObject.LocalScale = Vector3.One;
+		materialColorLabels.Add( labelObject );
+
+		var mesh = new PolygonMesh();
+		AddMaterialColorLabelFace( mesh, material, color, size );
+		mesh.Rebuild();
+
+		var meshComponent = labelObject.Components.Create<MeshComponent>( false );
+		meshComponent.Mesh = mesh;
+		meshComponent.SmoothingAngle = 0f;
+		meshComponent.Color = color;
+		meshComponent.RebuildMesh();
+		meshComponent.Enabled = true;
+	}
+
+	private Rect GetColorBarRect( SpaceDef space )
+	{
+		var rect = BoardMath.GetSpaceRect( space.Index, this );
+		var thickness = Math.Clamp( ColorBarThicknessPercent, 2f, 80f ) * 0.01f;
+		var inset = Math.Clamp( MaterialColorLabelBorderInsetPercent, 0f, 10f );
+
+		if ( GetSideClass( space.Index ) == "side-bottom" )
+		{
+			var height = rect.Height * thickness;
+			return RectFromEdges( rect.Left + inset, rect.Top + inset, rect.Right - inset, rect.Top + height - inset );
+		}
+
+		if ( GetSideClass( space.Index ) == "side-top" )
+		{
+			var height = rect.Height * thickness;
+			return RectFromEdges( rect.Left + inset, rect.Bottom - height + inset, rect.Right - inset, rect.Bottom - inset );
+		}
+
+		if ( GetSideClass( space.Index ) == "side-left" )
+		{
+			var width = rect.Width * thickness;
+			return RectFromEdges( rect.Right - width + inset, rect.Top + inset, rect.Right - inset, rect.Bottom - inset );
+		}
+
+		{
+			var width = rect.Width * thickness;
+			return RectFromEdges( rect.Left + inset, rect.Top + inset, rect.Left + width - inset, rect.Bottom - inset );
+		}
+	}
+
+	private static Rect RectFromEdges( float left, float top, float right, float bottom )
+	{
+		return new Rect( left, top, Math.Max( 0.001f, right - left ), Math.Max( 0.001f, bottom - top ) );
+	}
+
+	private static void AddMaterialColorLabelFace( PolygonMesh mesh, Material material, Color color, Vector3 size )
+	{
+		var halfX = size.x * 0.5f;
+		var halfY = size.y * 0.5f;
+		var vertices = mesh.AddVertices(
+			new Vector3( -halfX, -halfY, 0f ),
+			new Vector3( halfX, -halfY, 0f ),
+			new Vector3( halfX, halfY, 0f ),
+			new Vector3( -halfX, halfY, 0f )
+		);
+		var face = mesh.AddFace( vertices );
+		mesh.SetFaceMaterial( face, material );
+
+		foreach ( var halfEdge in mesh.GetFaceEdges( face ) )
+			mesh.SetVertexColor( halfEdge, color );
+	}
+
+	private float GetBoardWorldSize()
+	{
+		var board = Board.Instance;
+		var baseBoardSize = (board?.ProceduralBoardHalfSize ?? 43f) * 2f;
+		var boardWorldPanel = board?.BoardWorldPanel;
+		var referencePanelSize = board?.ProceduralReferencePanelSize ?? 2000f;
+
+		if ( boardWorldPanel is not null && boardWorldPanel.PanelSize.x > 0f && referencePanelSize > 0f )
+			baseBoardSize *= boardWorldPanel.PanelSize.x / referencePanelSize;
+
+		return baseBoardSize * (board?.ProceduralBoardWorldScale ?? 1f);
+	}
+
+	private GameObject GetMaterialColorLabelParent()
+	{
+		return Board.Instance?.GameObject ?? GameObject;
 	}
 }

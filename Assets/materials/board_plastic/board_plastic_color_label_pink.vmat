@@ -1,0 +1,58 @@
+// THIS FILE IS AUTO-GENERATED
+
+Layer0
+{
+	shader "shaders/complex.shader"
+
+	//---- Detail Texture ----
+	F_DETAIL_TEXTURE 4 // Overlay and Normals
+
+	//---- PBR ----
+	F_METALNESS_TEXTURE 1
+	F_SPECULAR 1
+
+	//---- Rendering ----
+	F_RENDER_BACKFACES 1
+
+	//---- Ambient Occlusion ----
+	g_flAmbientOcclusionDirectDiffuse "0.000"
+	g_flAmbientOcclusionDirectSpecular "0.000"
+	TextureAmbientOcclusion "materials/default/default_ao.tga"
+
+	//---- Color ----
+	g_flModelTintAmount "1.000"
+	g_vColorTint "[1.000000 0.078431 0.576471 1.000000]"
+	TextureColor "[0.929412 0.098039 0.470588 0.003922]"
+
+	//---- Detail Texture ----
+	g_flDetailBlendFactor "1.000"
+	g_flDetailBlendToFull "0.000"
+	g_flDetailNormalStrength "1.000"
+	g_flDetailTexCoordRotation "0.000"
+	g_vDetailTexCoordOffset "[0.000 0.000]"
+	g_vDetailTexCoordScale "[1.000 1.000]"
+	TextureDetail "materials/default/default_detail.tga"
+	TextureDetailMask "materials/default/default_detailmask.tga"
+	TextureNormalDetail "materials/default/default_normal.tga"
+
+	//---- Fade ----
+	g_flFadeExponent "1.000"
+
+	//---- Fog ----
+	g_bFogEnabled "1"
+
+	//---- Metalness ----
+	TextureMetalness "[1.000000 1.000000 1.000000 0.000000]"
+
+	//---- Normal ----
+	TextureNormal "materials/board_plastic/plastic015a_2k-jpg_normaldx.jpg"
+
+	//---- Roughness ----
+	g_flRoughnessScaleFactor "0.983"
+	TextureRoughness "materials/board_plastic/plastic015a_2k-jpg_roughness.jpg"
+
+	//---- Texture Coordinates ----
+	g_vTexCoordOffset "[0.000 0.000]"
+	g_vTexCoordScale "[1.000 1.000]"
+	g_vTexCoordScrollSpeed "[0.000 0.000]"
+}
