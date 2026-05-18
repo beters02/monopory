@@ -2,6 +2,7 @@
 @using Sandbox.UI;
 @using Sandbox.ui.components.buttons
 @using System;
+@using System.Threading.Tasks;
 @inherits Panel
 
 <root>
@@ -227,6 +228,7 @@
 	private void BuyProperty()
 	{
 		GameRef?.RequestBuyPendingProperty();
+		_ = DelayedStateHasChanged(3);
 	}
 
 	private void AuctionProperty()
@@ -265,6 +267,14 @@
 
 		if ( CanMortgageSelectedSpace )
 			GameRef?.RequestMortgageProperty( SelectedSpaceIndex );
+	}
+
+	private async Task DelayedStateHasChanged(float time)
+	{
+		await Task.DelaySeconds(time);
+		if (this is null)
+			return;
+		StateHasChanged();
 	}
 
 	protected override int BuildHash()

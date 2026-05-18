@@ -21,11 +21,11 @@ public sealed class GameCamera : Component
 	[Property] public float Pitch { get; set; } = 60f;
 	[Property] public float DefaultModePitch { get; set; } = 75f;
 	[Property] public float Fov { get; set; } = 35f;
-	[Property] public float FollowLerpSpeed { get; set; } = 12f;
-	[Property] public float RotationLerpSpeed { get; set; } = 12f;
+	[Property] public float FollowLerpSpeed { get; set; } = 3f;
+	[Property] public float RotationLerpSpeed { get; set; } = 2.5f;
 	[Property] public float FreeCamMoveSpeed { get; set; } = 120f;
 	[Property] public float FreeCamZoomSpeed { get; set; } = 80f;
-	[Property] public float FreeCamMinDistance { get; set; } = 250f;
+	[Property] public float FreeCamMinDistance { get; set; } = 75f;
 	[Property] public float FreeCamMaxDistance { get; set; } = 1200f;
 	[Property] public float FreeCamBoundsPadding { get; set; } = 48f;
 

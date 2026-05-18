@@ -8,7 +8,7 @@
 
 	background-color: $monopoly-board;
 	border-radius: $monopoly-radius-board;
-	box-shadow: 0 0 0 4px $monopoly-board-outline, 0 14px 38px rgba(0, 0, 0, 0.45);
+	box-shadow: 0 14px 38px rgba(0, 0, 0, 0.45);
 
 	color: $monopoly-ink;
 	font-family: $monopoly-font-family;
@@ -19,8 +19,23 @@
 	pointer-events: all;
 }
 
+.monopoly-space-card-outline {
+	position: absolute;
+	left: -4px;
+	top: -4px;
+	right: -4px;
+	bottom: -4px;
+	z-index: 0;
+
+	background-color: $monopoly-board-outline;
+	border-radius: $monopoly-radius-board;
+
+	pointer-events: none;
+}
+
 .monopoly-space-card-inner {
 	position: relative;
+	z-index: 1;
 	flex: 1;
 	overflow: hidden;
 
