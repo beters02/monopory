@@ -1,0 +1,113 @@
+@using Sandbox;
+@using Sandbox.UI;
+@using System;
+@inherits Panel
+
+<root class="@RootClasses">
+	<GameButton
+		Variant="@ButtonClasses"
+		Title="@Title"
+		CanClick="@CanClick"
+		OnClick="@ToggleOpen"
+		BlockedPopupTitle="@BlockedPopupTitle"
+		BlockedPopupMessage="@BlockedPopupMessage"
+		BlockedPopupKind="@BlockedPopupKind"
+		BlockedPopupLifetime="@BlockedPopupLifetime"
+		SoundEnabled="@SoundEnabled">
+		<ChildContent>
+			<span class="dropdown-label">@DisplayLabel</span>
+			<span class="dropdown-caret">v</span>
+		</ChildContent>
+	</GameButton>
+
+	@if ( IsOpen )
+	{
+		<div class="dropdown-menu">
+			@foreach ( var item in Items )
+			{
+				<GameButton Variant="@GetItemClasses( item )" OnClick="@(() => SelectItem( item ))" SoundEnabled="@SoundEnabled">
+					<ChildContent>
+						<span class="dropdown-item-label">@FormatItem( item )</span>
+					</ChildContent>
+				</GameButton>
+			}
+		</div>
+	}
+</root>
+
+@code
+{
+	[Parameter] public string Variant { get; set; } = "";
+	[Parameter] public string Title { get; set; } = "";
+	[Parameter] public string Placeholder { get; set; } = "Select";
+	[Parameter] public string Value { get; set; } = "";
+	[Parameter] public IReadOnlyList<string> Items { get; set; } = Array.Empty<string>();
+	[Parameter] public bool CanClick { get; set; } = true;
+	[Parameter] public bool SoundEnabled { get; set; } = true;
+	[Parameter] public string BlockedPopupTitle { get; set; } = "Action blocked";
+	[Parameter] public string BlockedPopupMessage { get; set; } = "This action is not available right now.";
+	[Parameter] public PopupKind BlockedPopupKind { get; set; } = PopupKind.Warning;
+	[Parameter] public float BlockedPopupLifetime { get; set; } = 3f;
+	[Parameter] public Action<string> OnSelected { get; set; }
+
+	private bool IsOpen;
+
+	private string RootClasses => IsOpen ? "dropdown-button open" : "dropdown-button";
+	private string ButtonClasses => string.IsNullOrWhiteSpace( Variant )
+		? "dropdown-toggle"
+		: $"dropdown-toggle {Variant}";
+
+	private string DisplayLabel => string.IsNullOrWhiteSpace( Value )
+		? Placeholder
+		: FormatItem( Value );
+
+	private void ToggleOpen()
+	{
+		if ( !CanClick )
+			return;
+
+		IsOpen = !IsOpen;
+	}
+
+	private void SelectItem( string item )
+	{
+		IsOpen = false;
+		OnSelected?.Invoke( item );
+	}
+
+	private string GetItemClasses( string item )
+	{
+		return string.Equals( item, Value, StringComparison.OrdinalIgnoreCase )
+			? "dropdown-item selected"
+			: "dropdown-item";
+	}
+
+	private static string FormatItem( string item )
+	{
+		if ( string.IsNullOrWhiteSpace( item ) )
+			return "";
+
+		var label = item.Replace( "_", " " );
+		for ( var i = label.Length - 1; i > 0; i-- )
+		{
+			if ( char.IsUpper( label[i] ) && !char.IsWhiteSpace( label[i - 1] ) )
+				label = label.Insert( i, " " );
+		}
+
+		return label;
+	}
+
+	protected override int BuildHash()
+	{
+		var hash = new HashCode();
+		hash.Add( IsOpen );
+		hash.Add( Value ?? "" );
+		hash.Add( Placeholder ?? "" );
+		hash.Add( CanClick );
+
+		foreach ( var item in Items )
+			hash.Add( item ?? "" );
+
+		return hash.ToHashCode();
+	}
+}

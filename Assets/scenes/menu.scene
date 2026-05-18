@@ -226,9 +226,6 @@
       "CustomBounds": false
     },
     "GameObjectSystems": {
-      "Sandbox.MovieMaker.MovieRecorderSystem": {
-        "DisableClientRecording": false
-      },
       "Sandbox.SelectionSetsSystem": {
         "Data": {
           "SelectionSets": []
@@ -238,6 +235,9 @@
         "Storage": {
           "$blob": "1038bcfc-1f47-4964-962a-e0cb2849ee20"
         }
+      },
+      "Sandbox.MovieMaker.MovieRecorderSystem": {
+        "DisableClientRecording": false
       }
     }
   },

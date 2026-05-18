@@ -12,7 +12,10 @@
 		<SessionOverlay
 			GameRef="@GameRef"
 			IsEscapeMenuOpen="@IsEscapeMenuOpen"
+			IsOptionsMenuOpen="@IsOptionsMenuOpen"
 			OnResumeGame="@ResumeGame"
+			OnOpenOptions="@OpenOptionsMenu"
+			OnCloseOptions="@CloseOptionsMenu"
 			OnReturnToLobby="@ReturnToLobby"
 			OnLeaveLobby="@LeaveLobby"
 			OnExitGame="@ExitGame">
@@ -34,6 +37,7 @@
 	[Property] public GameController GameRef { get; set; }
 
 	private bool IsEscapeMenuOpen;
+	private bool IsOptionsMenuOpen;
 
 	private List<GamePopup> Popups =>
 		(GameRef?.Popups ?? Enumerable.Empty<GamePopup>())
@@ -47,8 +51,12 @@
 		if ( GameRef is null || GameRef.MatchState == MatchLifecycleState.GameOver )
 		{
 			IsEscapeMenuOpen = false;
+			IsOptionsMenuOpen = false;
 			return;
 		}
+
+		if ( IsEscapeMenuOpen || IsOptionsMenuOpen )
+			Mouse.Visibility = MouseVisibility.Visible;
 
 		HandleMenuOpen();
 	}
@@ -58,7 +66,7 @@
 #if STANDALONE
 		if ( Input.EscapePressed )
 		{
-			IsEscapeMenuOpen = !IsEscapeMenuOpen;
+			ToggleEscapeMenu();
 			return;
 		}
 #endif
@@ -66,13 +74,34 @@
 		if ( Input.EscapePressed )
 		{
 			Log.Info("Escape pressed.");
-			IsEscapeMenuOpen = !IsEscapeMenuOpen;
+			ToggleEscapeMenu();
 		}
 
 		if ( Input.Pressed( "EditorMenu" ) )
 		{
-			IsEscapeMenuOpen = !IsEscapeMenuOpen;
+			ToggleEscapeMenu();
 		}
+	}
+
+	private void ToggleEscapeMenu()
+	{
+		if ( IsOptionsMenuOpen )
+		{
+			IsOptionsMenuOpen = false;
+			return;
+		}
+
+		IsEscapeMenuOpen = !IsEscapeMenuOpen;
+	}
+
+	private void OpenOptionsMenu()
+	{
+		IsOptionsMenuOpen = true;
+	}
+
+	private void CloseOptionsMenu()
+	{
+		IsOptionsMenuOpen = false;
 	}
 
 	private void ResumeGame()
@@ -100,12 +129,14 @@
 	private void LeaveLobby()
 	{
 		IsEscapeMenuOpen = false;
+		IsOptionsMenuOpen = false;
 		NetworkSession.LeaveCurrentLobby( Scene );
 	}
 
 	private void ExitGame()
 	{
 		IsEscapeMenuOpen = false;
+		IsOptionsMenuOpen = false;
 		Game.Close();
 	}
 
@@ -133,11 +164,19 @@
 
 	protected override int BuildHash()
 	{
-		return HashCode.Combine(
-			GameRef?.MatchState ?? 0,
-			GameRef?.WinnerPlayerIndex ?? -1,
-			IsEscapeMenuOpen,
-			GetPopupsHash()
-		);
+		var hash = new HashCode();
+		hash.Add( GameRef?.MatchState ?? 0 );
+		hash.Add( GameRef?.WinnerPlayerIndex ?? -1 );
+		hash.Add( IsEscapeMenuOpen );
+		hash.Add( IsOptionsMenuOpen );
+		hash.Add( AppSettings.SettingsAvailable );
+		hash.Add( AppSettings.GetFullscreenMode() );
+		hash.Add( AppSettings.GetVSyncEnabled() );
+		hash.Add( AppSettings.GetMotionBlurEnabled() );
+		hash.Add( AppSettings.GetUpscaler() );
+		hash.Add( AppSettings.GetFsr3Quality() );
+		hash.Add( GetPopupsHash() );
+
+		return hash.ToHashCode();
 	}
 }

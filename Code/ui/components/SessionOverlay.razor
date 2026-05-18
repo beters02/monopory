@@ -5,6 +5,8 @@
 @inherits Panel
 
 <root>
+	<OptionsMenu IsOpen="@IsOptionsMenuOpen" OnClose="@CloseOptions"></OptionsMenu>
+
 	@if ( GameRef?.MatchState == MatchLifecycleState.GameOver )
 	{
 		<div class="session-screen game-over-screen">
@@ -35,6 +37,7 @@
 				<div class="session-kicker">Menu</div>
 				<div class="session-title">Game Menu</div>
 				<div class="session-actions escape-menu-actions">
+					<GameButton Variant="session-secondary-button" OnClick="@OpenOptions">Options</GameButton>
 					<GameButton Variant="session-secondary-button" OnClick="@LeaveLobby">Leave Lobby</GameButton>
 					<GameButton Variant="session-danger-button" OnClick="@ExitGame">Exit Game</GameButton>
 				</div>
@@ -67,7 +70,10 @@
 {
 	[Parameter] public GameController GameRef { get; set; }
 	[Parameter] public bool IsEscapeMenuOpen { get; set; }
+	[Parameter] public bool IsOptionsMenuOpen { get; set; }
 	[Parameter] public Action OnResumeGame { get; set; }
+	[Parameter] public Action OnOpenOptions { get; set; }
+	[Parameter] public Action OnCloseOptions { get; set; }
 	[Parameter] public Action OnReturnToLobby { get; set; }
 	[Parameter] public Action OnLeaveLobby { get; set; }
 	[Parameter] public Action OnExitGame { get; set; }
@@ -76,6 +82,8 @@
 		GameRef?.Winner?.PlayerName ?? "No One";
 
 	private void ResumeGame() => OnResumeGame?.Invoke();
+	private void OpenOptions() => OnOpenOptions?.Invoke();
+	private void CloseOptions() => OnCloseOptions?.Invoke();
 	private void ReturnToLobby() => OnReturnToLobby?.Invoke();
 	private void LeaveLobby() => OnLeaveLobby?.Invoke();
 	private void ExitGame() => OnExitGame?.Invoke();
@@ -86,7 +94,8 @@
 			GameRef?.MatchState ?? 0,
 			GameRef?.WinnerPlayerIndex ?? -1,
 			WinnerName,
-			IsEscapeMenuOpen
+			IsEscapeMenuOpen,
+			IsOptionsMenuOpen
 		);
 	}
 }

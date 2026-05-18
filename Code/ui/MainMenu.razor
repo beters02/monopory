@@ -1,10 +1,18 @@
 @using Sandbox;
 @using Sandbox.UI;
+@using Sandbox.ui.components;
 @using Sandbox.ui.components.buttons
+@using System;
 @inherits PanelComponent
 
 <root class="monopoly-flow-ui">
 	<div class="flow-screen menu-screen">
+		<OptionsMenu IsOpen="@IsOptionsMenuOpen" OnClose="@CloseOptionsMenu"></OptionsMenu>
+		<GameButton Variant="flow-settings-button" Title="Options" OnClick="@OpenOptionsMenu">
+			<ChildContent>
+				<div class="flow-settings-icon"></div>
+			</ChildContent>
+		</GameButton>
 		<div class="flow-panel menu-panel">
 			<div class="flow-kicker">Grand Casinopoly</div>
 			<div class="flow-title">Monopory</div>
@@ -20,7 +28,24 @@
 {
 	[Property] public MenuController MenuRef { get; set; }
 
+	private bool IsOptionsMenuOpen;
 	private MenuController Menu => MenuRef ?? Scene?.GetAllComponents<MenuController>().FirstOrDefault();
+
+	protected override void OnUpdate()
+	{
+		base.OnUpdate();
+		Mouse.Visibility = MouseVisibility.Visible;
+	}
+
+	private void OpenOptionsMenu()
+	{
+		IsOptionsMenuOpen = true;
+	}
+
+	private void CloseOptionsMenu()
+	{
+		IsOptionsMenuOpen = false;
+	}
 
 	private void OpenLobby()
 	{
@@ -34,5 +59,18 @@
 			Menu.TryOpenLobby();
 		else
 			Menu.RequestOpenLobby();
+	}
+
+	protected override int BuildHash()
+	{
+		return HashCode.Combine(
+			IsOptionsMenuOpen,
+			AppSettings.SettingsAvailable,
+			AppSettings.GetFullscreenMode(),
+			AppSettings.GetVSyncEnabled(),
+			AppSettings.GetMotionBlurEnabled(),
+			AppSettings.GetUpscaler(),
+			AppSettings.GetFsr3Quality()
+		);
 	}
 }

@@ -1,0 +1,226 @@
+@import "../GameTheme.scss";
+@import "buttons/GameButton.razor.scss";
+@import "buttons/DropdownButton.razor.scss";
+
+.options-menu-root {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	z-index: 80;
+
+	pointer-events: none;
+}
+
+.options-menu-root.open {
+	pointer-events: all;
+}
+
+.options-screen {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	z-index: 1;
+
+	background-color: rgba(8, 17, 15, 0.72);
+
+	display: flex;
+	align-items: center;
+	justify-content: center;
+
+	pointer-events: all;
+}
+
+.options-panel {
+	width: 620px;
+	max-width: 88%;
+	max-height: 86%;
+	padding: 24px;
+
+	background-color: $monopoly-board;
+	border: 4px solid $monopoly-ink;
+	border-radius: $monopoly-radius-board;
+	box-shadow: 0 18px 60px rgba(0, 0, 0, 0.38);
+
+	color: $monopoly-ink;
+	font-family: $monopoly-font-family;
+
+	display: flex;
+	flex-direction: column;
+	gap: 14px;
+	overflow: scroll;
+}
+
+.options-header {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 14px;
+}
+
+.options-kicker {
+	color: $monopoly-danger;
+	font-size: 15px;
+	font-weight: 900;
+	text-transform: uppercase;
+}
+
+.options-title {
+	font-size: 40px;
+	font-weight: 900;
+	line-height: 42px;
+}
+
+.options-close-button {
+	width: 44px;
+	height: 44px;
+	min-width: 44px;
+	padding: 0;
+
+	background-color: $monopoly-ink;
+	border: 3px solid $monopoly-ink;
+	border-radius: $monopoly-radius-board;
+	color: $monopoly-board;
+
+	font-size: 18px;
+	font-weight: 900;
+	justify-content: center;
+}
+
+.options-unavailable {
+	padding: 12px 14px;
+
+	background-color: rgba(90, 39, 48, 0.14);
+	border: 3px solid rgba(90, 39, 48, 0.45);
+	border-radius: $monopoly-radius-board;
+
+	color: $monopoly-danger;
+	font-size: 14px;
+	font-weight: 800;
+	line-height: 19px;
+}
+
+.options-section {
+	padding: 14px;
+
+	background-color: rgba(255, 255, 255, 0.35);
+	border: 3px solid rgba(18, 31, 29, 0.18);
+	border-radius: $monopoly-radius-board;
+
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.options-subsection {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.options-footer {
+	display: flex;
+	justify-content: flex-end;
+}
+
+.options-section-title {
+	font-size: 18px;
+	font-weight: 900;
+	text-transform: uppercase;
+}
+
+.options-section-title.small {
+	font-size: 14px;
+	opacity: 0.72;
+}
+
+.options-row {
+	min-height: 58px;
+
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 14px;
+}
+
+.options-row .dropdown-button {
+	width: 296px;
+}
+
+.options-panel .dropdown-label {
+	white-space: normal;
+	text-overflow: clip;
+	overflow: visible;
+}
+
+.options-panel .dropdown-label .label,
+.options-panel .dropdown-item-label,
+.options-panel .dropdown-item-label .label {
+	white-space: normal;
+	text-overflow: clip;
+	overflow: visible;
+}
+
+.options-label {
+	font-size: 18px;
+	font-weight: 900;
+	line-height: 22px;
+}
+
+.options-value {
+	font-size: 13px;
+	font-weight: 800;
+	line-height: 18px;
+	opacity: 0.68;
+}
+
+.options-choice-grid {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+
+.options-toggle-button,
+.options-choice-button,
+.options-apply-button {
+	height: 42px;
+	min-width: 96px;
+	margin-top: 0;
+	padding: 0 14px;
+
+	background-color: $monopoly-ink;
+	border: 3px solid $monopoly-ink;
+	border-radius: $monopoly-radius-board;
+	color: $monopoly-board;
+
+	font-size: 13px;
+	font-weight: 900;
+	text-transform: uppercase;
+	justify-content: center;
+}
+
+.options-toggle-button.selected,
+.options-choice-button.selected {
+	background-color: $monopoly-gold;
+	color: $monopoly-ink;
+}
+
+.options-toggle-button.blocked-action-button,
+.options-choice-button.blocked-action-button,
+.options-apply-button.blocked-action-button {
+	background-color: $monopoly-blocked-action;
+	color: $monopoly-board;
+}
+
+.options-apply-button {
+	min-width: 132px;
+	background-color: $monopoly-gold;
+	color: $monopoly-ink;
+}
+
+.options-apply-button:hover {
+	background-color: $monopoly-gold-hover;
+}

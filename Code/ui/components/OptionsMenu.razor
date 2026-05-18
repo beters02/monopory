@@ -1,0 +1,198 @@
+@using Sandbox;
+@using Sandbox.UI;
+@using Sandbox.Engine.Settings;
+@using Sandbox.ui.components.buttons
+@using System;
+@inherits Panel
+
+<root class="@RootClasses">
+	@if ( IsOpen )
+	{
+		<div class="options-screen">
+			<div class="options-panel">
+				<div class="options-header">
+					<div>
+						<div class="options-kicker">Settings</div>
+						<div class="options-title">Options</div>
+					</div>
+					<GameButton Variant="options-close-button" Title="Close" OnClick="@Close">X</GameButton>
+				</div>
+
+				@if ( !SettingsAvailable )
+				{
+					<div class="options-unavailable">Video settings are only available when s&box exposes render settings for this session.</div>
+				}
+
+				<div class="options-section">
+					<div class="options-section-title">Display</div>
+					<div class="options-row">
+						<div>
+							<div class="options-label">Fullscreen</div>
+							<div class="options-value">@FullscreenLabel</div>
+						</div>
+						<DropdownButton
+							Value="@CurrentFullscreenModeName"
+							Items="@FullscreenModeNames"
+							CanClick="@SettingsAvailable"
+							OnSelected="@SetFullscreenMode"
+							BlockedPopupTitle="Unavailable"
+							BlockedPopupMessage="@UnavailableMessage">
+						</DropdownButton>
+					</div>
+					<div class="options-row">
+						<div>
+							<div class="options-label">VSync</div>
+							<div class="options-value">@VSyncLabel</div>
+						</div>
+						<GameButton Variant="@GetToggleButtonClasses( AppSettings.GetVSyncEnabled() )" CanClick="@SettingsAvailable" OnClick="@ToggleVSync" BlockedPopupTitle="Unavailable" BlockedPopupMessage="@UnavailableMessage">
+							@(AppSettings.GetVSyncEnabled() ? "On" : "Off")
+						</GameButton>
+					</div>
+					<div class="options-row">
+						<div>
+							<div class="options-label">Motion Blur</div>
+							<div class="options-value">@MotionBlurLabel</div>
+						</div>
+						<GameButton Variant="@GetToggleButtonClasses( MotionBlurEnabled )" CanClick="@SettingsAvailable" OnClick="@ToggleMotionBlur" BlockedPopupTitle="Unavailable" BlockedPopupMessage="@UnavailableMessage">
+							@(MotionBlurEnabled ? "On" : "Off")
+						</GameButton>
+					</div>
+				</div>
+
+				<div class="options-section">
+					<div class="options-section-title">Upscaler</div>
+					<DropdownButton
+						Value="@CurrentUpscalerModeName"
+						Items="@UpscalerModeNames"
+						CanClick="@SettingsAvailable"
+						OnSelected="@SetUpscalerMode"
+						BlockedPopupTitle="Unavailable"
+						BlockedPopupMessage="@UnavailableMessage">
+					</DropdownButton>
+
+					@if ( IsFsr3Selected )
+					{
+						<div class="options-subsection">
+							<div class="options-section-title small">FSR3 Quality</div>
+							<DropdownButton
+								Value="@CurrentFsr3QualityName"
+								Items="@Fsr3QualityNames"
+								CanClick="@SettingsAvailable"
+								OnSelected="@SetFsr3Quality"
+								BlockedPopupTitle="Unavailable"
+								BlockedPopupMessage="@UnavailableMessage">
+							</DropdownButton>
+						</div>
+					}
+				</div>
+
+				<div class="options-footer">
+					<GameButton Variant="options-apply-button" CanClick="@SettingsAvailable" OnClick="@ApplyOptions" BlockedPopupTitle="Unavailable" BlockedPopupMessage="@UnavailableMessage">Apply</GameButton>
+				</div>
+			</div>
+		</div>
+	}
+</root>
+
+@code
+{
+	[Parameter] public bool IsOpen { get; set; }
+	[Parameter] public Action OnClose { get; set; }
+
+	private static readonly string[] FullscreenModeNames = Enum.GetNames( typeof( FullscreenMode ) );
+	private static readonly string[] UpscalerModeNames = Enum.GetNames( typeof( UpscalerMode ) );
+	private static readonly string[] Fsr3QualityNames = Enum.GetNames( typeof( Fsr3UpscalerQuality ) );
+	private int revision;
+
+	private string RootClasses => IsOpen ? "options-menu-root open" : "options-menu-root";
+	private bool SettingsAvailable => AppSettings.SettingsAvailable;
+	private string UnavailableMessage => "s&box is not exposing render settings here. Try standalone mode if this is the editor.";
+	private string FullscreenLabel => SettingsAvailable ? FormatFullscreenMode( AppSettings.GetFullscreenMode() ) : "Unavailable";
+	private string VSyncLabel => SettingsAvailable ? "Synchronizes frames to your display." : "Unavailable";
+	private string MotionBlurLabel => SettingsAvailable ? "Controls camera and post-process motion blur." : "Unavailable";
+	private bool MotionBlurEnabled => AppSettings.GetMotionBlurEnabled();
+	private bool IsFsr3Selected => AppSettings.GetUpscaler().ToString().Equals( "FSR3", StringComparison.OrdinalIgnoreCase ) == true;
+	private string CurrentFullscreenModeName => AppSettings.GetFullscreenMode().ToString();
+	private string CurrentUpscalerModeName => AppSettings.GetUpscaler().ToString();
+	private string CurrentFsr3QualityName => AppSettings.GetFsr3Quality().ToString();
+
+	private static string FormatFullscreenMode( FullscreenMode mode )
+	{
+		return mode switch
+		{
+			FullscreenMode.FullscreenBorderless => "Fullscreen Borderless",
+			FullscreenMode.FullscreenExclusive => "Fullscreen Exclusive",
+			_ => "Windowed"
+		};
+	}
+
+	private void SetFullscreenMode( string modeName )
+	{
+		if ( Enum.TryParse<FullscreenMode>( modeName, true, out var mode ) )
+			ApplySetting( AppSettings.TrySetFullscreenMode( mode ) );
+	}
+
+	private void ToggleVSync()
+	{
+		if ( !SettingsAvailable )
+			return;
+
+		ApplySetting( AppSettings.TrySetVSync( !AppSettings.GetVSyncEnabled() ) );
+	}
+
+	private void ToggleMotionBlur()
+	{
+		ApplySetting( AppSettings.TrySetMotionBlur( MotionBlurEnabled ? 0f : 1f ) );
+	}
+
+	private void SetUpscalerMode( string modeName )
+	{
+		if ( Enum.TryParse<UpscalerMode>( modeName, true, out var mode ) )
+			ApplySetting( AppSettings.TrySetUpscaler( mode ) );
+	}
+
+	private void SetFsr3Quality( string qualityName )
+	{
+		if ( Enum.TryParse<Fsr3UpscalerQuality>( qualityName, true, out var quality ) )
+			ApplySetting( AppSettings.TrySetFsr3Quality( quality ) );
+	}
+
+	private void ApplyOptions()
+	{
+		ApplySetting( AppSettings.TryApply() );
+	}
+
+	private void Close()
+	{
+		OnClose?.Invoke();
+	}
+
+	private void ApplySetting( bool applied )
+	{
+		if ( !applied )
+			return;
+
+		revision++;
+		StateHasChanged();
+	}
+
+	private static string GetToggleButtonClasses( bool enabled )
+	{
+		return enabled ? "options-toggle-button selected" : "options-toggle-button";
+	}
+
+	protected override int BuildHash()
+	{
+		var hash = new HashCode();
+		hash.Add( IsOpen );
+		hash.Add( revision );
+		hash.Add( SettingsAvailable );
+		hash.Add( AppSettings.GetFullscreenMode() );
+		hash.Add( AppSettings.GetVSyncEnabled() );
+		hash.Add( AppSettings.GetMotionBlurEnabled() );
+		hash.Add( AppSettings.GetUpscaler() );
+		hash.Add( AppSettings.GetFsr3Quality() );
+
+		return hash.ToHashCode();
+	}
+}

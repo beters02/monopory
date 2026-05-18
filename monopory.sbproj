@@ -47,6 +47,7 @@
       "Keyboard": false,
       "VR": false,
       "Gamepad": false
-    }
+    },
+    "SystemScene": "scenes/settings.scene"
   }
 }
