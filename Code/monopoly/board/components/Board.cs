@@ -58,13 +58,13 @@ public sealed class Board : Component
 		lastProcBoardWorldScale = ProceduralBoardWorldScale;
 		lastProcRefPanelSize = ProceduralReferencePanelSize;
 
-		#if STANDALONE
+#if STANDALONE
 		if (DebugEnabled && !debugConvar)
 		{
 			DebugEnabled = false;
 			Log.Warning("Game was published with Board DebugEnabled!");
 		}
-		#endif
+#endif
 
 		logger.SetEnabled(DebugEnabled);
 

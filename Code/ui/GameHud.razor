@@ -55,13 +55,19 @@
 
 	private void HandleMenuOpen()
 	{
-		#if STANDALONE
+#if STANDALONE
 		if ( Input.EscapePressed )
 		{
 			IsEscapeMenuOpen = !IsEscapeMenuOpen;
 			return;
 		}
-		#endif
+#endif
+
+		if ( Input.EscapePressed )
+		{
+			Log.Info("Escape pressed.");
+			IsEscapeMenuOpen = !IsEscapeMenuOpen;
+		}
 
 		if ( Input.Pressed( "EditorMenu" ) )
 		{
