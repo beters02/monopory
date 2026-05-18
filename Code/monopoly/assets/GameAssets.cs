@@ -1,5 +1,28 @@
 public static class GameAssets
 {
+	private static bool uiAssetsPrewarmed;
+
+	public static void PrewarmUiAssets()
+	{
+		if ( uiAssetsPrewarmed )
+			return;
+
+		uiAssetsPrewarmed = true;
+
+		Images.Chance.Preload();
+
+		Materials.House.Preload();
+		Materials.Hotel.Preload();
+
+		Sounds.Click.Preload();
+		Sounds.ClosingClick.Preload();
+		Sounds.ClickAndOpen.Preload();
+		Sounds.ClickAndClose.Preload();
+		Sounds.CardFlip.Preload();
+		Sounds.Warning.Preload();
+		Sounds.Error.Preload();
+		Sounds.Popup.Success.Preload();
+	}
 
 	public static class Images
 	{
@@ -18,7 +41,7 @@ public static class GameAssets
 		public static readonly GameSound ClosingClick = new("sounds/effects/closing-click.sound" );
 		public static readonly GameSound ClickAndOpen = new ( "sounds/effects/click-and-open.sound" );
 		public static readonly GameSound ClickAndClose = new ( "sounds/effects/click-and-close.sound" );
-		public static readonly GameSound CardFlip = new ( "sounds/effects/cardfx-deal2.mp3" );
+		public static readonly GameSound CardFlip = new ( "sounds/effects/cardfx-deal2.wav" );
 		public static readonly GameSound Unassigned = new( "" );
 		public static readonly GameSound Warning = new( "sounds/effects/uipack-retro12.mp3" );
 		public static readonly GameSound Error = new( "sounds/effects/uipack-retro6.mp3" );

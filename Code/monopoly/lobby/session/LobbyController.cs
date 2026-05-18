@@ -26,6 +26,7 @@ public sealed partial class LobbyController : Component
 
 	protected override void OnStart()
 	{
+		GameAssets.PrewarmUiAssets();
 		SteamInviteBridge.Register( Scene );
 
 		if ( Networking.IsHost )

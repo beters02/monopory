@@ -20,6 +20,17 @@ public readonly struct GameSound
 
 	public readonly GameSoundType SoundType;
 
+	public bool Preload()
+	{
+		if ( !IsAssigned )
+			return false;
+
+		if ( SoundType == GameSoundType.SoundFile )
+			return SoundFile.Load( Path ) is not null;
+
+		return true;
+	}
+
 	public bool Play()
 	{
 		if ( !IsAssigned )

@@ -12,6 +12,7 @@ public sealed class MenuController : Component
 
 	protected override void OnStart()
 	{
+		GameAssets.PrewarmUiAssets();
 		SteamInviteBridge.Register( Scene );
 		HandleLaunchArguments();
 	}

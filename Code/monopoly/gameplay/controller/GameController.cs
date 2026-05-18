@@ -88,6 +88,7 @@ public sealed partial class GameController : Component
 	protected override void OnStart()
 	{
 		instance = this;
+		GameAssets.PrewarmUiAssets();
 		SteamInviteBridge.Register( Scene );
 		RefreshReplicatedPlayerSlots();
 

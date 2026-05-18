@@ -26,6 +26,11 @@ public sealed class GameImage
 
 	public bool IsAssigned => !string.IsNullOrWhiteSpace( Path );
 
+	public bool Preload()
+	{
+		return Texture is not null;
+	}
+
 	public override string ToString() => Path;
 
 	public static implicit operator GameImage( string path ) => new( path );

@@ -26,6 +26,11 @@ public sealed class GameMaterial
 
 	public bool IsAssigned => !string.IsNullOrWhiteSpace( Path );
 
+	public bool Preload()
+	{
+		return Material is not null;
+	}
+
 	public override string ToString() => Path;
 
 	public static implicit operator GameMaterial( string path ) => new( path );
