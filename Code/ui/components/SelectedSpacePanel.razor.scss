@@ -132,13 +132,17 @@
 	right: 48px;
 	top: 50%;
 	z-index: 10;
-	transform: translateY(-50%);
+	transform: translateY(-50%) translateZ(0px);
 
 	display: flex;
 	flex-direction: column;
 	gap: 12px;
 
 	pointer-events: none;
+
+	&:intro {
+		transform: scale( 0 );
+	}
 }
 
 .selected-space-card-panel .selected-space-card,
@@ -154,6 +158,7 @@
 .selected-space-actions {
 	position: relative;
 	z-index: 3;
+	transform: translateZ(5px);
 
 	align-self: center;
 	width: 196px;

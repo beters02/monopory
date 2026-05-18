@@ -42,42 +42,40 @@
 				</FooterContent>
 			</SpaceCard>
 
-			@if ( CanBuySelectedSpace || CanManageSelectedSpace )
+			@if ( CanBuySelectedSpace )
 			{
-				<div class="selected-space-actions">
-					@if ( CanBuySelectedSpace )
-					{
-						<div class="space-buttons">
-							<GameButton OnClick="@BuyProperty">Buy</GameButton>
-							<GameButton OnClick="@AuctionProperty">Auction</GameButton>
-						</div>
-					}
-
-					@if ( CanManageSelectedSpace )
-					{
-						<div class="space-management">
-							@if ( IsProperty )
-							{
-								<div class="space-buttons improvement-buttons">
-									<GameButton Variant="@BuildImprovementButtonClasses" OnClick="@BuildImprovement">
-										<ChildContent>
-											<span>+</span>
-											<img class="space-action-house-icon" src="ui/house-placeholder.svg" />
-										</ChildContent>
-									</GameButton>
-									<GameButton Variant="@SellImprovementButtonClasses" OnClick="@SellImprovement">
-										<ChildContent>
-											<span>-</span>
-											<img class="space-action-house-icon" src="ui/house-placeholder.svg" />
-										</ChildContent>
-									</GameButton>
-								</div>
-							}
-							<div class="space-buttons mortgage-buttons">
-								<GameButton Variant="@MortgageButtonClasses" OnClick="@Mortgage">@MortgageActionLabel</GameButton>
+				<div @key="@ActionPanelRenderKey" class="@BuyActionPanelClasses">
+					<div class="space-buttons">
+						<GameButton OnClick="@BuyProperty">Buy</GameButton>
+						<GameButton OnClick="@AuctionProperty">Auction</GameButton>
+					</div>
+				</div>
+			}
+			else if ( CanManageSelectedSpace )
+			{
+				<div @key="@ActionPanelRenderKey" class="@ManageActionPanelClasses">
+					<div class="space-management">
+						@if ( IsProperty )
+						{
+							<div class="space-buttons improvement-buttons">
+								<GameButton Variant="@BuildImprovementButtonClasses" OnClick="@BuildImprovement">
+									<ChildContent>
+										<span>+</span>
+										<img class="space-action-house-icon" src="ui/house-placeholder.svg" />
+									</ChildContent>
+								</GameButton>
+								<GameButton Variant="@SellImprovementButtonClasses" OnClick="@SellImprovement">
+									<ChildContent>
+										<span>-</span>
+										<img class="space-action-house-icon" src="ui/house-placeholder.svg" />
+									</ChildContent>
+								</GameButton>
 							</div>
+						}
+						<div class="space-buttons mortgage-buttons">
+							<GameButton Variant="@MortgageButtonClasses" OnClick="@Mortgage">@MortgageActionLabel</GameButton>
 						</div>
-					}
+					</div>
 				</div>
 			}
 		</div>
@@ -144,6 +142,18 @@
 
 	private bool CanManageSelectedSpace =>
 		IsOwnedByLocalPlayer;
+
+	private string ActionPanelRenderKey =>
+		$"{SelectedSpaceIndex}:{GetSelectedOwnerIndex()}:{(CanBuySelectedSpace ? "buy" : "manage")}";
+
+	private string ActionPanelStateClass =>
+		$"action-panel-state-{SelectedSpaceIndex}-{GetSelectedOwnerIndex()}";
+
+	private string BuyActionPanelClasses =>
+		$"selected-space-actions selected-space-buy-actions {ActionPanelStateClass}";
+
+	private string ManageActionPanelClasses =>
+		$"selected-space-actions selected-space-manage-actions {ActionPanelStateClass}";
 
 	private int SelectedImprovementCount =>
 		SelectedSpaceIndex < 0 ? 0 : GameRef?.GetImprovementCount( SelectedSpaceIndex ) ?? 0;
@@ -228,7 +238,8 @@
 	private void BuyProperty()
 	{
 		GameRef?.RequestBuyPendingProperty();
-		_ = DelayedStateHasChanged(3);
+		StateHasChanged();
+		_ = DelayedStateHasChanged(0.05f);
 	}
 
 	private void AuctionProperty()
