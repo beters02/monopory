@@ -13,6 +13,14 @@
 			<HudPanelBody>Money: $@LocalPlayerMoney</HudPanelBody>
 			<HudPanelEmptyLine></HudPanelEmptyLine>
 			<HudPanelEmptyLine></HudPanelEmptyLine>
+			<HudPanelSubtitle>Camera</HudPanelSubtitle>
+			<div class="camera-mode-buttons">
+				<GameButton Variant="@GetCameraModeButtonClasses( BoardCameraMode.Default )" OnClick="@(() => SetCameraMode( BoardCameraMode.Default ))">Default</GameButton>
+				<GameButton Variant="@GetCameraModeButtonClasses( BoardCameraMode.Board )" OnClick="@(() => SetCameraMode( BoardCameraMode.Board ))">Board</GameButton>
+				<GameButton Variant="@GetCameraModeButtonClasses( BoardCameraMode.FreeCam )" OnClick="@(() => SetCameraMode( BoardCameraMode.FreeCam ))">Free Cam</GameButton>
+			</div>
+			<HudPanelEmptyLine></HudPanelEmptyLine>
+			<HudPanelEmptyLine></HudPanelEmptyLine>
 			<HudPanelSubtitle>Game</HudPanelSubtitle>
 			<HudPanelBody>Time Left: @CurrentTurnTimeText</HudPanelBody>
 			<HudPanelBody>Current Player: @CurrentPlayerName</HudPanelBody>
@@ -55,9 +63,24 @@
 	private string EndTurnButtonClasses =>
 		CanEndTurn ? "" : "blocked-action-button";
 
+	private BoardCameraMode CurrentCameraMode =>
+		GameCamera.Instance?.Mode ?? BoardCameraMode.Board;
+
 	private bool CanEndTurn =>
 		GameRef?.Phase == GamePhase.TurnEnded &&
 		GameRef.HasPendingForcedPayment != true;
+
+	private void SetCameraMode( BoardCameraMode mode )
+	{
+		GameCamera.Instance?.SetMode( mode );
+	}
+
+	private string GetCameraModeButtonClasses( BoardCameraMode mode )
+	{
+		return CurrentCameraMode == mode
+			? "camera-mode-button active"
+			: "camera-mode-button";
+	}
 
 	private void RollDice()
 	{
@@ -90,15 +113,16 @@
 
 	protected override int BuildHash()
 	{
-		return HashCode.Combine(
-			GameRef?.MatchState ?? 0,
-			GameRef?.Phase ?? 0,
-			GameRef?.CurrentPlayerIndex ?? -1,
-			GameRef?.LastDieA ?? 0,
-			GameRef?.LastDieB ?? 0,
-			LocalPlayerMoney,
-			CurrentTurnRemainingSeconds,
-			GameRef?.HasPendingForcedPayment ?? false
-		);
+		var hash = new HashCode();
+		hash.Add( GameRef?.MatchState ?? 0 );
+		hash.Add( GameRef?.Phase ?? 0 );
+		hash.Add( GameRef?.CurrentPlayerIndex ?? -1 );
+		hash.Add( GameRef?.LastDieA ?? 0 );
+		hash.Add( GameRef?.LastDieB ?? 0 );
+		hash.Add( LocalPlayerMoney );
+		hash.Add( CurrentTurnRemainingSeconds );
+		hash.Add( GameRef?.HasPendingForcedPayment ?? false );
+		hash.Add( CurrentCameraMode );
+		return hash.ToHashCode();
 	}
 }

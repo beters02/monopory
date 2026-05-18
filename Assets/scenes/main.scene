@@ -133,7 +133,7 @@
                 "go": "79ff3a97-6bff-4c3f-8727-3400edd0e02f",
                 "component_type": "WorldPanel"
               },
-              "DebugEnabled": true,
+              "DebugEnabled": false,
               "HitboxSize": "96,96,12",
               "HotelImprovementPrefabScale": "0.200000003,0.300000012,0.200000003",
               "HotelPrefab": {
@@ -2006,6 +2006,7 @@
                 "_type": "gameobject",
                 "prefab": "prefabs/token_01.prefab"
               },
+              "TradeViewers": {},
               "WinnerPlayerIndex": -1
             }
           ],
@@ -2034,8 +2035,17 @@
           "__guid": "f0aaa3af-837d-44a2-8b6b-a4200b2db168",
           "__enabled": true,
           "Flags": 0,
-          "Distance": 360,
-          "Fov": 0,
+          "DefaultModeDistance": 200,
+          "DefaultModePitch": 75,
+          "Distance": 350,
+          "FollowLerpSpeed": 8,
+          "Fov": 35,
+          "FreeCamBoundsPadding": 48,
+          "FreeCamMaxDistance": 1200,
+          "FreeCamMinDistance": 250,
+          "FreecamModeStartDistance": 400,
+          "FreeCamMoveSpeed": 120,
+          "FreeCamZoomSpeed": 80,
           "OnComponentDestroy": null,
           "OnComponentDisabled": null,
           "OnComponentEnabled": null,
@@ -2043,6 +2053,7 @@
           "OnComponentStart": null,
           "OnComponentUpdate": null,
           "Pitch": 90,
+          "RotationLerpSpeed": 8,
           "Target": {
             "_type": "gameobject",
             "go": "7cc74658-edf0-4a05-bfaf-a2950336e32b"
@@ -2151,7 +2162,7 @@
             {
               "__type": "Sandbox.ScreenSpaceReflections",
               "__guid": "28e564c0-f89a-4f77-830f-bfdafca137fe",
-              "__enabled": true,
+              "__enabled": false,
               "Flags": 0,
               "OnComponentDestroy": null,
               "OnComponentDisabled": null,
@@ -2384,48 +2395,6 @@
       "Children": []
     },
     {
-      "__guid": "b316429b-f2cd-4e87-845a-4b32172f66c0",
-      "__version": 2,
-      "Flags": 0,
-      "Name": "SpotLight",
-      "Position": "-149.854797,-154.704376,489.43811",
-      "Rotation": "0,0,0,1",
-      "Scale": "1,1,1",
-      "Tags": "light_spot,light",
-      "Enabled": true,
-      "NetworkMode": 2,
-      "NetworkFlags": 0,
-      "NetworkOrphaned": 0,
-      "NetworkTransmit": true,
-      "OwnerTransfer": 1,
-      "Components": [
-        {
-          "__type": "Sandbox.SpotLight",
-          "__guid": "a57ea75f-d3fb-485a-be25-6fdcd4a26b05",
-          "__enabled": true,
-          "Flags": 0,
-          "Attenuation": 1,
-          "ConeInner": 15,
-          "ConeOuter": 45,
-          "Cookie": null,
-          "FogMode": "Enabled",
-          "FogStrength": 1,
-          "LightColor": "0.91373,0.98039,1,1",
-          "OnComponentDestroy": null,
-          "OnComponentDisabled": null,
-          "OnComponentEnabled": null,
-          "OnComponentFixedUpdate": null,
-          "OnComponentStart": null,
-          "OnComponentUpdate": null,
-          "Radius": 500,
-          "ShadowBias": 0.0005,
-          "ShadowHardness": 0,
-          "Shadows": true
-        }
-      ],
-      "Children": []
-    },
-    {
       "__guid": "bad7d9da-669c-4280-a1e6-9aed077d26f1",
       "__version": 2,
       "Flags": 0,
@@ -2487,17 +2456,17 @@
       "CustomBounds": false
     },
     "GameObjectSystems": {
-      "Sandbox.Clutter.ClutterGridSystem": {
-        "Storage": {
-          "$blob": "7664decd-7b1f-4214-a5a2-850285e10057"
-        }
-      },
       "Sandbox.MovieMaker.MovieRecorderSystem": {
         "DisableClientRecording": false
       },
       "Sandbox.SelectionSetsSystem": {
         "Data": {
           "SelectionSets": []
+        }
+      },
+      "Sandbox.Clutter.ClutterGridSystem": {
+        "Storage": {
+          "$blob": "7664decd-7b1f-4214-a5a2-850285e10057"
         }
       }
     }

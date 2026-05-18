@@ -7,3 +7,25 @@
 	top: 32px;
     	left: 32px;
 }
+
+.camera-mode-buttons {
+	display: flex;
+	flex-direction: row;
+	gap: 6px;
+	margin-top: 8px;
+}
+
+.camera-mode-buttons .monopoly-button.camera-mode-button {
+	flex: 1;
+	min-width: 0;
+	margin-top: 0;
+	padding: 8px 9px;
+	font-size: 13px;
+	text-align: center;
+	justify-content: center;
+}
+
+.camera-mode-buttons .monopoly-button.camera-mode-button.active {
+	background-color: $monopoly-board-outline;
+	color: white;
+}
