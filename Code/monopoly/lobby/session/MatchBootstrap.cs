@@ -6,6 +6,7 @@ public sealed class MatchBootstrap
 	public bool HasConfig { get; set; }
 	public bool AutoStartGame { get; set; }
 	public int StartingPlayerCount { get; set; }
+	public List<LobbyPlayer> StartingPlayers { get; set; } = new();
 
 	public static MatchBootstrap Current { get; private set; } = new();
 
@@ -16,18 +17,22 @@ public sealed class MatchBootstrap
 			Config = CloneConfig( config ),
 			HasConfig = true,
 			AutoStartGame = false,
-			StartingPlayerCount = 0
+			StartingPlayerCount = 0,
+			StartingPlayers = new()
 		};
 	}
 
-	public static void PrepareGame( MatchConfig config, int startingPlayerCount )
+	public static void PrepareGame( MatchConfig config, IReadOnlyList<LobbyPlayer> startingPlayers )
 	{
+		var players = ClonePlayers( startingPlayers );
+
 		Current = new MatchBootstrap
 		{
 			Config = CloneConfig( config ),
 			HasConfig = true,
 			AutoStartGame = true,
-			StartingPlayerCount = startingPlayerCount
+			StartingPlayerCount = players.Count,
+			StartingPlayers = players
 		};
 	}
 
@@ -53,5 +58,22 @@ public sealed class MatchBootstrap
 			EvenBuild = source.EvenBuild,
 			TurnTimeLimitSeconds = source.TurnTimeLimitSeconds
 		};
+	}
+
+	private static List<LobbyPlayer> ClonePlayers( IReadOnlyList<LobbyPlayer> players )
+	{
+		if ( players is null )
+			return new();
+
+		return players
+			.Where( player => player is not null && player.OwnerId != 0 )
+			.Select( player => new LobbyPlayer
+			{
+				OwnerId = player.OwnerId,
+				Name = player.Name,
+				IsReady = player.IsReady,
+				IsLocal = player.IsLocal
+			} )
+			.ToList();
 	}
 }

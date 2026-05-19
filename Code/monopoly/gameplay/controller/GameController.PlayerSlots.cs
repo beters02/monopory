@@ -43,6 +43,7 @@ public sealed partial class GameController : Component
 			return;
 
 		EnsurePlayerSlots();
+		SeedBootstrappedPlayers();
 
 		var availableSlotCount = Players.Count( player => player is not null );
 		var registrationLimit = Math.Min( MaxPlayers, availableSlotCount );
@@ -50,6 +51,9 @@ public sealed partial class GameController : Component
 		foreach ( var player in Players.Where( player => player is not null && player.IsAssigned ).ToList() )
 		{
 			if ( Connection.All.Any( connection => connection.SteamId == player.OwnerId ) )
+				continue;
+
+			if ( IsExpectedBootstrappedPlayer( player.OwnerId ) )
 				continue;
 
 			ClearPlayerSlot( player );
@@ -65,6 +69,38 @@ public sealed partial class GameController : Component
 
 			RegisterPlayer( connection );
 		}
+	}
+
+	private void SeedBootstrappedPlayers()
+	{
+		var bootstrap = MatchBootstrap.Current;
+		if ( bootstrap?.AutoStartGame != true || bootstrap.StartingPlayers.Count == 0 )
+			return;
+
+		foreach ( var startingPlayer in bootstrap.StartingPlayers )
+		{
+			if ( startingPlayer is null || startingPlayer.OwnerId == 0 )
+				continue;
+
+			if ( Players.Any( player => player is not null && player.OwnerId == startingPlayer.OwnerId ) )
+				continue;
+
+			var emptySlot = Players.FirstOrDefault( player => player is not null && !player.IsAssigned );
+			if ( emptySlot is null )
+				return;
+
+			emptySlot.OwnerId = startingPlayer.OwnerId;
+			emptySlot.PlayerName = string.IsNullOrWhiteSpace( startingPlayer.Name ) ? "Player" : startingPlayer.Name;
+			emptySlot.IsReady = false;
+			ResetPlayerForGame( emptySlot );
+		}
+	}
+
+	private bool IsExpectedBootstrappedPlayer( long ownerId )
+	{
+		var bootstrap = MatchBootstrap.Current;
+		return bootstrap?.AutoStartGame == true &&
+			bootstrap.StartingPlayers.Any( player => player is not null && player.OwnerId == ownerId );
 	}
 
 	private void EnsurePlayerSlots()

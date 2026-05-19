@@ -103,12 +103,7 @@ public sealed partial class GameController : Component
 		SyncLobbyConnections();
 		ResetGameState( false );
 
-		if ( bootstrap?.AutoStartGame == true )
-		{
-			TryStartGame( false );
-			StartingPlayerCount = Math.Max( StartingPlayerCount, bootstrap.StartingPlayerCount );
-			MatchBootstrap.Clear();
-		}
+		TryStartBootstrappedGame();
 	}
 
 	protected override void OnUpdate()
@@ -121,6 +116,9 @@ public sealed partial class GameController : Component
 
 		SyncLobbyConnections();
 
+		if ( MatchState == MatchLifecycleState.Lobby )
+			TryStartBootstrappedGame();
+
 		if ( MatchState != MatchLifecycleState.InGame )
 			return;
 
@@ -130,5 +128,19 @@ public sealed partial class GameController : Component
 		CheckForGameOver();
 
 		
+	}
+
+	private void TryStartBootstrappedGame()
+	{
+		var bootstrap = MatchBootstrap.Current;
+		if ( bootstrap?.AutoStartGame != true )
+			return;
+
+		var expectedPlayerCount = Math.Max( bootstrap.StartingPlayerCount, MinPlayers );
+		if ( GetLobbyPlayers().Count < expectedPlayerCount )
+			return;
+
+		if ( TryStartGame( false ) )
+			MatchBootstrap.Clear();
 	}
 }

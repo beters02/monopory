@@ -6690,7 +6690,7 @@
               "StartingPlayerCount": 1,
               "TokenPrefab": {
                 "_type": "gameobject",
-                "prefab": "prefabs/token_02.prefab"
+                "prefab": "prefabs/token_01.prefab"
               },
               "TradeViewers": {},
               "WinnerPlayerIndex": -1
@@ -6936,58 +6936,6 @@
                 }
               ],
               "Children": []
-            },
-            {
-              "__guid": "b14f7b2d-a50e-4eb5-b86b-f049b08aa7b6",
-              "__version": 2,
-              "__Prefab": "prefabs/token_02.prefab",
-              "__PrefabInstancePatch": {
-                "AddedObjects": [],
-                "RemovedObjects": [],
-                "PropertyOverrides": [
-                  {
-                    "Target": {
-                      "Type": "GameObject",
-                      "IdValue": "31d8e098-4a39-421a-9a2e-1c4a6b3ed131"
-                    },
-                    "Property": "Name",
-                    "Value": "Token_01"
-                  },
-                  {
-                    "Target": {
-                      "Type": "GameObject",
-                      "IdValue": "31d8e098-4a39-421a-9a2e-1c4a6b3ed131"
-                    },
-                    "Property": "Position",
-                    "Value": "-78.6921692,82.3002472,110.731148"
-                  },
-                  {
-                    "Target": {
-                      "Type": "GameObject",
-                      "IdValue": "31d8e098-4a39-421a-9a2e-1c4a6b3ed131"
-                    },
-                    "Property": "Rotation",
-                    "Value": "0,0,5.73471016E-06,1"
-                  },
-                  {
-                    "Target": {
-                      "Type": "GameObject",
-                      "IdValue": "31d8e098-4a39-421a-9a2e-1c4a6b3ed131"
-                    },
-                    "Property": "NetworkMode",
-                    "Value": 1
-                  }
-                ],
-                "MovedObjects": []
-              },
-              "__PrefabIdToInstanceId": {
-                "31d8e098-4a39-421a-9a2e-1c4a6b3ed131": "b14f7b2d-a50e-4eb5-b86b-f049b08aa7b6",
-                "a692d01e-2baf-4bba-94b5-34ea4d36028c": "e3343a88-2aeb-47e6-a9e1-6c7c84d2eded",
-                "6c48918a-4696-49c8-817b-12b77ee74192": "81f82a5c-31d5-4d35-ab3f-bc315ddf5195",
-                "ca793c54-6ecb-41a8-a7d8-dc7902293838": "0df6fc77-3878-480d-977d-6535defa774c",
-                "9ab6d4dc-60b3-401d-9d4d-6eec070d5ea7": "d80ce961-4aa0-49a5-b013-fcd63970677b",
-                "32251d9f-da82-4be8-aa93-584e41fb2b91": "4847ead2-2cdb-4734-acd7-09df5e33c9df"
-              }
             }
           ]
         }
@@ -7408,68 +7356,6 @@
           "ShadowBias": 0.0005,
           "ShadowHardness": 0,
           "Shadows": true
-        }
-      ],
-      "Children": []
-    },
-    {
-      "__guid": "006aeafb-333f-4a5a-b1e6-0902be86ae4f",
-      "__version": 2,
-      "Flags": 0,
-      "Name": "GameSettingsController",
-      "Position": "149.994965,149.994995,-212.124985",
-      "Rotation": "0,0,0,1",
-      "Scale": "1,1,1",
-      "Tags": "",
-      "Enabled": true,
-      "NetworkMode": 2,
-      "NetworkFlags": 0,
-      "NetworkOrphaned": 0,
-      "NetworkTransmit": true,
-      "OwnerTransfer": 1,
-      "Components": [
-        {
-          "__type": "AppSettings",
-          "__guid": "5811b874-d972-4459-a700-78d8ec7ba138",
-          "__enabled": true,
-          "Flags": 0,
-          "OnComponentDestroy": null,
-          "OnComponentDisabled": null,
-          "OnComponentEnabled": null,
-          "OnComponentFixedUpdate": null,
-          "OnComponentStart": null,
-          "OnComponentUpdate": null
-        }
-      ],
-      "Children": []
-    },
-    {
-      "__guid": "ea7408af-3df2-461f-b155-78f1860bff73",
-      "__version": 2,
-      "Flags": 0,
-      "Name": "GameSettingsController",
-      "Position": "149.994965,149.994995,-212.124985",
-      "Rotation": "0,0,0,1",
-      "Scale": "1,1,1",
-      "Tags": "",
-      "Enabled": true,
-      "NetworkMode": 2,
-      "NetworkFlags": 0,
-      "NetworkOrphaned": 0,
-      "NetworkTransmit": true,
-      "OwnerTransfer": 1,
-      "Components": [
-        {
-          "__type": "AppSettings",
-          "__guid": "5f99451d-8c05-4ba2-98d9-de21a8eb4fc6",
-          "__enabled": true,
-          "Flags": 0,
-          "OnComponentDestroy": null,
-          "OnComponentDisabled": null,
-          "OnComponentEnabled": null,
-          "OnComponentFixedUpdate": null,
-          "OnComponentStart": null,
-          "OnComponentUpdate": null
         }
       ],
       "Children": []
