@@ -29,6 +29,19 @@
 }
 
 .game-popup {
+	transition: all 0.13s ease-out;
+	transform: scale( 1 );
+
+	// When the element is created make it expand from nothing.
+	&:intro {
+		transform: scale( 0 );
+	}
+
+	// When the element is deleted make it double in size before being deleted.
+	&:outro {
+		transform: scale( 2 );
+	}
+
 	min-height: 72px;
 	padding: 13px 14px 13px 18px;
 

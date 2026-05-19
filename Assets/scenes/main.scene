@@ -1781,7 +1781,7 @@
                   "BorderColor": "#050505",
                   "BrownLabelColor": "#8b3a00",
                   "BrownLabelMaterial": "materials/board_plastic/board_plastic_color_label_brown.vmat",
-                  "CenterBorderThicknessPx": 6,
+                  "CenterBorderThicknessPx": 3,
                   "CenterColor": "#9d9d9d",
                   "ChanceIconFontSizePx": 58,
                   "ChestIconColor": "#296c9e",
