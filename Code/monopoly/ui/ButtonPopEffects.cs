@@ -6,8 +6,8 @@ public static class ButtonPopEffects
 	private const float EffectLifetime = 0.75f;
 	public const float AnimationDuration = 0.42f;
 
-	private const int ParticleCount = 6;
-	private const int PossibleParticlePositions = 12;
+	private const int ParticleCount = 7;
+	private const int PossibleParticlePositions = 14;
 
 	private static int nextEffectId = 1;
 	private static readonly List<ButtonPopEffect> effects = new();
@@ -42,14 +42,12 @@ public static class ButtonPopEffects
 	private static List<ButtonPopParticle> CreateParticles()
 	{
 		var particles = new List<ButtonPopParticle>();
-		var availablePositions = Enumerable.Range( 0, PossibleParticlePositions ).ToList();
 		var randomOffset = RandomFloat( 0f, 360f / PossibleParticlePositions );
+		var slotsPerParticle = PossibleParticlePositions / ParticleCount;
 
 		for ( var i = 0; i < ParticleCount; i++ )
 		{
-			var availableIndex = System.Random.Shared.Next( availablePositions.Count );
-			var positionIndex = availablePositions[availableIndex];
-			availablePositions.RemoveAt( availableIndex );
+			var positionIndex = (i * slotsPerParticle) + System.Random.Shared.Next( slotsPerParticle );
 
 			particles.Add( new ButtonPopParticle
 			{
