@@ -6623,13 +6623,13 @@
                 "TurnTimeLimitSeconds": 180
               },
               "CurrentPlayerIndex": 0,
-              "CurrentTurnEndsAt": 189.10376,
+              "CurrentTurnEndsAt": 0,
               "CurrentTurnGetsExtraRoll": false,
               "FreeParkingBank": 0,
-              "GameStartedAt": 1.555097,
-              "LastDieA": 2,
-              "LastDieB": 3,
-              "MatchState": "InGame",
+              "GameStartedAt": 0,
+              "LastDieA": 0,
+              "LastDieB": 0,
+              "MatchState": "Lobby",
               "MortgagedProperties": {},
               "NextTradeId": 1,
               "OnComponentDestroy": null,
@@ -6644,9 +6644,9 @@
               "PendingForcedPaymentReceiverIndex": -1,
               "PendingForcedPaymentToBank": false,
               "PendingForcedPaymentToEachPlayer": false,
-              "PendingPurchaseSpaceIndex": 15,
+              "PendingPurchaseSpaceIndex": -1,
               "PendingTrades": {},
-              "Phase": "WaitingForBuyDecision",
+              "Phase": "WaitingToRoll",
               "Players": [
                 {
                   "_type": "component",
@@ -6687,7 +6687,7 @@
               ],
               "PropertyImprovements": {},
               "PropertyOwners": {},
-              "StartingPlayerCount": 1,
+              "StartingPlayerCount": 0,
               "TokenPrefab": {
                 "_type": "gameobject",
                 "prefab": "prefabs/token_01.prefab"
@@ -6889,10 +6889,10 @@
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
                   "OnComponentUpdate": null,
-                  "OwnerId": 76561198067721070,
-                  "PlayerName": "boot",
+                  "OwnerId": 0,
+                  "PlayerName": "Player 1",
                   "SkipsNextTurn": false,
-                  "SpaceIndex": 15
+                  "SpaceIndex": 0
                 }
               ],
               "Children": []
@@ -7383,17 +7383,17 @@
       "CustomBounds": false
     },
     "GameObjectSystems": {
-      "Sandbox.SelectionSetsSystem": {
-        "Data": {
-          "SelectionSets": []
+      "Sandbox.Clutter.ClutterGridSystem": {
+        "Storage": {
+          "$blob": "7664decd-7b1f-4214-a5a2-850285e10057"
         }
       },
       "Sandbox.MovieMaker.MovieRecorderSystem": {
         "DisableClientRecording": false
       },
-      "Sandbox.Clutter.ClutterGridSystem": {
-        "Storage": {
-          "$blob": "7664decd-7b1f-4214-a5a2-850285e10057"
+      "Sandbox.SelectionSetsSystem": {
+        "Data": {
+          "SelectionSets": []
         }
       }
     }

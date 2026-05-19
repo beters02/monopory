@@ -100,8 +100,9 @@ public sealed partial class GameController : Component
 			Config = bootstrap.Config;
 
 		EnsurePlayerSlots();
-		SyncLobbyConnections();
 		ResetGameState( false );
+		MatchState = MatchLifecycleState.Lobby;
+		SyncLobbyConnections();
 
 		TryStartBootstrappedGame();
 	}
