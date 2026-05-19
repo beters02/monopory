@@ -6690,7 +6690,7 @@
               "StartingPlayerCount": 0,
               "TokenPrefab": {
                 "_type": "gameobject",
-                "prefab": "prefabs/token_01.prefab"
+                "prefab": "prefabs/token_02.prefab"
               },
               "TradeViewers": {},
               "WinnerPlayerIndex": -1
