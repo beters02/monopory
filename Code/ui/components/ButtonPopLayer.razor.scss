@@ -33,8 +33,9 @@ $button-pop-particle-height: 2px;
 
 	pointer-events: none;
 
-	display: block;
+	display: flex;
 	flex-shrink: 0;
+	transform-origin: 0 0;
 }
 
 .button-pop-particle-line {
@@ -50,6 +51,7 @@ $button-pop-particle-height: 2px;
 	border-radius: 1px;
 	box-shadow: 0 0 0 2px rgba(5, 5, 5, 0.92), 0 0 5px rgba(255, 217, 106, 0.46);
 
-	display: block;
+	display: flex;
 	flex-shrink: 0;
+	transform-origin: 50% 50%;
 }

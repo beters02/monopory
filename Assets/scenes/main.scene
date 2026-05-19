@@ -6688,6 +6688,7 @@
               "PropertyImprovements": {},
               "PropertyOwners": {},
               "StartingPlayerCount": 0,
+              "TokenPhysicsStates": {},
               "TokenPrefab": {
                 "_type": "gameobject",
                 "prefab": "prefabs/token_02.prefab"
@@ -7383,17 +7384,14 @@
       "CustomBounds": false
     },
     "GameObjectSystems": {
-      "Sandbox.Clutter.ClutterGridSystem": {
-        "Storage": {
-          "$blob": "7664decd-7b1f-4214-a5a2-850285e10057"
-        }
-      },
-      "Sandbox.MovieMaker.MovieRecorderSystem": {
-        "DisableClientRecording": false
-      },
       "Sandbox.SelectionSetsSystem": {
         "Data": {
           "SelectionSets": []
+        }
+      },
+      "Sandbox.Clutter.ClutterGridSystem": {
+        "Storage": {
+          "$blob": "7664decd-7b1f-4214-a5a2-850285e10057"
         }
       }
     }

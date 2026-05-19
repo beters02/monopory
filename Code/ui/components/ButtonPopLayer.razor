@@ -41,7 +41,7 @@
 		var y = MathF.Sin( angle ) * radius;
 		var scale = Lerp( 0.55f, 1.2f, eased );
 
-		return $"left: {x}px; top: {y}px; opacity: {opacity}; transform: scale({scale});";
+		return $"opacity: {opacity}; transform: translate({x}px, {y}px) scale({scale});";
 	}
 
 	private static string GetParticleLineStyle( ButtonPopParticle particle )
@@ -69,7 +69,7 @@
 		}
 
 		hash.Add( ScaleFromScreen );
-		hash.Add( MathF.Round( Time.Now * 60f ) );
+		hash.Add( MathF.Round( Time.Now * 120f ) );
 
 		return hash.ToHashCode();
 	}

@@ -4,7 +4,7 @@ public static class ButtonPopEffects
 {
 	private const int MaxEffects = 80;
 	private const float EffectLifetime = 0.55f;
-	public const float AnimationDuration = 0.23f;
+	public const float AnimationDuration = 0.32f;
 
 	private const int ParticleCount = 7;
 	private const int PossibleParticlePositions = 14;
