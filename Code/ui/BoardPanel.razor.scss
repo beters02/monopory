@@ -21,10 +21,17 @@
 .board-space {
 	position: absolute;
 	background-color: #b9cfca;
-	border: 3px solid $monopoly-ink;
 	display: flex;
 	flex-direction: column;
 	overflow: hidden;
+}
+
+.space-border {
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
 }
 
 .space-color-bar {

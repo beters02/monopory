@@ -79,6 +79,8 @@
 						}
 					}
 				</div>
+
+				<div class="space-border" style="@SpaceBorderStyle"></div>
 			</div>
 		}
 	}
@@ -158,6 +160,9 @@
 
 	private string ContentStyle =>
 		$"padding: {ContentPaddingPx}px;";
+
+	private string SpaceBorderStyle =>
+		$"border: {SpaceBorderThicknessPx}px solid {BorderColor};";
 
 	private string SpaceTitleStyle =>
 		$"font-size: {SpaceTextFontSizePx}px; line-height: {SpaceTextLineHeightPx}px; color: {TextColor};";
@@ -258,7 +263,7 @@
 	private string GetSpaceStyle( int spaceIndex )
 	{
 		Rect rect = BoardMath.GetSpaceRect( spaceIndex, this );
-		return $"left: {rect.Left}%; top: {rect.Top}%; width: {rect.Width}%; height: {rect.Height}%; background-color: {SpaceColor}; border: {SpaceBorderThicknessPx}px solid {BorderColor};";
+		return $"left: {rect.Left}%; top: {rect.Top}%; width: {rect.Width}%; height: {rect.Height}%; background-color: {SpaceColor};";
 	}
 
 	public float GetSideWeightTotal( int firstIndex, int lastIndex )
