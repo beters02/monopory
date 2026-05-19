@@ -38,8 +38,11 @@
 	}
 
 	// When the element is deleted make it double in size before being deleted.
-	&:outro {
-		transform: scale( 2 );
+	&:outro,
+	&.closing {
+		transform: scale( 0 );
+		opacity: 0;
+		pointer-events: none;
 	}
 
 	min-height: 72px;

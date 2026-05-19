@@ -2,15 +2,17 @@
 @using Sandbox.UI;
 @using Sandbox.ui.components.buttons
 @using System;
+@using System.Threading.Tasks;
 @inherits Panel
 
 <root class="monopoly-popup-stack-root">
-	@if ( Popups.Count > 0 )
+	@if ( RenderedPopups.Count > 0 )
 	{
 		<div class="popup-stack">
-			@foreach ( var popup in Popups )
+			@foreach ( var renderedPopup in RenderedPopups )
 			{
-				<div class="@GetPopupClasses( popup )">
+				var popup = renderedPopup.Popup;
+				<div class="@GetPopupClasses( renderedPopup )">
 					<div class="popup-content">
 						@if ( !string.IsNullOrWhiteSpace( popup.Title ) )
 						{
@@ -36,15 +38,103 @@
 	[Parameter] public List<GamePopup> Popups { get; set; } = new();
 	[Parameter] public Action<int> OnDismiss { get; set; }
 
-	private static string GetPopupClasses( GamePopup popup )
+	private const float OutroDuration = 0.13f;
+	private readonly List<RenderedPopup> renderedPopups = new();
+
+	private List<RenderedPopup> RenderedPopups
 	{
-		return $"game-popup {popup.Kind.ToString().ToLower()}";
+		get
+		{
+			SyncRenderedPopups();
+			return renderedPopups;
+		}
+	}
+
+	private static string GetPopupClasses( RenderedPopup renderedPopup )
+	{
+		var popup = renderedPopup.Popup;
+		var closingClass = renderedPopup.IsClosing ? " closing" : "";
+		return $"game-popup {popup.Kind.ToString().ToLower()}{closingClass}";
 	}
 
 	private void Dismiss( int popupId )
 	{
+		BeginClosing( popupId );
 		OnDismiss?.Invoke( popupId );
 		Popups.RemoveAll( popup => popup.Id == popupId );
 		StateHasChanged();
+	}
+
+	private void SyncRenderedPopups()
+	{
+		var sourcePopups = Popups ?? new();
+		var sourceIds = sourcePopups.Select( popup => popup.Id ).ToHashSet();
+
+		foreach ( var popup in sourcePopups )
+		{
+			var renderedPopup = renderedPopups.FirstOrDefault( item => item.Popup.Id == popup.Id );
+			if ( renderedPopup is null )
+			{
+				renderedPopups.Add( new RenderedPopup
+				{
+					Popup = CopyPopup( popup )
+				} );
+				continue;
+			}
+
+			if ( renderedPopup.IsClosing )
+				continue;
+
+			renderedPopup.Popup = CopyPopup( popup );
+		}
+
+		foreach ( var renderedPopup in renderedPopups )
+		{
+			if ( !sourceIds.Contains( renderedPopup.Popup.Id ) )
+				BeginClosing( renderedPopup );
+		}
+	}
+
+	private void BeginClosing( int popupId )
+	{
+		var renderedPopup = renderedPopups.FirstOrDefault( item => item.Popup.Id == popupId );
+		if ( renderedPopup is not null )
+			BeginClosing( renderedPopup );
+	}
+
+	private void BeginClosing( RenderedPopup renderedPopup )
+	{
+		if ( renderedPopup.IsClosing )
+			return;
+
+		renderedPopup.IsClosing = true;
+		_ = RemoveAfterOutro( renderedPopup.Popup.Id );
+	}
+
+	private async Task RemoveAfterOutro( int popupId )
+	{
+		await Task.DelaySeconds( OutroDuration );
+
+		renderedPopups.RemoveAll( popup => popup.Popup.Id == popupId && popup.IsClosing );
+		StateHasChanged();
+	}
+
+	private static GamePopup CopyPopup( GamePopup popup )
+	{
+		return new GamePopup
+		{
+			Id = popup.Id,
+			Title = popup.Title,
+			Message = popup.Message,
+			Kind = popup.Kind,
+			CanDismiss = popup.CanDismiss,
+			Lifetime = popup.Lifetime
+		};
+	}
+
+	private sealed class RenderedPopup
+	{
+		public GamePopup Popup { get; set; }
+		public bool IsClosing { get; set; }
 	}
 }
