@@ -6,65 +6,66 @@
 @inherits Panel
 
 <root>
-	@if ( SelectedSpace is not null )
+	@if ( RenderedSelection is not null )
 	{
-		<div class="selected-space-card-panel">
+		var selection = RenderedSelection;
+		<div class="@GetPanelClasses( selection )">
 			<SpaceCard
-				Space="@SelectedSpace"
+				Space="@selection.Space"
 				Variant="selected-space-card"
-				ColorClass="@HudUi.GetPropertyColorClass( SelectedSpace )"
-				IsMortgaged="@IsSelectedSpaceMortgaged"
-				ShowFreeParkingBank="@ShowFreeParkingMoney"
-				FreeParkingBank="@(GameRef?.FreeParkingBank ?? 0)"
-				ShowImprovementCount="@IsProperty"
+				ColorClass="@selection.ColorClass"
+				IsMortgaged="@selection.IsMortgaged"
+				ShowFreeParkingBank="@selection.ShowFreeParkingMoney"
+				FreeParkingBank="@selection.FreeParkingBank"
+				ShowImprovementCount="@selection.IsProperty"
 				HasActions="@false"
-				ImprovementLabel="@SelectedImprovementAmountLabel"
-				DrawnCardText="@SelectedDrawnCardText">
+				ImprovementLabel="@selection.ImprovementAmountLabel"
+				DrawnCardText="@selection.DrawnCardText">
 				<OverlayContent>
-					<CloseButton Variant="@SpaceCardCloseButtonClasses" CanClick="@CanCloseSelectedSpace" OnClick="@CloseSelectedSpace" BlockedPopupTitle="Decision required" BlockedPopupMessage="@SelectedSpaceCloseBlockedMessage"></CloseButton>
+					<CloseButton Variant="@GetSpaceCardCloseButtonClasses( selection )" CanClick="@(!selection.IsClosing && selection.CanClose)" OnClick="@CloseSelectedSpace" BlockedPopupTitle="Decision required" BlockedPopupMessage="@selection.CloseBlockedMessage"></CloseButton>
 				</OverlayContent>
 				<FooterContent>
 					<div>
 						<span>Price</span>
-						<strong>@SelectedSpacePriceLabel</strong>
+						<strong>@selection.PriceLabel</strong>
 					</div>
 					<div>
 						<span>Rent</span>
-						<strong>@SelectedSpaceRentLabel</strong>
+						<strong>@selection.RentLabel</strong>
 					</div>
-					@if ( IsProperty )
+					@if ( selection.IsProperty )
 					{
 						<div>
 							<span>House</span>
-							<strong>@SelectedHousePriceLabel</strong>
+							<strong>@selection.HousePriceLabel</strong>
 						</div>
 					}
 				</FooterContent>
 			</SpaceCard>
 
-			@if ( CanBuySelectedSpace )
+			@if ( selection.CanBuy )
 			{
-				<div @key="@ActionPanelRenderKey" class="@BuyActionPanelClasses">
+				<div @key="@GetActionPanelRenderKey( selection )" class="@GetBuyActionPanelClasses( selection )">
 					<div class="space-buttons">
 						<GameButton OnClick="@BuyProperty">Buy</GameButton>
 						<GameButton OnClick="@AuctionProperty">Auction</GameButton>
 					</div>
 				</div>
 			}
-			else if ( CanManageSelectedSpace )
+			else if ( selection.CanManage )
 			{
-				<div @key="@ActionPanelRenderKey" class="@ManageActionPanelClasses">
+				<div @key="@GetActionPanelRenderKey( selection )" class="@GetManageActionPanelClasses( selection )">
 					<div class="space-management">
-						@if ( IsProperty )
+						@if ( selection.IsProperty )
 						{
 							<div class="space-buttons improvement-buttons">
-								<GameButton Variant="@BuildImprovementButtonClasses" OnClick="@BuildImprovement">
+								<GameButton Variant="@GetBuildImprovementButtonClasses( selection )" OnClick="@BuildImprovement">
 									<ChildContent>
 										<span>+</span>
 										<img class="space-action-house-icon" src="ui/house-placeholder.svg" />
 									</ChildContent>
 								</GameButton>
-								<GameButton Variant="@SellImprovementButtonClasses" OnClick="@SellImprovement">
+								<GameButton Variant="@GetSellImprovementButtonClasses( selection )" OnClick="@SellImprovement">
 									<ChildContent>
 										<span>-</span>
 										<img class="space-action-house-icon" src="ui/house-placeholder.svg" />
@@ -73,7 +74,7 @@
 							</div>
 						}
 						<div class="space-buttons mortgage-buttons">
-							<GameButton Variant="@MortgageButtonClasses" OnClick="@Mortgage">@MortgageActionLabel</GameButton>
+							<GameButton Variant="@GetMortgageButtonClasses( selection )" OnClick="@Mortgage">@selection.MortgageActionLabel</GameButton>
 						</div>
 					</div>
 				</div>
@@ -86,6 +87,18 @@
 {
 	[Parameter] public GameController GameRef { get; set; }
 
+	private const float OutroDuration = 0.13f;
+	private RenderedSelectedSpace renderedSelection;
+
+	private RenderedSelectedSpace RenderedSelection
+	{
+		get
+		{
+			SyncRenderedSelection();
+			return renderedSelection;
+		}
+	}
+
 	private SpaceDef SelectedSpace =>
 		GameRef?.SelectedSpace;
 
@@ -93,6 +106,116 @@
 		IsSelectedCardSpace
 			? GameRef?.LocalSelectedDrawnCardText ?? ""
 			: "";
+
+	private void SyncRenderedSelection()
+	{
+		var liveSelection = CreateLiveSelection();
+		if ( liveSelection is not null )
+		{
+			renderedSelection = liveSelection;
+			return;
+		}
+
+		if ( renderedSelection is not null )
+			BeginClosing( renderedSelection );
+	}
+
+	private RenderedSelectedSpace CreateLiveSelection()
+	{
+		if ( SelectedSpace is null )
+			return null;
+
+		return new RenderedSelectedSpace
+		{
+			Space = SelectedSpace,
+			SpaceIndex = SelectedSpaceIndex,
+			OwnerIndex = GetSelectedOwnerIndex(),
+			ColorClass = HudUi.GetPropertyColorClass( SelectedSpace ),
+			DrawnCardText = SelectedDrawnCardText,
+			IsMortgaged = IsSelectedSpaceMortgaged,
+			ShowFreeParkingMoney = ShowFreeParkingMoney,
+			FreeParkingBank = GameRef?.FreeParkingBank ?? 0,
+			IsProperty = IsProperty,
+			CanClose = CanCloseSelectedSpace,
+			ShouldBlockClose = ShouldBlockSelectedSpaceClose,
+			CanBuy = CanBuySelectedSpace,
+			CanManage = CanManageSelectedSpace,
+			CanBuildImprovement = CanBuildSelectedImprovement,
+			CanSellImprovement = CanSellSelectedImprovement,
+			CanMortgage = CanMortgageSelectedSpace,
+			CanUnmortgage = CanUnmortgageSelectedSpace,
+			ImprovementAmountLabel = SelectedImprovementAmountLabel,
+			PriceLabel = SelectedSpacePriceLabel,
+			RentLabel = SelectedSpaceRentLabel,
+			HousePriceLabel = SelectedHousePriceLabel,
+			MortgageActionLabel = MortgageActionLabel,
+			CloseBlockedMessage = SelectedSpaceCloseBlockedMessage
+		};
+	}
+
+	private void BeginClosing( RenderedSelectedSpace selection )
+	{
+		if ( selection.IsClosing )
+			return;
+
+		selection.IsClosing = true;
+		_ = RemoveAfterOutro( selection.SpaceIndex );
+	}
+
+	private async Task RemoveAfterOutro( int spaceIndex )
+	{
+		await Task.DelaySeconds( OutroDuration );
+
+		if ( renderedSelection is not null && renderedSelection.IsClosing && renderedSelection.SpaceIndex == spaceIndex )
+			renderedSelection = null;
+
+		StateHasChanged();
+	}
+
+	private static string GetPanelClasses( RenderedSelectedSpace selection )
+	{
+		return selection.IsClosing ? "selected-space-card-panel closing" : "selected-space-card-panel";
+	}
+
+	private static string GetSpaceCardCloseButtonClasses( RenderedSelectedSpace selection )
+	{
+		return selection.ShouldBlockClose ? "space-card-close blocked-action-button" : "space-card-close";
+	}
+
+	private static string GetActionPanelRenderKey( RenderedSelectedSpace selection )
+	{
+		return $"{selection.SpaceIndex}:{selection.OwnerIndex}:{(selection.CanBuy ? "buy" : "manage")}";
+	}
+
+	private static string GetActionPanelStateClass( RenderedSelectedSpace selection )
+	{
+		return $"action-panel-state-{selection.SpaceIndex}-{selection.OwnerIndex}";
+	}
+
+	private static string GetBuyActionPanelClasses( RenderedSelectedSpace selection )
+	{
+		return $"selected-space-actions selected-space-buy-actions {GetActionPanelStateClass( selection )}";
+	}
+
+	private static string GetManageActionPanelClasses( RenderedSelectedSpace selection )
+	{
+		return $"selected-space-actions selected-space-manage-actions {GetActionPanelStateClass( selection )}";
+	}
+
+	private static string GetBuildImprovementButtonClasses( RenderedSelectedSpace selection )
+	{
+		return selection.CanBuildImprovement ? "improvement-action" : "improvement-action disabled";
+	}
+
+	private static string GetSellImprovementButtonClasses( RenderedSelectedSpace selection )
+	{
+		return selection.CanSellImprovement ? "improvement-action" : "improvement-action disabled";
+	}
+
+	private static string GetMortgageButtonClasses( RenderedSelectedSpace selection )
+	{
+		return selection.CanMortgage || selection.CanUnmortgage ? "mortgage-action" : "mortgage-action disabled";
+	}
 
 	private string SpaceCardCloseButtonClasses =>
 		ShouldBlockSelectedSpaceClose ? "space-card-close blocked-action-button" : "space-card-close";
@@ -301,5 +424,33 @@
 		hash.Add( HudUi.GetMortgagedPropertiesHash( GameRef ) );
 		hash.Add( SelectedImprovementCount );
 		return hash.ToHashCode();
+	}
+
+	private sealed class RenderedSelectedSpace
+	{
+		public SpaceDef Space { get; set; }
+		public int SpaceIndex { get; set; }
+		public int OwnerIndex { get; set; }
+		public string ColorClass { get; set; } = "";
+		public string DrawnCardText { get; set; } = "";
+		public bool IsMortgaged { get; set; }
+		public bool ShowFreeParkingMoney { get; set; }
+		public int FreeParkingBank { get; set; }
+		public bool IsProperty { get; set; }
+		public bool CanClose { get; set; }
+		public bool ShouldBlockClose { get; set; }
+		public bool CanBuy { get; set; }
+		public bool CanManage { get; set; }
+		public bool CanBuildImprovement { get; set; }
+		public bool CanSellImprovement { get; set; }
+		public bool CanMortgage { get; set; }
+		public bool CanUnmortgage { get; set; }
+		public string ImprovementAmountLabel { get; set; } = "";
+		public string PriceLabel { get; set; } = "";
+		public string RentLabel { get; set; } = "";
+		public string HousePriceLabel { get; set; } = "";
+		public string MortgageActionLabel { get; set; } = "";
+		public string CloseBlockedMessage { get; set; } = "";
+		public bool IsClosing { get; set; }
 	}
 }

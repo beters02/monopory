@@ -128,11 +128,13 @@
 }
 
 .selected-space-card-panel {
+	transition: none;
 	position: absolute;
 	right: 48px;
 	top: 50%;
 	z-index: 10;
-	transform: translateY(-50%) translateZ(0px);
+	transform: scale( 1 ) translateY( -50% ) translateZ( 0px ) rotateX( 0deg );
+	transition: all 0.03s ease-out;
 
 	display: flex;
 	flex-direction: column;
@@ -141,7 +143,16 @@
 	pointer-events: none;
 
 	&:intro {
+		transition: all 0.07s ease-out;
 		transform: scale( 0 );
+		opacity: 0;
+	}
+
+	&:outro,
+	&.closing {
+		transition: all 0.14s ease-out;
+		transform: scale( 0 );
+		opacity: 0;
 	}
 }
 

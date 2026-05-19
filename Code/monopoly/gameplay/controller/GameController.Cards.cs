@@ -104,7 +104,6 @@ public sealed partial class GameController : Component
 			case CardAction.Gamble:
 				PlayerGamble( player );
 				break;
-			break;
 		}
 	}
 
