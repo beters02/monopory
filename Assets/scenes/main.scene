@@ -6623,13 +6623,13 @@
                 "TurnTimeLimitSeconds": 180
               },
               "CurrentPlayerIndex": 0,
-              "CurrentTurnEndsAt": 189.10376,
+              "CurrentTurnEndsAt": 0,
               "CurrentTurnGetsExtraRoll": false,
               "FreeParkingBank": 0,
-              "GameStartedAt": 1.555097,
-              "LastDieA": 2,
-              "LastDieB": 3,
-              "MatchState": "InGame",
+              "GameStartedAt": 0,
+              "LastDieA": 0,
+              "LastDieB": 0,
+              "MatchState": "Lobby",
               "MortgagedProperties": {},
               "NextTradeId": 1,
               "OnComponentDestroy": null,
@@ -6644,9 +6644,9 @@
               "PendingForcedPaymentReceiverIndex": -1,
               "PendingForcedPaymentToBank": false,
               "PendingForcedPaymentToEachPlayer": false,
-              "PendingPurchaseSpaceIndex": 15,
+              "PendingPurchaseSpaceIndex": -1,
               "PendingTrades": {},
-              "Phase": "WaitingForBuyDecision",
+              "Phase": "WaitingToRoll",
               "Players": [
                 {
                   "_type": "component",
@@ -6687,7 +6687,7 @@
               ],
               "PropertyImprovements": {},
               "PropertyOwners": {},
-              "StartingPlayerCount": 1,
+              "StartingPlayerCount": 0,
               "TokenPrefab": {
                 "_type": "gameobject",
                 "prefab": "prefabs/token_02.prefab"
@@ -6889,10 +6889,10 @@
                   "OnComponentFixedUpdate": null,
                   "OnComponentStart": null,
                   "OnComponentUpdate": null,
-                  "OwnerId": 76561198067721070,
-                  "PlayerName": "boot",
+                  "OwnerId": 0,
+                  "PlayerName": "Player 1",
                   "SkipsNextTurn": false,
-                  "SpaceIndex": 15
+                  "SpaceIndex": 0
                 }
               ],
               "Children": []
@@ -6936,58 +6936,6 @@
                 }
               ],
               "Children": []
-            },
-            {
-              "__guid": "b14f7b2d-a50e-4eb5-b86b-f049b08aa7b6",
-              "__version": 2,
-              "__Prefab": "prefabs/token_02.prefab",
-              "__PrefabInstancePatch": {
-                "AddedObjects": [],
-                "RemovedObjects": [],
-                "PropertyOverrides": [
-                  {
-                    "Target": {
-                      "Type": "GameObject",
-                      "IdValue": "31d8e098-4a39-421a-9a2e-1c4a6b3ed131"
-                    },
-                    "Property": "Name",
-                    "Value": "Token_01"
-                  },
-                  {
-                    "Target": {
-                      "Type": "GameObject",
-                      "IdValue": "31d8e098-4a39-421a-9a2e-1c4a6b3ed131"
-                    },
-                    "Property": "Position",
-                    "Value": "-78.6921692,82.3002472,110.731148"
-                  },
-                  {
-                    "Target": {
-                      "Type": "GameObject",
-                      "IdValue": "31d8e098-4a39-421a-9a2e-1c4a6b3ed131"
-                    },
-                    "Property": "Rotation",
-                    "Value": "0,0,5.73471016E-06,1"
-                  },
-                  {
-                    "Target": {
-                      "Type": "GameObject",
-                      "IdValue": "31d8e098-4a39-421a-9a2e-1c4a6b3ed131"
-                    },
-                    "Property": "NetworkMode",
-                    "Value": 1
-                  }
-                ],
-                "MovedObjects": []
-              },
-              "__PrefabIdToInstanceId": {
-                "31d8e098-4a39-421a-9a2e-1c4a6b3ed131": "b14f7b2d-a50e-4eb5-b86b-f049b08aa7b6",
-                "a692d01e-2baf-4bba-94b5-34ea4d36028c": "e3343a88-2aeb-47e6-a9e1-6c7c84d2eded",
-                "6c48918a-4696-49c8-817b-12b77ee74192": "81f82a5c-31d5-4d35-ab3f-bc315ddf5195",
-                "ca793c54-6ecb-41a8-a7d8-dc7902293838": "0df6fc77-3878-480d-977d-6535defa774c",
-                "9ab6d4dc-60b3-401d-9d4d-6eec070d5ea7": "d80ce961-4aa0-49a5-b013-fcd63970677b",
-                "32251d9f-da82-4be8-aa93-584e41fb2b91": "4847ead2-2cdb-4734-acd7-09df5e33c9df"
-              }
             }
           ]
         }
@@ -7497,17 +7445,17 @@
       "CustomBounds": false
     },
     "GameObjectSystems": {
+      "Sandbox.Clutter.ClutterGridSystem": {
+        "Storage": {
+          "$blob": "7664decd-7b1f-4214-a5a2-850285e10057"
+        }
+      },
       "Sandbox.MovieMaker.MovieRecorderSystem": {
         "DisableClientRecording": false
       },
       "Sandbox.SelectionSetsSystem": {
         "Data": {
           "SelectionSets": []
-        }
-      },
-      "Sandbox.Clutter.ClutterGridSystem": {
-        "Storage": {
-          "$blob": "7664decd-7b1f-4214-a5a2-850285e10057"
         }
       }
     }
