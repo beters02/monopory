@@ -5,6 +5,7 @@
 @inherits PanelComponent
 
 <root class="monopoly-hud">
+	<ButtonPopLayer></ButtonPopLayer>
 	@if ( GameRef is not null )
 	{
 		<PopupStack Popups="@Popups" OnDismiss="@DismissPopup"></PopupStack>

@@ -1,0 +1,55 @@
+@import "../GameTheme.scss";
+
+$button-pop-particle-width: 12px;
+$button-pop-particle-height: 2px;
+
+.button-pop-layer {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	z-index: 120;
+
+	pointer-events: none;
+}
+
+.button-pop {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+
+	pointer-events: none;
+}
+
+.button-pop-particle-anchor {
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 1px;
+	height: 1px;
+	min-width: 1px;
+	min-height: 1px;
+
+	pointer-events: none;
+
+	display: block;
+	flex-shrink: 0;
+}
+
+.button-pop-particle-line {
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: $button-pop-particle-width;
+	height: $button-pop-particle-height;
+	min-width: $button-pop-particle-width;
+	min-height: $button-pop-particle-height;
+
+	background-color: $monopoly-gold-soft;
+	border-radius: 1px;
+	box-shadow: 0 0 0 2px rgba(5, 5, 5, 0.92), 0 0 5px rgba(255, 217, 106, 0.46);
+
+	display: block;
+	flex-shrink: 0;
+}

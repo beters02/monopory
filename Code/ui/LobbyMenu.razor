@@ -6,6 +6,7 @@
 @inherits PanelComponent
 
 <root class="monopoly-flow-ui">
+	<ButtonPopLayer></ButtonPopLayer>
 	<PopupStack Popups="@LocalPopupList" OnDismiss="@DismissLocalPopup"></PopupStack>
 	<div class="flow-screen lobby-screen">
 		<OptionsMenu IsOpen="@IsOptionsMenuOpen" OnClose="@CloseOptionsMenu"></OptionsMenu>
