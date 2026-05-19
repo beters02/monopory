@@ -7,80 +7,85 @@
 	@if ( ShouldShowBoard )
 	{
 		<div class="board-center" style="@CenterStyle"></div>
+		<div class="board-track-bg side-bottom" style="@GetTrackBackgroundStyle( "side-bottom" )"></div>
+		<div class="board-track-bg side-left" style="@GetTrackBackgroundStyle( "side-left" )"></div>
+		<div class="board-track-bg side-top" style="@GetTrackBackgroundStyle( "side-top" )"></div>
+		<div class="board-track-bg side-right" style="@GetTrackBackgroundStyle( "side-right" )"></div>
 
 		@foreach ( var space in SpaceDefs )
 		{
 			<div class="@GetSpaceClasses( space )" style="@GetSpaceStyle( space.Index )">
-				@if ( HasColorBar( space ) )
-				{
-					<div class="@GetColorBarClasses( space )" style="@GetColorBarStyle( space )"></div>
-				}
+				<div class="space-inner" style="@SpaceInnerStyle">
 
-				<div class="space-content" style="@ContentStyle">
-					@if ( IsCorner( space ) )
+					@if ( HasColorBar( space ) )
 					{
-						<div class="corner-icon">@GetCornerIcon( space )</div>
-						<div class="corner-title">@GetCornerTitle( space )</div>
-						@if ( space.Type == SpaceType.Go )
-						{
-							<div class="go-arrow" style="@GoArrowStyle">&lt;-</div>
-						}
+						<div class="@GetColorBarClasses( space )" style="@GetColorBarStyle( space )"></div>
 					}
-					else
-					{
-						@if ( ShouldOverlayTitleOnIcon( space ) )
+
+					<div class="space-content" style="@ContentStyle">
+						@if ( IsCorner( space ) )
 						{
-							<div class="space-icon-stack">
-								<div class="space-title space-title-overlay" style="@SpaceTitleStyle">
+							<div class="corner-icon">@GetCornerIcon( space )</div>
+							<div class="corner-title">@GetCornerTitle( space )</div>
+							@if ( space.Type == SpaceType.Go )
+							{
+								<div class="go-arrow" style="@GoArrowStyle">&lt;-</div>
+							}
+						}
+						else
+						{
+							@if ( ShouldOverlayTitleOnIcon( space ) )
+							{
+								<div class="space-icon-stack">
+									<div class="space-title space-title-overlay" style="@SpaceTitleStyle">
+										@foreach ( var line in GetSpaceNameLines( space ) )
+										{
+											<div>@line</div>
+										}
+									</div>
+
+									@if ( space.Type == SpaceType.CommunityChest )
+									{
+										@RenderChestArt()
+									}
+									else if ( GetIconType(space) == IconType.Text )
+									{
+										<div class="space-icon" style="@GetSpaceIconStyle( space )">@GetSpaceIconText( space )</div>
+									}
+									else
+									{
+										<img class="space-icon space-icon-image" src="@GetSpaceIconImagePath( space )" />
+									}
+								</div>
+							}
+							else
+							{
+								@if ( HasIcon( space ) )
+								{
+									@if ( space.Type == SpaceType.CommunityChest )
+									{
+										@RenderChestArt()
+									}
+									else if ( GetIconType(space) == IconType.Text )
+									{
+										<div class="space-icon" style="@GetSpaceIconStyle( space )">@GetSpaceIconText( space )</div>
+									}
+									else
+									{
+										<img class="space-icon space-icon-image" src="@GetSpaceIconImagePath( space )" />
+									}
+								}
+
+								<div class="space-title" style="@SpaceTitleStyle">
 									@foreach ( var line in GetSpaceNameLines( space ) )
 									{
 										<div>@line</div>
 									}
 								</div>
-
-								@if ( space.Type == SpaceType.CommunityChest )
-								{
-									@RenderChestArt()
-								}
-								else if ( GetIconType(space) == IconType.Text )
-								{
-									<div class="space-icon" style="@GetSpaceIconStyle( space )">@GetSpaceIconText( space )</div>
-								}
-								else
-								{
-									<img class="space-icon space-icon-image" src="@GetSpaceIconImagePath( space )" />
-								}
-							</div>
-						}
-						else
-						{
-							@if ( HasIcon( space ) )
-							{
-								@if ( space.Type == SpaceType.CommunityChest )
-								{
-									@RenderChestArt()
-								}
-								else if ( GetIconType(space) == IconType.Text )
-								{
-									<div class="space-icon" style="@GetSpaceIconStyle( space )">@GetSpaceIconText( space )</div>
-								}
-								else
-								{
-									<img class="space-icon space-icon-image" src="@GetSpaceIconImagePath( space )" />
-								}
 							}
-
-							<div class="space-title" style="@SpaceTitleStyle">
-								@foreach ( var line in GetSpaceNameLines( space ) )
-								{
-									<div>@line</div>
-								}
-							</div>
 						}
-					}
+					</div>
 				</div>
-
-				<div class="space-border" style="@SpaceBorderStyle"></div>
 			</div>
 		}
 	}
@@ -158,11 +163,28 @@
 	private string CenterStyle =>
 		$"left: {TrackDepth}%; top: {TrackDepth}%; width: {100f - (TrackDepth * 2f)}%; height: {100f - (TrackDepth * 2f)}%; background: {CenterColor}; border: {CenterBorderThicknessPx}px solid {BorderColor};";
 
+	private string GetTrackBackgroundStyle( string side )
+	{
+		var bleed = Math.Max( 0f, SpaceBorderThicknessPx ) * 0.05f;
+		var style = side switch
+		{
+			"side-bottom" => RectStyle( -bleed, 100f - TrackDepth - bleed, 100f + bleed * 2f, TrackDepth + bleed * 2f ),
+			"side-left" => RectStyle( -bleed, -bleed, TrackDepth + bleed * 2f, 100f + bleed * 2f ),
+			"side-top" => RectStyle( -bleed, -bleed, 100f + bleed * 2f, TrackDepth + bleed * 2f ),
+			"side-right" => RectStyle( 100f - TrackDepth - bleed, -bleed, TrackDepth + bleed * 2f, 100f + bleed * 2f ),
+			_ => ""
+		};
+
+		return $"{style} background: {BorderColor};";
+	}
+
+	private string SpaceInnerStyle =>
+		$"left: {SpaceInnerInsetPx}px; top: {SpaceInnerInsetPx}px; right: {SpaceInnerInsetPx}px; bottom: {SpaceInnerInsetPx}px; background-color: {SpaceColor};";
+
+	private float SpaceInnerInsetPx => Math.Max( 0f, SpaceBorderThicknessPx * 0.5f );
+
 	private string ContentStyle =>
 		$"padding: {ContentPaddingPx}px;";
-
-	private string SpaceBorderStyle =>
-		$"border: {SpaceBorderThicknessPx}px solid {BorderColor};";
 
 	private string SpaceTitleStyle =>
 		$"font-size: {SpaceTextFontSizePx}px; line-height: {SpaceTextLineHeightPx}px; color: {TextColor};";
@@ -207,11 +229,16 @@
 	{
 		var thickness = Math.Clamp( ColorBarThicknessPercent, 2f, 80f );
 		var color = GetLabelColor( space.ColorGroup );
+		var border = $"{SpaceBorderThicknessPx}px solid {BorderColor}";
 
 		if ( GetSideClass( space.Index ) is "side-left" or "side-right" )
-			return $"width: {thickness}%; height: 100%; background-color: {color}; border-color: {BorderColor};";
+		{
+			var sideBorder = GetSideClass( space.Index ) == "side-left" ? "border-left" : "border-right";
+			return $"width: {thickness}%; height: 100%; background-color: {color}; border-color: {BorderColor}; {sideBorder}: {border};";
+		}
 
-		return $"height: {thickness}%; background-color: {color}; border-color: {BorderColor};";
+		var edgeBorder = GetSideClass( space.Index ) == "side-top" ? "border-top" : "border-bottom";
+		return $"height: {thickness}%; background-color: {color}; border-color: {BorderColor}; {edgeBorder}: {border};";
 	}
 
 	private string GetLabelColor( ColorGroup colorGroup )
@@ -263,7 +290,12 @@
 	private string GetSpaceStyle( int spaceIndex )
 	{
 		Rect rect = BoardMath.GetSpaceRect( spaceIndex, this );
-		return $"left: {rect.Left}%; top: {rect.Top}%; width: {rect.Width}%; height: {rect.Height}%; background-color: {SpaceColor};";
+		return $"left: {rect.Left}%; top: {rect.Top}%; width: {rect.Width}%; height: {rect.Height}%;";
+	}
+
+	private static string RectStyle( float left, float top, float width, float height )
+	{
+		return $"left: {left}%; top: {top}%; width: {width}%; height: {height}%;";
 	}
 
 	public float GetSideWeightTotal( int firstIndex, int lastIndex )
