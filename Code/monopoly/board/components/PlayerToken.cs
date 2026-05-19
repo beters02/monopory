@@ -36,6 +36,9 @@ public sealed class PlayerToken : Component
 	private Vector3 grabOffset;
 	private Vector3 lastGrabPosition;
 	private Vector3 throwVelocity;
+	private bool isReplicatedPhysics;
+	private string activeReplicatedPhysicsKey;
+	private string completedReplicatedPhysicsKey;
 
 	protected override void OnStart()
 	{
@@ -83,6 +86,8 @@ public sealed class PlayerToken : Component
 	{
 		if ( !EnablePhysicsTestGrab )
 			return;
+
+		UpdateReplicatedPhysicsState();
 
 		if ( PlayerState?.IsOwner == true && Input.Pressed( "Attack2" ) )
 		{
@@ -136,6 +141,9 @@ public sealed class PlayerToken : Component
 	{
 		isGrabbed = false;
 		isThrowing = throwVelocity.Length >= ThrowStopSpeed;
+
+		if ( isThrowing )
+			PublishLocalThrow();
 	}
 
 	private Vector3 ResolveTokenCollisions( Vector3 nextPosition, Vector3 velocity, bool isDragged )
@@ -189,16 +197,75 @@ public sealed class PlayerToken : Component
 		isGrabbed = false;
 		isThrowing = true;
 		throwVelocity = impulse;
+
+		if ( Networking.IsHost )
+			PublishLocalThrow();
 	}
 
 	private void StopPhysicsTestMotion()
 	{
+		var stoppedReplicatedKey = isReplicatedPhysics ? activeReplicatedPhysicsKey : null;
+
 		isGrabbed = false;
 		isThrowing = false;
+		isReplicatedPhysics = false;
 		throwVelocity = Vector3.Zero;
+		activeReplicatedPhysicsKey = null;
+
+		if ( !string.IsNullOrWhiteSpace( stoppedReplicatedKey ) )
+			completedReplicatedPhysicsKey = stoppedReplicatedKey;
 
 		if ( ReturnToSpaceAfterPhysics && Board is not null && PlayerState is not null )
 			GameObject.WorldPosition = GameObject.WorldPosition.WithZ( GetSpaceTargetPosition().z );
+
+		var playerIndex = GameController.Instance?.GetPlayerIndex( PlayerState ) ?? -1;
+		if ( Networking.IsHost && playerIndex >= 0 )
+			GameController.Instance?.ClearTokenPhysicsState( playerIndex );
+	}
+
+	private void UpdateReplicatedPhysicsState()
+	{
+		if ( isGrabbed || GameController.Instance is null || PlayerState is null )
+			return;
+
+		var playerIndex = GameController.Instance.GetPlayerIndex( PlayerState );
+		if ( playerIndex < 0 )
+			return;
+
+		if ( !GameController.Instance.TryGetTokenPhysicsState( playerIndex, out var state, out var key ) )
+		{
+			if ( isReplicatedPhysics )
+				StopPhysicsTestMotion();
+
+			return;
+		}
+
+		if ( key == activeReplicatedPhysicsKey )
+			return;
+
+		if ( key == completedReplicatedPhysicsKey )
+			return;
+
+		activeReplicatedPhysicsKey = key;
+		isReplicatedPhysics = true;
+		isThrowing = true;
+		throwVelocity = state.Velocity;
+		GameObject.WorldPosition = state.Position;
+	}
+
+	private void PublishLocalThrow()
+	{
+		if ( GameController.Instance is null || PlayerState is null )
+			return;
+
+		var playerIndex = GameController.Instance.GetPlayerIndex( PlayerState );
+		if ( playerIndex < 0 )
+			return;
+
+		if ( Networking.IsHost )
+			GameController.Instance.PublishTokenPhysicsState( playerIndex, GameObject.WorldPosition, throwVelocity );
+		else
+			GameController.Instance.RequestTokenThrow( playerIndex, GameObject.WorldPosition, throwVelocity );
 	}
 
 	private bool IsCursorOverToken()

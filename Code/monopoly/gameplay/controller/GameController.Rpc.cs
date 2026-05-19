@@ -124,4 +124,16 @@ public sealed partial class GameController : Component
 
 		PlaceAuctionBid( bidderIndex, bidAmount );
 	}
+
+	[Rpc.Host]
+	public void RequestTokenThrow( int playerIndex, Vector3 position, Vector3 velocity )
+	{
+		if ( !CanAcceptGameplayInput() )
+			return;
+
+		if ( !CanControlTokenPhysics( Rpc.Caller, playerIndex ) )
+			return;
+
+		PublishTokenPhysicsState( playerIndex, position, velocity );
+	}
 }

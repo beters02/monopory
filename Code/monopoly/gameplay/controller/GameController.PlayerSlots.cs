@@ -236,6 +236,7 @@ public sealed partial class GameController : Component
 		MortgagedProperties.Clear();
 		PendingTrades.Clear();
 		TradeViewers.Clear();
+		TokenPhysicsStates.Clear();
 
 		foreach ( var player in Players )
 		{
