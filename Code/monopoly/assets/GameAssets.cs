@@ -41,15 +41,15 @@ public static class GameAssets
 		public static readonly GameSound ClosingClick = new("sounds/effects/closing-click.sound" );
 		public static readonly GameSound ClickAndOpen = new ( "sounds/effects/click-and-open.sound" );
 		public static readonly GameSound ClickAndClose = new ( "sounds/effects/click-and-close.sound" );
-		public static readonly GameSound CardFlip = new ( "sounds/effects/cardfx-deal2.wav" );
+		public static readonly GameSound CardFlip = new ( "sounds/effects/card-deal.sound" );
 		public static readonly GameSound Unassigned = new( "" );
 		public static readonly GameSound Warning = new( "sounds/effects/uipack-retro12.mp3" );
-		public static readonly GameSound Error = new( "sounds/effects/uipack-retro6.mp3" );
+		public static readonly GameSound Error = new( "sounds/effects/ui-error.sound" );
 		
 		public static class Popup
 		{
 			public static readonly GameSound Info = Unassigned;
-			public static readonly GameSound Success = new( "sounds/effects/uipack-african4" );
+			public static readonly GameSound Success = new( "sounds/effects/ui-success.sound" );
 			public static readonly GameSound Warning = Sounds.Warning;
 			public static readonly GameSound Danger = Error;
 

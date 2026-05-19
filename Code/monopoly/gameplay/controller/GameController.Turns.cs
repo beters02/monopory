@@ -157,17 +157,26 @@ public sealed partial class GameController : Component
 
 	private async Task MovePlayerSteps(PlayerState player, int steps)
 	{
-		for ( int i = 0; i < steps; i++ )
+		SetPlayerTokenWalking( player, true );
+
+		try
 		{
-			player.SpaceIndex = NormalizeSpaceIndex(player.SpaceIndex + 1);
+			for ( int i = 0; i < steps; i++ )
+			{
+				player.SpaceIndex = NormalizeSpaceIndex(player.SpaceIndex + 1);
 
-			await Task.DelaySeconds( 0.4f );
+				await Task.DelaySeconds( 0.4f );
 
-			if ( player.SpaceIndex == 0 )
-				player.Money += 200;
+				if ( player.SpaceIndex == 0 )
+					player.Money += 200;
+			}
+
+			ResolveLanding( player );
 		}
-
-		ResolveLanding( player );
+		finally
+		{
+			SetPlayerTokenWalking( player, false );
+		}
 	}
 
 	private void SendPlayerToJail( PlayerState player )

@@ -1,0 +1,28 @@
+﻿{
+    "SourceFbxPath":  "",
+    "SourceProfilePath":  "",
+    "MappingProfilePath":  "tools/citizen_retarget/profiles/ual2_to_citizen.crtmap",
+    "TargetVmdlPath":  "models/citizen_custom/citizen_retarget.vmdl",
+    "OutputAnimationFolder":  "models/citizen_custom/animations/citizen_retarget",
+    "SequencePrefix":  "citizen_retarget_",
+    "TargetPosePresetId":  "citizen_t_pose_calibrated_v1",
+    "RootMotionMode":  "Keep",
+    "ImportHands":  true,
+    "GeneratePreviewVideo":  false,
+    "GenerateComparisonVideo":  false,
+    "AutoOpenModelDoc":  false,
+    "SelectedClipNames":  [
+
+                          ],
+    "LastImportedClip":  "",
+    "LastSuccessfulRunId":  "",
+    "LastSuccessfulSequenceName":  "",
+    "LastManifestPath":  "",
+    "RecentRuns":  [
+
+                   ],
+    "__references":  [
+
+                     ],
+    "__version":  0
+}
