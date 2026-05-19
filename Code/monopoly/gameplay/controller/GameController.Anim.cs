@@ -1,7 +1,6 @@
 public sealed partial class GameController : Component
 {
     
-    [Rpc.Broadcast]
     public void SetPlayerTokenWalking( PlayerToken token, bool walking )
     {
         token?.SetWalkingAnim( walking );
@@ -9,11 +8,19 @@ public sealed partial class GameController : Component
 
     private void SetPlayerTokenWalking( PlayerState player, bool walking )
     {
-        var token = GetPlayerToken( player );
-        if ( token is null )
+        var playerIndex = GetPlayerIndex( player );
+        if ( playerIndex < 0 )
             return;
 
-        SetPlayerTokenWalking( token, walking );
+        SetPlayerTokenWalkingForPlayer( playerIndex, walking );
+    }
+
+    [Rpc.Broadcast]
+    private void SetPlayerTokenWalkingForPlayer( int playerIndex, bool walking )
+    {
+        var player = Players.ElementAtOrDefault( playerIndex );
+        var token = GetPlayerToken( player );
+        token?.SetWalkingAnim( walking );
     }
 
     private PlayerToken GetPlayerToken( PlayerState player )

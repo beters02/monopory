@@ -6,6 +6,21 @@ using Sandbox;
 public sealed partial class GameController : Component
 {
 
+	private void UpdateVisualTokens()
+	{
+		if ( MatchState != MatchLifecycleState.InGame )
+		{
+			ClearSpawnedTokens();
+			return;
+		}
+
+		var activePlayers = GetLobbyPlayers();
+		if ( HasVisualTokensForPlayers( activePlayers ) )
+			return;
+
+		SpawnTokensForPlayers( activePlayers );
+	}
+
 	private void SpawnTokensForPlayers( IReadOnlyList<PlayerState> activePlayers )
 	{
 		ClearSpawnedTokens();
@@ -37,9 +52,37 @@ public sealed partial class GameController : Component
 			if ( Board is not null )
 				tokenObject.WorldPosition = Board.GetSpacePosition( player.SpaceIndex ) + Vector3.Up * token.HeightOffset;
 
-			tokenObject.NetworkSpawn();
 			spawnedTokenObjects.Add( tokenObject );
 		}
+	}
+
+	private bool HasVisualTokensForPlayers( IReadOnlyList<PlayerState> activePlayers )
+	{
+		for ( var i = spawnedTokenObjects.Count - 1; i >= 0; i-- )
+		{
+			if ( spawnedTokenObjects[i] is null || !spawnedTokenObjects[i].IsValid() )
+				spawnedTokenObjects.RemoveAt( i );
+		}
+
+		if ( activePlayers is null || spawnedTokenObjects.Count != activePlayers.Count )
+			return false;
+
+		foreach ( var player in activePlayers )
+		{
+			if ( player is null || !player.IsAssigned )
+				return false;
+
+			var hasToken = spawnedTokenObjects.Any( tokenObject =>
+			{
+				var token = tokenObject?.Components.Get<PlayerToken>();
+				return token is not null && token.PlayerState == player;
+			} );
+
+			if ( !hasToken )
+				return false;
+		}
+
+		return true;
 	}
 
 	private void ClearExistingTokenObjects()

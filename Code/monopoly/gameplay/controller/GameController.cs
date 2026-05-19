@@ -111,6 +111,7 @@ public sealed partial class GameController : Component
 	{
 		RefreshReplicatedPlayerSlots();
 		UpdatePopups();
+		UpdateVisualTokens();
 
 		if ( !Networking.IsHost )
 			return;
