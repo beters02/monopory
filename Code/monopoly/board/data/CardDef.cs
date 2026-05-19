@@ -4,6 +4,11 @@ public enum CardDeck
 	CommunityChest
 }
 
+public enum GambleType
+{
+	CoinFlip
+}
+
 public enum CardAction
 {
 	CollectFromBank,
@@ -13,7 +18,8 @@ public enum CardAction
 	GoToJail,
 	CollectFromEachPlayer,
 	PayEachPlayer,
-	PayPerImprovement
+	PayPerImprovement,
+	Gamble
 }
 
 public sealed class CardDef

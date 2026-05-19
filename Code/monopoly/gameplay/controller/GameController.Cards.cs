@@ -2,9 +2,20 @@ using System.Threading.Tasks;
 using System;
 using System.Text.RegularExpressions;
 using Sandbox;
+using Sandbox.UI;
 
 public sealed partial class GameController : Component
 {
+
+	public class GambleResult
+	{
+		public bool CouldAfford;
+		public bool Won;
+		public String Message;
+		public int AmountSpent;
+		public int AmountWon;
+		public PopupKind PopupKind;
+	}
 
 	private void ResolveCardLanding( PlayerState player, CardDeck deck )
 	{
@@ -89,6 +100,11 @@ public sealed partial class GameController : Component
 			case CardAction.PayPerImprovement:
 				PayPerImprovementForCard( player, card.HouseAmount, card.HotelAmount );
 				break;
+
+			case CardAction.Gamble:
+				PlayerGamble( player );
+				break;
+			break;
 		}
 	}
 
@@ -197,5 +213,65 @@ public sealed partial class GameController : Component
 			payer.Money -= amount;
 			player.Money += amount;
 		}
+	}
+
+	private void PlayerGamble( PlayerState player )
+	{
+
+		// get random gamble type
+		GambleResult result = PlayerGambleCoinFlip( player );
+
+		TryChangeMoneyForPlayer( player, result.AmountSpent * -1, out string _ );
+		TryChangeMoneyForPlayer( player, result.AmountWon * 2, out string _ );
+
+		SendPopupToPlayer(
+				player,
+				"Gamble Card",
+				result.Message,
+				result.PopupKind
+			);
+	}
+	
+	private GambleResult PlayerGambleCoinFlip( PlayerState player )
+	{
+
+		GambleResult result = new();
+
+		// bet amount
+		int betAmnt = Game.Random.Int(50, 100);
+
+		if (player.Money < betAmnt)
+		{
+			result.Message = "You were forced to make a gambling bet, but you could not afford it.";
+			result.PopupKind = PopupKind.Danger;
+			result.AmountSpent = 0;
+			result.AmountWon = 0;
+			result.CouldAfford = false;
+			result.Won = false;
+			return result;
+		}
+
+		// did win
+		int randomInt = Game.Random.Int(0, 1);
+		Log.Info(randomInt);
+
+		if ( randomInt == 0 )
+		{
+			result.Message = $"You lost the ${betAmnt} bet!";
+			result.PopupKind = PopupKind.Danger;
+			result.AmountSpent = betAmnt;
+			result.AmountWon = 0;
+			result.CouldAfford = true;
+			result.Won = false;
+			return result;
+		}
+
+		result.Message = $"You won the ${betAmnt} bet!";
+		result.PopupKind = PopupKind.Success;
+		result.AmountSpent = betAmnt;
+		result.AmountWon = betAmnt;
+		result.CouldAfford = true;
+		result.Won = true;
+		return result;
 	}
 }

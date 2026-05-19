@@ -18,7 +18,8 @@ public static class CardData
 			new() { Key = "chance_repairs", Deck = CardDeck.Chance, Title = "Property repairs", Description = "Pay $25 per house and $100 per hotel.", Action = CardAction.PayPerImprovement, HouseAmount = 25, HotelAmount = 100 },
 			new() { Key = "chance_poor_tax", Deck = CardDeck.Chance, Title = "Speeding fine", Description = "Pay $15.", Action = CardAction.PayBank, Amount = 15 },
 			new() { Key = "chance_chairman", Deck = CardDeck.Chance, Title = "Elected chairman", Description = "Pay each player $50.", Action = CardAction.PayEachPlayer, Amount = 50 },
-			new() { Key = "chance_building_loan", Deck = CardDeck.Chance, Title = "Building loan matures", Description = "Collect $150.", Action = CardAction.CollectFromBank, Amount = 150 }
+			new() { Key = "chance_building_loan", Deck = CardDeck.Chance, Title = "Building loan matures", Description = "Collect $150.", Action = CardAction.CollectFromBank, Amount = 150 },
+			new() { Key = "chance_gamble_coin_flip", Deck = CardDeck.Chance, Title = "Gamble Card", Description = "You're forced to play in a coinflip for a random amount.", Action = CardAction.Gamble, Amount = 150 }
 		};
 	}
 
