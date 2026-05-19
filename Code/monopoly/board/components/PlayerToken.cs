@@ -12,11 +12,14 @@ public sealed class PlayerToken : Component
 	[Property] public float MoveSpeed { get; set; } = 15f;
 	[Property] public float RotationSpeed {get; set;} = 10f;
 	[Property] public string WalkingParameterName { get; set; } = "Walking";
+	[Property] public string XDirectionParameterName { get; set; } = "XDirection";
 
 	private SkinnedModelRenderer renderer;
 	private bool walkingAnim;
+	private bool turningAnim;
 	private bool hasAppliedWalkingAnim;
 	private bool requestedWalking;
+	private Vector3 lastXDirection = new(0, 1, 0);
 
 	protected override void OnStart()
 	{
@@ -49,6 +52,7 @@ public sealed class PlayerToken : Component
 		}
 
 		ApplyWalkingAnim( requestedWalking || isMoving );
+		//ApplyDirection(targetRot.Forward);
 	}
 
 	private static Rotation GetRotation( int index )
@@ -84,6 +88,28 @@ public sealed class PlayerToken : Component
 
 		renderer.Set( WalkingParameterName, walking );
 		hasAppliedWalkingAnim = true;
+	}
+
+	private void ApplyDirection( Vector3 dir )
+	{
+		if (renderer is null)
+			return;
+
+		if (turningAnim)
+		{
+			turningAnim = false;
+			renderer.Set( XDirectionParameterName, false );
+			return;
+		}
+
+		Log.Info(dir);
+
+		if ( dir != lastXDirection )
+		{
+			lastXDirection = dir;
+			turningAnim = true;
+			renderer.Set( XDirectionParameterName, true );
+		}
 	}
 
 }

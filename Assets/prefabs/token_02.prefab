@@ -20,7 +20,7 @@
         "__guid": "a692d01e-2baf-4bba-94b5-34ea4d36028c",
         "__enabled": true,
         "Flags": 0,
-        "HeightOffset": 4.809978,
+        "HeightOffset": -0.58,
         "MoveSpeed": 15,
         "OnComponentDestroy": null,
         "OnComponentDisabled": null,
