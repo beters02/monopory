@@ -172,7 +172,11 @@
 						import_filter = 
 						{
 							exclude_by_default = false
-							exception_list = [  ]
+							exception_list = 
+							[
+								"Object_7_001",
+								"Object_2_001",
+							]
 						}
 					},
 				]

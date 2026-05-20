@@ -26,8 +26,19 @@
 			<HudPanelBody>Current Player: @CurrentPlayerName</HudPanelBody>
 			<HudPanelBody>Last Roll: @GameRef.LastDieA + @GameRef.LastDieB</HudPanelBody>
 			<HudPanelBody>Phase: @GameRef.Phase</HudPanelBody>
+			@if ( IsCurrentPlayerInJail )
+			{
+				<HudPanelBody>Jail Turns: @CurrentPlayer.JailTurnsRemaining</HudPanelBody>
+			}
 
-			@if ( GameRef.MatchState == MatchLifecycleState.InGame && GameRef.Phase == GamePhase.WaitingToRoll && CurrentPlayer == LocalPlayer )
+			@if ( CanActOnCurrentTurn && IsCurrentPlayerInJail )
+			{
+				<div class="jail-action-buttons">
+					<GameButton OnClick="@PayToLeaveJail">Pay $50</GameButton>
+					<GameButton OnClick="@RollForJailRelease">Try Doubles</GameButton>
+				</div>
+			}
+			else if ( CanActOnCurrentTurn )
 			{
 				<GameButton OnClick="@RollDice">Roll Dice</GameButton>
 			}
@@ -63,6 +74,14 @@
 	private string EndTurnButtonClasses =>
 		CanEndTurn ? "" : "blocked-action-button";
 
+	private bool CanActOnCurrentTurn =>
+		GameRef?.MatchState == MatchLifecycleState.InGame &&
+		GameRef.Phase == GamePhase.WaitingToRoll &&
+		CurrentPlayer == LocalPlayer;
+
+	private bool IsCurrentPlayerInJail =>
+		CurrentPlayer?.IsInJail == true;
+
 	private BoardCameraMode CurrentCameraMode =>
 		GameCamera.Instance?.Mode ?? BoardCameraMode.Board;
 
@@ -86,6 +105,16 @@
 	{
 		Log.Info( "Roll dice button clicked." );
 		GameRef?.RequestRollDice();
+	}
+
+	private void PayToLeaveJail()
+	{
+		GameRef?.RequestPayToLeaveJail();
+	}
+
+	private void RollForJailRelease()
+	{
+		GameRef?.RequestRollForJailRelease();
 	}
 
 	private void EndTurn()
@@ -122,6 +151,8 @@
 		hash.Add( LocalPlayerMoney );
 		hash.Add( CurrentTurnRemainingSeconds );
 		hash.Add( GameRef?.HasPendingForcedPayment ?? false );
+		hash.Add( CurrentPlayer?.IsInJail ?? false );
+		hash.Add( CurrentPlayer?.JailTurnsRemaining ?? 0 );
 		hash.Add( CurrentCameraMode );
 		return hash.ToHashCode();
 	}

@@ -6617,6 +6617,7 @@
                 "LandedUnownedMode": "SkipOrAuction",
                 "StartingMoney": 1500,
                 "DoublesGoesAgain": false,
+                "ForceJailFineAfterFailedDoubles": true,
                 "VacationCash": false,
                 "DontCollectRentWhileInPrison": false,
                 "EvenBuild": true,
@@ -6723,6 +6724,7 @@
                   "IsBankrupt": false,
                   "IsInJail": false,
                   "IsReady": false,
+                  "JailTurnsRemaining": 0,
                   "Money": 1500,
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
@@ -6763,6 +6765,7 @@
                   "IsBankrupt": false,
                   "IsInJail": false,
                   "IsReady": false,
+                  "JailTurnsRemaining": 0,
                   "Money": 1500,
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
@@ -6803,6 +6806,7 @@
                   "IsBankrupt": false,
                   "IsInJail": false,
                   "IsReady": false,
+                  "JailTurnsRemaining": 0,
                   "Money": 1500,
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
@@ -6843,6 +6847,7 @@
                   "IsBankrupt": false,
                   "IsInJail": false,
                   "IsReady": false,
+                  "JailTurnsRemaining": 0,
                   "Money": 1500,
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
@@ -6883,6 +6888,7 @@
                   "IsBankrupt": false,
                   "IsInJail": false,
                   "IsReady": false,
+                  "JailTurnsRemaining": 0,
                   "Money": 1500,
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
@@ -6923,6 +6929,7 @@
                   "IsBankrupt": false,
                   "IsInJail": false,
                   "IsReady": false,
+                  "JailTurnsRemaining": 0,
                   "Money": 1500,
                   "OnComponentDestroy": null,
                   "OnComponentDisabled": null,
@@ -7360,6 +7367,32 @@
         }
       ],
       "Children": []
+    },
+    {
+      "__guid": "24a2feda-96f3-4327-8443-adcbe767b9a5",
+      "__version": 2,
+      "__Prefab": "prefabs/dice.prefab",
+      "__PrefabInstancePatch": {
+        "AddedObjects": [],
+        "RemovedObjects": [],
+        "PropertyOverrides": [
+          {
+            "Target": {
+              "Type": "GameObject",
+              "IdValue": "9d5bd72c-8fab-4abb-8fd8-d65029bec6f4"
+            },
+            "Property": "Position",
+            "Value": "-141.035904,-231.682022,130.617691"
+          }
+        ],
+        "MovedObjects": []
+      },
+      "__PrefabIdToInstanceId": {
+        "9d5bd72c-8fab-4abb-8fd8-d65029bec6f4": "24a2feda-96f3-4327-8443-adcbe767b9a5",
+        "6083f7fd-208e-482d-9180-c38325fec9f6": "c10348ee-154b-4bd3-b571-e301e63d00c3",
+        "20f2c126-179c-44b4-a8e0-8b654205c8df": "5baa8979-9c91-44eb-bd13-d6248edc6f4f",
+        "d139d36e-8754-4809-b098-445f41457c14": "1eaf55f0-d448-404d-8ef9-9dd0cd0cf6a4"
+      }
     }
   ],
   "SceneProperties": {
@@ -7384,14 +7417,14 @@
       "CustomBounds": false
     },
     "GameObjectSystems": {
-      "Sandbox.SelectionSetsSystem": {
-        "Data": {
-          "SelectionSets": []
-        }
-      },
       "Sandbox.Clutter.ClutterGridSystem": {
         "Storage": {
           "$blob": "7664decd-7b1f-4214-a5a2-850285e10057"
+        }
+      },
+      "Sandbox.SelectionSetsSystem": {
+        "Data": {
+          "SelectionSets": []
         }
       }
     }

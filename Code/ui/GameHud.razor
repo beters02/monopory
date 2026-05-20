@@ -64,18 +64,13 @@
 
 	private void HandleMenuOpen()
 	{
-#if STANDALONE
-		if ( Input.EscapePressed )
-		{
-			ToggleEscapeMenu();
-			return;
-		}
-#endif
 
 		if ( Input.EscapePressed )
 		{
-			Log.Info("Escape pressed.");
-			ToggleEscapeMenu();
+#if STANDALONE
+		ToggleEscapeMenu();
+		return;
+#endif
 		}
 
 		if ( Input.Pressed( "EditorMenu" ) )

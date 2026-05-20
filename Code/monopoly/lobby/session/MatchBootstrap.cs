@@ -53,6 +53,7 @@ public sealed class MatchBootstrap
 			LandedUnownedMode = source.LandedUnownedMode,
 			StartingMoney = source.StartingMoney,
 			DoublesGoesAgain = source.DoublesGoesAgain,
+			ForceJailFineAfterFailedDoubles = source.ForceJailFineAfterFailedDoubles,
 			VacationCash = source.VacationCash,
 			DontCollectRentWhileInPrison = source.DontCollectRentWhileInPrison,
 			EvenBuild = source.EvenBuild,

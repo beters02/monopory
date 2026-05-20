@@ -39,6 +39,7 @@ public sealed partial class GameController : Component
 		player.IsBankrupt = true;
 		player.Money = 0;
 		player.IsInJail = false;
+		player.JailTurnsRemaining = 0;
 		player.ConsecutiveDoubles = 0;
 		player.SkipsNextTurn = false;
 

@@ -207,6 +207,7 @@ public sealed partial class GameController : Component
 		player.Money = Math.Max( Config?.StartingMoney ?? 1500, 0 );
 		player.SpaceIndex = 0;
 		player.IsInJail = false;
+		player.JailTurnsRemaining = 0;
 		player.ConsecutiveDoubles = 0;
 		player.SkipsNextTurn = false;
 		player.IsBankrupt = false;

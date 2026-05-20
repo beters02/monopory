@@ -78,6 +78,24 @@ public sealed partial class GameController : Component
 	}
 
 	[Rpc.Host]
+	public void RequestPayToLeaveJail()
+	{
+		if ( !CanCurrentPlayerAct( Rpc.Caller ) )
+			return;
+
+		_ = PayToLeaveJailAsync();
+	}
+
+	[Rpc.Host]
+	public void RequestRollForJailRelease()
+	{
+		if ( !CanCurrentPlayerAct( Rpc.Caller ) )
+			return;
+
+		_ = TryRollForJailReleaseAsync();
+	}
+
+	[Rpc.Host]
 	public void RequestEndTurn()
 	{
 		if ( !CanCurrentPlayerAct( Rpc.Caller ) )
