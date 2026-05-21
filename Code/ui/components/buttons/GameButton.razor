@@ -3,7 +3,7 @@
 @using System;
 @inherits Button
 
-<root class="@RootClasses" title="@Title" onclick="@HandleClick">
+<root class="@RootClasses" title="@Title" onclick="@HandleClick" onmousedown="@HandlePressStart" onmouseup="@HandlePressEnd" onmouseleave="@HandlePressCancel">
 	@ChildContent
 </root>
 
@@ -20,9 +20,14 @@
 	[Parameter] public float BlockedPopupLifetime { get; set; } = 3f;
 	[Parameter] public GameSound Sound { get; set; } = GameAssets.Sounds.Click;
 	[Parameter] public GameSound BlockedSound { get; set; } = GameAssets.Sounds.Error;
+	[Parameter] public Action<float> OnHoldComplete { get; set; }
+	[Parameter] public float HoldMaxSeconds { get; set; } = 1.25f;
 	[Parameter] public new Action OnClick { get; set; }
 	[Parameter] public Action OnBlocked { get; set; }
 	[Parameter] public new RenderFragment ChildContent { get; set; }
+
+	private bool isPressing;
+	private float pressStartedAt;
 
 	protected string RootClasses => string.IsNullOrWhiteSpace( Variant )
 		? "monopoly-button"
@@ -35,6 +40,9 @@
 
 	protected void HandleClick()
 	{
+		if ( OnHoldComplete is not null )
+			return;
+
 		if ( Disabled )
 			return;
 
@@ -52,6 +60,45 @@
 			Sound.Play();
 
 		OnClick?.Invoke();
+	}
+
+	private void HandlePressStart()
+	{
+		if ( OnHoldComplete is null || Disabled )
+			return;
+
+		isPressing = true;
+		pressStartedAt = Time.Now;
+	}
+
+	private void HandlePressEnd()
+	{
+		if ( OnHoldComplete is null || !isPressing )
+			return;
+
+		isPressing = false;
+		var heldSeconds = Math.Max( Time.Now - pressStartedAt, 0f );
+		var strength = HoldMaxSeconds <= 0f ? 1f : Math.Clamp( heldSeconds / HoldMaxSeconds, 0f, 1f );
+
+		ButtonPopEffects.Show( Mouse.Position );
+
+		if ( !CanClick )
+		{
+			PlayBlockedActionSound();
+			ShowBlockedActionPopup();
+			OnBlocked?.Invoke();
+			return;
+		}
+
+		if ( ShouldPlayClickSound )
+			Sound.Play();
+
+		OnHoldComplete?.Invoke( strength );
+	}
+
+	private void HandlePressCancel()
+	{
+		isPressing = false;
 	}
 
 	private bool HasVariantClass( string className )

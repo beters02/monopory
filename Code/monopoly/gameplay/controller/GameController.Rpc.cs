@@ -70,11 +70,11 @@ public sealed partial class GameController : Component
 	}
 
 	[Rpc.Host]
-	public void RequestRollDice(int amount = -1)
+	public void RequestRollDice(int amount = -1, float throwStrength = 0.5f)
 	{
 		if ( !CanCurrentPlayerAct( Rpc.Caller ) )
 			return;
-		_ = RollDiceAsync(amount);
+		_ = RollDiceAsync(amount, throwStrength);
 	}
 
 	[Rpc.Host]

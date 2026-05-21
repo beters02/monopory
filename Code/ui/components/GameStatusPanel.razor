@@ -40,7 +40,7 @@
 			}
 			else if ( CanActOnCurrentTurn )
 			{
-				<GameButton OnClick="@RollDice">Roll Dice</GameButton>
+				<GameButton OnHoldComplete="@RollDice" HoldMaxSeconds="@RollHoldMaxSeconds">Roll Dice</GameButton>
 			}
 			@if ( GameRef.MatchState == MatchLifecycleState.InGame && CurrentPlayer == LocalPlayer )
 			{
@@ -60,6 +60,7 @@
 	private int LocalPlayerMoney => LocalPlayer?.Money ?? 0;
 	private SpaceDef PendingDef => GameRef?.Board?.GetSpaceDef( GameRef.PendingPurchaseSpaceIndex );
 	private string PendingPropertyName => PendingDef?.DisplayName ?? "Unknown Property";
+	private const float RollHoldMaxSeconds = 1.25f;
 
 	private int CurrentTurnRemainingSeconds =>
 		GameRef is null || GameRef.CurrentTurnEndsAt <= 0f
@@ -101,10 +102,10 @@
 			: "camera-mode-button";
 	}
 
-	private void RollDice()
+	private void RollDice( float throwStrength )
 	{
-		Log.Info( "Roll dice button clicked." );
-		GameRef?.RequestRollDice();
+		Log.Info( $"Roll dice button released with throw strength {throwStrength:0.00}." );
+		GameRef?.RequestRollDice( -1, throwStrength );
 	}
 
 	private void PayToLeaveJail()

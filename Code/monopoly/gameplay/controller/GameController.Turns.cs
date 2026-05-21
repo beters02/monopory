@@ -70,7 +70,7 @@ public sealed partial class GameController : Component
 	}
 
 	[Button( "Roll Dice" )]
-	public async Task RollDiceAsync(int amount = -1)
+	public async Task RollDiceAsync(int amount = -1, float throwStrength = 0.5f)
 	{
 		if ( !Networking.IsHost )
 			return;
@@ -96,7 +96,7 @@ public sealed partial class GameController : Component
 			return;
 		}
 
-		await RollCurrentPlayerAsync( amount, false );
+		await RollCurrentPlayerAsync( amount, false, throwStrength );
 	}
 
 	public async Task PayToLeaveJailAsync()
@@ -197,7 +197,7 @@ public sealed partial class GameController : Component
 		Phase = GamePhase.WaitingToRoll;
 	}
 
-	private async Task RollCurrentPlayerAsync( int amount, bool suppressDoublesExtraTurn )
+	private async Task RollCurrentPlayerAsync( int amount, bool suppressDoublesExtraTurn, float throwStrength = 0.5f )
 	{
 		Phase = GamePhase.ResolvingSpace;
 		CurrentTurnGetsExtraRoll = false;
@@ -214,8 +214,7 @@ public sealed partial class GameController : Component
 		}
 		else
 		{
-			LastDieA = Game.Random.Int( 1, 6 );
-			LastDieB = Game.Random.Int( 1, 6 );
+			(LastDieA, LastDieB) = await RollPhysicalDiceAsync( throwStrength );
 			total = LastDieA + LastDieB;
 			rolledDoubles = LastDieA == LastDieB;
 		}
