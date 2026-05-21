@@ -94,6 +94,10 @@
 @code
 {
 	private const int MaxLineLength = 10;
+	private static readonly IReadOnlyList<SpaceDef> FallbackSpaceDefs =
+		BoardData.CreateSpaceDefs()
+			.OrderBy( space => space.Index )
+			.ToList();
 
 	[Property] public float CornerSizePercent { get; set; } = 15f;
 	[Property] public float TrackDepthPercent { get; set; } = 15f;
@@ -196,8 +200,9 @@
 		$"font-size: {GoIconFontSizePx * 0.64f}px; color: {GoColor};";
 
 	private IEnumerable<SpaceDef> SpaceDefs =>
-		(Board.Instance?.SpaceDefs?.Count > 0 ? Board.Instance.SpaceDefs : BoardData.CreateSpaceDefs())
-			.OrderBy( space => space.Index );
+		Board.Instance?.SpaceDefs?.Count > 0
+			? Board.Instance.SpaceDefs.OrderBy( space => space.Index )
+			: FallbackSpaceDefs;
 
 	public float CornerSize => Math.Clamp( CornerSizePercent, 5f, 35f );
 	public float TrackDepth => Math.Clamp( TrackDepthPercent, 5f, CornerSize );

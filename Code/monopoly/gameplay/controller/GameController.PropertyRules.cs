@@ -81,7 +81,18 @@ public sealed partial class GameController : Component
 		if ( IsMortgaged( spaceIndex ) )
 			return 0;
 
-		return GetImprovementCount( spaceIndex ) switch
+		if (def.Type == SpaceType.Railroad)
+			return GetRailroadRent( def );
+
+		if ( def.Type == SpaceType.Utility )
+			return GetUtilityRent( def );
+			
+		return GetPropertyRentFromImprovements( def );
+	}
+
+	private int GetPropertyRentFromImprovements( SpaceDef def )
+	{
+		return GetImprovementCount( def.Index ) switch
 		{
 			1 => def.OneHouseRent,
 			2 => def.TwoHouseRent,
@@ -90,6 +101,31 @@ public sealed partial class GameController : Component
 			5 => def.HotelRent,
 			_ => def.BaseRent
 		};
+	}
+
+	private int GetRailroadRent( SpaceDef def )
+	{
+		int ownerIndex = GetOwnerIndexForSpace( def.Index );
+
+		return GetPlayerOwnedRailroadCount( ownerIndex ) switch
+		{
+			2 => Board.RailroadData.TwoOwnedRent,
+			3 => Board.RailroadData.ThreeOwnedRent,
+			4 => Board.RailroadData.FourOwnedRent,
+			_ => Board.RailroadData.OneOwnedRent
+		};
+	}
+
+	private int GetUtilityRent( SpaceDef def )
+	{
+		int ownerIndex = GetOwnerIndexForSpace( def.Index );
+		int diceTotal = Math.Max( 0, LastDieA + LastDieB );
+		int ownedCount = GetPlayerOwnedUtilityCount( ownerIndex );
+		int multiplier = ownedCount >= 2
+			? Board.UtilityData.BothOwnedMultiplier
+			: Board.UtilityData.OneOwnedMultiplier;
+
+		return diceTotal * multiplier;
 	}
 
 	public bool CanBuildImprovement( int playerIndex, int spaceIndex )
@@ -214,6 +250,46 @@ public sealed partial class GameController : Component
 	private bool HasPendingForcedPaymentForPlayer( int playerIndex )
 	{
 		return HasPendingForcedPayment && PendingForcedPaymentPlayerIndex == playerIndex;
+	}
+
+	private int GetPlayerOwnedRailroadCount( int playerIndex )
+	{
+		if (Board?.SpaceDefs is null)
+			return 0;
+		
+		var group = GetRailroadProperties()
+			.Where( def => GetOwnerIndexForSpace( def.Index ) == playerIndex )
+			.ToList() ?? new();
+		
+		return group.Count;
+	}
+
+	private int GetPlayerOwnedUtilityCount( int playerIndex )
+	{
+		if ( Board?.SpaceDefs is null )
+			return 0;
+
+		var group = GetUtilityProperties()
+			.Where( def => GetOwnerIndexForSpace( def.Index ) == playerIndex )
+			.ToList() ?? new();
+
+		return group.Count;
+	}
+
+	private List<SpaceDef> GetRailroadProperties()
+	{
+		return Board?.SpaceDefs?
+			.Where( def => def is not null && def.Type == SpaceType.Railroad )
+			.OrderBy( def => def.Index )
+			.ToList() ?? new();
+	}
+
+	private List<SpaceDef> GetUtilityProperties()
+	{
+		return Board?.SpaceDefs?
+			.Where( def => def is not null && def.Type == SpaceType.Utility )
+			.OrderBy( def => def.Index )
+			.ToList() ?? new();
 	}
 
 	private bool OwnsColorGroup( int playerIndex, ColorGroup colorGroup )

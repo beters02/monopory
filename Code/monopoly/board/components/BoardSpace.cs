@@ -4,6 +4,8 @@ using Sandbox.UI;
 
 public sealed class BoardSpace : Component
 {
+	private const string BoardSpaceTag = "board_space";
+	private const string LegacyBoardSpaceTag = "monopoly_space";
 
 	[Property] public int Index { get; set; }
 
@@ -34,7 +36,7 @@ public sealed class BoardSpace : Component
 
 	protected override void OnStart()
 	{
-		Tags.Add( "monopoly_space" );
+		EnsureBoardSpaceTags();
 	}
 
 	protected override void OnUpdate()
@@ -48,8 +50,19 @@ public sealed class BoardSpace : Component
 		collider.Scale = OverrideHitboxSize ?? Board.GetHitboxSize(Index);
 		collider.Center = OverrideHitboxCenter ?? new Vector3(0, 0, -2f);
 		collider.IsTrigger = true;
+		collider.Tags.Add( BoardSpaceTag );
+		collider.Tags.Add( LegacyBoardSpaceTag );
 
 		Collider = collider;
+		EnsureBoardSpaceTags();
+	}
+
+	private void EnsureBoardSpaceTags()
+	{
+		Tags.Add( BoardSpaceTag );
+		Tags.Add( LegacyBoardSpaceTag );
+		GameObject.Tags.Add( BoardSpaceTag );
+		GameObject.Tags.Add( LegacyBoardSpaceTag );
 	}
 
 	public void SetHitboxOverride( Vector3? size = null, Vector3? center = null )

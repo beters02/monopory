@@ -10,6 +10,11 @@
 	border: 8px solid #1399d6;
 	font-family: $monopoly-font-family;
 	color: $monopoly-ink;
+	pointer-events: none;
+}
+
+.board-panel-root * {
+	pointer-events: none;
 }
 
 .board-center {

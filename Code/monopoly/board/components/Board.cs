@@ -13,6 +13,8 @@ public sealed class Board : Component
 
 	[Property] public List<BoardSpace> Spaces { get; set; } = new();
 	public List<SpaceDef> SpaceDefs { get; private set; } = new();
+	public RailroadDef RailroadData { get; private set; } = new();
+	public UtilityDef UtilityData { get; private set; } = new();
 
 	[Property] public Vector3 HitboxSize { get; set; } = new Vector3( 96f, 96f, 12f );
 	[Property] public bool UseWorldPanelLabels { get; set; } = false;
@@ -242,6 +244,8 @@ public sealed class Board : Component
 	private void LoadBoardDefinitions()
 	{
 		SpaceDefs = BoardData.CreateSpaceDefs();
+		RailroadData = BoardData.CreateRailroadDefs();
+		UtilityData = BoardData.CreateUtilityDefs();
 	}
 
 	private void LoadCardDefinitions()
@@ -487,6 +491,7 @@ public sealed class Board : Component
 		return Scene.Trace.Ray( ray, 5000f )
 			.UseHitboxes()
 			.HitTriggers()
+			.WithTag( "board_space" )
 			.Run();
 	}
 

@@ -82,8 +82,8 @@
 			{
 				<div class="monopoly-special-card utility-card">
 					<div class="monopoly-special-rules utility-rules">
-						<div>If one utility is owned, rent is 4 times the amount shown on dice.</div>
-						<div>If both utilities are owned, rent is 10 times the amount shown on dice.</div>
+						<div>If one utility is owned, rent is @UtilityRentOneText the amount shown on dice.</div>
+						<div>If both utilities are owned, rent is @UtilityRentBothText the amount shown on dice.</div>
 					</div>
 					<div class="monopoly-special-mortgage">Mortgage value @MortgageValueLabel</div>
 				</div>
@@ -219,10 +219,18 @@
 	private string MortgageValueLabel =>
 		Space.Price > 0 ? $"${Space.Price / 2}" : "-";
 
-	private int RailroadRentOne => Math.Max( Space.BaseRent, 0 );
-	private int RailroadRentTwo => RailroadRentOne * 2;
-	private int RailroadRentThree => RailroadRentOne * 4;
-	private int RailroadRentFour => RailroadRentOne * 8;
+	private RailroadDef RailroadData =>
+		Board.Instance?.RailroadData ?? BoardData.CreateRailroadDefs();
+
+	private UtilityDef UtilityData =>
+		Board.Instance?.UtilityData ?? BoardData.CreateUtilityDefs();
+
+	private int RailroadRentOne => Math.Max( RailroadData.OneOwnedRent, 0 );
+	private int RailroadRentTwo => RailroadData.TwoOwnedRent;
+	private int RailroadRentThree => RailroadData.ThreeOwnedRent;
+	private int RailroadRentFour => RailroadData.FourOwnedRent;
+	private string UtilityRentOneText => $"{UtilityData.OneOwnedMultiplier}x";
+	private string UtilityRentBothText => $"{UtilityData.BothOwnedMultiplier}x";
 
 	private RenderFragment SpecialIcon() => builder =>
 	{

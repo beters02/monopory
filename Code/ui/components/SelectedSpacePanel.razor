@@ -300,11 +300,25 @@
 	private int SelectedSpaceRent =>
 		SelectedSpaceIndex < 0 ? 0 : GameRef?.GetRentForSpace( SelectedSpaceIndex ) ?? 0;
 
+	private string SelectedSpaceRentLabel =>
+		SelectedSpace?.Type == SpaceType.Utility
+			? SelectedUtilityRentLabel
+			: SelectedSpaceRent > 0 ? $"${SelectedSpaceRent}" : "-";
+
+	private string SelectedUtilityRentLabel
+	{
+		get
+		{
+			var utilityData = Board.Instance?.UtilityData;
+			if ( utilityData is null )
+				return "-";
+
+			return $"{utilityData.OneOwnedMultiplier}x/{utilityData.BothOwnedMultiplier}x roll";
+		}
+	}
+
 	private string SelectedSpacePriceLabel =>
 		SelectedSpace?.Price > 0 ? $"${SelectedSpace.Price}" : "-";
-
-	private string SelectedSpaceRentLabel =>
-		SelectedSpaceRent > 0 ? $"${SelectedSpaceRent}" : "-";
 
 	private string SelectedHousePriceLabel =>
 		SelectedImprovementCost > 0 ? $"${SelectedImprovementCost}" : "-";

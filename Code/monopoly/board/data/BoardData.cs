@@ -3,6 +3,22 @@ using Sandbox;
 
 public static class BoardData
 {
+	private static readonly RailroadDef defaultRailroadDefs = new()
+	{
+		Price = 200,
+		OneOwnedRent = 25,
+		TwoOwnedRent = 50,
+		ThreeOwnedRent = 100,
+		FourOwnedRent = 200
+	};
+
+	private static readonly UtilityDef defaultUtilityDefs = new()
+	{
+		Price = 150,
+		OneOwnedMultiplier = 4,
+		BothOwnedMultiplier = 10
+	};
+
 	public static List<SpaceDef> CreateSpaceDefs()
 	{
 		return new()
@@ -187,7 +203,7 @@ public static class BoardData
 				Key = "railroad_1",
 				DisplayName = "Train Railroad",
 				Type = SpaceType.Railroad,
-				Price = 60,
+				Price = 200,
 				BaseRent = 2
 			},
 			new()
@@ -307,7 +323,7 @@ public static class BoardData
 				Key = "railroad_2",
 				DisplayName = "Cobblestone Railroad",
 				Type = SpaceType.Railroad,
-				Price = 60,
+				Price = 200,
 				BaseRent = 2
 			},
 			new()
@@ -429,7 +445,7 @@ public static class BoardData
 				Key = "railroad_3",
 				DisplayName = "Cache Railroad",
 				Type = SpaceType.Railroad,
-				Price = 60,
+				Price = 200,
 				BaseRent = 2
 			},
 			new()
@@ -477,6 +493,28 @@ public static class BoardData
 				HotelRent = 1500,
 				ColorGroup = ColorGroup.DarkBlue
 			},
+		};
+	}
+
+	public static RailroadDef CreateRailroadDefs()
+	{
+		return new()
+		{
+			Price = defaultRailroadDefs.Price,
+			OneOwnedRent = defaultRailroadDefs.OneOwnedRent,
+			TwoOwnedRent = defaultRailroadDefs.TwoOwnedRent,
+			ThreeOwnedRent = defaultRailroadDefs.ThreeOwnedRent,
+			FourOwnedRent = defaultRailroadDefs.FourOwnedRent
+		};
+	}
+
+	public static UtilityDef CreateUtilityDefs()
+	{
+		return new()
+		{
+			Price = defaultUtilityDefs.Price,
+			OneOwnedMultiplier = defaultUtilityDefs.OneOwnedMultiplier,
+			BothOwnedMultiplier = defaultUtilityDefs.BothOwnedMultiplier
 		};
 	}
 }
