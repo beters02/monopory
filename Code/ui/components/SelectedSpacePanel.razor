@@ -47,7 +47,11 @@
 			{
 				<div @key="@GetActionPanelRenderKey( selection )" class="@GetBuyActionPanelClasses( selection )">
 					<div class="space-buttons">
-						<GameButton OnClick="@BuyProperty">Buy</GameButton>
+						<GameButton
+							CanClick="@selection.CanAffordBuy"
+							OnClick="@BuyProperty"
+							BlockedPopupTitle="Cannot buy property"
+							BlockedPopupMessage="@selection.CannotAffordBuyMessage">Buy</GameButton>
 						<GameButton OnClick="@AuctionProperty">Auction</GameButton>
 					</div>
 				</div>
@@ -139,6 +143,7 @@
 			CanClose = CanCloseSelectedSpace,
 			ShouldBlockClose = ShouldBlockSelectedSpaceClose,
 			CanBuy = CanBuySelectedSpace,
+			CanAffordBuy = CanAffordSelectedSpace,
 			CanManage = CanManageSelectedSpace,
 			CanBuildImprovement = CanBuildSelectedImprovement,
 			CanSellImprovement = CanSellSelectedImprovement,
@@ -149,6 +154,7 @@
 			RentLabel = SelectedSpaceRentLabel,
 			HousePriceLabel = SelectedHousePriceLabel,
 			MortgageActionLabel = MortgageActionLabel,
+			CannotAffordBuyMessage = CannotAffordBuyMessage,
 			CloseBlockedMessage = SelectedSpaceCloseBlockedMessage
 		};
 	}
@@ -266,6 +272,10 @@
 	private bool CanManageSelectedSpace =>
 		IsOwnedByLocalPlayer;
 
+	private bool CanAffordSelectedSpace =>
+		SelectedSpace is not null &&
+		(GameRef?.LocalPlayer?.Money ?? 0) >= SelectedSpace.Price;
+
 	private string ActionPanelRenderKey =>
 		$"{SelectedSpaceIndex}:{GetSelectedOwnerIndex()}:{(CanBuySelectedSpace ? "buy" : "manage")}";
 
@@ -345,6 +355,11 @@
 	private string SelectedSpaceCloseBlockedMessage =>
 		$"Buy or auction {SelectedSpace?.DisplayName ?? "this property"} before closing this card.";
 
+	private string CannotAffordBuyMessage =>
+		SelectedSpace is null
+			? "You do not have enough money to buy this property."
+			: $"{SelectedSpace.DisplayName} costs ${SelectedSpace.Price}, but you only have ${GameRef?.LocalPlayer?.Money ?? 0}.";
+
 	private int GetSelectedOwnerIndex()
 	{
 		if ( GameRef is null || SelectedSpaceIndex < 0 )
@@ -420,6 +435,7 @@
 		hash.Add( GameRef?.PendingPurchaseSpaceIndex ?? -1 );
 		hash.Add( GameRef?.FreeParkingBank ?? 0 );
 		hash.Add( GameRef?.Config?.VacationCash ?? false );
+		hash.Add( GameRef?.LocalPlayer?.Money ?? 0 );
 		hash.Add( HudUi.GetPropertyOwnersHash( GameRef ) );
 		hash.Add( HudUi.GetMortgagedPropertiesHash( GameRef ) );
 		hash.Add( SelectedImprovementCount );
@@ -440,6 +456,7 @@
 		public bool CanClose { get; set; }
 		public bool ShouldBlockClose { get; set; }
 		public bool CanBuy { get; set; }
+		public bool CanAffordBuy { get; set; }
 		public bool CanManage { get; set; }
 		public bool CanBuildImprovement { get; set; }
 		public bool CanSellImprovement { get; set; }
@@ -450,6 +467,7 @@
 		public string RentLabel { get; set; } = "";
 		public string HousePriceLabel { get; set; } = "";
 		public string MortgageActionLabel { get; set; } = "";
+		public string CannotAffordBuyMessage { get; set; } = "";
 		public string CloseBlockedMessage { get; set; } = "";
 		public bool IsClosing { get; set; }
 	}

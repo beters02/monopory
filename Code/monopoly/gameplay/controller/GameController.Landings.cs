@@ -126,6 +126,13 @@ public sealed partial class GameController : Component
 
 			case UnownedLandingMode.SkipOrAuction:
 			default:
+				if ( player.Money < def.Price && Config?.InstantAuctionIfLandedOnUnownedAndCantAfford == true )
+				{
+					Log.Info( $"{player.PlayerName} could not afford {def.DisplayName}, starting an auction immediately." );
+					StartAuction( def.Index );
+					return;
+				}
+
 				PendingPurchaseSpaceIndex = def.Index;
 				Phase = GamePhase.WaitingForBuyDecision;
 

@@ -51,6 +51,7 @@ public sealed class MatchBootstrap
 			MaxPlayers = source.MaxPlayers,
 			OnlyHostStartsGame = source.OnlyHostStartsGame,
 			LandedUnownedMode = source.LandedUnownedMode,
+			InstantAuctionIfLandedOnUnownedAndCantAfford = source.InstantAuctionIfLandedOnUnownedAndCantAfford,
 			StartingMoney = source.StartingMoney,
 			DoublesGoesAgain = source.DoublesGoesAgain,
 			ForceJailFineAfterFailedDoubles = source.ForceJailFineAfterFailedDoubles,

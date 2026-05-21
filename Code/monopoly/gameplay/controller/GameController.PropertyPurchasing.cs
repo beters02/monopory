@@ -205,11 +205,28 @@ public sealed partial class GameController : Component
 		if ( player is null || def is null )
 			return;
 
-		if ( player.Money >= def.Price )
+		if ( player.Money < def.Price )
 		{
-			BuyUnownedPropertyForPlayer( player, def, CurrentPlayerIndex );
-			ShowPropertyBoughtPopup( player, def );
+			if ( Config?.InstantAuctionIfLandedOnUnownedAndCantAfford == true )
+			{
+				Log.Info( $"{player.PlayerName} could not afford {def.DisplayName} when buying, starting the auction." );
+				StartAuction( def.Index );
+				return;
+			}
+
+			SendPopupToPlayer(
+				player,
+				"Cannot buy property",
+				$"{def.DisplayName} costs ${def.Price}, but you only have ${player.Money}.",
+				PopupKind.Warning,
+				true,
+				4f
+			);
+			return;
 		}
+
+		BuyUnownedPropertyForPlayer( player, def, CurrentPlayerIndex );
+		ShowPropertyBoughtPopup( player, def );
 
 		PendingPurchaseSpaceIndex = -1;
 		Phase = GamePhase.TurnEnded;
