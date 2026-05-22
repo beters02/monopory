@@ -1,4 +1,5 @@
 using Sandbox;
+using System;
 
 public enum UnownedAffordableLandingMode
 {
@@ -12,21 +13,68 @@ public enum UnownedUnaffordableLandingMode
 	Decision
 }
 
+[AttributeUsage( AttributeTargets.Property )]
+public sealed class MatchConfigOptionAttribute : Attribute
+{
+	public string Group { get; }
+	public string Label { get; }
+	public string Description { get; set; } = "";
+	public int Order { get; set; }
+	public int Min { get; set; } = int.MinValue;
+	public int Max { get; set; } = int.MaxValue;
+	public int Step { get; set; } = 1;
+
+	public MatchConfigOptionAttribute( string group, string label )
+	{
+		Group = group;
+		Label = label;
+	}
+}
+
 public sealed class MatchConfig
 {
-	[Property] public int MinPlayers { get; set; } = 1;
-	[Property] public int MaxPlayers { get; set; } = 6;
-	[Property] public bool OnlyHostStartsGame { get; set; } = true;
-	[Property] public UnownedAffordableLandingMode LandedUnownedCanAffordMode { get; set; } = UnownedAffordableLandingMode.Decision;
-	[Property] public UnownedUnaffordableLandingMode LandedUnownedCantAffordMode { get; set; } = UnownedUnaffordableLandingMode.ForceAuction;
-	[Property] public bool CanSkipUnowned { get; set; } = false;
-	[Property] public int StartingMoney { get; set; } = 1500;
-	[Property] public int LandOnGoMoney { get; set; } = 200;
-	[Property] public int PassGoMoney { get; set; } = 200;
-	[Property] public bool DoublesGoesAgain { get; set; } = false;
-	[Property] public bool ForceJailFineAfterFailedDoubles { get; set; } = true;
-	[Property] public bool VacationCash { get; set; } = false;
-	[Property] public bool DontCollectRentWhileInPrison { get; set; } = false;
-	[Property] public bool EvenBuild { get; set; } = true;
-	[Property] public int TurnTimeLimitSeconds { get; set; } = 180;
+	[Property, MatchConfigOption( "Lobby", "Min Players", Description = "Minimum ready players required before the host can start.", Order = 0, Min = 1, Max = 6, Step = 1 )]
+	public int MinPlayers { get; set; } = 1;
+
+	[Property, MatchConfigOption( "Lobby", "Max Players", Description = "Maximum seats allowed in the hosted lobby.", Order = 1, Min = 1, Max = 6, Step = 1 )]
+	public int MaxPlayers { get; set; } = 6;
+
+	[Property, MatchConfigOption( "Lobby", "Only Host Starts Game", Description = "If enabled, only the host can launch the match.", Order = 2 )]
+	public bool OnlyHostStartsGame { get; set; } = true;
+
+	[Property, MatchConfigOption( "Property Rules", "Affordable Unowned Landing", Description = "What happens when a player can afford an unowned property.", Order = 10 )]
+	public UnownedAffordableLandingMode LandedUnownedCanAffordMode { get; set; } = UnownedAffordableLandingMode.Decision;
+
+	[Property, MatchConfigOption( "Property Rules", "Unaffordable Unowned Landing", Description = "What happens when a player cannot afford an unowned property.", Order = 11 )]
+	public UnownedUnaffordableLandingMode LandedUnownedCantAffordMode { get; set; } = UnownedUnaffordableLandingMode.ForceAuction;
+
+	[Property, MatchConfigOption( "Property Rules", "Can Skip Unowned", Description = "Allows players to ignore an unowned property instead of buying or auctioning it.", Order = 12 )]
+	public bool CanSkipUnowned { get; set; } = false;
+
+	[Property, MatchConfigOption( "Economy", "Starting Money", Description = "Cash each player begins the game with.", Order = 20, Min = 0, Max = 10000, Step = 100 )]
+	public int StartingMoney { get; set; } = 1500;
+
+	[Property, MatchConfigOption( "Economy", "Land On GO Money", Description = "Bonus for landing directly on GO.", Order = 21, Min = 0, Max = 5000, Step = 50 )]
+	public int LandOnGoMoney { get; set; } = 200;
+
+	[Property, MatchConfigOption( "Economy", "Pass GO Money", Description = "Bonus for passing GO during movement.", Order = 22, Min = 0, Max = 5000, Step = 50 )]
+	public int PassGoMoney { get; set; } = 200;
+
+	[Property, MatchConfigOption( "Turn Rules", "Doubles Goes Again", Description = "Lets players take another turn after rolling doubles.", Order = 30 )]
+	public bool DoublesGoesAgain { get; set; } = false;
+
+	[Property, MatchConfigOption( "Turn Rules", "Force Jail Fine After Failed Doubles", Description = "After the final failed jail roll, automatically pay the fine to leave jail.", Order = 31 )]
+	public bool ForceJailFineAfterFailedDoubles { get; set; } = true;
+
+	[Property, MatchConfigOption( "Turn Rules", "Turn Time Limit Seconds", Description = "How long each turn can last before timeout handling kicks in.", Order = 32, Min = 15, Max = 900, Step = 15 )]
+	public int TurnTimeLimitSeconds { get; set; } = 180;
+
+	[Property, MatchConfigOption( "Board Rules", "Vacation Cash", Description = "Awards pooled cash when landing on Free Parking, if enabled.", Order = 40 )]
+	public bool VacationCash { get; set; } = false;
+
+	[Property, MatchConfigOption( "Board Rules", "No Rent While In Prison", Description = "Prevents jailed players from collecting rent.", Order = 41 )]
+	public bool DontCollectRentWhileInPrison { get; set; } = false;
+
+	[Property, MatchConfigOption( "Board Rules", "Even Build", Description = "Requires houses to be built evenly across a color set.", Order = 42 )]
+	public bool EvenBuild { get; set; } = true;
 }

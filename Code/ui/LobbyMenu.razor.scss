@@ -1,1 +1,363 @@
 @import "FlowLayout.scss";
+@import "GameTheme.scss";
+@import "components/buttons/GameButton.razor.scss";
+@import "components/buttons/DropdownButton.razor.scss";
+
+.match-config-root {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	z-index: 82;
+	pointer-events: none;
+}
+
+.match-config-root.open {
+	pointer-events: all;
+}
+
+.match-config-screen {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+
+	background-color: rgba(8, 17, 15, 0.74);
+
+	display: flex;
+	align-items: center;
+	justify-content: center;
+
+	pointer-events: all;
+}
+
+.match-config-panel {
+	width: 820px;
+	max-width: 92%;
+	max-height: 88%;
+	padding: 24px;
+
+	background-color: $monopoly-board;
+	border: 4px solid $monopoly-ink;
+	border-radius: $monopoly-radius-board;
+	box-shadow: 0 18px 60px rgba(0, 0, 0, 0.38);
+
+	color: $monopoly-ink;
+	font-family: $monopoly-font-family;
+
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	gap: 14px;
+	overflow: scroll;
+}
+
+.match-config-header,
+.match-config-row,
+.match-config-footer {
+	display: flex;
+	gap: 14px;
+}
+
+.match-config-header {
+	align-items: flex-start;
+	justify-content: space-between;
+	flex-shrink: 0;
+}
+
+.match-config-header-text {
+	flex: 1;
+	min-width: 0;
+
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 2px;
+}
+
+.match-config-kicker {
+	color: $monopoly-danger;
+	font-size: 15px;
+	font-weight: 900;
+	text-transform: uppercase;
+}
+
+.match-config-title {
+	font-size: 34px;
+	font-weight: 900;
+	line-height: 36px;
+}
+
+.match-config-copy,
+.match-config-value {
+	font-size: 13px;
+	font-weight: 800;
+	line-height: 18px;
+	opacity: 0.72;
+}
+
+.match-config-kicker,
+.match-config-title,
+.match-config-copy,
+.match-config-section-title,
+.match-config-label,
+.match-config-value,
+.match-config-stepper-value {
+	width: 100%;
+	min-width: 0;
+
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	justify-content: center;
+
+	white-space: normal;
+	text-overflow: clip;
+	overflow: visible;
+}
+
+.match-config-kicker .label,
+.match-config-title .label,
+.match-config-copy .label,
+.match-config-section-title .label,
+.match-config-label .label,
+.match-config-value .label,
+.match-config-stepper-value .label {
+	width: 100%;
+	min-width: 0;
+
+	white-space: normal;
+	text-overflow: clip;
+	overflow: visible;
+}
+
+.match-config-close-button,
+.match-config-toggle-button,
+.match-config-step-button,
+.match-config-save-button,
+.match-config-secondary-button {
+	height: 42px;
+	min-width: 96px;
+	margin-top: 0;
+	padding: 0 14px;
+
+	border-radius: $monopoly-radius-board;
+	font-size: 13px;
+	font-weight: 900;
+	text-transform: uppercase;
+	justify-content: center;
+}
+
+.match-config-close-button,
+.match-config-toggle-button,
+.match-config-step-button,
+.match-config-secondary-button {
+	background-color: $monopoly-ink;
+	border: 3px solid $monopoly-ink;
+	color: $monopoly-board;
+}
+
+.match-config-close-button {
+	width: 44px;
+	min-width: 44px;
+	padding: 0;
+}
+
+.match-config-toggle-button.selected {
+	background-color: $monopoly-gold;
+	color: $monopoly-ink;
+}
+
+.match-config-save-button {
+	min-width: 132px;
+	background-color: $monopoly-gold;
+	border: 3px solid $monopoly-gold;
+	color: $monopoly-ink;
+}
+
+.match-config-save-button:hover {
+	background-color: $monopoly-gold-hover;
+}
+
+.match-config-section {
+	padding: 14px;
+
+	background-color: rgba(255, 255, 255, 0.35);
+	border: 3px solid rgba(18, 31, 29, 0.18);
+	border-radius: $monopoly-radius-board;
+
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	gap: 10px;
+	flex-shrink: 0;
+}
+
+.match-config-section-options {
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	gap: 10px;
+}
+
+.match-config-section-title,
+.match-config-label {
+	font-weight: 900;
+}
+
+.match-config-section-title {
+	font-size: 18px;
+	text-transform: uppercase;
+	min-height: 24px;
+	height: 24px;
+	flex-shrink: 0;
+}
+
+.match-config-row {
+	min-height: 82px;
+	height: 82px;
+
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	flex-wrap: nowrap;
+	flex-shrink: 0;
+}
+
+.match-config-text {
+	flex: 1;
+	min-width: 0;
+	max-width: 100%;
+	height: 64px;
+
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 4px;
+	justify-content: flex-start;
+	overflow: visible;
+}
+
+.match-config-control {
+	width: 320px;
+	min-width: 320px;
+	height: 42px;
+
+	display: flex;
+	justify-content: flex-end;
+	align-items: center;
+	flex-shrink: 0;
+}
+
+.match-config-label {
+	font-size: 18px;
+	font-weight: 900;
+	line-height: 22px;
+	min-height: 24px;
+	height: 24px;
+	flex-shrink: 0;
+	color: $monopoly-ink;
+	opacity: 1;
+}
+
+.match-config-value {
+	max-width: 420px;
+	font-size: 13px;
+	font-weight: 1000;
+	line-height: 18px;
+	min-height: 36px;
+	height: 36px;
+	flex-shrink: 0;
+	overflow: visible;
+}
+
+.match-config-row .dropdown-button {
+	width: 100%;
+	min-width: 0;
+}
+
+.match-config-panel .dropdown-label,
+.match-config-panel .dropdown-item-label,
+.match-config-panel .dropdown-label .label,
+.match-config-panel .dropdown-item-label .label {
+	white-space: normal;
+	text-overflow: clip;
+	overflow: visible;
+}
+
+.match-config-stepper {
+	width: 100%;
+	height: 42px;
+
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 8px;
+	flex-shrink: 0;
+}
+
+.match-config-step-button {
+	width: 44px;
+	min-width: 44px;
+	padding: 0;
+}
+
+.match-config-stepper-value {
+	min-width: 96px;
+	width: 96px;
+	padding: 10px 12px;
+
+	background-color: rgba(5, 5, 5, 0.08);
+	border: 3px solid rgba(18, 31, 29, 0.22);
+	border-radius: $monopoly-radius-board;
+
+	font-size: 16px;
+	font-weight: 900;
+	text-align: center;
+	flex-shrink: 0;
+}
+
+.match-config-stepper-value .label {
+	text-align: center;
+}
+
+.match-config-footer {
+	justify-content: flex-end;
+}
+
+.match-config-panel .match-config-label .label {
+	height: 24px;
+	min-height: 24px;
+	z-index: 2;
+
+	color: $monopoly-gold;
+	font-size: 18px;
+	font-weight: 900;
+	line-height: 22px;
+	opacity: 1;
+	text-align: left;
+	text-transform: none;
+
+	display: flex;
+	align-items: center;
+	justify-content: flex-start;
+}
+
+.match-config-panel .match-config-section-title .label {
+	height: 24px;
+	min-height: 24px;
+
+	color: $monopoly-ink;
+	font-size: 18px;
+	font-weight: 900;
+	line-height: 22px;
+	opacity: 1;
+	text-align: left;
+	text-transform: uppercase;
+
+	display: flex;
+	align-items: center;
+	justify-content: flex-start;
+}

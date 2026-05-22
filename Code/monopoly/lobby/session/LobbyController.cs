@@ -4,14 +4,13 @@ using System;
 public sealed partial class LobbyController : Component
 {
 	public MatchConfig Config;
-	[Property, Sync] public int HostedMinPlayers { get; set; } = 1;
-	[Property, Sync] public int HostedMaxPlayers { get; set; } = 6;
-	[Property, Sync] public bool HostedOnlyHostStartsGame { get; set; } = true;
+	[Property, Sync] public string HostedConfigSnapshot { get; set; } = "";
 	[Property, Sync] public NetDictionary<string, bool> ReadyPlayers { get; set; } = new();
+	private string lastAppliedHostedConfigSnapshot = "";
 
-	public int MinPlayers => Math.Max( HostedMinPlayers, 1 );
-	public int MaxPlayers => Math.Max( HostedMaxPlayers, MinPlayers );
-	public bool OnlyHostStartsGame => HostedOnlyHostStartsGame;
+	public int MinPlayers => Math.Max( Config?.MinPlayers ?? 1, 1 );
+	public int MaxPlayers => Math.Max( Config?.MaxPlayers ?? MinPlayers, MinPlayers );
+	public bool OnlyHostStartsGame => Config?.OnlyHostStartsGame ?? true;
 
 	public List<LobbyPlayer> Players { get; private set; } = new();
 
@@ -29,8 +28,7 @@ public sealed partial class LobbyController : Component
 		GameAssets.PrewarmUiAssets();
 		SteamInviteBridge.Register( Scene );
 
-		if ( Networking.IsHost )
-			ApplyHostedConfig();
+		ApplyHostedConfig();
 
 		Players = BuildPlayers();
 	}
@@ -41,6 +39,7 @@ public sealed partial class LobbyController : Component
 
 	protected override void OnUpdate()
 	{
+		ApplyHostedConfigSnapshot();
 		Players = BuildPlayers();
 
 		if ( !Networking.IsHost )

@@ -43,26 +43,7 @@ public sealed class MatchBootstrap
 
 	public static MatchConfig CloneConfig( MatchConfig source )
 	{
-		source ??= new MatchConfig();
-
-		return new MatchConfig
-		{
-			MinPlayers = source.MinPlayers,
-			MaxPlayers = source.MaxPlayers,
-			OnlyHostStartsGame = source.OnlyHostStartsGame,
-			LandedUnownedCanAffordMode = source.LandedUnownedCanAffordMode,
-			LandedUnownedCantAffordMode = source.LandedUnownedCantAffordMode,
-			CanSkipUnowned = source.CanSkipUnowned,
-			StartingMoney = source.StartingMoney,
-			LandOnGoMoney = source.LandOnGoMoney,
-			PassGoMoney = source.PassGoMoney,
-			DoublesGoesAgain = source.DoublesGoesAgain,
-			ForceJailFineAfterFailedDoubles = source.ForceJailFineAfterFailedDoubles,
-			VacationCash = source.VacationCash,
-			DontCollectRentWhileInPrison = source.DontCollectRentWhileInPrison,
-			EvenBuild = source.EvenBuild,
-			TurnTimeLimitSeconds = source.TurnTimeLimitSeconds
-		};
+		return MatchConfigSchema.Clone( source );
 	}
 
 	private static List<LobbyPlayer> ClonePlayers( IReadOnlyList<LobbyPlayer> players )
