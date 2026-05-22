@@ -41,12 +41,6 @@ public sealed class MenuController : Component
 		return true;
 	}
 
-	[Rpc.Host]
-	public void RequestOpenLobby()
-	{
-		TryOpenLobby();
-	}
-
 	private void HandleLaunchArguments()
 	{
 		if ( ConsoleSystem.GetValue("debug") == "True" )

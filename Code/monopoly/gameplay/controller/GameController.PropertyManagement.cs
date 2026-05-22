@@ -6,6 +6,7 @@ using Sandbox;
 public sealed partial class GameController : Component
 {
 
+	[Rpc.Host]
 	public void RequestBuildImprovement( int spaceIndex )
 	{
 		if ( !CanAcceptGameplayInput() )

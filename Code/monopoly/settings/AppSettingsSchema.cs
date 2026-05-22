@@ -195,7 +195,7 @@ public static class AppSettingsSchema
 		};
 	}
 
-	private static AppSettingOption IntOption(
+	/*private static AppSettingOption IntOption(
 		string key,
 		string category,
 		string section,
@@ -219,5 +219,5 @@ public static class AppSettingsSchema
 			GetIntValue = getter,
 			SetIntValue = rawValue => setter(rawValue)
 		};
-	}
+	}*/
 }
