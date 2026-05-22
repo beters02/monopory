@@ -19,6 +19,16 @@
     background-color: $monopoly-gold-hover;
 }
 
+.monopoly-button.selected {
+    background-color: $monopoly-gold;
+    color: $monopoly-ink;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.55);
+}
+
+.monopoly-button.selected:hover {
+    background-color: $monopoly-gold-hover;
+}
+
 .monopoly-button.blocked-action-button {
     background-color: $monopoly-blocked-action;
     color: $monopoly-text;

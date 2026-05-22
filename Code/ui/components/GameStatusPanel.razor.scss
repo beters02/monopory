@@ -23,11 +23,20 @@
 	font-size: 13px;
 	text-align: center;
 	justify-content: center;
+	background-color: rgba(255, 255, 255, 0.08);
+	color: $monopoly-text;
 }
 
-.camera-mode-buttons .monopoly-button.camera-mode-button.active {
-	background-color: $monopoly-board-outline;
-	color: white;
+.camera-mode-buttons .monopoly-button.camera-mode-button:hover {
+	background-color: rgba(255, 255, 255, 0.16);
+}
+
+.camera-mode-buttons .monopoly-button.camera-mode-button.selected {
+	background-color: $monopoly-gold;
+	color: $monopoly-ink;
+	box-shadow:
+		0 0 0 2px rgba(255, 255, 255, 0.55),
+		0 10px 24px rgba(0, 0, 0, 0.22);
 }
 
 .jail-action-buttons {

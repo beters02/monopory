@@ -18,7 +18,7 @@ public sealed partial class GameController : Component
 	[Property, Group( "Physical Dice" )] public float DiceSettleTimeout { get; set; } = 5f;
 	[Property, Group( "Physical Dice" )] public bool UsePhysicalDice { get; set; } = true;
 
-	private bool TryGetPhysicalDice( out DiceComponent dieA, out DiceComponent dieB )
+	public bool TryGetPhysicalDice( out DiceComponent dieA, out DiceComponent dieB )
 	{
 		dieA = DieA;
 		dieB = DieB;
@@ -60,18 +60,27 @@ public sealed partial class GameController : Component
 		var spinA = new Vector3( Game.Random.Float( -1f, 1f ), Game.Random.Float( -1f, 1f ), Game.Random.Float( -1f, 1f ) ).Normal * spin;
 		var spinB = new Vector3( Game.Random.Float( -1f, 1f ), Game.Random.Float( -1f, 1f ), Game.Random.Float( -1f, 1f ) ).Normal * spin;
 
-		ThrowPhysicalDice( originA, originB, rotationA, rotationB, velocityA, velocityB, spinA, spinB );
+		IsResolvingPhysicalDice = true;
 
-		var startedAt = Time.Now;
-		while ( Time.Now - startedAt < DiceSettleTimeout )
+		try
 		{
-			if ( dieA.IsSettled() && dieB.IsSettled() )
-				break;
+			ThrowPhysicalDice( originA, originB, rotationA, rotationB, velocityA, velocityB, spinA, spinB );
 
-			await Task.Frame();
+			var startedAt = Time.Now;
+			while ( Time.Now - startedAt < DiceSettleTimeout )
+			{
+				if ( dieA.IsSettled() && dieB.IsSettled() )
+					break;
+
+				await Task.Frame();
+			}
+
+			return (dieA.GetTopFaceValue(), dieB.GetTopFaceValue());
 		}
-
-		return (dieA.GetTopFaceValue(), dieB.GetTopFaceValue());
+		finally
+		{
+			IsResolvingPhysicalDice = false;
+		}
 	}
 
 	private Vector3 GetDiceThrowCenter()

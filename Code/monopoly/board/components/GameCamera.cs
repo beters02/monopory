@@ -133,7 +133,14 @@ public sealed class GameCamera : Component
 	{
 		if ( Mode == BoardCameraMode.Default )
 		{
-			var player = GameController.Instance?.CurrentPlayer;
+			var controller = GameController.Instance;
+			if ( controller?.IsResolvingPhysicalDice == true &&
+				controller.TryGetPhysicalDice( out var dieA, out var dieB ) )
+			{
+				return (dieA.GameObject.WorldPosition + dieB.GameObject.WorldPosition) * 0.5f;
+			}
+
+			var player = controller?.CurrentPlayer;
 			var tokenPosition = GetTokenPosition( player );
 			if ( tokenPosition.HasValue )
 				return tokenPosition.Value;

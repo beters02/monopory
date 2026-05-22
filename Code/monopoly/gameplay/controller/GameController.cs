@@ -34,6 +34,7 @@ public sealed partial class GameController : Component
 	[Property, Sync] public int CurrentPlayerIndex { get; set; }
 	[Property, Sync] public int LastDieA { get; set; }
 	[Property, Sync] public int LastDieB { get; set; }
+	[Property, Sync] public bool IsResolvingPhysicalDice { get; set; }
 	[Property, Sync] public NetDictionary<int, int> PropertyOwners { get; set; } = new();
 	[Property, Sync] public NetDictionary<int, int> PropertyImprovements { get; set; } = new();
 	[Property, Sync] public NetDictionary<int, bool> MortgagedProperties { get; set; } = new();
