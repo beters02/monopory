@@ -1,42 +1,48 @@
 using System;
 
 public sealed class ChangeDiceColorTest : Component
-{
+{   
+    bool didInit = false;
+    bool isChanged = false;
+    ParticleGradient defaultColorTint;
 
-    DecalDefinition ForegroundDef;
-    DecalDefinition BackgroundDef;
+    ParticleGradient NewColorTint = Color.Red;
+
+    private void UpdateDiceColor()
+    {
+        ParticleGradient color = isChanged ? defaultColorTint : NewColorTint;
+        isChanged = !isChanged;
+
+        int dicecounter = -1;
+        foreach ( DiceComponent dice in Scene.GetComponentsInChildren<DiceComponent>() )
+        {
+            dicecounter++;
+            foreach (GameObject child in dice.GameObject.Children)
+                if (child.Name.Contains("Side_") && child.Name.Contains("Bg"))
+                    child.GetComponent<Decal>().ColorTint = color;
+        }
+    }
+
+    private ParticleGradient GetDefaultBackgroundColorTint()
+    {
+        foreach ( DiceComponent dice in Scene.GetComponentsInChildren<DiceComponent>() )
+        {
+            foreach (GameObject child in dice.GameObject.Children)
+                if (child.Name.Contains("Side_") && child.Name.Contains("Bg"))
+                    return child.GetComponent<Decal>().ColorTint;
+        }
+
+        return Color.White;
+    }
 
 	protected override void OnUpdate()
 	{
-		if (Input.Pressed("ParticleTest"))
+        Log.Info(defaultColorTint);
+		if (Input.Pressed("ParticleTest") && !didInit)
         {
-
-            if (ForegroundDef is null)
-            {
-                ForegroundDef = new();
-                ForegroundDef.Tint = ColorUtils.FromHex( "#d9b45f" );
-
-                int dicecounter = -1;
-                foreach ( DiceComponent dice in Scene.GetComponentsInChildren<DiceComponent>() )
-                {
-                    dicecounter++;
-                    Log.Info($"Dice{dicecounter}");
-                    foreach (GameObject child in dice.GameObject.Children)
-                    {
-                        Log.Info($"Dice{child.Name}");
-                        if (child.Name.Contains("Side_"))
-                        {
-                            
-                            if (child.Name.Contains("Bg"))
-                            {
-                                child.GetComponent<Decal>().ColorTint = Color.Red;
-                            }
-                        }
-                    }
-                }
-            }
-
-            
+            didInit = true;
+            defaultColorTint = GetDefaultBackgroundColorTint();
+            UpdateDiceColor();
         }
 	}
 }

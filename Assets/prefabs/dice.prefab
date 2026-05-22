@@ -136,7 +136,7 @@
         "__version": 2,
         "Flags": 0,
         "Name": "Side_Back",
-        "Position": "-2.16699219,0.087563321,-0.379554778",
+        "Position": "-19.2770786,0.087563321,-0.379554778",
         "Rotation": "0,0,0,1",
         "Scale": "1,3.00077367,1",
         "Tags": "",
@@ -155,11 +155,11 @@
             "__version": 3,
             "AttenuationAngle": 1,
             "ColorMix": 1,
-            "ColorTint": "1,1,1,1",
+            "ColorTint": "0,0,0,1",
             "Decals": [
-              "textures/dice/new/dice-six-new-bg.decal"
+              "textures/dice/new/dice-six-new.decal"
             ],
-            "Depth": 121.709785,
+            "Depth": 12.129607,
             "LifeTime": 0,
             "Looped": false,
             "OnComponentDestroy": null,
@@ -185,7 +185,7 @@
         "__version": 2,
         "Flags": 0,
         "Name": "Side_Back_Bg",
-        "Position": "-4.04704857,0.087563321,-0.379554778",
+        "Position": "-24.6271629,0.087563321,-0.379554778",
         "Rotation": "0,0,0,1",
         "Scale": "1,3.00077367,1",
         "Tags": "",
@@ -206,9 +206,9 @@
             "ColorMix": 1,
             "ColorTint": "1,1,1,1",
             "Decals": [
-              "textures/dice/new/dice-six-new.decal"
+              "textures/dice/new/dice-six-new-bg.decal"
             ],
-            "Depth": 61.37996,
+            "Depth": 6.9900126,
             "LifeTime": 0,
             "Looped": false,
             "OnComponentDestroy": null,
@@ -253,7 +253,7 @@
             "__version": 3,
             "AttenuationAngle": 1,
             "ColorMix": 1,
-            "ColorTint": "1,1,1,1",
+            "ColorTint": "0,0,0,1",
             "Decals": [
               "textures/dice/new/dice-five-new.decal"
             ],
@@ -351,7 +351,7 @@
             "__version": 3,
             "AttenuationAngle": 1,
             "ColorMix": 1,
-            "ColorTint": "1,1,1,1",
+            "ColorTint": "0,0,0,1",
             "Decals": [
               "textures/dice/new/dice-four-new.decal"
             ],
@@ -449,7 +449,7 @@
             "__version": 3,
             "AttenuationAngle": 1,
             "ColorMix": 1,
-            "ColorTint": "1,1,1,1",
+            "ColorTint": "0,0,0,1",
             "Decals": [
               "textures/dice/new/dice-three-new.decal"
             ],
@@ -547,7 +547,7 @@
             "__version": 3,
             "AttenuationAngle": 1,
             "ColorMix": 1,
-            "ColorTint": "1,1,1,1",
+            "ColorTint": "0,0,0,1",
             "Decals": [
               "textures/dice/new/dice-two-new.decal"
             ],
@@ -645,7 +645,7 @@
             "__version": 3,
             "AttenuationAngle": 1,
             "ColorMix": 1,
-            "ColorTint": "1,1,1,1",
+            "ColorTint": "0,0,0,1",
             "Decals": [
               "textures/dice/new/dice-one-new.decal"
             ],
