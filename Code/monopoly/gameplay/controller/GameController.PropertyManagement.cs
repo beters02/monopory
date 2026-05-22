@@ -19,7 +19,7 @@ public sealed partial class GameController : Component
 		var cost = GetImprovementCost( spaceIndex );
 		var count = GetImprovementCount( spaceIndex );
 
-		if ( !PayBank( player, cost ) )
+		if ( !PayBank( player, cost, false ) )
 			return;
 
 		PropertyImprovements[spaceIndex] = count + 1;
@@ -87,7 +87,7 @@ public sealed partial class GameController : Component
 		var player = Players[playerIndex];
 		var cost = GetUnmortgageCost( spaceIndex );
 
-		if ( !PayBank( player, cost ) )
+		if ( !PayBank( player, cost, false ) )
 			return;
 
 		MortgagedProperties.Remove( spaceIndex );
