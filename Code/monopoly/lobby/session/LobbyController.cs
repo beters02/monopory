@@ -3,7 +3,7 @@ using System;
 
 public sealed partial class LobbyController : Component
 {
-	[Property] public MatchConfig Config { get; set; } = new();
+	public MatchConfig Config;
 	[Property, Sync] public int HostedMinPlayers { get; set; } = 1;
 	[Property, Sync] public int HostedMaxPlayers { get; set; } = 6;
 	[Property, Sync] public bool HostedOnlyHostStartsGame { get; set; } = true;
