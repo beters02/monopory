@@ -1,3 +1,4 @@
+using System;
 using System.Reflection;
 using System.Xml;
 using Sandbox.Engine.Settings;
@@ -16,6 +17,7 @@ public class AppSettingsData
 	public UpscalerMode UpscalerMode { get; set; } = UpscalerMode.Off;
 	public Fsr3UpscalerQuality Fsr3Quality { get; set; } = Fsr3UpscalerQuality.Performance;
 	public float MotionBlurScale { get; set; } = 0f;
+	public int Volume { get; set; } = 100;
 }
 
 public class AppSettings : Component
@@ -122,15 +124,6 @@ public class AppSettings : Component
 		return true;
 	}
 
-	public static bool TrySetVsync( bool enabled )
-	{
-		if ( Settings is null )
-			return false;
-
-		Data.VSync = enabled;
-		return true;
-	}
-
 	public static bool TrySetFullscreenMode( FullscreenMode mode )
 	{
 		if ( Settings is null )
@@ -155,6 +148,16 @@ public class AppSettings : Component
 			return false;
 
 		Data.UpscalerMode = mode;
+		return true;
+	}
+
+	public static bool TrySetVolume( int volume )
+	{
+		if ( Settings is null )
+			return false;
+
+		volume = Math.Clamp(volume, 0, 100);
+		Data.Volume = volume;
 		return true;
 	}
 	

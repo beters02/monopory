@@ -35,7 +35,7 @@
 }
 
 .options-panel {
-	width: 620px;
+	width: 760px;
 	max-width: 88%;
 	max-height: 86%;
 	padding: 24px;
@@ -52,6 +52,24 @@
 	flex-direction: column;
 	gap: 14px;
 	overflow: scroll;
+}
+
+.options-category-strip,
+.options-footer {
+	display: flex;
+	gap: 10px;
+}
+
+.options-category-strip {
+	flex-wrap: wrap;
+	align-items: center;
+}
+
+.options-category-copy {
+	font-size: 13px;
+	font-weight: 800;
+	line-height: 18px;
+	opacity: 0.72;
 }
 
 .options-header {
@@ -121,11 +139,6 @@
 	gap: 8px;
 }
 
-.options-footer {
-	display: flex;
-	justify-content: flex-end;
-}
-
 .options-section-title {
 	font-size: 18px;
 	font-weight: 900;
@@ -138,16 +151,34 @@
 }
 
 .options-row {
-	min-height: 58px;
+	min-height: 82px;
 
 	display: flex;
-	align-items: flex-start;
+	align-items: center;
 	justify-content: space-between;
 	gap: 14px;
 }
 
+.options-text {
+	flex: 1;
+	min-width: 0;
+
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.options-control {
+	width: 320px;
+	min-width: 320px;
+
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+}
+
 .options-row .dropdown-button {
-	width: 296px;
+	width: 100%;
 }
 
 .options-panel .dropdown-label {
@@ -183,6 +214,7 @@
 	gap: 8px;
 }
 
+.options-category-button,
 .options-toggle-button,
 .options-choice-button,
 .options-apply-button {
@@ -200,6 +232,17 @@
 	font-weight: 900;
 	text-transform: uppercase;
 	justify-content: center;
+}
+
+.options-category-button {
+	background-color: $monopoly-ink;
+	border: 3px solid $monopoly-ink;
+	color: $monopoly-board;
+}
+
+.options-category-button.selected {
+	background-color: $monopoly-board;
+	color: $monopoly-ink;
 }
 
 .options-toggle-button.selected,
@@ -223,4 +266,33 @@
 
 .options-apply-button:hover {
 	background-color: $monopoly-gold-hover;
+}
+
+.options-footer {
+	justify-content: flex-end;
+}
+
+.options-empty-state {
+	padding: 18px 16px;
+
+	background-color: rgba(255, 255, 255, 0.35);
+	border: 3px solid rgba(18, 31, 29, 0.18);
+	border-radius: $monopoly-radius-board;
+
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.options-empty-title {
+	font-size: 18px;
+	font-weight: 900;
+	text-transform: uppercase;
+}
+
+.options-empty-copy {
+	font-size: 13px;
+	font-weight: 800;
+	line-height: 18px;
+	opacity: 0.72;
 }
