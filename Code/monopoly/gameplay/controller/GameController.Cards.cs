@@ -116,7 +116,7 @@ public sealed partial class GameController : Component
 		var passedGo = collectGo && targetSpaceIndex != 0 && targetSpaceIndex < player.SpaceIndex;
 
 		if ( passedGo )
-			player.Money += 200;
+			AwardPassGoMoney( player );
 
 		player.SpaceIndex = targetSpaceIndex;
 
@@ -130,10 +130,10 @@ public sealed partial class GameController : Component
 			return;
 
 		var targetSpaceIndex = NormalizeSpaceIndex( player.SpaceIndex + relativeSpaces );
-		var passedGo = collectGo && relativeSpaces > 0 && targetSpaceIndex < player.SpaceIndex;
+		var passedGo = collectGo && relativeSpaces > 0 && targetSpaceIndex != 0 && targetSpaceIndex < player.SpaceIndex;
 
 		if ( passedGo )
-			player.Money += 200;
+			AwardPassGoMoney( player );
 
 		player.SpaceIndex = targetSpaceIndex;
 

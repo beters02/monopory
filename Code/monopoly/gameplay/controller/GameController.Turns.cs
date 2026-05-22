@@ -294,7 +294,7 @@ public sealed partial class GameController : Component
 				await Task.DelaySeconds( 0.4f );
 
 				if ( player.SpaceIndex == 0 )
-					player.Money += 200;
+					AwardPassGoMoney( player );
 			}
 
 			ResolveLanding( player );

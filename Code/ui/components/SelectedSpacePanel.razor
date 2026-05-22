@@ -53,6 +53,10 @@
 							BlockedPopupTitle="Cannot buy property"
 							BlockedPopupMessage="@selection.CannotAffordBuyMessage">Buy</GameButton>
 						<GameButton OnClick="@AuctionProperty">Auction</GameButton>
+						@if ( selection.CanSkipBuyDecision )
+						{
+							<GameButton OnClick="@SkipProperty">Skip</GameButton>
+						}
 					</div>
 				</div>
 			}
@@ -144,6 +148,7 @@
 			ShouldBlockClose = ShouldBlockSelectedSpaceClose,
 			CanBuy = CanBuySelectedSpace,
 			CanAffordBuy = CanAffordSelectedSpace,
+			CanSkipBuyDecision = CanSkipPendingPropertyDecision,
 			CanManage = CanManageSelectedSpace,
 			CanBuildImprovement = CanBuildSelectedImprovement,
 			CanSellImprovement = CanSellSelectedImprovement,
@@ -272,6 +277,9 @@
 	private bool CanManageSelectedSpace =>
 		IsOwnedByLocalPlayer;
 
+	private bool CanSkipPendingPropertyDecision =>
+		GameRef?.CanSkipPendingPropertyDecision() == true;
+
 	private bool CanAffordSelectedSpace =>
 		SelectedSpace is not null &&
 		(GameRef?.LocalPlayer?.Money ?? 0) >= SelectedSpace.Price;
@@ -367,7 +375,7 @@
 		CanMortgageSelectedSpace || CanUnmortgageSelectedSpace ? "mortgage-action" : "mortgage-action disabled";
 
 	private string SelectedSpaceCloseBlockedMessage =>
-		$"Buy or auction {SelectedSpace?.DisplayName ?? "this property"} before closing this card.";
+		$"{GameRef?.GetPendingPropertyDecisionPrompt() ?? $"Buy or auction {SelectedSpace?.DisplayName ?? "this property"}"} before closing this card.";
 
 	private string CannotAffordBuyMessage =>
 		SelectedSpace is null
@@ -397,6 +405,11 @@
 	private void AuctionProperty()
 	{
 		GameRef?.RequestStartPendingAuction();
+	}
+
+	private void SkipProperty()
+	{
+		GameRef?.RequestSkipPendingProperty();
 	}
 
 	private void BuildImprovement()
@@ -449,6 +462,7 @@
 		hash.Add( GameRef?.PendingPurchaseSpaceIndex ?? -1 );
 		hash.Add( GameRef?.FreeParkingBank ?? 0 );
 		hash.Add( GameRef?.Config?.VacationCash ?? false );
+		hash.Add( GameRef?.Config?.CanSkipUnowned ?? false );
 		hash.Add( GameRef?.LocalPlayer?.Money ?? 0 );
 		hash.Add( HudUi.GetPropertyOwnersHash( GameRef ) );
 		hash.Add( HudUi.GetMortgagedPropertiesHash( GameRef ) );
@@ -471,6 +485,7 @@
 		public bool ShouldBlockClose { get; set; }
 		public bool CanBuy { get; set; }
 		public bool CanAffordBuy { get; set; }
+		public bool CanSkipBuyDecision { get; set; }
 		public bool CanManage { get; set; }
 		public bool CanBuildImprovement { get; set; }
 		public bool CanSellImprovement { get; set; }

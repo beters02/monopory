@@ -5,6 +5,12 @@ using Sandbox;
 
 public sealed partial class GameController : Component
 {
+	private enum UnownedLandingAction
+	{
+		ForceBuy,
+		ForceAuction,
+		PendingDecision
+	}
 
 	private void ResolveLanding( PlayerState player )
 	{
@@ -34,8 +40,7 @@ public sealed partial class GameController : Component
 		switch ( spaceDef.Type )
 		{
 			case SpaceType.Go:
-				player.Money += 200;
-				Log.Info( $"{player.PlayerName} collected $200." );
+				AwardLandOnGoMoney( player );
 				break;
 
 			case SpaceType.Tax:
@@ -108,37 +113,40 @@ public sealed partial class GameController : Component
 
 	private void ResolveUnownedPropertyLanding( PlayerState player, SpaceDef def )
 	{
-		switch ( Config?.LandedUnownedMode ?? UnownedLandingMode.SkipOrAuction )
+		switch ( GetUnownedLandingAction( player, def ) )
 		{
-			case UnownedLandingMode.ForceAuction:
+			case UnownedLandingAction.ForceBuy:
+				BuyUnownedPropertyForPlayer( player, def, CurrentPlayerIndex );
+				return;
+
+			case UnownedLandingAction.ForceAuction:
 				StartAuction( def.Index );
 				return;
 
-			case UnownedLandingMode.ForceBuyIfPossible:
-				if ( player.Money >= def.Price )
-				{
-					BuyUnownedPropertyForPlayer( player, def, CurrentPlayerIndex );
-					return;
-				}
-
-				Log.Info( $"{player.PlayerName} could not afford {def.DisplayName}." );
-				return;
-
-			case UnownedLandingMode.SkipOrAuction:
+			case UnownedLandingAction.PendingDecision:
 			default:
-				if ( player.Money < def.Price && Config?.InstantAuctionIfLandedOnUnownedAndCantAfford == true )
-				{
-					Log.Info( $"{player.PlayerName} could not afford {def.DisplayName}, starting an auction immediately." );
-					StartAuction( def.Index );
-					return;
-				}
-
 				PendingPurchaseSpaceIndex = def.Index;
 				Phase = GamePhase.WaitingForBuyDecision;
 
-				Log.Info( $"{player.PlayerName} can buy {def.DisplayName} for ${def.Price}." );
+				Log.Info( GetPendingPropertyDecisionPrompt( def, player ) );
 				return;
 		}
+	}
+
+	private UnownedLandingAction GetUnownedLandingAction( PlayerState player, SpaceDef def )
+	{
+		var canAfford = player?.Money >= (def?.Price ?? int.MaxValue);
+		if ( canAfford )
+		{
+			return (Config?.LandedUnownedCanAffordMode ?? UnownedAffordableLandingMode.Decision) == UnownedAffordableLandingMode.ForceBuy
+				? UnownedLandingAction.ForceBuy
+				: UnownedLandingAction.PendingDecision;
+		}
+
+		var canSkip = Config?.CanSkipUnowned == true;
+		return (Config?.LandedUnownedCantAffordMode == UnownedUnaffordableLandingMode.Decision && canSkip)
+			? UnownedLandingAction.PendingDecision
+			: UnownedLandingAction.ForceAuction;
 	}
 
 	private void ResolveFreeParkingLanding( PlayerState player )
@@ -164,5 +172,31 @@ public sealed partial class GameController : Component
 
 		player.SkipsNextTurn = true;
 		Log.Info( $"{player.PlayerName} collected ${payout} from Free Parking and will skip their next turn." );
+	}
+
+	private void AwardPassGoMoney( PlayerState player )
+	{
+		if ( player is null )
+			return;
+
+		var amount = Math.Max( Config?.PassGoMoney ?? 200, 0 );
+		if ( amount <= 0 )
+			return;
+
+		player.Money += amount;
+		Log.Info( $"{player.PlayerName} collected ${amount} for passing Go." );
+	}
+
+	private void AwardLandOnGoMoney( PlayerState player )
+	{
+		if ( player is null )
+			return;
+
+		var amount = Math.Max( Config?.LandOnGoMoney ?? 200, 0 );
+		if ( amount <= 0 )
+			return;
+
+		player.Money += amount;
+		Log.Info( $"{player.PlayerName} collected ${amount} for landing on Go." );
 	}
 }

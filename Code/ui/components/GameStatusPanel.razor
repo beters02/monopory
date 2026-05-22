@@ -135,7 +135,7 @@
 		{
 			GamePhase.WaitingToRoll => "Roll the dice before ending your turn.",
 			GamePhase.ResolvingSpace => "Wait for your move to finish resolving.",
-			GamePhase.WaitingForBuyDecision => $"Buy or auction {PendingPropertyName} before ending your turn.",
+			GamePhase.WaitingForBuyDecision => $"{GameRef?.GetPendingPropertyDecisionPrompt() ?? $"Buy or auction {PendingPropertyName}"} before ending your turn.",
 			GamePhase.Auctioning => "Wait for the auction to finish before ending your turn.",
 			_ => "Finish the current action before ending your turn."
 		};
@@ -146,10 +146,12 @@
 		var hash = new HashCode();
 		hash.Add( GameRef?.MatchState ?? 0 );
 		hash.Add( GameRef?.Phase ?? 0 );
+		hash.Add( GameRef?.PendingPurchaseSpaceIndex ?? -1 );
 		hash.Add( GameRef?.CurrentPlayerIndex ?? -1 );
 		hash.Add( GameRef?.LastDieA ?? 0 );
 		hash.Add( GameRef?.LastDieB ?? 0 );
 		hash.Add( LocalPlayerMoney );
+		hash.Add( GameRef?.Config?.CanSkipUnowned ?? false );
 		hash.Add( CurrentTurnRemainingSeconds );
 		hash.Add( GameRef?.HasPendingForcedPayment ?? false );
 		hash.Add( CurrentPlayer?.IsInJail ?? false );

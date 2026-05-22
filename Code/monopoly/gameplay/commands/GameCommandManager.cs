@@ -141,6 +141,6 @@ public sealed class GameCommandManager : Component
 		var pendingDef = game?.Board?.GetSpaceDef( game.PendingPurchaseSpaceIndex );
 		var pendingName = pendingDef?.DisplayName ?? "the pending property";
 
-		return $"Resolve the pending buy decision for {pendingName} before buying other properties for that player.";
+		return $"Resolve the pending property decision for {pendingName} before buying other properties for that player.";
 	}
 }

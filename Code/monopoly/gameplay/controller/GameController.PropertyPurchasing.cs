@@ -6,6 +6,44 @@ using Sandbox.UI;
 
 public sealed partial class GameController : Component
 {
+	public bool CanSkipPendingPropertyDecision()
+	{
+		return Phase == GamePhase.WaitingForBuyDecision &&
+			PendingPurchaseSpaceIndex >= 0 &&
+			Config?.CanSkipUnowned == true;
+	}
+
+	public string GetPendingPropertyDecisionPrompt()
+	{
+		var def = Board?.GetSpaceDef( PendingPurchaseSpaceIndex );
+		return GetPendingPropertyDecisionPrompt( def, CurrentPlayer );
+	}
+
+	private string GetPendingPropertyDecisionPrompt( SpaceDef def, PlayerState player )
+	{
+		var propertyName = def?.DisplayName ?? "this property";
+		var actionText = GetPendingPropertyDecisionActionText( def, player );
+		return $"{actionText} {propertyName}";
+	}
+
+	private string GetPendingPropertyDecisionActionText( SpaceDef def, PlayerState player )
+	{
+		var canBuy = player is not null &&
+			def is not null &&
+			player.Money >= def.Price;
+		var canSkip = Config?.CanSkipUnowned == true;
+
+		if ( canBuy && canSkip )
+			return "Buy, auction, or skip";
+
+		if ( canBuy )
+			return "Buy or auction";
+
+		if ( canSkip )
+			return "Auction or skip";
+
+		return "Auction";
+	}
 
 	public bool CanBuyPendingProperty( PlayerState player, int spaceIndex )
 	{
@@ -207,13 +245,6 @@ public sealed partial class GameController : Component
 
 		if ( player.Money < def.Price )
 		{
-			if ( Config?.InstantAuctionIfLandedOnUnownedAndCantAfford == true )
-			{
-				Log.Info( $"{player.PlayerName} could not afford {def.DisplayName} when buying, starting the auction." );
-				StartAuction( def.Index );
-				return;
-			}
-
 			SendPopupToPlayer(
 				player,
 				"Cannot buy property",
@@ -242,6 +273,9 @@ public sealed partial class GameController : Component
 			return;
 
 		if ( Phase != GamePhase.WaitingForBuyDecision )
+			return;
+
+		if ( !CanSkipPendingPropertyDecision() )
 			return;
 
 		Log.Info( $"{CurrentPlayer?.PlayerName} skipped buying." );
