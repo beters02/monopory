@@ -109,7 +109,7 @@
               "__enabled": true,
               "Flags": 0,
               "Center": "0,0,0",
-              "ColliderFlags": 0,
+              "ColliderFlags": "IgnoreMass",
               "Elasticity": null,
               "Friction": null,
               "IsTrigger": false,
@@ -127,7 +127,7 @@
               "RollingResistance": null,
               "Scale": "100,100",
               "Static": true,
-              "Surface": null,
+              "Surface": "surfaces/board.surface",
               "SurfaceVelocity": "0,0,0"
             }
           ],
@@ -6642,6 +6642,7 @@
                 "MaxPlayers": 6,
                 "OnlyHostStartsGame": true,
                 "LandedUnownedMode": "SkipOrAuction",
+                "InstantAuctionIfLandedOnUnownedAndCantAfford": false,
                 "StartingMoney": 1500,
                 "DoublesGoesAgain": false,
                 "ForceJailFineAfterFailedDoubles": true,
@@ -7423,6 +7424,22 @@
             },
             "Property": "Position",
             "Value": "-141.035904,-231.682022,130.617691"
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "b61e6ea6-93d1-4c64-b48a-534fe7b63418"
+            },
+            "Property": "CollisionSoundVolumeMaxSpeed",
+            "Value": 50
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "b61e6ea6-93d1-4c64-b48a-534fe7b63418"
+            },
+            "Property": "CollisionSoundVolumeMinSpeed",
+            "Value": 20
           }
         ],
         "MovedObjects": []
@@ -7470,6 +7487,22 @@
             },
             "Property": "Position",
             "Value": "-141.035904,-202.862183,130.617691"
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "b61e6ea6-93d1-4c64-b48a-534fe7b63418"
+            },
+            "Property": "CollisionSoundVolumeMaxSpeed",
+            "Value": 50
+          },
+          {
+            "Target": {
+              "Type": "Component",
+              "IdValue": "b61e6ea6-93d1-4c64-b48a-534fe7b63418"
+            },
+            "Property": "CollisionSoundVolumeMinSpeed",
+            "Value": 20
           }
         ],
         "MovedObjects": []
@@ -7516,9 +7549,9 @@
           "__version": 2,
           "Flags": 0,
           "Name": "Plane",
-          "Position": "44.0578918,-70,69.9999695",
-          "Rotation": "0.707106709,0,0,0.707106829",
-          "Scale": "2.07858849,1,1",
+          "Position": "44.0578613,-57.769989,164.497131",
+          "Rotation": "1.37678754E-07,-0.707106769,-0.70710665,1.37678782E-07",
+          "Scale": "2.07858849,3.07999825,1",
           "Tags": "",
           "Enabled": true,
           "NetworkMode": 2,
@@ -7578,7 +7611,7 @@
               "RollingResistance": null,
               "Scale": "100,100",
               "Static": true,
-              "Surface": null,
+              "Surface": "surfaces/board.surface",
               "SurfaceVelocity": "0,0,0"
             }
           ],
@@ -7589,9 +7622,9 @@
           "__version": 2,
           "Flags": 0,
           "Name": "Plane",
-          "Position": "44.0578918,130,70",
+          "Position": "44.0578918,117.767365,164.49707",
           "Rotation": "0.707106709,0,0,0.707106829",
-          "Scale": "2.07858849,1,1",
+          "Scale": "2.07858849,3.07999825,1",
           "Tags": "",
           "Enabled": true,
           "NetworkMode": 2,
@@ -7651,7 +7684,7 @@
               "RollingResistance": null,
               "Scale": "100,100",
               "Static": true,
-              "Surface": null,
+              "Surface": "surfaces/board.surface",
               "SurfaceVelocity": "0,0,0"
             }
           ],
@@ -7662,9 +7695,9 @@
           "__version": 2,
           "Flags": 0,
           "Name": "Plane",
-          "Position": "140,33,70",
+          "Position": "139.999985,33.0000153,164.497116",
           "Rotation": "0.49999997,-0.49999997,-0.49999997,0.49999997",
-          "Scale": "2.35246444,1,1",
+          "Scale": "2.35246444,3.07999825,1",
           "Tags": "",
           "Enabled": true,
           "NetworkMode": 2,
@@ -7724,7 +7757,7 @@
               "RollingResistance": null,
               "Scale": "100,100",
               "Static": true,
-              "Surface": null,
+              "Surface": "surfaces/board.surface",
               "SurfaceVelocity": "0,0,0"
             }
           ],
@@ -7735,9 +7768,9 @@
           "__version": 2,
           "Flags": 0,
           "Name": "Plane",
-          "Position": "-50,33,70",
-          "Rotation": "0.49999997,-0.49999997,-0.49999997,0.49999997",
-          "Scale": "2.35246444,1,1",
+          "Position": "-40.2714996,33.0000153,164.497147",
+          "Rotation": "-0.499999881,-0.50000006,-0.50000006,-0.499999881",
+          "Scale": "2.35246444,3.07999825,1",
           "Tags": "",
           "Enabled": true,
           "NetworkMode": 2,
@@ -7797,7 +7830,7 @@
               "RollingResistance": null,
               "Scale": "100,100",
               "Static": true,
-              "Surface": null,
+              "Surface": "surfaces/board.surface",
               "SurfaceVelocity": "0,0,0"
             }
           ],

@@ -1,7 +1,7 @@
 using System;
 using Sandbox;
 
-public sealed class DiceComponent : Component
+public sealed class DiceComponent : Component, Component.ICollisionListener
 {
 	[RequireComponent] public Rigidbody Body { get; set; }
 
@@ -14,10 +14,17 @@ public sealed class DiceComponent : Component
 	[Property] public float SettledLinearSpeed { get; set; } = 2f;
 	[Property] public float SettledAngularSpeed { get; set; } = 4f;
 	[Property] public float SettledStillSeconds { get; set; } = 0.35f;
+	[Property, Group( "Audio" )] public bool EnableCollisionAudio { get; set; } = true;
+	public GameSound CollisionSound = GameAssets.Sounds.DiceImpact;
+	[Property, Group( "Audio" )] public float CollisionSoundMinSpeed { get; set; } = 5f;
+	[Property, Group("Audio")] public float CollisionSoundVolumeMinSpeed { get; set; } = 20f;
+	[Property, Group("Audio")] public float CollisionSoundVolumeMaxSpeed { get; set; } = 130f;
+	[Property, Group( "Audio" )] public float CollisionSoundCooldown { get; set; } = 0.06f;
 
 	private Vector3 startingPosition;
 	private Rotation startingRotation;
 	private float stillTime;
+	private float nextCollisionSoundTime;
 
 	protected override void OnStart()
 	{
@@ -33,6 +40,7 @@ public sealed class DiceComponent : Component
 		GameObject.WorldPosition = position;
 		GameObject.WorldRotation = rotation;
 		stillTime = 0f;
+		nextCollisionSoundTime = 0f;
 
 		if ( Body is null )
 			return;
@@ -40,6 +48,36 @@ public sealed class DiceComponent : Component
 		Body.MotionEnabled = true;
 		Body.Velocity = velocity;
 		Body.AngularVelocity = angularVelocity;
+	}
+
+	void Component.ICollisionListener.OnCollisionStart( Collision collision )
+	{
+		if ( !EnableCollisionAudio || !CollisionSound.IsAssigned )
+			return;
+
+		if ( Time.Now < nextCollisionSoundTime )
+			return;
+
+		if ( Body is null )
+			Body = Components.Get<Rigidbody>();
+
+		var impactSpeed = Body?.Velocity.Length ?? 0f;
+		if ( impactSpeed < CollisionSoundMinSpeed )
+			return;
+		
+		Log.Info(impactSpeed);
+		var mult = Math.Clamp(impactSpeed / CollisionSoundVolumeMaxSpeed, 0.2f, 1f);
+		SoundHandle handle = CollisionSound.PlayWithHandle();
+		handle.Volume *= mult;
+		nextCollisionSoundTime = Time.Now + CollisionSoundCooldown;
+	}
+
+	void Component.ICollisionListener.OnCollisionUpdate( Collision collision )
+	{
+	}
+
+	void Component.ICollisionListener.OnCollisionStop( CollisionStop collision )
+	{
 	}
 
 	public void ResetToStart()

@@ -44,6 +44,17 @@ public readonly struct GameSound
 		return true;
 	}
 
+	public SoundHandle PlayWithHandle()
+	{
+		if ( !IsAssigned )
+			return null;
+
+		if ( SoundType == GameSoundType.SoundFile )
+			return Sound.PlayFile( SoundFile.Load( Path ) );
+		else
+			return Sound.Play( Path );
+	}
+
 	private static GameSoundType GetSoundType( string path )
 	{
 		return System.IO.Path.GetExtension( path ).Equals( ".sound", StringComparison.OrdinalIgnoreCase )

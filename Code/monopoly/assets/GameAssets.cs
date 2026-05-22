@@ -21,6 +21,7 @@ public static class GameAssets
 		Sounds.CardFlip.Preload();
 		Sounds.Warning.Preload();
 		Sounds.Error.Preload();
+		Sounds.DiceImpact.Preload();
 		Sounds.Popup.Success.Preload();
 	}
 
@@ -45,6 +46,7 @@ public static class GameAssets
 		public static readonly GameSound Unassigned = new( "" );
 		public static readonly GameSound Warning = new( "sounds/effects/uipack-retro12.mp3" );
 		public static readonly GameSound Error = new( "sounds/effects/ui-error.sound" );
+		public static readonly GameSound DiceImpact = new( "sounds/effects/dice-impact.sound" );
 		
 		public static class Popup
 		{

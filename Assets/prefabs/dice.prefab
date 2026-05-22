@@ -65,7 +65,7 @@
         "RollingResistance": null,
         "Scale": "50,50,50",
         "Static": false,
-        "Surface": "prefabs/dice.surface",
+        "Surface": "surfaces/dice.surface",
         "SurfaceVelocity": "0,0,0"
       },
       {
@@ -109,7 +109,10 @@
         "__enabled": true,
         "Flags": 0,
         "BackFaceValue": 6,
+        "CollisionSoundCooldown": 0.06,
+        "CollisionSoundMinSpeed": 5,
         "DownFaceValue": 1,
+        "EnableCollisionAudio": true,
         "ForwardFaceValue": 5,
         "LeftFaceValue": 4,
         "OnComponentDestroy": null,

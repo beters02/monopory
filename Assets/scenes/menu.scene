@@ -188,6 +188,7 @@
             "MaxPlayers": 6,
             "OnlyHostStartsGame": true,
             "LandedUnownedMode": "SkipOrAuction",
+            "InstantAuctionIfLandedOnUnownedAndCantAfford": false,
             "StartingMoney": 1500,
             "DoublesGoesAgain": false,
             "ForceJailFineAfterFailedDoubles": true,
