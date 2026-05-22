@@ -136,7 +136,7 @@
         "__version": 2,
         "Flags": 0,
         "Name": "Side_Back",
-        "Position": "1.88295603,0.087563321,-0.379554778",
+        "Position": "-2.16699219,0.087563321,-0.379554778",
         "Rotation": "0,0,0,1",
         "Scale": "1,3.00077367,1",
         "Tags": "",
@@ -157,7 +157,56 @@
             "ColorMix": 1,
             "ColorTint": "1,1,1,1",
             "Decals": [
-              "textures/dice/dice_six.decal"
+              "textures/dice/new/dice-six-new-bg.decal"
+            ],
+            "Depth": 121.709785,
+            "LifeTime": 0,
+            "Looped": false,
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
+            "Parallax": 1,
+            "Rotation": 0,
+            "Scale": 1.1799998,
+            "SequenceId": 0,
+            "SheetSequence": false,
+            "Size": "1,3",
+            "SortLayer": 0,
+            "Transient": true
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "af765d42-7978-4669-adbc-5bf6556e405e",
+        "__version": 2,
+        "Flags": 0,
+        "Name": "Side_Back_Bg",
+        "Position": "-4.04704857,0.087563321,-0.379554778",
+        "Rotation": "0,0,0,1",
+        "Scale": "1,3.00077367,1",
+        "Tags": "",
+        "Enabled": true,
+        "NetworkMode": 2,
+        "NetworkFlags": 0,
+        "NetworkOrphaned": 0,
+        "NetworkTransmit": true,
+        "OwnerTransfer": 1,
+        "Components": [
+          {
+            "__type": "Sandbox.Decal",
+            "__guid": "b090bbac-57ba-43ef-98cd-617dfbb0884e",
+            "__enabled": true,
+            "Flags": 0,
+            "__version": 3,
+            "AttenuationAngle": 1,
+            "ColorMix": 1,
+            "ColorTint": "1,1,1,1",
+            "Decals": [
+              "textures/dice/new/dice-six-new.decal"
             ],
             "Depth": 61.37996,
             "LifeTime": 0,
@@ -206,7 +255,56 @@
             "ColorMix": 1,
             "ColorTint": "1,1,1,1",
             "Decals": [
-              "textures/dice/dice_five.decal"
+              "textures/dice/new/dice-five-new.decal"
+            ],
+            "Depth": 27.38984,
+            "LifeTime": 0,
+            "Looped": false,
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
+            "Parallax": 1,
+            "Rotation": 0,
+            "Scale": 1.1799998,
+            "SequenceId": 0,
+            "SheetSequence": false,
+            "Size": "1,3",
+            "SortLayer": 0,
+            "Transient": true
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "d67da4e7-a374-4411-8164-43e8f68584b1",
+        "__version": 2,
+        "Flags": 0,
+        "Name": "Side_Forward_Bg",
+        "Position": "14.5800285,0,0",
+        "Rotation": "0,0,1,-4.37113883E-08",
+        "Scale": "1,3.00077367,1",
+        "Tags": "",
+        "Enabled": true,
+        "NetworkMode": 2,
+        "NetworkFlags": 0,
+        "NetworkOrphaned": 0,
+        "NetworkTransmit": true,
+        "OwnerTransfer": 1,
+        "Components": [
+          {
+            "__type": "Sandbox.Decal",
+            "__guid": "49534ec6-5e61-4980-ad3b-48e26a95ba34",
+            "__enabled": true,
+            "Flags": 0,
+            "__version": 3,
+            "AttenuationAngle": 1,
+            "ColorMix": 1,
+            "ColorTint": "1,1,1,1",
+            "Decals": [
+              "textures/dice/new/dice-five-new-bg.decal"
             ],
             "Depth": 27.38984,
             "LifeTime": 0,
@@ -255,7 +353,56 @@
             "ColorMix": 1,
             "ColorTint": "1,1,1,1",
             "Decals": [
-              "textures/dice/dice_four.decal"
+              "textures/dice/new/dice-four-new.decal"
+            ],
+            "Depth": 27.38984,
+            "LifeTime": 0,
+            "Looped": false,
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
+            "Parallax": 1,
+            "Rotation": 0,
+            "Scale": 1.1799998,
+            "SequenceId": 0,
+            "SheetSequence": false,
+            "Size": "1,3",
+            "SortLayer": 0,
+            "Transient": true
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "21084330-c22b-4732-b4cf-da78079a3e0c",
+        "__version": 2,
+        "Flags": 0,
+        "Name": "Side_Left_Bg",
+        "Position": "0,12.7889309,0",
+        "Rotation": "0,0,-0.707106769,0.707106769",
+        "Scale": "1,3.00077367,1",
+        "Tags": "",
+        "Enabled": true,
+        "NetworkMode": 2,
+        "NetworkFlags": 0,
+        "NetworkOrphaned": 0,
+        "NetworkTransmit": true,
+        "OwnerTransfer": 1,
+        "Components": [
+          {
+            "__type": "Sandbox.Decal",
+            "__guid": "c61b6e87-6667-4c32-90e6-7fa13ced8075",
+            "__enabled": true,
+            "Flags": 0,
+            "__version": 3,
+            "AttenuationAngle": 1,
+            "ColorMix": 1,
+            "ColorTint": "1,1,1,1",
+            "Decals": [
+              "textures/dice/new/dice-four-new-bg.decal"
             ],
             "Depth": 27.38984,
             "LifeTime": 0,
@@ -304,7 +451,56 @@
             "ColorMix": 1,
             "ColorTint": "1,1,1,1",
             "Decals": [
-              "textures/dice/dice_three.decal"
+              "textures/dice/new/dice-three-new.decal"
+            ],
+            "Depth": 27.38984,
+            "LifeTime": 0,
+            "Looped": false,
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
+            "Parallax": 1,
+            "Rotation": 0,
+            "Scale": 1.1799998,
+            "SequenceId": 0,
+            "SheetSequence": false,
+            "Size": "1,3",
+            "SortLayer": 0,
+            "Transient": true
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "02386228-51fe-481b-84eb-19aa8305bdb2",
+        "__version": 2,
+        "Flags": 0,
+        "Name": "Side_Right_Bg",
+        "Position": "0,-17.1379471,0",
+        "Rotation": "0,0,0.707106769,0.707106769",
+        "Scale": "1,3.00077367,1",
+        "Tags": "",
+        "Enabled": true,
+        "NetworkMode": 2,
+        "NetworkFlags": 0,
+        "NetworkOrphaned": 0,
+        "NetworkTransmit": true,
+        "OwnerTransfer": 1,
+        "Components": [
+          {
+            "__type": "Sandbox.Decal",
+            "__guid": "b149bbee-5df4-4cb6-8289-cb6fbfb1ce70",
+            "__enabled": true,
+            "Flags": 0,
+            "__version": 3,
+            "AttenuationAngle": 1,
+            "ColorMix": 1,
+            "ColorTint": "1,1,1,1",
+            "Decals": [
+              "textures/dice/new/dice-three-new-bg.decal"
             ],
             "Depth": 27.38984,
             "LifeTime": 0,
@@ -353,7 +549,56 @@
             "ColorMix": 1,
             "ColorTint": "1,1,1,1",
             "Decals": [
-              "textures/dice/dice_two.decal"
+              "textures/dice/new/dice-two-new.decal"
+            ],
+            "Depth": 27.38984,
+            "LifeTime": 0,
+            "Looped": false,
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
+            "Parallax": 1,
+            "Rotation": 0,
+            "Scale": 1.1799998,
+            "SequenceId": 0,
+            "SheetSequence": false,
+            "Size": "1,3",
+            "SortLayer": 0,
+            "Transient": true
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "e0beee2a-c46b-4321-a953-a573e7c4153a",
+        "__version": 2,
+        "Flags": 0,
+        "Name": "Side_Top_Bg",
+        "Position": "0,0,20",
+        "Rotation": "0.70833987,-3.09625179E-08,-0.705871522,-3.08546255E-08",
+        "Scale": "1,3.00077367,1",
+        "Tags": "",
+        "Enabled": true,
+        "NetworkMode": 2,
+        "NetworkFlags": 0,
+        "NetworkOrphaned": 0,
+        "NetworkTransmit": true,
+        "OwnerTransfer": 1,
+        "Components": [
+          {
+            "__type": "Sandbox.Decal",
+            "__guid": "3fc079e0-70f5-4ad7-9af2-6b1e7d0df2a2",
+            "__enabled": true,
+            "Flags": 0,
+            "__version": 3,
+            "AttenuationAngle": 1,
+            "ColorMix": 1,
+            "ColorTint": "1,1,1,1",
+            "Decals": [
+              "textures/dice/new/dice-two-new-bg.decal"
             ],
             "Depth": 27.38984,
             "LifeTime": 0,
@@ -402,7 +647,56 @@
             "ColorMix": 1,
             "ColorTint": "1,1,1,1",
             "Decals": [
-              "textures/dice/dice_one.decal"
+              "textures/dice/new/dice-one-new.decal"
+            ],
+            "Depth": 27.38984,
+            "LifeTime": 0,
+            "Looped": false,
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
+            "Parallax": 1,
+            "Rotation": 0,
+            "Scale": 1.1799998,
+            "SequenceId": 0,
+            "SheetSequence": false,
+            "Size": "1,3",
+            "SortLayer": 0,
+            "Transient": true
+          }
+        ],
+        "Children": []
+      },
+      {
+        "__guid": "59cd2d39-5498-4e08-8835-47063489072e",
+        "__version": 2,
+        "Flags": 0,
+        "Name": "Side_Bottom_Bg",
+        "Position": "0,0,-24.1676426",
+        "Rotation": "0.707106769,3.09086197E-08,0.707106769,-3.09086197E-08",
+        "Scale": "1,3.00077367,1",
+        "Tags": "",
+        "Enabled": true,
+        "NetworkMode": 2,
+        "NetworkFlags": 0,
+        "NetworkOrphaned": 0,
+        "NetworkTransmit": true,
+        "OwnerTransfer": 1,
+        "Components": [
+          {
+            "__type": "Sandbox.Decal",
+            "__guid": "3546f99c-c48c-40f1-b6b7-146037f3a169",
+            "__enabled": true,
+            "Flags": 0,
+            "__version": 3,
+            "AttenuationAngle": 1,
+            "ColorMix": 1,
+            "ColorTint": "1,1,1,1",
+            "Decals": [
+              "textures/dice/new/dice-one-new-bg.decal"
             ],
             "Depth": 27.38984,
             "LifeTime": 0,

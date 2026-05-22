@@ -63,19 +63,17 @@
 	}
 
 	private void HandleMenuOpen()
-	{
-
-		if ( Input.EscapePressed )
+	{	
+		if (MonopolyApp.IsStandalone && Input.EscapePressed)
 		{
-#if STANDALONE
-		ToggleEscapeMenu();
-		return;
-#endif
+			ToggleEscapeMenu();
+			return;
 		}
 
 		if ( Input.Pressed( "EditorMenu" ) )
 		{
 			ToggleEscapeMenu();
+			return;
 		}
 	}
 

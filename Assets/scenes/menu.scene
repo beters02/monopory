@@ -209,6 +209,37 @@
         }
       ],
       "Children": []
+    },
+    {
+      "__guid": "93aa6d63-ac07-43e1-ab11-54bdc2105cdd",
+      "__version": 2,
+      "Flags": 0,
+      "Name": "MonopolyApp",
+      "Position": "-345.133362,-432.402405,286.538086",
+      "Rotation": "0,0,0,1",
+      "Scale": "1,1,1",
+      "Tags": "",
+      "Enabled": true,
+      "NetworkMode": 2,
+      "NetworkFlags": 0,
+      "NetworkOrphaned": 0,
+      "NetworkTransmit": true,
+      "OwnerTransfer": 1,
+      "Components": [
+        {
+          "__type": "MonopolyApp",
+          "__guid": "d9f2a97a-844d-4c9a-8471-e57c7b235329",
+          "__enabled": true,
+          "Flags": 0,
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null
+        }
+      ],
+      "Children": []
     }
   ],
   "SceneProperties": {
@@ -231,14 +262,14 @@
       "CustomBounds": false
     },
     "GameObjectSystems": {
-      "Sandbox.SelectionSetsSystem": {
-        "Data": {
-          "SelectionSets": []
-        }
-      },
       "Sandbox.Clutter.ClutterGridSystem": {
         "Storage": {
           "$blob": "1038bcfc-1f47-4964-962a-e0cb2849ee20"
+        }
+      },
+      "Sandbox.SelectionSetsSystem": {
+        "Data": {
+          "SelectionSets": []
         }
       }
     }

@@ -6649,10 +6649,10 @@
                 "PassGoMoney": 200,
                 "DoublesGoesAgain": false,
                 "ForceJailFineAfterFailedDoubles": true,
+                "TurnTimeLimitSeconds": 180,
                 "VacationCash": false,
                 "DontCollectRentWhileInPrison": false,
-                "EvenBuild": true,
-                "TurnTimeLimitSeconds": 180
+                "EvenBuild": true
               },
               "CurrentPlayerIndex": 0,
               "CurrentTurnEndsAt": 0,
@@ -7449,7 +7449,19 @@
         "d42a939f-2d6a-4dce-9f62-265923b72e6c": "42c3c653-f41d-4b25-9b54-2365e2ec0d42",
         "8342e8af-041b-4866-b535-efa9aae852eb": "d3e3eccc-faea-437c-83ef-dbe83135ae8e",
         "7eeff505-58af-4d23-bb06-9d6c3389415c": "d29cf266-9c87-4609-8908-c448c7bb00a3",
-        "78a62c7d-dd8c-4367-a9a4-8cb889db9d72": "8e46bf71-0fd0-413d-9446-da4d38f43e35"
+        "78a62c7d-dd8c-4367-a9a4-8cb889db9d72": "8e46bf71-0fd0-413d-9446-da4d38f43e35",
+        "af765d42-7978-4669-adbc-5bf6556e405e": "3499fe4a-3d19-4e65-b22f-4fe985fba69f",
+        "b090bbac-57ba-43ef-98cd-617dfbb0884e": "9f655947-a6ce-4296-bc28-0a529bba9579",
+        "d67da4e7-a374-4411-8164-43e8f68584b1": "a8733843-fab9-4fac-8f85-596e6dc85d49",
+        "49534ec6-5e61-4980-ad3b-48e26a95ba34": "60ad15ea-c319-4a53-a13a-f86a51892421",
+        "21084330-c22b-4732-b4cf-da78079a3e0c": "2c528b72-394f-4c61-b59a-ea37529bb54d",
+        "c61b6e87-6667-4c32-90e6-7fa13ced8075": "f9c30312-dde3-4a6e-b2cf-99fb14eb879e",
+        "02386228-51fe-481b-84eb-19aa8305bdb2": "6a897886-14e8-471b-af2c-1355fb20e312",
+        "b149bbee-5df4-4cb6-8289-cb6fbfb1ce70": "d9ad1489-6ead-42cd-9143-656781f5caa3",
+        "e0beee2a-c46b-4321-a953-a573e7c4153a": "965fc091-1716-4eef-bee8-defd50b27a12",
+        "3fc079e0-70f5-4ad7-9af2-6b1e7d0df2a2": "91665df7-135a-430b-8aa3-df37cfb346bb",
+        "59cd2d39-5498-4e08-8835-47063489072e": "1e617513-c394-491f-a1bc-9cffb76c8006",
+        "3546f99c-c48c-40f1-b6b7-146037f3a169": "e88f1088-fbf9-4549-b9ab-5ec02cb1bb4f"
       }
     },
     {
@@ -7496,7 +7508,19 @@
         "d42a939f-2d6a-4dce-9f62-265923b72e6c": "43c64c6f-baf8-46e6-b747-08b03dad6c0d",
         "8342e8af-041b-4866-b535-efa9aae852eb": "905f23b4-9a1a-4c65-8f58-06fde141a1eb",
         "7eeff505-58af-4d23-bb06-9d6c3389415c": "3e4b5370-8ef8-4cde-a96b-48c012bb77a7",
-        "78a62c7d-dd8c-4367-a9a4-8cb889db9d72": "04ef1da5-417a-4258-9655-98971588f966"
+        "78a62c7d-dd8c-4367-a9a4-8cb889db9d72": "04ef1da5-417a-4258-9655-98971588f966",
+        "af765d42-7978-4669-adbc-5bf6556e405e": "1fe6e102-a822-4d16-aa4c-13d3fc030bfa",
+        "b090bbac-57ba-43ef-98cd-617dfbb0884e": "ec9c04a9-e6ef-4d9d-94e7-26dea7e21b74",
+        "d67da4e7-a374-4411-8164-43e8f68584b1": "4896680c-6bca-419c-9aa7-5cc3d1927023",
+        "49534ec6-5e61-4980-ad3b-48e26a95ba34": "28965dce-03f2-4d6d-bf96-0f17426c7cbd",
+        "21084330-c22b-4732-b4cf-da78079a3e0c": "a22b5a2b-fd18-4b36-ad27-9c44d4b5f6dd",
+        "c61b6e87-6667-4c32-90e6-7fa13ced8075": "0a5d4230-c4a8-428b-abe2-421428012fba",
+        "02386228-51fe-481b-84eb-19aa8305bdb2": "9d766b66-59d8-49f7-9ba6-80e4c681c511",
+        "b149bbee-5df4-4cb6-8289-cb6fbfb1ce70": "03b65384-0095-40f3-b54e-e9578df963a0",
+        "e0beee2a-c46b-4321-a953-a573e7c4153a": "fd3eafd0-6229-4607-9677-e38df5d99f31",
+        "3fc079e0-70f5-4ad7-9af2-6b1e7d0df2a2": "89bcd407-8d88-4975-aeb7-caef58148f5f",
+        "59cd2d39-5498-4e08-8835-47063489072e": "522a6d72-faa1-453f-9b57-57bfd7601832",
+        "3546f99c-c48c-40f1-b6b7-146037f3a169": "9be4c9d3-ed5c-4db8-ac26-3bd5ff0cbd54"
       }
     },
     {
@@ -7809,6 +7833,37 @@
           "Children": []
         }
       ]
+    },
+    {
+      "__guid": "e5446b9c-b2b1-4198-a2c3-dcc66f3ba5da",
+      "__version": 2,
+      "Flags": 0,
+      "Name": "asd",
+      "Position": "-345.133362,-432.402405,286.538086",
+      "Rotation": "0,0,0,1",
+      "Scale": "1,1,1",
+      "Tags": "",
+      "Enabled": true,
+      "NetworkMode": 2,
+      "NetworkFlags": 0,
+      "NetworkOrphaned": 0,
+      "NetworkTransmit": true,
+      "OwnerTransfer": 1,
+      "Components": [
+        {
+          "__type": "ChangeDiceColorTest",
+          "__guid": "baa72e33-b7d6-4891-a555-f185b9c13613",
+          "__enabled": true,
+          "Flags": 0,
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null
+        }
+      ],
+      "Children": []
     }
   ],
   "SceneProperties": {
