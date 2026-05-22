@@ -50,8 +50,7 @@ public sealed partial class GameController : Component
 
 			case SpaceType.GoToJail:
 				SendPlayerToJail( player );
-				CompleteTurn();
-				Phase = GamePhase.WaitingToRoll;
+				MarkResolvedActionToAdvanceImmediately();
 				break;
 
 			case SpaceType.Property:
@@ -74,11 +73,6 @@ public sealed partial class GameController : Component
 
 			case SpaceType.FreeParking:
 				ResolveFreeParkingLanding( player );
-				if ( Config?.VacationCash == true )
-				{
-					CompleteTurn();
-					Phase = GamePhase.WaitingToRoll;
-				}
 				break;
 		}
 	}
@@ -161,7 +155,10 @@ public sealed partial class GameController : Component
 		FreeParkingBank = 0;
 
 		if ( payout > 0 )
+		{
 			player.Money += payout;
+			ShowMoneyReceivedPopup( player, payout, "Free Parking" );
+		}
 
 		if ( CurrentTurnGetsExtraRoll )
 		{
@@ -184,6 +181,7 @@ public sealed partial class GameController : Component
 			return;
 
 		player.Money += amount;
+		ShowMoneyReceivedPopup( player, amount, "the bank" );
 		Log.Info( $"{player.PlayerName} collected ${amount} for passing Go." );
 	}
 
@@ -197,6 +195,7 @@ public sealed partial class GameController : Component
 			return;
 
 		player.Money += amount;
+		ShowMoneyReceivedPopup( player, amount, "the bank" );
 		Log.Info( $"{player.PlayerName} collected ${amount} for landing on Go." );
 	}
 }

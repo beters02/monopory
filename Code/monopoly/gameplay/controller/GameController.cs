@@ -23,6 +23,19 @@ public enum MatchLifecycleState
 
 public sealed partial class GameController : Component
 {
+	private enum ResolvedActionOutcome
+	{
+		StayInTurnEnded,
+		AdvanceImmediately
+	}
+
+	private enum RollExecutionKind
+	{
+		Physical,
+		ForcedAmount,
+		JailRelease
+	}
+
 	[Property] public List<PlayerState> Players { get; set; } = new();
 	[Property] public MatchConfig Config { get; set; } = new();
 	[Property] public GameObject TokenPrefab { get; set; }
@@ -81,7 +94,7 @@ public sealed partial class GameController : Component
 	private readonly List<GameObject> spawnedTokenObjects = new();
 	private float pausedTurnRemainingSeconds;
 	private float pausedAuctionRemainingSeconds;
-	private bool currentRollDrewCard;
+	private ResolvedActionOutcome resolvedActionOutcome = ResolvedActionOutcome.StayInTurnEnded;
 
 	public static GameController Instance => instance;
 	public IReadOnlyList<GamePopup> Popups => popups;

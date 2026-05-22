@@ -6,7 +6,7 @@ using Sandbox;
 public sealed partial class GameController : Component
 {
 
-	private bool TryMakeForcedPayment( PlayerState player, int amount, int receiverIndex, bool toBank )
+	private bool TryMakeForcedPayment( PlayerState player, int amount, int receiverIndex, bool toBank, bool showForcedPaymentPopup = true )
 	{
 		if ( player is null || amount <= 0 )
 			return true;
@@ -23,7 +23,7 @@ public sealed partial class GameController : Component
 
 		if ( player.Money >= amount )
 		{
-			CompleteForcedPayment( playerIndex, amount, receiverIndex, toBank );
+			CompleteForcedPayment( playerIndex, amount, receiverIndex, toBank, showForcedPaymentPopup );
 			return true;
 		}
 
@@ -38,7 +38,7 @@ public sealed partial class GameController : Component
 		return false;
 	}
 
-	private void CompleteForcedPayment( int playerIndex, int amount, int receiverIndex, bool toBank )
+	private void CompleteForcedPayment( int playerIndex, int amount, int receiverIndex, bool toBank, bool showForcedPaymentPopup = true )
 	{
 		var player = Players.ElementAtOrDefault( playerIndex );
 		if ( player is null || amount <= 0 )
@@ -51,12 +51,19 @@ public sealed partial class GameController : Component
 			if ( Config?.VacationCash == true )
 				FreeParkingBank += amount;
 
+			if ( showForcedPaymentPopup )
+				ShowForcedPaymentToBankPopup( player, amount );
 			return;
 		}
 
 		var receiver = Players.ElementAtOrDefault( receiverIndex );
 		if ( receiver is not null )
+		{
 			receiver.Money += amount;
+			ShowMoneyReceivedPopup( receiver, amount, player.PlayerName );
+			if ( showForcedPaymentPopup )
+				ShowForcedPaymentPopupToPlayers( player, receiver, amount );
+		}
 	}
 
 	private void CompleteForcedPaymentToEachPlayer( int playerIndex, int amountPerPlayer )
@@ -76,9 +83,13 @@ public sealed partial class GameController : Component
 		{
 			var receiver = Players.ElementAtOrDefault( receiverIndex );
 			if ( receiver is not null )
+			{
 				receiver.Money += amountPerPlayer;
+				ShowMoneyReceivedPopup( receiver, amountPerPlayer, player.PlayerName );
+			}
 		}
 
+		ShowForcedPaymentToEachPlayerPopup( player, amountPerPlayer );
 		Log.Info( $"{player.PlayerName} paid ${amountPerPlayer} to each player." );
 	}
 

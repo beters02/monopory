@@ -66,10 +66,12 @@ public sealed partial class GameController : Component
 		if ( def is not null && AuctionHighBidderIndex >= 0 )
 		{
 			var winner = Players.ElementAtOrDefault( AuctionHighBidderIndex );
-			if ( winner is not null && winner.IsAssigned && winner.Money >= AuctionCurrentBid && PayBank( winner, AuctionCurrentBid ) )
+			if ( winner is not null && winner.IsAssigned && winner.Money >= AuctionCurrentBid && PayBank( winner, AuctionCurrentBid, false ) )
 			{
+				var ownedSetsBeforePurchase = CaptureOwnedSetKeys( AuctionHighBidderIndex );
 				PropertyOwners[def.Index] = AuctionHighBidderIndex;
 				SendPopupToAll( "Auction won", $"{winner.PlayerName} won {def.DisplayName} for ${AuctionCurrentBid}.", PopupKind.Success, true, 5f );
+				ShowNewlyOwnedSetPopups( ownedSetsBeforePurchase, AuctionHighBidderIndex );
 				Log.Info( $"{winner.PlayerName} won {def.DisplayName} for ${AuctionCurrentBid}." );
 			}
 		}

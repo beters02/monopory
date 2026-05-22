@@ -26,7 +26,6 @@ public sealed partial class GameController : Component
 		string cardDisplayText = GetCardDisplayText( card );
 		ShowCardForPlayerWhoLanded( player, cardDisplayText );
 		SendPopupToAll( card.Title, card.Description, PopupKind.Info, true, 6f );
-		currentRollDrewCard = true;
 		Log.Info( $"{player.PlayerName} drew {deck}: {card.Title}." );
 		ApplyCard( player, card );
 	}
@@ -65,7 +64,9 @@ public sealed partial class GameController : Component
 		switch ( card.Action )
 		{
 			case CardAction.CollectFromBank:
-				player.Money += Math.Max( card.Amount, 0 );
+				var collectedAmount = Math.Max( card.Amount, 0 );
+				player.Money += collectedAmount;
+				ShowMoneyReceivedPopup( player, collectedAmount, string.IsNullOrWhiteSpace( card.Title ) ? "the bank" : card.Title );
 				TrySettlePendingForcedPaymentForPlayer( GetPlayerIndex( player ) );
 				Log.Info( $"{player.PlayerName} collected ${card.Amount} from {card.Title}." );
 				break;
@@ -85,8 +86,7 @@ public sealed partial class GameController : Component
 
 			case CardAction.GoToJail:
 				SendPlayerToJail( player );
-				CompleteTurn();
-				Phase = GamePhase.WaitingToRoll;
+				MarkResolvedActionToAdvanceImmediately();
 				break;
 
 			case CardAction.CollectFromEachPlayer:
@@ -203,6 +203,7 @@ public sealed partial class GameController : Component
 		if ( receiverIndex < 0 || amount <= 0 )
 			return;
 
+		var totalCollected = 0;
 		foreach ( var payerIndex in GetAssignedPlayerIndexes().Where( index => index != receiverIndex ) )
 		{
 			var payer = Players.ElementAtOrDefault( payerIndex );
@@ -211,7 +212,10 @@ public sealed partial class GameController : Component
 
 			payer.Money -= amount;
 			player.Money += amount;
+			totalCollected += amount;
 		}
+
+		ShowMoneyReceivedPopup( player, totalCollected, "other players" );
 	}
 
 	private void PlayerGamble( PlayerState player )

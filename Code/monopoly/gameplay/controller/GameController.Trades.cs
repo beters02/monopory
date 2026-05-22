@@ -56,6 +56,7 @@ public sealed partial class GameController : Component
 
 		var sender = Players[trade.SenderPlayerIndex];
 		var receiver = Players[trade.ReceiverPlayerIndex];
+		var ownedSetsBeforeTrade = CaptureOwnedSetKeys( trade.SenderPlayerIndex, trade.ReceiverPlayerIndex );
 
 		sender.Money -= trade.SenderMoney;
 		receiver.Money += trade.SenderMoney;
@@ -72,6 +73,9 @@ public sealed partial class GameController : Component
 		PendingTrades.Remove( tradeId );
 		TradeViewers.Remove( tradeId );
 		RemoveInvalidTrades();
+		ShowTradeAcceptedPopup( sender, receiver );
+		ShowTradeAcceptedPopup( receiver, sender );
+		ShowNewlyOwnedSetPopups( ownedSetsBeforeTrade, trade.SenderPlayerIndex, trade.ReceiverPlayerIndex );
 
 		Log.Info( $"{receiver.PlayerName} accepted a trade from {sender.PlayerName}." );
 	}

@@ -44,22 +44,22 @@ public sealed partial class GameController : Component
 		return true;
 	}
 
-	private bool PayBank( PlayerState player, int amount )
+	private bool PayBank( PlayerState player, int amount, bool showForcedPaymentPopup = true )
 	{
 		if ( player is null || amount <= 0 )
 			return true;
 
-		if ( !TryMakeForcedPayment( player, amount, -1, true ) )
+		if ( !TryMakeForcedPayment( player, amount, -1, true, showForcedPaymentPopup ) )
 			return false;
 
 		return true;
 	}
 
-	private bool PayPlayer( PlayerState player, PlayerState receiver, int amount )
+	private bool PayPlayer( PlayerState player, PlayerState receiver, int amount, bool showForcedPaymentPopup = true )
 	{
 		if ( player is null || receiver is null || player == receiver || amount <= 0 )
 			return true;
 
-		return TryMakeForcedPayment( player, amount, GetPlayerIndex( receiver ), false );
+		return TryMakeForcedPayment( player, amount, GetPlayerIndex( receiver ), false, showForcedPaymentPopup );
 	}
 }

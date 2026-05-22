@@ -130,15 +130,17 @@ public sealed partial class GameController : Component
 				return false;
 			}
 			
-			if ( !PayBank( player, def.Price ) )
+			if ( !PayBank( player, def.Price, false ) )
 			{
 				message = $"{player.PlayerName} could not pay for {def.DisplayName}.";
 				return false;
 			}
 		}
-		
+
+		var ownedSetsBeforePurchase = CaptureOwnedSetKeys( playerIndex );
 		PropertyOwners[def.Index] = playerIndex;
 		ShowPropertyBoughtPopup( player, def );
+		ShowNewlyOwnedSetPopups( ownedSetsBeforePurchase, playerIndex );
 		Log.Info( $"{player.PlayerName} bought {def.DisplayName} for ${def.Price}." );
 		message = $"{player.PlayerName} bought {def.DisplayName}.";
 		return true;
@@ -208,18 +210,21 @@ public sealed partial class GameController : Component
 			return false;
 		}
 
-		if ( useMoney && !PayBank( player, totalPrice ) )
+		if ( useMoney && !PayBank( player, totalPrice, false ) )
 		{
 			message = $"{player.PlayerName} could not pay for that property set.";
 			return false;
 		}
 
+		var ownedSetsBeforePurchase = CaptureOwnedSetKeys( playerIndex );
 		foreach ( var def in propertiesToBuy )
 		{
 			PropertyOwners[def.Index] = playerIndex;
 			ShowPropertyBoughtPopup( player, def );
 			Log.Info( $"{player.PlayerName} bought {def.DisplayName} for ${def.Price}." );
 		}
+
+		ShowNewlyOwnedSetPopups( ownedSetsBeforePurchase, playerIndex );
 
 		message = $"{player.PlayerName} bought {propertiesToBuy.Count} properties for ${totalPrice}.";
 		return true;
@@ -286,10 +291,12 @@ public sealed partial class GameController : Component
 
 	private void BuyUnownedPropertyForPlayer( PlayerState player, SpaceDef def, int ownerIndex )
 	{
-		if ( !PayBank( player, def.Price ) )
+		if ( !PayBank( player, def.Price, false ) )
 			return;
 
+		var ownedSetsBeforePurchase = CaptureOwnedSetKeys( ownerIndex );
 		PropertyOwners[def.Index] = ownerIndex;
+		ShowNewlyOwnedSetPopups( ownedSetsBeforePurchase, ownerIndex );
 
 		Log.Info( $"{player.PlayerName} bought {def.DisplayName} for ${def.Price}." );
 	}
