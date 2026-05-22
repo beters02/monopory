@@ -101,8 +101,6 @@
 .match-config-kicker,
 .match-config-title,
 .match-config-copy,
-.match-config-section-title,
-.match-config-label,
 .match-config-value,
 .match-config-stepper-value {
 	width: 100%;
@@ -121,8 +119,6 @@
 .match-config-kicker .label,
 .match-config-title .label,
 .match-config-copy .label,
-.match-config-section-title .label,
-.match-config-label .label,
 .match-config-value .label,
 .match-config-stepper-value .label {
 	width: 100%;
@@ -202,17 +198,43 @@
 	gap: 10px;
 }
 
-.match-config-section-title,
-.match-config-label {
+.match-config-section-title {
+	width: 100%;
+	min-width: 0;
+	min-height: 34px;
+	height: 34px;
+	flex-shrink: 0;
+
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: flex-start;
+
+	color: $monopoly-ink;
+	font-size: 18px;
 	font-weight: 900;
+	line-height: 24px;
+	text-transform: uppercase;
+	white-space: normal;
+	text-overflow: clip;
+	overflow: visible;
 }
 
-.match-config-section-title {
+.match-config-section-title .label {
+	width: 100%;
+	min-width: 0;
+	min-height: 30px;
+
+	color: $monopoly-ink;
 	font-size: 18px;
+	font-weight: 900;
+	line-height: 24px;
+	opacity: 1;
+	text-align: left;
 	text-transform: uppercase;
-	min-height: 24px;
-	height: 24px;
-	flex-shrink: 0;
+	white-space: normal;
+	text-overflow: clip;
+	overflow: visible;
 }
 
 .match-config-row {
@@ -251,15 +273,44 @@
 	flex-shrink: 0;
 }
 
-.match-config-label {
+.match-config-name {
+	width: 100%;
+	min-width: 0;
+	min-height: 34px;
+	height: 34px;
+	flex-shrink: 0;
+
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: flex-start;
+
+	color: $monopoly-ink;
 	font-size: 18px;
 	font-weight: 900;
-	line-height: 22px;
-	min-height: 24px;
-	height: 24px;
-	flex-shrink: 0;
-	color: $monopoly-ink;
+	line-height: 24px;
 	opacity: 1;
+	text-align: left;
+	white-space: normal;
+	text-overflow: clip;
+	overflow: visible;
+}
+
+.match-config-name .label {
+	width: 100%;
+	min-width: 0;
+	min-height: 30px;
+
+	color: $monopoly-ink;
+	font-size: 18px;
+	font-weight: 900;
+	line-height: 24px;
+	opacity: 1;
+	text-align: left;
+	text-transform: none;
+	white-space: normal;
+	text-overflow: clip;
+	overflow: visible;
 }
 
 .match-config-value {
@@ -325,39 +376,4 @@
 
 .match-config-footer {
 	justify-content: flex-end;
-}
-
-.match-config-panel .match-config-label .label {
-	height: 24px;
-	min-height: 24px;
-	z-index: 2;
-
-	color: $monopoly-gold;
-	font-size: 18px;
-	font-weight: 900;
-	line-height: 22px;
-	opacity: 1;
-	text-align: left;
-	text-transform: none;
-
-	display: flex;
-	align-items: center;
-	justify-content: flex-start;
-}
-
-.match-config-panel .match-config-section-title .label {
-	height: 24px;
-	min-height: 24px;
-
-	color: $monopoly-ink;
-	font-size: 18px;
-	font-weight: 900;
-	line-height: 22px;
-	opacity: 1;
-	text-align: left;
-	text-transform: uppercase;
-
-	display: flex;
-	align-items: center;
-	justify-content: flex-start;
 }
