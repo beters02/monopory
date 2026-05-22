@@ -6668,6 +6668,7 @@
               "DieB": null,
               "FreeParkingBank": 0,
               "GameStartedAt": 0,
+              "IsResolvingPhysicalDice": false,
               "LastDieA": 0,
               "LastDieB": 0,
               "MatchState": "Lobby",
@@ -7424,22 +7425,6 @@
             },
             "Property": "Position",
             "Value": "-141.035904,-231.682022,130.617691"
-          },
-          {
-            "Target": {
-              "Type": "Component",
-              "IdValue": "b61e6ea6-93d1-4c64-b48a-534fe7b63418"
-            },
-            "Property": "CollisionSoundVolumeMaxSpeed",
-            "Value": 50
-          },
-          {
-            "Target": {
-              "Type": "Component",
-              "IdValue": "b61e6ea6-93d1-4c64-b48a-534fe7b63418"
-            },
-            "Property": "CollisionSoundVolumeMinSpeed",
-            "Value": 20
           }
         ],
         "MovedObjects": []
@@ -7487,22 +7472,6 @@
             },
             "Property": "Position",
             "Value": "-141.035904,-202.862183,130.617691"
-          },
-          {
-            "Target": {
-              "Type": "Component",
-              "IdValue": "b61e6ea6-93d1-4c64-b48a-534fe7b63418"
-            },
-            "Property": "CollisionSoundVolumeMaxSpeed",
-            "Value": 50
-          },
-          {
-            "Target": {
-              "Type": "Component",
-              "IdValue": "b61e6ea6-93d1-4c64-b48a-534fe7b63418"
-            },
-            "Property": "CollisionSoundVolumeMinSpeed",
-            "Value": 20
           }
         ],
         "MovedObjects": []

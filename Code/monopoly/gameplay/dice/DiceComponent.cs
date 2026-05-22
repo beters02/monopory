@@ -19,7 +19,7 @@ public sealed class DiceComponent : Component, Component.ICollisionListener
 	[Property, Group( "Audio" )] public float CollisionSoundMinSpeed { get; set; } = 5f;
 	[Property, Group("Audio")] public float CollisionSoundVolumeMinSpeed { get; set; } = 20f;
 	[Property, Group("Audio")] public float CollisionSoundVolumeMaxSpeed { get; set; } = 130f;
-	[Property, Group( "Audio" )] public float CollisionSoundCooldown { get; set; } = 0.06f;
+	[Property, Group( "Audio" )] public float CollisionSoundCooldown { get; set; } = 0.12f;
 
 	private Vector3 startingPosition;
 	private Rotation startingRotation;
