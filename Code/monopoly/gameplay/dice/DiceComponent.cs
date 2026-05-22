@@ -65,7 +65,6 @@ public sealed class DiceComponent : Component, Component.ICollisionListener
 		if ( impactSpeed < CollisionSoundMinSpeed )
 			return;
 		
-		Log.Info(impactSpeed);
 		var mult = Math.Clamp(impactSpeed / CollisionSoundVolumeMaxSpeed, 0.2f, 1f);
 		SoundHandle handle = CollisionSound.PlayWithHandle();
 		handle.Volume *= mult;

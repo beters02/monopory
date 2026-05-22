@@ -87,12 +87,12 @@ public sealed partial class GameController : Component
 	}
 
 	[Rpc.Host]
-	public void RequestRollForJailRelease()
+	public void RequestRollForJailRelease( float throwStrength = 0.5f )
 	{
 		if ( !CanCurrentPlayerAct( Rpc.Caller ) )
 			return;
 
-		_ = TryRollForJailReleaseAsync();
+		_ = TryRollForJailReleaseAsync( -1, throwStrength );
 	}
 
 	[Rpc.Host]

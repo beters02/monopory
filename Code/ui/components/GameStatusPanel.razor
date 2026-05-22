@@ -35,7 +35,7 @@
 			{
 				<div class="jail-action-buttons">
 					<GameButton OnClick="@PayToLeaveJail">Pay $50</GameButton>
-					<GameButton OnClick="@RollForJailRelease">Try Doubles</GameButton>
+					<GameButton OnHoldComplete="@RollForJailRelease" HoldMaxSeconds="@RollHoldMaxSeconds">Try Doubles</GameButton>
 				</div>
 			}
 			else if ( CanActOnCurrentTurn )
@@ -113,9 +113,9 @@
 		GameRef?.RequestPayToLeaveJail();
 	}
 
-	private void RollForJailRelease()
+	private void RollForJailRelease( float throwStrength )
 	{
-		GameRef?.RequestRollForJailRelease();
+		GameRef?.RequestRollForJailRelease( throwStrength );
 	}
 
 	private void EndTurn()

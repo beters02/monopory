@@ -45,7 +45,12 @@ public static class MatchConfigSchema
 		var clone = new MatchConfig();
 
 		foreach ( var option in Options )
-			option.Property.SetValue( clone, option.Property.GetValue( source ) );
+		{
+			if ( !TryGetOptionValue( option, source, out var value ) )
+				continue;
+
+			TrySetOptionValue( option, clone, value );
+		}
 
 		return Normalize( clone, 0 );
 	}
@@ -59,9 +64,12 @@ public static class MatchConfigSchema
 			if ( option.Kind != MatchConfigOptionKind.Int )
 				continue;
 
-			var rawValue = (int)(option.Property.GetValue( config ) ?? 0);
+			if ( !TryGetOptionValue( option, config, out var rawValueObject ) )
+				continue;
+
+			var rawValue = rawValueObject is int intValue ? intValue : 0;
 			var normalizedValue = Math.Clamp( rawValue, option.Min, option.Max );
-			option.Property.SetValue( config, normalizedValue );
+			TrySetOptionValue( option, config, normalizedValue );
 		}
 
 		config.MinPlayers = Math.Clamp( config.MinPlayers, 1, Math.Max( 1, config.MaxPlayers ) );
@@ -75,7 +83,7 @@ public static class MatchConfigSchema
 
 		return string.Join(
 			"|",
-			Options.Select( option => $"{option.Key}={FormatValue( option, option.Property.GetValue( config ) )}" )
+			Options.Select( option => $"{option.Key}={FormatValue( option, GetOptionValueOrDefault( option, config ) )}" )
 		);
 	}
 
@@ -102,7 +110,7 @@ public static class MatchConfigSchema
 			if ( !TryParseValue( option, rawValue, out var parsedValue ) )
 				continue;
 
-			option.Property.SetValue( config, parsedValue );
+			TrySetOptionValue( option, config, parsedValue );
 		}
 
 		return Normalize( config, 0 );
@@ -168,7 +176,7 @@ public static class MatchConfigSchema
 				Property = property,
 				Metadata = property.GetCustomAttribute<MatchConfigOptionAttribute>()
 			} )
-			.Where( x => x.Metadata is not null )
+			.Where( x => x.Metadata is not null && x.Property.CanRead && x.Property.CanWrite )
 			.Select( x => new MatchConfigOption
 			{
 				Property = x.Property,
@@ -179,6 +187,47 @@ public static class MatchConfigSchema
 			.OrderBy( option => option.Order )
 			.ThenBy( option => option.Label )
 			.ToList();
+	}
+
+	private static bool TryGetOptionValue( MatchConfigOption option, MatchConfig config, out object value )
+	{
+		value = null;
+
+		if ( option?.Property is null || config is null )
+			return false;
+
+		try
+		{
+			value = option.Property.GetValue( config );
+			return true;
+		}
+		catch ( Exception ex )
+		{
+			Log.Error( $"Failed to read MatchConfig option '{option.Key}': {ex.Message}" );
+			return false;
+		}
+	}
+
+	private static bool TrySetOptionValue( MatchConfigOption option, MatchConfig config, object value )
+	{
+		if ( option?.Property is null || config is null )
+			return false;
+
+		try
+		{
+			option.Property.SetValue( config, value );
+			return true;
+		}
+		catch ( Exception ex )
+		{
+			Log.Error( $"Failed to write MatchConfig option '{option.Key}': {ex.Message}" );
+			return false;
+		}
+	}
+
+	private static object GetOptionValueOrDefault( MatchConfigOption option, MatchConfig config )
+	{
+		return TryGetOptionValue( option, config, out var value ) ? value : null;
 	}
 
 	private static MatchConfigOptionKind GetOptionKind( Type type )

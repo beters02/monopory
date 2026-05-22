@@ -54,7 +54,7 @@ public sealed class MatchConfig
 	[Property, MatchConfigOption( "Economy", "Starting Money", Description = "Cash each player begins the game with.", Order = 20, Min = 0, Max = 10000, Step = 100 )]
 	public int StartingMoney { get; set; } = 1500;
 
-	[Property, MatchConfigOption( "Economy", "Land On GO Money", Description = "Bonus for landing directly on GO.", Order = 21, Min = 0, Max = 5000, Step = 50 )]
+	[Property, MatchConfigOption( "Economy", "Land On GO Additional Money", Description = "Additional bonus paid on top of Pass GO Money when a move ends on GO.", Order = 21, Min = 0, Max = 5000, Step = 50 )]
 	public int LandOnGoMoney { get; set; } = 200;
 
 	[Property, MatchConfigOption( "Economy", "Pass GO Money", Description = "Bonus for passing GO during movement.", Order = 22, Min = 0, Max = 5000, Step = 50 )]

@@ -92,7 +92,7 @@ public sealed partial class GameController : Component
 
 		if ( CurrentPlayer.IsInJail )
 		{
-			await TryRollForJailReleaseAsync( amount );
+			await TryRollForJailReleaseAsync( amount, throwStrength );
 			return;
 		}
 
@@ -127,7 +127,7 @@ public sealed partial class GameController : Component
 		await RollCurrentPlayerAsync( -1, true, RollExecutionKind.JailRelease );
 	}
 
-	public async Task TryRollForJailReleaseAsync( int amount = -1 )
+	public async Task TryRollForJailReleaseAsync( int amount = -1, float throwStrength = 0.5f )
 	{
 		if ( !Networking.IsHost )
 			return;
@@ -154,8 +154,7 @@ public sealed partial class GameController : Component
 		}
 		else
 		{
-			LastDieA = Game.Random.Int( 1, 6 );
-			LastDieB = Game.Random.Int( 1, 6 );
+			(LastDieA, LastDieB) = await RollPhysicalDiceAsync( throwStrength );
 			total = LastDieA + LastDieB;
 			rolledDoubles = LastDieA == LastDieB;
 		}
@@ -297,6 +296,7 @@ public sealed partial class GameController : Component
 	private async Task MovePlayerSteps(PlayerState player, int steps)
 	{
 		SetPlayerTokenWalking( player, true );
+		var goPassCount = 0;
 
 		try
 		{
@@ -307,10 +307,10 @@ public sealed partial class GameController : Component
 				await Task.DelaySeconds( 0.4f );
 
 				if ( player.SpaceIndex == 0 )
-					AwardPassGoMoney( player );
+					goPassCount++;
 			}
 
-			ResolveLanding( player );
+			ResolveLanding( player, goPassCount );
 		}
 		finally
 		{

@@ -112,16 +112,19 @@ public sealed partial class GameController : Component
 		if ( player is null || Board is null || targetSpaceIndex < 0 )
 			return;
 
+		var startSpaceIndex = player.SpaceIndex;
 		targetSpaceIndex = NormalizeSpaceIndex( targetSpaceIndex );
-		var passedGo = collectGo && targetSpaceIndex != 0 && targetSpaceIndex < player.SpaceIndex;
-
-		if ( passedGo )
-			AwardPassGoMoney( player );
+		var goPassCount = GetGoPassCountForAbsoluteMove( startSpaceIndex, targetSpaceIndex, collectGo );
 
 		player.SpaceIndex = targetSpaceIndex;
 
 		if ( resolveDestination )
-			ResolveLanding( player );
+		{
+			ResolveLanding( player, goPassCount );
+			return;
+		}
+
+		ApplyGoMovementPayout( player, goPassCount, targetSpaceIndex == 0 );
 	}
 
 	private void MovePlayerByCardOffset( PlayerState player, int relativeSpaces, bool collectGo, bool resolveDestination )
@@ -129,16 +132,46 @@ public sealed partial class GameController : Component
 		if ( player is null )
 			return;
 
+		var startSpaceIndex = player.SpaceIndex;
 		var targetSpaceIndex = NormalizeSpaceIndex( player.SpaceIndex + relativeSpaces );
-		var passedGo = collectGo && relativeSpaces > 0 && targetSpaceIndex != 0 && targetSpaceIndex < player.SpaceIndex;
-
-		if ( passedGo )
-			AwardPassGoMoney( player );
+		var goPassCount = GetGoPassCountForRelativeMove( startSpaceIndex, relativeSpaces, collectGo );
 
 		player.SpaceIndex = targetSpaceIndex;
 
 		if ( resolveDestination )
-			ResolveLanding( player );
+		{
+			ResolveLanding( player, goPassCount );
+			return;
+		}
+
+		ApplyGoMovementPayout( player, goPassCount, targetSpaceIndex == 0 );
+	}
+
+	private static int GetGoPassCountForAbsoluteMove( int startSpaceIndex, int targetSpaceIndex, bool collectGo )
+	{
+		if ( !collectGo )
+			return 0;
+
+		startSpaceIndex = NormalizeSpaceIndex( startSpaceIndex );
+		targetSpaceIndex = NormalizeSpaceIndex( targetSpaceIndex );
+
+		var forwardDistance = targetSpaceIndex >= startSpaceIndex
+			? targetSpaceIndex - startSpaceIndex
+			: 40 - startSpaceIndex + targetSpaceIndex;
+
+		if ( forwardDistance <= 0 )
+			return 0;
+
+		return (startSpaceIndex + forwardDistance) / 40;
+	}
+
+	private static int GetGoPassCountForRelativeMove( int startSpaceIndex, int relativeSpaces, bool collectGo )
+	{
+		if ( !collectGo || relativeSpaces <= 0 )
+			return 0;
+
+		startSpaceIndex = NormalizeSpaceIndex( startSpaceIndex );
+		return (startSpaceIndex + relativeSpaces) / 40;
 	}
 
 	private void PayPerImprovementForCard( PlayerState player, int houseAmount, int hotelAmount )

@@ -12,7 +12,7 @@ public sealed partial class GameController : Component
 		PendingDecision
 	}
 
-	private void ResolveLanding( PlayerState player )
+	private void ResolveLanding( PlayerState player, int goPassCount = 0 )
 	{
 		if ( player is null || Board is null )
 		{
@@ -36,11 +36,11 @@ public sealed partial class GameController : Component
 
 		//if (spaceDef.Type != SpaceType.Go && spaceDef.Type )
 		ShowCardForPlayerWhoLanded(player);
+		ApplyGoMovementPayout( player, goPassCount, spaceDef.Type == SpaceType.Go );
 
 		switch ( spaceDef.Type )
 		{
 			case SpaceType.Go:
-				AwardLandOnGoMoney( player );
 				break;
 
 			case SpaceType.Tax:
@@ -171,31 +171,22 @@ public sealed partial class GameController : Component
 		Log.Info( $"{player.PlayerName} collected ${payout} from Free Parking and will skip their next turn." );
 	}
 
-	private void AwardPassGoMoney( PlayerState player )
+	private void ApplyGoMovementPayout( PlayerState player, int goPassCount, bool landedOnGo )
 	{
 		if ( player is null )
 			return;
 
-		var amount = Math.Max( Config?.PassGoMoney ?? 200, 0 );
+		goPassCount = Math.Max( goPassCount, 0 );
+
+		var passGoMoney = Math.Max( Config?.PassGoMoney ?? 200, 0 );
+		var landingAdditionalMoney = landedOnGo ? Math.Max( Config?.LandOnGoMoney ?? 200, 0 ) : 0;
+		var amount = (passGoMoney * goPassCount) + landingAdditionalMoney;
+
 		if ( amount <= 0 )
 			return;
 
 		player.Money += amount;
 		ShowMoneyReceivedPopup( player, amount, "the bank" );
-		Log.Info( $"{player.PlayerName} collected ${amount} for passing Go." );
-	}
-
-	private void AwardLandOnGoMoney( PlayerState player )
-	{
-		if ( player is null )
-			return;
-
-		var amount = Math.Max( Config?.LandOnGoMoney ?? 200, 0 );
-		if ( amount <= 0 )
-			return;
-
-		player.Money += amount;
-		ShowMoneyReceivedPopup( player, amount, "the bank" );
-		Log.Info( $"{player.PlayerName} collected ${amount} for landing on Go." );
+		Log.Info( $"{player.PlayerName} collected ${amount} for GO movement (passes: {goPassCount}, landed on GO: {landedOnGo})." );
 	}
 }

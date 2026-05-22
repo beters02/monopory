@@ -147,14 +147,19 @@ LobbyMenu {
 	}
 
 	.lobby-panel .flow-actions .monopoly-button {
-		flex: 1 1 0;
-		min-width: 0;
+		flex: 1 1 128px;
+		min-width: 128px;
 		padding-left: 10px;
 		padding-right: 10px;
 
 		justify-content: center;
 		text-align: center;
 		white-space: nowrap;
+	}
+
+	.lobby-panel .flow-actions .flow-config-button {
+		flex-basis: 148px;
+		min-width: 148px;
 	}
 
 	.flow-primary-button {
