@@ -193,7 +193,7 @@
             "StartingMoney": 1500,
             "LandOnGoMoney": 200,
             "PassGoMoney": 200,
-            "DoublesGoesAgain": false,
+            "DoublesGoesAgain": true,
             "ForceJailFineAfterFailedDoubles": true,
             "VacationCash": false,
             "DontCollectRentWhileInPrison": false,

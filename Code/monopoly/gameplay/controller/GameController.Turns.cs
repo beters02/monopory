@@ -235,6 +235,13 @@ public sealed partial class GameController : Component
 			CurrentPlayer.ConsecutiveDoubles++;
 			if ( CurrentPlayer.ConsecutiveDoubles >= 3 )
 			{
+				SendPopupToAll(
+					"Three doubles",
+					$"{CurrentPlayer.PlayerName} rolled doubles three times in a row and was sent to Jail.",
+					PopupKind.Danger,
+					true,
+					5f
+				);
 				SendPlayerToJail( CurrentPlayer );
 				CurrentPlayer.ConsecutiveDoubles = 0;
 				Log.Info( $"{CurrentPlayer.PlayerName} rolled three doubles in a row and went to Jail." );
@@ -243,6 +250,13 @@ public sealed partial class GameController : Component
 			}
 
 			CurrentTurnGetsExtraRoll = true;
+			SendPopupToAll(
+				"Doubles rolled",
+				$"{CurrentPlayer.PlayerName} rolled doubles and gets another turn.",
+				PopupKind.Success,
+				true,
+				4f
+			);
 			return false;
 		}
 
