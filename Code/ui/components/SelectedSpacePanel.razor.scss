@@ -161,6 +161,11 @@
 	pointer-events: none;
 }
 
+.selected-space-card-panel .selected-space-card .space-card-close,
+.selected-space-card-panel .selected-space-card .space-card-close * {
+	pointer-events: all;
+}
+
 .selected-space-actions,
 .selected-space-actions *,
 .space-card-close {

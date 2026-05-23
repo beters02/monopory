@@ -10,39 +10,59 @@
 	{
 		<Sandbox.ui.components.HudPanel.HudPanel Variant="property-hud-card">
 			<ChildContent>
+				<div class="property-player-list">
 				@foreach ( var player in PropertyHudPlayers )
 				{
 					var playerIndex = GameRef.GetPlayerIndex( player );
-					var isExpanded = IsPropertyPanelExpanded( playerIndex );
 
-					<Sandbox.ui.components.HudPanel.HudPanel Variant="@GetPropertyPanelClasses( playerIndex, isExpanded )">
+					<Sandbox.ui.components.HudPanel.HudPanel Variant="@GetPropertyPanelClasses( playerIndex )">
 						<ChildContent>
-							<GameButton Variant="property-player-button" OnClick="@(() => TogglePropertyPanel( playerIndex ))" Sound="@(GetPropertyPanelSound( playerIndex ))">
-								<ChildContent>
-									<div class="property-player-name">@player.PlayerName</div>
-									<div class="property-player-money">$@player.Money</div>
-								</ChildContent>
-							</GameButton>
-
-							<div class="property-grid">
-								@foreach ( var property in PropertySpaces )
-								{
-									<GameButton
-										Variant="@GetPropertySquareClasses( property, playerIndex )"
-										Title="@property.DisplayName"
-										OnClick="@(() => SelectPropertySpace( property.Index ))">
-										<ChildContent>
-											@if ( GameRef.IsMortgaged( property.Index ) )
-											{
-												<div class="property-mortgage-marker">M</div>
-											}
-										</ChildContent>
-									</GameButton>
-								}
-							</div>
+							<div class="property-player-name">@player.PlayerName</div>
+							<div class="property-player-money">$@player.Money</div>
 						</ChildContent>
 					</Sandbox.ui.components.HudPanel.HudPanel>
 				}
+				</div>
+			</ChildContent>
+		</Sandbox.ui.components.HudPanel.HudPanel>
+
+		<Sandbox.ui.components.HudPanel.HudPanel Variant="property-manager-hud">
+			<ChildContent>
+				<div class="property-manager-title">Property Manager</div>
+				<div class="property-manager-content">
+					@foreach ( var ownershipGroup in PropertyManagerSections )
+					{
+						<div class="property-manager-section">
+							<div class="property-manager-section-title">@ownershipGroup.Title</div>
+							@if ( ownershipGroup.Properties.Count == 0 )
+							{
+								<div class="property-manager-empty">None</div>
+							}
+							else
+							{
+								<div class="property-manager-grid">
+									@foreach ( var property in ownershipGroup.Properties )
+									{
+										<GameButton
+											Variant="property-manager-item"
+											Title="@property.DisplayName"
+											OnClick="@(() => SelectPropertySpace( property.Index ))">
+											<ChildContent>
+												<div class="@GetPropertySquareClasses( property, ownershipGroup.PlayerIndex )">
+													@if ( GameRef.IsMortgaged( property.Index ) )
+													{
+														<div class="property-mortgage-marker">M</div>
+													}
+												</div>
+												<div class="property-manager-name">@property.DisplayName</div>
+											</ChildContent>
+										</GameButton>
+									}
+								</div>
+							}
+						</div>
+					}
+				</div>
 			</ChildContent>
 		</Sandbox.ui.components.HudPanel.HudPanel>
 	}
@@ -51,8 +71,6 @@
 @code
 {
 	[Parameter] public GameController GameRef { get; set; }
-
-	private readonly HashSet<int> ExpandedPropertyPanels = new();
 
 	private List<PlayerState> PropertyHudPlayers
 	{
@@ -79,41 +97,89 @@
 		}
 	}
 
-	private List<SpaceDef> PropertySpaces =>
-		GameRef?.Board?.SpaceDefs?
+	private List<SpaceDef> OrderedPropertySpaces =>
+		(GameRef?.Board?.SpaceDefs ?? new())
 			.Where( HudUi.IsPurchasableSpace )
-			.ToList() ?? new();
+			.OrderBy( GetPropertyOrderGroup )
+			.ThenBy( property => property.Index )
+			.ToList();
 
-	private bool IsPropertyPanelExpanded( int playerIndex )
+	private List<PropertyManagerSection> PropertyManagerSections
 	{
-		return ExpandedPropertyPanels.Contains( playerIndex );
+		get
+		{
+			var sections = new List<PropertyManagerSection>();
+			if ( GameRef is null )
+				return sections;
+
+			var localPlayer = GameRef.LocalPlayer;
+			if ( localPlayer is not null && localPlayer.IsAssigned )
+			{
+				sections.Add( CreatePlayerSection( localPlayer, "Owned by you" ) );
+			}
+
+			foreach ( var player in PropertyHudPlayers )
+			{
+				if ( player == localPlayer )
+					continue;
+
+				sections.Add( CreatePlayerSection( player, $"Owned by {player.PlayerName}" ) );
+			}
+
+			sections.Add( new PropertyManagerSection
+			{
+				Title = "Unowned",
+				PlayerIndex = -1,
+				Properties = OrderedPropertySpaces
+					.Where( property => (GameRef?.GetOwnerIndexForSpace( property.Index ) ?? -1) < 0 )
+					.ToList()
+			} );
+
+			return sections;
+		}
 	}
 
-	private void TogglePropertyPanel( int playerIndex )
+	private PropertyManagerSection CreatePlayerSection( PlayerState player, string title )
 	{
-		if ( playerIndex < 0 )
-			return;
+		var playerIndex = GameRef?.GetPlayerIndex( player ) ?? -1;
 
-		if ( !ExpandedPropertyPanels.Add( playerIndex ) )
-			ExpandedPropertyPanels.Remove( playerIndex );
+		return new PropertyManagerSection
+		{
+			Title = title,
+			PlayerIndex = playerIndex,
+			Properties = OrderedPropertySpaces
+				.Where( property => (GameRef?.GetOwnerIndexForSpace( property.Index ) ?? -1) == playerIndex )
+				.ToList()
+		};
 	}
 
-	private GameSound GetPropertyPanelSound( int playerIndex )
+	private static int GetPropertyOrderGroup( SpaceDef property )
 	{
-		if ( IsPropertyPanelExpanded( playerIndex ) )
-			return GameAssets.Sounds.ClickAndClose;
+		if ( property.Type == SpaceType.Railroad )
+			return 100;
 
-		return GameAssets.Sounds.ClickAndOpen;
+		if ( property.Type == SpaceType.Utility )
+			return 200;
+
+		return property.ColorGroup switch
+		{
+			ColorGroup.Brown => 0,
+			ColorGroup.LightBlue => 10,
+			ColorGroup.Pink => 20,
+			ColorGroup.Orange => 30,
+			ColorGroup.Red => 40,
+			ColorGroup.Yellow => 50,
+			ColorGroup.Green => 60,
+			ColorGroup.DarkBlue => 70,
+			_ => 90
+		};
 	}
 
 	private void SelectPropertySpace( int spaceIndex ) => GameRef?.SelectSpace( spaceIndex );
 
-	private string GetPropertyPanelClasses( int playerIndex, bool isExpanded )
+	private string GetPropertyPanelClasses( int playerIndex )
 	{
 		var classes = $"property-player-panel player-{playerIndex}";
-
-		if ( isExpanded )
-			classes += " expanded";
 
 		if ( GameRef?.LocalPlayerIndex == playerIndex )
 			classes += " local-player";
@@ -149,18 +215,6 @@
 		return classes;
 	}
 
-	private int GetExpandedPanelsHash()
-	{
-		var hash = new HashCode();
-
-		foreach ( var playerIndex in ExpandedPropertyPanels.OrderBy( x => x ) )
-		{
-			hash.Add( playerIndex );
-		}
-
-		return hash.ToHashCode();
-	}
-
 	protected override int BuildHash()
 	{
 		return HashCode.Combine(
@@ -169,8 +223,14 @@
 			GameRef?.LocalSelectedSpaceIndex ?? -1,
 			HudUi.GetPropertyOwnersHash( GameRef ),
 			HudUi.GetMortgagedPropertiesHash( GameRef ),
-			HudUi.GetPlayersHash( GameRef ),
-			GetExpandedPanelsHash()
+			HudUi.GetPlayersHash( GameRef )
 		);
+	}
+
+	private sealed class PropertyManagerSection
+	{
+		public string Title { get; init; } = "";
+		public int PlayerIndex { get; init; } = -1;
+		public List<SpaceDef> Properties { get; init; } = new();
 	}
 }

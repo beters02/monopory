@@ -14,8 +14,6 @@ public sealed class GameCursor : Component
 			lastMousePosition.HasValue &&
 			(Mouse.Position - lastMousePosition.Value).Length <= 0.5f;
 
-		Log.Info(Mouse.CursorType);
-
 		// Global guard for cursor drop on click-release without mouse movement.
 		if ( string.IsNullOrEmpty( currentCursorType ) &&
 			isStationaryMouse &&
