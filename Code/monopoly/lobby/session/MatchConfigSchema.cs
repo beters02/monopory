@@ -2,7 +2,6 @@ using Sandbox;
 using System;
 using System.Globalization;
 using System.Linq;
-using System.Reflection;
 
 public enum MatchConfigOptionKind
 {
@@ -13,19 +12,19 @@ public enum MatchConfigOptionKind
 
 public sealed class MatchConfigOption
 {
-	public PropertyInfo Property { get; init; }
-	public MatchConfigOptionAttribute Metadata { get; init; }
+	public string Key { get; init; }
+	public string Group { get; init; }
+	public string Label { get; init; }
+	public string Description { get; init; } = "";
+	public int Order { get; init; }
+	public int Min { get; init; } = int.MinValue;
+	public int Max { get; init; } = int.MaxValue;
+	public int Step { get; init; } = 1;
 	public MatchConfigOptionKind Kind { get; init; }
+	public Type ValueType { get; init; }
+	public Func<MatchConfig, object> Getter { get; init; }
+	public Action<MatchConfig, object> Setter { get; init; }
 	public string[] EnumNames { get; init; } = Array.Empty<string>();
-
-	public string Key => Property.Name;
-	public string Group => Metadata.Group;
-	public string Label => Metadata.Label;
-	public string Description => Metadata.Description;
-	public int Order => Metadata.Order;
-	public int Min => Metadata.Min;
-	public int Max => Metadata.Max;
-	public int Step => Math.Max( Metadata.Step, 1 );
 }
 
 public static class MatchConfigSchema
@@ -154,7 +153,7 @@ public static class MatchConfigSchema
 			case MatchConfigOptionKind.Enum:
 				try
 				{
-					parsedValue = Enum.Parse( option.Property.PropertyType, rawValue, true );
+					parsedValue = Enum.Parse( option.ValueType, rawValue, true );
 					return true;
 				}
 				catch
@@ -167,23 +166,36 @@ public static class MatchConfigSchema
 		}
 	}
 
+	public static object GetOptionValue( MatchConfigOption option, MatchConfig config )
+	{
+		return GetOptionValueOrDefault( option, config );
+	}
+
+	public static bool SetOptionValue( MatchConfigOption option, MatchConfig config, object value )
+	{
+		return TrySetOptionValue( option, config, value );
+	}
+
 	private static IReadOnlyList<MatchConfigOption> BuildOptions()
 	{
-		return typeof( MatchConfig )
-			.GetProperties( BindingFlags.Instance | BindingFlags.Public )
-			.Select( property => new
-			{
-				Property = property,
-				Metadata = property.GetCustomAttribute<MatchConfigOptionAttribute>()
-			} )
-			.Where( x => x.Metadata is not null && x.Property.CanRead && x.Property.CanWrite )
-			.Select( x => new MatchConfigOption
-			{
-				Property = x.Property,
-				Metadata = x.Metadata,
-				Kind = GetOptionKind( x.Property.PropertyType ),
-				EnumNames = x.Property.PropertyType.IsEnum ? Enum.GetNames( x.Property.PropertyType ) : Array.Empty<string>()
-			} )
+		return new[]
+		{
+			IntOption( "MinPlayers", "Lobby", "Min Players", "Minimum ready players required before the host can start.", 0, 1, 6, 1, config => config.MinPlayers, ( config, value ) => config.MinPlayers = value ),
+			IntOption( "MaxPlayers", "Lobby", "Max Players", "Maximum seats allowed in the hosted lobby.", 1, 1, 6, 1, config => config.MaxPlayers, ( config, value ) => config.MaxPlayers = value ),
+			BoolOption( "OnlyHostStartsGame", "Lobby", "Only Host Starts Game", "If enabled, only the host can launch the match.", 2, config => config.OnlyHostStartsGame, ( config, value ) => config.OnlyHostStartsGame = value ),
+			EnumOption( "LandedUnownedCanAffordMode", "Property Rules", "Affordable Unowned Landing", "What happens when a player can afford an unowned property.", 10, config => config.LandedUnownedCanAffordMode, ( config, value ) => config.LandedUnownedCanAffordMode = value ),
+			EnumOption( "LandedUnownedCantAffordMode", "Property Rules", "Unaffordable Unowned Landing", "What happens when a player cannot afford an unowned property.", 11, config => config.LandedUnownedCantAffordMode, ( config, value ) => config.LandedUnownedCantAffordMode = value ),
+			BoolOption( "CanSkipUnowned", "Property Rules", "Can Skip Unowned", "Allows players to ignore an unowned property instead of buying or auctioning it.", 12, config => config.CanSkipUnowned, ( config, value ) => config.CanSkipUnowned = value ),
+			IntOption( "StartingMoney", "Economy", "Starting Money", "Cash each player begins the game with.", 20, 0, 10000, 100, config => config.StartingMoney, ( config, value ) => config.StartingMoney = value ),
+			IntOption( "LandOnGoMoney", "Economy", "Land On GO Additional Money", "Additional bonus paid on top of Pass GO Money when a move ends on GO.", 21, 0, 5000, 50, config => config.LandOnGoMoney, ( config, value ) => config.LandOnGoMoney = value ),
+			IntOption( "PassGoMoney", "Economy", "Pass GO Money", "Bonus for passing GO during movement.", 22, 0, 5000, 50, config => config.PassGoMoney, ( config, value ) => config.PassGoMoney = value ),
+			BoolOption( "DoublesGoesAgain", "Turn Rules", "Doubles Goes Again", "Lets players take another turn after rolling doubles.", 30, config => config.DoublesGoesAgain, ( config, value ) => config.DoublesGoesAgain = value ),
+			BoolOption( "ForceJailFineAfterFailedDoubles", "Turn Rules", "Force Jail Fine After Failed Doubles", "After the final failed jail roll, automatically pay the fine to leave jail.", 31, config => config.ForceJailFineAfterFailedDoubles, ( config, value ) => config.ForceJailFineAfterFailedDoubles = value ),
+			IntOption( "TurnTimeLimitSeconds", "Turn Rules", "Turn Time Limit Seconds", "How long each turn can last before timeout handling kicks in.", 32, 15, 900, 15, config => config.TurnTimeLimitSeconds, ( config, value ) => config.TurnTimeLimitSeconds = value ),
+			BoolOption( "VacationCash", "Board Rules", "Vacation Cash", "Awards pooled cash when landing on Free Parking, if enabled.", 40, config => config.VacationCash, ( config, value ) => config.VacationCash = value ),
+			BoolOption( "DontCollectRentWhileInPrison", "Board Rules", "No Rent While In Prison", "Prevents jailed players from collecting rent.", 41, config => config.DontCollectRentWhileInPrison, ( config, value ) => config.DontCollectRentWhileInPrison = value ),
+			BoolOption( "EvenBuild", "Board Rules", "Even Build", "Requires houses to be built evenly across a color set.", 42, config => config.EvenBuild, ( config, value ) => config.EvenBuild = value )
+		}
 			.OrderBy( option => option.Order )
 			.ThenBy( option => option.Label )
 			.ToList();
@@ -193,12 +205,12 @@ public static class MatchConfigSchema
 	{
 		value = null;
 
-		if ( option?.Property is null || config is null )
+		if ( option?.Getter is null || config is null )
 			return false;
 
 		try
 		{
-			value = option.Property.GetValue( config );
+			value = option.Getter( config );
 			return true;
 		}
 		catch ( Exception ex )
@@ -210,12 +222,12 @@ public static class MatchConfigSchema
 
 	private static bool TrySetOptionValue( MatchConfigOption option, MatchConfig config, object value )
 	{
-		if ( option?.Property is null || config is null )
+		if ( option?.Setter is null || config is null )
 			return false;
 
 		try
 		{
-			option.Property.SetValue( config, value );
+			option.Setter( config, value );
 			return true;
 		}
 		catch ( Exception ex )
@@ -230,17 +242,65 @@ public static class MatchConfigSchema
 		return TryGetOptionValue( option, config, out var value ) ? value : null;
 	}
 
-	private static MatchConfigOptionKind GetOptionKind( Type type )
+	private static MatchConfigOption BoolOption( string key, string group, string label, string description, int order, Func<MatchConfig, bool> getter, Action<MatchConfig, bool> setter )
 	{
-		if ( type == typeof( bool ) )
-			return MatchConfigOptionKind.Bool;
+		return new MatchConfigOption
+		{
+			Key = key,
+			Group = group,
+			Label = label,
+			Description = description,
+			Order = order,
+			Kind = MatchConfigOptionKind.Bool,
+			ValueType = typeof( bool ),
+			Getter = config => getter( config ),
+			Setter = ( config, value ) => setter( config, Convert.ToBoolean( value, CultureInfo.InvariantCulture ) )
+		};
+	}
 
-		if ( type == typeof( int ) )
-			return MatchConfigOptionKind.Int;
+	private static MatchConfigOption IntOption( string key, string group, string label, string description, int order, int min, int max, int step, Func<MatchConfig, int> getter, Action<MatchConfig, int> setter )
+	{
+		return new MatchConfigOption
+		{
+			Key = key,
+			Group = group,
+			Label = label,
+			Description = description,
+			Order = order,
+			Min = min,
+			Max = max,
+			Step = Math.Max( step, 1 ),
+			Kind = MatchConfigOptionKind.Int,
+			ValueType = typeof( int ),
+			Getter = config => getter( config ),
+			Setter = ( config, value ) => setter( config, Convert.ToInt32( value, CultureInfo.InvariantCulture ) )
+		};
+	}
 
-		if ( type.IsEnum )
-			return MatchConfigOptionKind.Enum;
+	private static MatchConfigOption EnumOption<TEnum>( string key, string group, string label, string description, int order, Func<MatchConfig, TEnum> getter, Action<MatchConfig, TEnum> setter ) where TEnum : struct, Enum
+	{
+		return new MatchConfigOption
+		{
+			Key = key,
+			Group = group,
+			Label = label,
+			Description = description,
+			Order = order,
+			Kind = MatchConfigOptionKind.Enum,
+			ValueType = typeof( TEnum ),
+			EnumNames = Enum.GetNames<TEnum>(),
+			Getter = config => getter( config ),
+			Setter = ( config, value ) =>
+			{
+				if ( value is TEnum typedValue )
+				{
+					setter( config, typedValue );
+					return;
+				}
 
-		throw new NotSupportedException( $"Unsupported match config property type '{type.Name}'." );
+				if ( Enum.TryParse<TEnum>( value?.ToString() ?? "", true, out var parsedValue ) )
+					setter( config, parsedValue );
+			}
+		};
 	}
 }

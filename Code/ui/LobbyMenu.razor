@@ -210,7 +210,7 @@
 		if ( EditableConfig is not null )
 		{
 			foreach ( var option in MatchConfigSchema.Options )
-				hash.Add( MatchConfigSchema.FormatValue( option, option.Property.GetValue( EditableConfig ) ) );
+				hash.Add( MatchConfigSchema.FormatValue( option, MatchConfigSchema.GetOptionValue( option, EditableConfig ) ) );
 		}
 
 		return hash.ToHashCode();
@@ -309,32 +309,32 @@
 
 	private bool GetConfigBoolValue( MatchConfigOption option )
 	{
-		return (bool)(option.Property.GetValue( EditableConfig ) ?? false);
+		return (bool)(MatchConfigSchema.GetOptionValue( option, EditableConfig ) ?? false);
 	}
 
 	private void ToggleConfigBoolValue( MatchConfigOption option )
 	{
-		option.Property.SetValue( EditableConfig, !GetConfigBoolValue( option ) );
+		MatchConfigSchema.SetOptionValue( option, EditableConfig, !GetConfigBoolValue( option ) );
 		configRevision++;
 	}
 
 	private int GetConfigIntValue( MatchConfigOption option )
 	{
-		return (int)(option.Property.GetValue( EditableConfig ) ?? 0);
+		return (int)(MatchConfigSchema.GetOptionValue( option, EditableConfig ) ?? 0);
 	}
 
 	private void ChangeConfigIntValue( MatchConfigOption option, int delta )
 	{
 		var nextValue = GetConfigIntValue( option ) + delta;
 		nextValue = Math.Clamp( nextValue, option.Min, option.Max );
-		option.Property.SetValue( EditableConfig, nextValue );
+		MatchConfigSchema.SetOptionValue( option, EditableConfig, nextValue );
 		NormalizeEditableConfig();
 		configRevision++;
 	}
 
 	private string GetConfigEnumValue( MatchConfigOption option )
 	{
-		return option.Property.GetValue( EditableConfig )?.ToString() ?? "";
+		return MatchConfigSchema.GetOptionValue( option, EditableConfig )?.ToString() ?? "";
 	}
 
 	private void SetConfigEnumValue( MatchConfigOption option, string rawValue )
@@ -342,7 +342,7 @@
 		if ( !MatchConfigSchema.TryParseValue( option, rawValue, out var parsedValue ) )
 			return;
 
-		option.Property.SetValue( EditableConfig, parsedValue );
+		MatchConfigSchema.SetOptionValue( option, EditableConfig, parsedValue );
 		configRevision++;
 	}
 
