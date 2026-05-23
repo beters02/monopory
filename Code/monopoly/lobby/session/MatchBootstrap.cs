@@ -25,10 +25,14 @@ public sealed class MatchBootstrap
 	public static void PrepareGame( MatchConfig config, IReadOnlyList<LobbyPlayer> startingPlayers )
 	{
 		var players = ClonePlayers( startingPlayers );
+		var clonedConfig = CloneConfig( config );
+
+		if ( clonedConfig.RandomizeTurnOrder )
+			ShufflePlayers( players );
 
 		Current = new MatchBootstrap
 		{
-			Config = CloneConfig( config ),
+			Config = clonedConfig,
 			HasConfig = true,
 			AutoStartGame = true,
 			StartingPlayerCount = players.Count,
@@ -61,5 +65,17 @@ public sealed class MatchBootstrap
 				IsLocal = player.IsLocal
 			} )
 			.ToList();
+	}
+
+	private static void ShufflePlayers( List<LobbyPlayer> players )
+	{
+		if ( players is null || players.Count <= 1 )
+			return;
+
+		for ( var i = players.Count - 1; i > 0; i-- )
+		{
+			var swapIndex = Game.Random.Int( 0, i );
+			(players[i], players[swapIndex]) = (players[swapIndex], players[i]);
+		}
 	}
 }

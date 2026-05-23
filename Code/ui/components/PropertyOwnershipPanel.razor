@@ -71,6 +71,7 @@
 @code
 {
 	[Parameter] public GameController GameRef { get; set; }
+	private int InitialTurnOrderStartIndex = -1;
 
 	private List<PlayerState> PropertyHudPlayers
 	{
@@ -83,18 +84,37 @@
 				.Where( player => player is not null && player.IsAssigned )
 				.ToList();
 
-			var localIndex = GameRef.LocalPlayerIndex;
-			if ( localIndex < 0 )
+			if ( assignedPlayers.Count == 0 )
+				return assignedPlayers;
+
+			var startIndex = GetTurnOrderStartIndex();
+			if ( startIndex < 0 )
 				return assignedPlayers;
 
 			return assignedPlayers
 				.OrderBy( player =>
 				{
 					var index = GameRef.GetPlayerIndex( player );
-					return index == localIndex ? -1 : index;
+					if ( index < 0 )
+						return int.MaxValue;
+
+					return index >= startIndex
+						? index - startIndex
+						: index + GameRef.MaxPlayers - startIndex;
 				} )
 				.ToList();
 		}
+	}
+
+	private int GetTurnOrderStartIndex()
+	{
+		if ( GameRef is null )
+			return -1;
+
+		if ( InitialTurnOrderStartIndex < 0 && GameRef.CurrentPlayerIndex >= 0 )
+			InitialTurnOrderStartIndex = GameRef.CurrentPlayerIndex;
+
+		return InitialTurnOrderStartIndex;
 	}
 
 	private List<SpaceDef> OrderedPropertySpaces =>

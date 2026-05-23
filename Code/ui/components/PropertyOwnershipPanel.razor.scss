@@ -29,7 +29,7 @@
 	width: 240px;
 	padding: 10px;
 	background-color: $monopoly-panel-strong;
-	border: 2px solid $monopoly-panel-line;
+	border: 2px solid $monopoly-gold;
 	border-radius: $monopoly-radius-board;
 	color: $monopoly-text;
 	display: flex;
@@ -66,11 +66,12 @@
 }
 
 .property-player-panel.local-player {
-	border-color: $monopoly-gold;
+	border-color: $monopoly-panel-line;
 }
 
 .property-player-panel.current-player {
-	box-shadow: 0 0 0 2px rgba(217, 180, 95, 0.45);
+	border-color: $monopoly-gold;
+	box-shadow: 0 0 0 1px rgba(217, 180, 95, 0.45);
 }
 
 .property-player-name {
@@ -100,7 +101,7 @@
 	font-weight: 900;
 	text-transform: uppercase;
 	letter-spacing: 0.7px;
-	color: $monopoly-gold-soft;
+	color: rgba(255, 255, 255, 0.82);
 }
 
 .property-manager-content {
@@ -116,7 +117,7 @@
 .property-manager-section {
 	background-color: rgba(255, 255, 255, 0.03);
 	border: 1px solid rgba(255, 255, 255, 0.08);
-	border-radius: 8px;
+	border-radius: 4px;
 	padding: 8px;
 	display: flex;
 	flex-direction: column;

@@ -63,10 +63,13 @@ public sealed class MatchConfig
 	[Property, MatchConfigOption( "Turn Rules", "Doubles Goes Again", Description = "Lets players take another turn after rolling doubles.", Order = 30 )]
 	public bool DoublesGoesAgain { get; set; } = false;
 
-	[Property, MatchConfigOption( "Turn Rules", "Force Jail Fine After Failed Doubles", Description = "After the final failed jail roll, automatically pay the fine to leave jail.", Order = 31 )]
+	[Property, MatchConfigOption( "Turn Rules", "Randomize Turn Order", Description = "Shuffles the starting player order at match start.", Order = 31 )]
+	public bool RandomizeTurnOrder { get; set; } = false;
+
+	[Property, MatchConfigOption( "Turn Rules", "Force Jail Fine After Failed Doubles", Description = "After the final failed jail roll, automatically pay the fine to leave jail.", Order = 32 )]
 	public bool ForceJailFineAfterFailedDoubles { get; set; } = true;
 
-	[Property, MatchConfigOption( "Turn Rules", "Turn Time Limit Seconds", Description = "How long each turn can last before timeout handling kicks in.", Order = 32, Min = 15, Max = 900, Step = 15 )]
+	[Property, MatchConfigOption( "Turn Rules", "Turn Time Limit Seconds", Description = "How long each turn can last before timeout handling kicks in.", Order = 33, Min = 15, Max = 900, Step = 15 )]
 	public int TurnTimeLimitSeconds { get; set; } = 180;
 
 	[Property, MatchConfigOption( "Board Rules", "Vacation Cash", Description = "Awards pooled cash when landing on Free Parking, if enabled.", Order = 40 )]

@@ -527,6 +527,13 @@
 	padding-right: 48px;
 }
 
+.monopoly-space-card.selected-space-card .monopoly-space-card-header,
+.monopoly-space-card.selected-space-card .monopoly-special-title,
+.monopoly-space-card.selected-space-card .monopoly-space-card-type,
+.monopoly-space-card.selected-space-card .monopoly-space-card-name {
+	color: $monopoly-ink;
+}
+
 .selected-space-card .monopoly-special-title {
 	min-height: 174px;
 	padding: 20px 48px 14px;
