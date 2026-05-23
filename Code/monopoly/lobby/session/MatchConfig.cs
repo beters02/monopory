@@ -36,11 +36,14 @@ public sealed class MatchConfig
 	[MatchConfigOption( "Lobby", "Min Players", Description = "Minimum ready players required before the host can start.", Order = 0, Min = 1, Max = 6, Step = 1 )]
 	public int MinPlayers { get; set; } = 1;
 
-	[MatchConfigOption( "Lobby", "Max Players", Description = "Maximum seats allowed in the hosted lobby.", Order = 1, Min = 1, Max = 6, Step = 1 )]
-	public int MaxPlayers { get; set; } = 6;
+	[MatchConfigOption( "Lobby", "Max Players", Description = "Maximum seats allowed in the hosted lobby.", Order = 1, Min = 1, Max = 12, Step = 1 )]
+	public int MaxPlayers { get; set; } = 12;
 
 	[MatchConfigOption( "Lobby", "Only Host Starts Game", Description = "If enabled, only the host can launch the match.", Order = 2 )]
 	public bool OnlyHostStartsGame { get; set; } = true;
+
+	[MatchConfigOption( "Lobby", "Abandon Timeout Seconds", Description = "How long disconnected players can rejoin before they are abandoned and removed.", Order = 3, Min = 15, Max = 1800, Step = 15 )]
+	public int AbandonTimeoutSeconds { get; set; } = 180;
 
 	[MatchConfigOption( "Property Rules", "Affordable Unowned Landing", Description = "What happens when a player can afford an unowned property.", Order = 10 )]
 	public UnownedAffordableLandingMode LandedUnownedCanAffordMode { get; set; } = UnownedAffordableLandingMode.Decision;
@@ -55,7 +58,7 @@ public sealed class MatchConfig
 	public int StartingMoney { get; set; } = 1500;
 
 	[MatchConfigOption( "Economy", "Land On GO Additional Money", Description = "Additional bonus paid on top of Pass GO Money when a move ends on GO.", Order = 21, Min = 0, Max = 5000, Step = 50 )]
-	public int LandOnGoMoney { get; set; } = 200;
+	public int LandOnGoMoney { get; set; } = 100;
 
 	[MatchConfigOption( "Economy", "Pass GO Money", Description = "Bonus for passing GO during movement.", Order = 22, Min = 0, Max = 5000, Step = 50 )]
 	public int PassGoMoney { get; set; } = 200;
@@ -64,7 +67,7 @@ public sealed class MatchConfig
 	public int SnakeEyesBonusMoney { get; set; } = 0;
 
 	[MatchConfigOption( "Turn Rules", "Doubles Goes Again", Description = "Lets players take another turn after rolling doubles.", Order = 30 )]
-	public bool DoublesGoesAgain { get; set; } = false;
+	public bool DoublesGoesAgain { get; set; } = true;
 
 	[MatchConfigOption( "Turn Rules", "Randomize Turn Order", Description = "Shuffles the starting player order at match start.", Order = 31 )]
 	public bool RandomizeTurnOrder { get; set; } = true;

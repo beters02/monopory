@@ -30,7 +30,7 @@ public sealed partial class GameController : Component
 		var totalAssets = GetPlayerLiquidAssetTotal( playerIndex );
 		if ( totalAssets < amount )
 		{
-			BankruptPlayer( playerIndex, Players.ElementAtOrDefault( receiverIndex ) );
+			BankruptPlayer( playerIndex, Players.ElementAtOrDefault( receiverIndex ), true );
 			return false;
 		}
 

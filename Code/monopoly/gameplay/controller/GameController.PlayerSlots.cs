@@ -50,13 +50,18 @@ public sealed partial class GameController : Component
 
 		foreach ( var player in Players.Where( player => player is not null && player.IsAssigned ).ToList() )
 		{
-			if ( Connection.All.Any( connection => connection.SteamId == player.OwnerId ) )
+			var hasConnection = Connection.All.Any( connection => connection.SteamId == player.OwnerId );
+			if ( hasConnection )
+			{
+				player.IsDisconnected = false;
+				player.AbandonEndsAt = 0f;
 				continue;
+			}
 
 			if ( IsExpectedBootstrappedPlayer( player.OwnerId ) )
 				continue;
 
-			ClearPlayerSlot( player );
+			HandleDisconnectedPlayerSlot( player );
 		}
 
 		foreach ( var connection in Connection.All )
@@ -196,6 +201,8 @@ public sealed partial class GameController : Component
 		player.OwnerId = 0;
 		player.PlayerName = "Player";
 		player.IsReady = false;
+		player.IsDisconnected = false;
+		player.AbandonEndsAt = 0f;
 		ResetPlayerForGame( player );
 	}
 
@@ -211,6 +218,8 @@ public sealed partial class GameController : Component
 		player.ConsecutiveDoubles = 0;
 		player.SkipsNextTurn = false;
 		player.IsBankrupt = false;
+		player.IsDisconnected = false;
+		player.AbandonEndsAt = 0f;
 	}
 
 	private void ResetGameState( bool resetPlayers )
@@ -270,5 +279,53 @@ public sealed partial class GameController : Component
 		ResetPlayerForGame( emptySlot );
 
 		Log.Info( $"Assigned {connection.DisplayName} to player slot {Players.IndexOf( emptySlot )}" );
+	}
+
+	private void HandleDisconnectedPlayerSlot( PlayerState player )
+	{
+		if ( player is null || !player.IsAssigned )
+			return;
+
+		var abandonTimeoutSeconds = Math.Max( Config?.AbandonTimeoutSeconds ?? 180, 1 );
+		if ( !player.IsDisconnected )
+		{
+			player.IsDisconnected = true;
+			player.AbandonEndsAt = Time.Now + abandonTimeoutSeconds;
+			RemoveTradesForPlayer( Players.IndexOf( player ) );
+			Log.Info( $"{player.PlayerName} disconnected. Abandon timeout: {abandonTimeoutSeconds}s." );
+			return;
+		}
+
+		if ( player.AbandonEndsAt > Time.Now )
+			return;
+
+		FinalizeAbandonedPlayer( player );
+	}
+
+	private void FinalizeAbandonedPlayer( PlayerState player )
+	{
+		var playerIndex = Players.IndexOf( player );
+		if ( playerIndex < 0 || player is null || !player.IsAssigned )
+			return;
+
+		RemoveTradesForPlayer( playerIndex );
+		BankruptPlayer( playerIndex, null );
+		TokenPhysicsStates.Remove( playerIndex );
+		ClearPlayerSlot( player );
+
+		if ( CurrentPlayerIndex == playerIndex && MatchState == MatchLifecycleState.InGame )
+			AdvanceTurn();
+	}
+
+	private void RemoveTradesForPlayer( int playerIndex )
+	{
+		foreach ( var trade in GetTrades() )
+		{
+			if ( trade.SenderPlayerIndex == playerIndex || trade.ReceiverPlayerIndex == playerIndex )
+			{
+				PendingTrades.Remove( trade.Id );
+				TradeViewers.Remove( trade.Id );
+			}
+		}
 	}
 }

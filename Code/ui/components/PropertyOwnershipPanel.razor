@@ -19,6 +19,10 @@
 						<ChildContent>
 							<div class="property-player-name">@player.PlayerName</div>
 							<div class="property-player-money">$@player.Money</div>
+							@if ( player.IsDisconnected && !player.IsBankrupt )
+							{
+								<div class="property-player-money">Rejoin: @Math.Max( 0, (int)MathF.Ceiling( player.AbandonEndsAt - Time.Now ) )s</div>
+							}
 						</ChildContent>
 					</Sandbox.ui.components.HudPanel.HudPanel>
 				}
@@ -237,14 +241,25 @@
 
 	protected override int BuildHash()
 	{
-		return HashCode.Combine(
-			GameRef?.CurrentPlayerIndex ?? -1,
-			GameRef?.PendingPurchaseSpaceIndex ?? -1,
-			GameRef?.LocalSelectedSpaceIndex ?? -1,
-			HudUi.GetPropertyOwnersHash( GameRef ),
-			HudUi.GetMortgagedPropertiesHash( GameRef ),
-			HudUi.GetPlayersHash( GameRef )
-		);
+		var hash = new HashCode();
+		hash.Add( GameRef?.CurrentPlayerIndex ?? -1 );
+		hash.Add( GameRef?.PendingPurchaseSpaceIndex ?? -1 );
+		hash.Add( GameRef?.LocalSelectedSpaceIndex ?? -1 );
+		hash.Add( HudUi.GetPropertyOwnersHash( GameRef ) );
+		hash.Add( HudUi.GetMortgagedPropertiesHash( GameRef ) );
+		hash.Add( HudUi.GetPlayersHash( GameRef ) );
+
+		if ( GameRef is not null )
+		{
+			foreach ( var player in GameRef.Players.Where( player => player is not null && player.IsAssigned ) )
+			{
+				hash.Add( player.OwnerId );
+				hash.Add( player.IsDisconnected );
+				hash.Add( player.AbandonEndsAt > 0f ? MathF.Ceiling( Math.Max( 0f, player.AbandonEndsAt - Time.Now ) ) : 0f );
+			}
+		}
+
+		return hash.ToHashCode();
 	}
 
 	private sealed class PropertyManagerSection

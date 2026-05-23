@@ -13,6 +13,8 @@ public sealed class PlayerState : Component
 	[Property, Sync] public bool SkipsNextTurn { get; set; }
 	[Property, Sync] public bool IsBankrupt { get; set; }
 	[Property, Sync] public bool IsReady { get; set; }
+	[Property, Sync] public bool IsDisconnected { get; set; }
+	[Property, Sync] public float AbandonEndsAt { get; set; }
 
 	[Property, Sync] public string PlayerName { get; set; } = "Player";
 

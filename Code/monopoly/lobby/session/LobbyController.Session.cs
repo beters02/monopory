@@ -4,7 +4,7 @@ public sealed partial class LobbyController
 {
 	public bool TryStartGame()
 	{
-		if ( !Networking.IsHost || !CanStartGame )
+		if ( !Networking.IsHost || !CanStartGame || !IsLocalEffectiveHost )
 			return false;
 
 		MatchBootstrap.PrepareGame( GetGameConfig(), Players );
@@ -35,7 +35,7 @@ public sealed partial class LobbyController
 	[Rpc.Host]
 	public void RequestStartGame()
 	{
-		if ( OnlyHostStartsGame && !IsHostCaller( Rpc.Caller ) )
+		if ( OnlyHostStartsGame && !IsEffectiveHostCaller( Rpc.Caller ) )
 			return;
 
 		TryStartGame();
@@ -44,7 +44,7 @@ public sealed partial class LobbyController
 	[Rpc.Host]
 	public void RequestBackToMenu()
 	{
-		if ( !Networking.IsHost )
+		if ( !Networking.IsHost || !IsEffectiveHostCaller( Rpc.Caller ) )
 			return;
 
 		LoadMenuScene();
@@ -53,6 +53,17 @@ public sealed partial class LobbyController
 	private bool IsHostCaller( Connection caller )
 	{
 		return Networking.IsHost && (caller is null || caller == Connection.Local);
+	}
+
+	private bool IsEffectiveHostCaller( Connection caller )
+	{
+		if ( !Networking.IsHost || caller is null )
+			return false;
+
+		if ( !OnlyHostStartsGame )
+			return true;
+
+		return caller.SteamId == EffectiveHostOwnerId;
 	}
 
 }

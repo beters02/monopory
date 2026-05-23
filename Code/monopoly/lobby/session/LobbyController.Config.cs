@@ -38,7 +38,7 @@ public sealed partial class LobbyController
 	{
 		errorMessage = "";
 
-		if ( !Networking.IsHost )
+		if ( !Networking.IsHost || !IsLocalEffectiveHost )
 		{
 			errorMessage = "Only the host can change lobby game settings.";
 			return false;

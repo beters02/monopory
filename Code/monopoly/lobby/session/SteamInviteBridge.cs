@@ -47,6 +47,32 @@ public static class SteamInviteBridge
 #endif
 	}
 
+	public static long GetActiveLobbyIdValue()
+	{
+#if STANDALONE
+		try
+		{
+			var lobbyManagerType = FindLoadedType( "Sandbox.LobbyManager" );
+			var activeLobbiesProperty = lobbyManagerType?.GetProperty( "ActiveLobbies", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static );
+			var activeLobbies = activeLobbiesProperty?.GetValue( null ) as System.Collections.IEnumerable;
+			if ( activeLobbies is null )
+				return 0;
+
+			foreach ( var lobby in activeLobbies )
+			{
+				var idProperty = lobby?.GetType().GetProperty( "Id", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance );
+				var idValue = idProperty?.GetValue( lobby );
+				if ( idValue is SteamId steamId && steamId.ValueUnsigned != 0 )
+					return (long)steamId.ValueUnsigned;
+			}
+		}
+		catch
+		{
+		}
+#endif
+		return 0;
+	}
+
 #if STANDALONE
 	private static async void OnGameLobbyJoinRequested( SteamId lobbyId )
 	{

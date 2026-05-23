@@ -222,7 +222,7 @@ public sealed partial class GameController : Component
 
 		if ( GetPlayerLiquidAssetTotal( playerIndex ) < total )
 		{
-			BankruptPlayer( playerIndex, null );
+			BankruptPlayer( playerIndex, null, true );
 			return;
 		}
 

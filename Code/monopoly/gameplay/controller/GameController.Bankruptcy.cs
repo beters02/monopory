@@ -27,7 +27,7 @@ public sealed partial class GameController : Component
 		return total;
 	}
 
-	private void BankruptPlayer( int playerIndex, PlayerState creditor )
+	private void BankruptPlayer( int playerIndex, PlayerState creditor, bool advanceTurnIfCurrent = false )
 	{
 		if ( playerIndex < 0 )
 			return;
@@ -70,6 +70,19 @@ public sealed partial class GameController : Component
 
 		var creditorText = creditor is null ? "" : $" while owing {creditor.PlayerName}";
 		Log.Info( $"{player.PlayerName} went bankrupt{creditorText}." );
+
+		if ( advanceTurnIfCurrent &&
+			MatchState == MatchLifecycleState.InGame &&
+			CurrentPlayerIndex == playerIndex )
+		{
+			PendingPurchaseSpaceIndex = -1;
+			CurrentTurnGetsExtraRoll = false;
+			if ( Phase == GamePhase.Auctioning )
+				ClearAuction();
+			Phase = GamePhase.TurnEnded;
+			AdvanceTurn();
+		}
+
 		CheckForGameOver();
 	}
 

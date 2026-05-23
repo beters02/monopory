@@ -23,7 +23,7 @@
 						</div>
 
 						<div class="match-config-scroll">
-							<div class="match-config-copy">Changes stay local to the host until you press Save.</div>
+							<div class="match-config-copy">@ConfigMenuCopy</div>
 
 							@foreach ( var group in ConfigGroups )
 							{
@@ -41,20 +41,39 @@
 											<div class="match-config-control">
 												@if ( option.Kind == MatchConfigOptionKind.Bool )
 												{
-													<GameButton Variant="@GetConfigToggleButtonClasses( GetConfigBoolValue( option ) )" OnClick="@(() => ToggleConfigBoolValue( option ))">
+													<GameButton Variant="@GetConfigToggleButtonClasses( GetConfigBoolValue( option ) )"
+														CanClick="@CanEditConfig"
+														BlockedPopupTitle="Host only"
+														BlockedPopupMessage="Only the host can change lobby game settings."
+														OnClick="@(() => ToggleConfigBoolValue( option ))">
 														@(GetConfigBoolValue( option ) ? "On" : "Off")
 													</GameButton>
 												}
 												else if ( option.Kind == MatchConfigOptionKind.Enum )
 												{
-													<DropdownButton Value="@GetConfigEnumValue( option )" Items="@option.EnumNames" OnSelected="@((string value) => SetConfigEnumValue( option, value ))"></DropdownButton>
+													@if ( CanEditConfig )
+													{
+														<DropdownButton Value="@GetConfigEnumValue( option )" Items="@option.EnumNames" OnSelected="@((string value) => SetConfigEnumValue( option, value ))"></DropdownButton>
+													}
+													else
+													{
+														<div class="match-config-stepper-value">@GetConfigFormattedValue( option )</div>
+													}
 												}
 												else if ( option.Kind == MatchConfigOptionKind.Int )
 												{
 													<div class="match-config-stepper">
-														<GameButton Variant="match-config-step-button" OnClick="@(() => ChangeConfigIntValue( option, -option.Step ))">-</GameButton>
+														<GameButton Variant="match-config-step-button"
+															CanClick="@CanEditConfig"
+															BlockedPopupTitle="Host only"
+															BlockedPopupMessage="Only the host can change lobby game settings."
+															OnClick="@(() => ChangeConfigIntValue( option, -option.Step ))">-</GameButton>
 														<div class="match-config-stepper-value">@GetConfigIntValue( option )</div>
-														<GameButton Variant="match-config-step-button" OnClick="@(() => ChangeConfigIntValue( option, option.Step ))">+</GameButton>
+														<GameButton Variant="match-config-step-button"
+															CanClick="@CanEditConfig"
+															BlockedPopupTitle="Host only"
+															BlockedPopupMessage="Only the host can change lobby game settings."
+															OnClick="@(() => ChangeConfigIntValue( option, option.Step ))">+</GameButton>
 													</div>
 												}
 											</div>
@@ -67,7 +86,10 @@
 
 						<div class="match-config-footer">
 							<GameButton Variant="match-config-secondary-button" OnClick="@CloseConfigMenu">Close</GameButton>
-							<GameButton Variant="match-config-save-button" OnClick="@SaveConfigMenu">Save</GameButton>
+							@if ( CanEditConfig )
+							{
+								<GameButton Variant="match-config-save-button" OnClick="@SaveConfigMenu">Save</GameButton>
+							}
 						</div>
 					</div>
 				</div>
@@ -125,7 +147,8 @@
 	private bool CanClickStartGame => Lobby?.CanLocalPlayerStartGame == true;
 	private bool IsOptionsMenuOpen;
 	private bool IsConfigMenuOpen;
-	private bool CanOpenConfig => Lobby is not null && Networking.IsHost;
+	private bool CanOpenConfig => Lobby is not null;
+	private bool CanEditConfig => Lobby?.IsLocalEffectiveHost == true;
 	private MatchConfig EditableConfig;
 	private string LoadedConfigSnapshot = "";
 	private int configRevision;
@@ -163,8 +186,11 @@
 	private string ReadyButtonLabel => LocalPlayer?.IsReady == true ? "Unready" : "Ready";
 	private string ReadyButtonClasses => LocalPlayer?.IsReady == true ? "flow-secondary-button ready" : "flow-primary-button";
 	private string StartButtonClasses => CanClickStartGame ? "flow-primary-button" : "flow-primary-button blocked-action-button";
-	private string ConfigButtonClasses => CanOpenConfig ? "flow-secondary-button flow-config-button" : "flow-secondary-button flow-config-button blocked-action-button";
-	private string StartBlockedMessage => Lobby?.OnlyHostStartsGame == true && !Networking.IsHost
+	private string ConfigButtonClasses => "flow-secondary-button flow-config-button";
+	private string ConfigMenuCopy => CanEditConfig
+		? "Changes stay local to the host until you press Save."
+		: "Viewing current host settings. Only the host can change or save configuration.";
+	private string StartBlockedMessage => Lobby?.OnlyHostStartsGame == true && Lobby?.IsLocalEffectiveHost != true
 		? "Only the host can start this game."
 		: LobbyStatusText;
 
@@ -189,7 +215,7 @@
 		hash.Add( CanClickStartGame );
 		hash.Add( LobbyStatusText );
 		hash.Add( Lobby?.OnlyHostStartsGame ?? false );
-		hash.Add( Networking.IsHost );
+		hash.Add( Lobby?.IsLocalEffectiveHost ?? false );
 		hash.Add( IsOptionsMenuOpen );
 		hash.Add( IsConfigMenuOpen );
 		hash.Add( Lobby?.HostedConfigSnapshot ?? "" );
@@ -207,6 +233,9 @@
 			hash.Add( player.OwnerId );
 			hash.Add( player.Name );
 			hash.Add( player.IsReady );
+			hash.Add( player.IsConnected );
+			hash.Add( player.IsHost );
+			hash.Add( player.AbandonEndsAt );
 		}
 
 		if ( EditableConfig is not null )
@@ -295,6 +324,11 @@
 		return option?.Label ?? "";
 	}
 
+	private string GetConfigFormattedValue( MatchConfigOption option )
+	{
+		return MatchConfigSchema.FormatValue( option, MatchConfigSchema.GetOptionValue( option, EditableConfig ) );
+	}
+
 	private void EnsureEditableConfigCurrent()
 	{
 		if ( Lobby is null )
@@ -316,6 +350,9 @@
 
 	private void ToggleConfigBoolValue( MatchConfigOption option )
 	{
+		if ( !CanEditConfig )
+			return;
+
 		MatchConfigSchema.SetOptionValue( option, EditableConfig, !GetConfigBoolValue( option ) );
 		configRevision++;
 	}
@@ -327,6 +364,9 @@
 
 	private void ChangeConfigIntValue( MatchConfigOption option, int delta )
 	{
+		if ( !CanEditConfig )
+			return;
+
 		var nextValue = GetConfigIntValue( option ) + delta;
 		nextValue = Math.Clamp( nextValue, option.Min, option.Max );
 		MatchConfigSchema.SetOptionValue( option, EditableConfig, nextValue );
@@ -341,6 +381,9 @@
 
 	private void SetConfigEnumValue( MatchConfigOption option, string rawValue )
 	{
+		if ( !CanEditConfig )
+			return;
+
 		if ( !MatchConfigSchema.TryParseValue( option, rawValue, out var parsedValue ) )
 			return;
 
@@ -355,7 +398,7 @@
 
 	private void SaveConfigMenu()
 	{
-		if ( Lobby is null || EditableConfig is null )
+		if ( Lobby is null || EditableConfig is null || !CanEditConfig )
 			return;
 
 		NormalizeEditableConfig();
@@ -406,12 +449,28 @@
 
 		if ( player.IsReady )
 			classes += " ready";
+		if ( !player.IsConnected )
+			classes += " disconnected";
+		if ( player.IsHost )
+			classes += " host";
 
 		return classes;
 	}
 
 	private static string GetPlayerDetail( LobbyPlayer player )
 	{
+		if ( !player.IsConnected )
+		{
+			var remaining = Math.Max( 0, (int)MathF.Ceiling( player.AbandonEndsAt - Time.Now ) );
+			return $"Disconnected - {remaining}s to rejoin";
+		}
+
+		if ( player.IsHost && player.IsLocal )
+			return "You - Host";
+
+		if ( player.IsHost )
+			return "Host";
+
 		return player.IsLocal ? "You" : "Connected";
 	}
 

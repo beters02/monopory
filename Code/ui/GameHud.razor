@@ -122,6 +122,11 @@
 
 	private void LeaveLobby()
 	{
+		var lobbyId = SteamInviteBridge.GetActiveLobbyIdValue();
+		var abandonTimeoutSeconds = Math.Max( GameRef?.Config?.AbandonTimeoutSeconds ?? 180, 1 );
+		if ( lobbyId != 0 )
+			NetworkSession.SetRejoinWindow( lobbyId, Time.Now + abandonTimeoutSeconds );
+
 		IsEscapeMenuOpen = false;
 		IsOptionsMenuOpen = false;
 		NetworkSession.LeaveCurrentLobby( Scene );

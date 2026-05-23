@@ -183,23 +183,6 @@
           "__guid": "187c46d3-7999-4b29-8704-6c7c48c74b89",
           "__enabled": true,
           "Flags": 0,
-          "Config": {
-            "MinPlayers": 1,
-            "MaxPlayers": 6,
-            "OnlyHostStartsGame": true,
-            "LandedUnownedCanAffordMode": "Decision",
-            "LandedUnownedCantAffordMode": "ForceAuction",
-            "CanSkipUnowned": false,
-            "StartingMoney": 1500,
-            "LandOnGoMoney": 200,
-            "PassGoMoney": 200,
-            "DoublesGoesAgain": true,
-            "ForceJailFineAfterFailedDoubles": true,
-            "TurnTimeLimitSeconds": 180,
-            "VacationCash": false,
-            "DontCollectRentWhileInPrison": false,
-            "EvenBuild": true
-          },
           "OnComponentDestroy": null,
           "OnComponentDisabled": null,
           "OnComponentEnabled": null,
@@ -262,14 +245,14 @@
       "CustomBounds": false
     },
     "GameObjectSystems": {
-      "Sandbox.Clutter.ClutterGridSystem": {
-        "Storage": {
-          "$blob": "1038bcfc-1f47-4964-962a-e0cb2849ee20"
-        }
-      },
       "Sandbox.SelectionSetsSystem": {
         "Data": {
           "SelectionSets": []
+        }
+      },
+      "Sandbox.Clutter.ClutterGridSystem": {
+        "Storage": {
+          "$blob": "1038bcfc-1f47-4964-962a-e0cb2849ee20"
         }
       }
     }

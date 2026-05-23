@@ -6,6 +6,9 @@ public sealed partial class LobbyController : Component
 	public MatchConfig Config;
 	[Property, Sync] public string HostedConfigSnapshot { get; set; } = "";
 	[Property, Sync] public NetDictionary<string, bool> ReadyPlayers { get; set; } = new();
+	[Property, Sync] public NetDictionary<string, string> KnownPlayerNames { get; set; } = new();
+	[Property, Sync] public NetDictionary<string, float> DisconnectedPlayers { get; set; } = new();
+	[Property, Sync] public long PreferredHostOwnerId { get; set; }
 	private string lastAppliedHostedConfigSnapshot = "";
 
 	public int MinPlayers => Math.Max( Config?.MinPlayers ?? 1, 1 );
@@ -21,7 +24,10 @@ public sealed partial class LobbyController : Component
 		CanStartWithPlayers( Players );
 
 	public bool CanLocalPlayerStartGame =>
-		CanStartGame && (!OnlyHostStartsGame || Networking.IsHost);
+		CanStartGame && (!OnlyHostStartsGame || IsLocalEffectiveHost);
+
+	public bool IsLocalEffectiveHost => GetLocalSteamId() == EffectiveHostOwnerId;
+	public long EffectiveHostOwnerId => ResolveEffectiveHostOwnerId();
 
 	protected override void OnStart()
 	{
@@ -29,6 +35,8 @@ public sealed partial class LobbyController : Component
 		SteamInviteBridge.Register( Scene );
 
 		ApplyHostedConfig();
+		if ( Networking.IsHost && PreferredHostOwnerId == 0 )
+			PreferredHostOwnerId = Connection.Local?.SteamId ?? 0L;
 
 		Players = BuildPlayers();
 	}
@@ -40,18 +48,53 @@ public sealed partial class LobbyController : Component
 	protected override void OnUpdate()
 	{
 		ApplyHostedConfigSnapshot();
+
+		if ( Networking.IsHost )
+			UpdateDisconnectedPlayers();
+
 		Players = BuildPlayers();
 
 		if ( !Networking.IsHost )
 			return;
+	}
 
-		var ownerIds = new List<string>( ReadyPlayers.Keys );
-		foreach ( var ownerId in ownerIds )
+	private void UpdateDisconnectedPlayers()
+	{
+		var now = Time.Now;
+		var timeoutSeconds = Math.Max( Config?.AbandonTimeoutSeconds ?? 180, 1 );
+		var connectedBySteamId = GetConnections().ToDictionary( connection => connection.SteamId, connection => connection );
+
+		foreach ( var connection in connectedBySteamId.Values )
 		{
-			if ( HasConnection( ownerId ) )
+			var key = GetReadyKey( connection.SteamId );
+			KnownPlayerNames[key] = connection.DisplayName ?? "Player";
+			if ( DisconnectedPlayers.ContainsKey( key ) )
+				DisconnectedPlayers.Remove( key );
+		}
+
+		foreach ( var key in KnownPlayerNames.Keys.ToList() )
+		{
+			if ( !long.TryParse( key, out var ownerId ) || ownerId == 0 )
 				continue;
 
-			ReadyPlayers.Remove( ownerId );
+			if ( connectedBySteamId.ContainsKey( ownerId ) )
+				continue;
+
+			if ( !DisconnectedPlayers.ContainsKey( key ) )
+				DisconnectedPlayers[key] = now + timeoutSeconds;
 		}
+
+		foreach ( var entry in DisconnectedPlayers.ToList() )
+		{
+			if ( entry.Value > now )
+				continue;
+
+			DisconnectedPlayers.Remove( entry.Key );
+			ReadyPlayers.Remove( entry.Key );
+			KnownPlayerNames.Remove( entry.Key );
+
+			if ( long.TryParse( entry.Key, out var expiredOwnerId ) && PreferredHostOwnerId == expiredOwnerId )
+				PreferredHostOwnerId = Connection.Host?.SteamId ?? 0L;
 	}
+}
 }

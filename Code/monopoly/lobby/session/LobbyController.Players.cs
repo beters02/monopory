@@ -8,6 +8,9 @@ public sealed partial class LobbyController
 		if ( !Networking.IsHost )
 			return false;
 
+		if ( IsMarkedDisconnected( ownerId ) )
+			return false;
+
 		if ( !HasConnection( ownerId ) )
 			return false;
 
@@ -18,27 +21,35 @@ public sealed partial class LobbyController
 	private List<LobbyPlayer> BuildPlayers()
 	{
 		var players = new List<LobbyPlayer>();
-		var connections = GetConnections();
 		var localSteamId = GetLocalSteamId();
-		var limit = Math.Min( MaxPlayers, connections.Count );
+		var effectiveHostOwnerId = ResolveEffectiveHostOwnerId();
+		var connectionsBySteamId = GetConnections().ToDictionary( connection => connection.SteamId, connection => connection );
+		var ownerIds = GetKnownOwnerIds()
+			.Where( ownerId => ownerId != 0 )
+			.Distinct()
+			.Take( MaxPlayers )
+			.ToList();
 
-		for ( var i = 0; i < limit; i++ )
+		foreach ( var ownerId in ownerIds )
 		{
-			var connection = connections[i];
+			connectionsBySteamId.TryGetValue( ownerId, out var connection );
+			var isDisconnected = IsMarkedDisconnected( ownerId );
 			var player = new LobbyPlayer
 			{
-				OwnerId = connection.SteamId,
-				Name = connection.DisplayName ?? "Player",
-				IsLocal = localSteamId.HasValue && connection.SteamId == localSteamId.Value
+				OwnerId = ownerId,
+				Name = connection?.DisplayName ?? GetKnownNameForOwner( ownerId ),
+				IsLocal = localSteamId.HasValue && ownerId == localSteamId.Value,
+				IsReady = ReadyPlayers.TryGetValue( GetReadyKey( ownerId ), out var ready ) && ready,
+				IsConnected = connection is not null && !isDisconnected,
+				IsHost = ownerId == effectiveHostOwnerId,
+				IsAbandoned = false,
+				AbandonEndsAt = GetDisconnectedDeadline( ownerId )
 			};
-
-			if ( ReadyPlayers.TryGetValue( GetReadyKey( player.OwnerId ), out var isReady ) )
-				player.IsReady = isReady;
 
 			players.Add( player );
 		}
 
-		return players;
+		return players.OrderByDescending( player => player.IsHost ).ThenBy( player => player.Name ).ToList();
 	}
 
 	private LobbyPlayer GetLocalPlayer()
@@ -105,6 +116,65 @@ public sealed partial class LobbyController
 		}
 
 		return false;
+	}
+
+	private long ResolveEffectiveHostOwnerId()
+	{
+		var preferredHost = PreferredHostOwnerId;
+		if ( preferredHost != 0 && HasConnection( preferredHost ) )
+			return preferredHost;
+
+		var hostConnection = Connection.Host;
+		if ( hostConnection is not null )
+			return hostConnection.SteamId;
+
+		return 0;
+	}
+
+	private IEnumerable<long> GetKnownOwnerIds()
+	{
+		var knownOwnerIds = new HashSet<long>();
+
+		foreach ( var connection in GetConnections() )
+			knownOwnerIds.Add( connection.SteamId );
+
+		foreach ( var key in ReadyPlayers.Keys )
+		{
+			if ( long.TryParse( key, out var ownerId ) )
+				knownOwnerIds.Add( ownerId );
+		}
+
+		foreach ( var key in KnownPlayerNames.Keys )
+		{
+			if ( long.TryParse( key, out var ownerId ) )
+				knownOwnerIds.Add( ownerId );
+		}
+
+		foreach ( var key in DisconnectedPlayers.Keys )
+		{
+			if ( long.TryParse( key, out var ownerId ) )
+				knownOwnerIds.Add( ownerId );
+		}
+
+		return knownOwnerIds;
+	}
+
+	private string GetKnownNameForOwner( long ownerId )
+	{
+		if ( KnownPlayerNames.TryGetValue( GetReadyKey( ownerId ), out var name ) && !string.IsNullOrWhiteSpace( name ) )
+			return name;
+
+		return "Player";
+	}
+
+	private bool IsMarkedDisconnected( long ownerId )
+	{
+		return DisconnectedPlayers.ContainsKey( GetReadyKey( ownerId ) );
+	}
+
+	private float GetDisconnectedDeadline( long ownerId )
+	{
+		return DisconnectedPlayers.TryGetValue( GetReadyKey( ownerId ), out var abandonEndsAt ) ? abandonEndsAt : 0f;
 	}
 
 	private static long? GetLocalSteamId()
