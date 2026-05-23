@@ -157,7 +157,13 @@
 }
 
 .selected-space-card-panel .selected-space-card,
-.selected-space-actions {
+.selected-space-card-panel .selected-space-card * {
+	pointer-events: none;
+}
+
+.selected-space-actions,
+.selected-space-actions *,
+.space-card-close {
 	pointer-events: all;
 }
 

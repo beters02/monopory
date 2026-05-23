@@ -123,25 +123,7 @@
           "__guid": "bde94123-51b8-45c7-ad19-a5211250b987",
           "__enabled": true,
           "Flags": 0,
-          "Config": {
-            "MinPlayers": 1,
-            "MaxPlayers": 6,
-            "OnlyHostStartsGame": true,
-            "LandedUnownedCanAffordMode": "Decision",
-            "LandedUnownedCantAffordMode": "ForceAuction",
-            "CanSkipUnowned": false,
-            "StartingMoney": 1500,
-            "LandOnGoMoney": 200,
-            "PassGoMoney": 200,
-            "DoublesGoesAgain": false,
-            "VacationCash": false,
-            "DontCollectRentWhileInPrison": false,
-            "EvenBuild": true,
-            "TurnTimeLimitSeconds": 180
-          },
-          "HostedMaxPlayers": 6,
-          "HostedMinPlayers": 1,
-          "HostedOnlyHostStartsGame": true,
+          "HostedConfigSnapshot": "",
           "OnComponentDestroy": null,
           "OnComponentDisabled": null,
           "OnComponentEnabled": null,
@@ -262,9 +244,6 @@
         "Data": {
           "SelectionSets": []
         }
-      },
-      "Sandbox.MovieMaker.MovieRecorderSystem": {
-        "DisableClientRecording": false
       }
     }
   },

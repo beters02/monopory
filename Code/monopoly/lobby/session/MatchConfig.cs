@@ -77,4 +77,5 @@ public sealed class MatchConfig
 
 	[Property, MatchConfigOption( "Board Rules", "Even Build", Description = "Requires houses to be built evenly across a color set.", Order = 42 )]
 	public bool EvenBuild { get; set; } = true;
+
 }

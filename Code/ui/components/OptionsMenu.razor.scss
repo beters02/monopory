@@ -268,6 +268,17 @@
 	background-color: $monopoly-gold-hover;
 }
 
+.options-panel .monopoly-button.disabled.options-close-button:hover,
+.options-panel .monopoly-button.disabled.options-category-button:hover,
+.options-panel .monopoly-button.disabled.options-toggle-button:hover,
+.options-panel .monopoly-button.disabled.options-choice-button:hover,
+.options-panel .monopoly-button.blocked-action-button.options-close-button:hover,
+.options-panel .monopoly-button.blocked-action-button.options-category-button:hover,
+.options-panel .monopoly-button.blocked-action-button.options-toggle-button:hover,
+.options-panel .monopoly-button.blocked-action-button.options-choice-button:hover {
+	background-color: $monopoly-ink-hover;
+}
+
 .options-footer {
 	justify-content: flex-end;
 }

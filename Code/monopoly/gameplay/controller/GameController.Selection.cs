@@ -5,6 +5,11 @@ using Sandbox;
 
 public sealed partial class GameController : Component
 {
+	[Property] public bool ShowSelectedSpaceCardOnGo { get; set; } = false;
+	[Property] public bool ShowSelectedSpaceCardOnTax { get; set; } = false;
+	[Property] public bool ShowSelectedSpaceCardOnJail { get; set; } = false;
+	[Property] public bool ShowSelectedSpaceCardOnGoToJail { get; set; } = false;
+	[Property] public bool ShowSelectedSpaceCardOnFreeParking { get; set; } = false;
 
 	public int LocalSelectedSpaceIndex { get; set; } = -1;
 	public string LocalSelectedDrawnCardText { get; set; } = "";
@@ -39,10 +44,35 @@ public sealed partial class GameController : Component
 		if ( !CanLeaveCurrentSelectedSpace() )
 			return;
 
+		if ( !ShouldShowSelectedSpaceCardAtIndex( spaceIndex ) )
+			return;
+
 		if ( spaceIndex == LocalSelectedSpaceIndex )
 			spaceIndex = -1;
 
 		SelectSpaceAsync( spaceIndex );
+	}
+
+	public bool ShouldShowSelectedSpaceCard( SpaceType type )
+	{
+		return type switch
+		{
+			SpaceType.Go => ShowSelectedSpaceCardOnGo,
+			SpaceType.Tax => ShowSelectedSpaceCardOnTax,
+			SpaceType.Jail => ShowSelectedSpaceCardOnJail,
+			SpaceType.GoToJail => ShowSelectedSpaceCardOnGoToJail,
+			SpaceType.FreeParking => ShowSelectedSpaceCardOnFreeParking,
+			_ => true
+		};
+	}
+
+	private bool ShouldShowSelectedSpaceCardAtIndex( int spaceIndex )
+	{
+		if ( spaceIndex < 0 || Board is null )
+			return true;
+
+		var spaceDef = Board.GetSpaceDef( spaceIndex );
+		return spaceDef is not null && ShouldShowSelectedSpaceCard( spaceDef.Type );
 	}
 
 	public bool CanLeaveCurrentSelectedSpace()
@@ -70,6 +100,9 @@ public sealed partial class GameController : Component
 	[Rpc.Broadcast]
 	private void ShowLandedSpaceCard( int spaceIndex, string drawnCardText )
 	{
+		if ( !ShouldShowSelectedSpaceCardAtIndex( spaceIndex ) )
+			return;
+
 		SelectSpaceAsync( spaceIndex, drawnCardText );
 	}
 

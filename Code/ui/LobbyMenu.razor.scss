@@ -36,6 +36,7 @@
 .match-config-panel {
 	width: 820px;
 	max-width: 92%;
+	height: 88%;
 	max-height: 88%;
 	padding: 24px;
 
@@ -51,7 +52,21 @@
 	flex-direction: column;
 	align-items: stretch;
 	gap: 14px;
+	overflow: hidden;
+}
+
+.match-config-scroll {
+	flex-grow: 1;
+	flex-shrink: 1;
+	min-height: 0;
+
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	gap: 14px;
+
 	overflow: scroll;
+	padding-bottom: 4px;
 }
 
 .match-config-header,
@@ -166,6 +181,17 @@
 	color: $monopoly-ink;
 }
 
+.match-config-close-button:hover,
+.match-config-toggle-button:hover,
+.match-config-step-button:hover,
+.match-config-secondary-button:hover {
+	background-color: $monopoly-ink-hover;
+}
+
+.match-config-toggle-button.selected:hover {
+	background-color: $monopoly-gold-hover;
+}
+
 .match-config-save-button {
 	min-width: 132px;
 	background-color: $monopoly-gold;
@@ -175,6 +201,17 @@
 
 .match-config-save-button:hover {
 	background-color: $monopoly-gold-hover;
+}
+
+.match-config-panel .monopoly-button.disabled.match-config-close-button:hover,
+.match-config-panel .monopoly-button.disabled.match-config-toggle-button:hover,
+.match-config-panel .monopoly-button.disabled.match-config-step-button:hover,
+.match-config-panel .monopoly-button.disabled.match-config-secondary-button:hover,
+.match-config-panel .monopoly-button.blocked-action-button.match-config-close-button:hover,
+.match-config-panel .monopoly-button.blocked-action-button.match-config-toggle-button:hover,
+.match-config-panel .monopoly-button.blocked-action-button.match-config-step-button:hover,
+.match-config-panel .monopoly-button.blocked-action-button.match-config-secondary-button:hover {
+	background-color: $monopoly-ink-hover;
 }
 
 .match-config-section {
@@ -376,4 +413,5 @@
 
 .match-config-footer {
 	justify-content: flex-end;
+	flex-shrink: 0;
 }

@@ -22,46 +22,48 @@
 							<GameButton Variant="match-config-close-button" Title="Close" OnClick="@CloseConfigMenu">X</GameButton>
 						</div>
 
-						<div class="match-config-copy">Changes stay local to the host until you press Save.</div>
+						<div class="match-config-scroll">
+							<div class="match-config-copy">Changes stay local to the host until you press Save.</div>
 
-						@foreach ( var group in ConfigGroups )
-						{
-							<div class="match-config-section">
-								<div class="match-config-section-title">@group</div>
-								<div class="match-config-section-options">
+							@foreach ( var group in ConfigGroups )
+							{
+								<div class="match-config-section">
+									<div class="match-config-section-title">@group</div>
+									<div class="match-config-section-options">
 
-								@foreach ( var option in GetConfigOptionsForGroup( group ) )
-								{
-									<div class="match-config-row">
-										<div class="match-config-text">
-											<div class="match-config-name">@GetConfigOptionTitle( option )</div>
-											<div class="match-config-value">@option.Description</div>
+									@foreach ( var option in GetConfigOptionsForGroup( group ) )
+									{
+										<div class="match-config-row">
+											<div class="match-config-text">
+												<div class="match-config-name">@GetConfigOptionTitle( option )</div>
+												<div class="match-config-value">@option.Description</div>
+											</div>
+											<div class="match-config-control">
+												@if ( option.Kind == MatchConfigOptionKind.Bool )
+												{
+													<GameButton Variant="@GetConfigToggleButtonClasses( GetConfigBoolValue( option ) )" OnClick="@(() => ToggleConfigBoolValue( option ))">
+														@(GetConfigBoolValue( option ) ? "On" : "Off")
+													</GameButton>
+												}
+												else if ( option.Kind == MatchConfigOptionKind.Enum )
+												{
+													<DropdownButton Value="@GetConfigEnumValue( option )" Items="@option.EnumNames" OnSelected="@((string value) => SetConfigEnumValue( option, value ))"></DropdownButton>
+												}
+												else if ( option.Kind == MatchConfigOptionKind.Int )
+												{
+													<div class="match-config-stepper">
+														<GameButton Variant="match-config-step-button" OnClick="@(() => ChangeConfigIntValue( option, -option.Step ))">-</GameButton>
+														<div class="match-config-stepper-value">@GetConfigIntValue( option )</div>
+														<GameButton Variant="match-config-step-button" OnClick="@(() => ChangeConfigIntValue( option, option.Step ))">+</GameButton>
+													</div>
+												}
+											</div>
 										</div>
-										<div class="match-config-control">
-											@if ( option.Kind == MatchConfigOptionKind.Bool )
-											{
-												<GameButton Variant="@GetConfigToggleButtonClasses( GetConfigBoolValue( option ) )" OnClick="@(() => ToggleConfigBoolValue( option ))">
-													@(GetConfigBoolValue( option ) ? "On" : "Off")
-												</GameButton>
-											}
-											else if ( option.Kind == MatchConfigOptionKind.Enum )
-											{
-												<DropdownButton Value="@GetConfigEnumValue( option )" Items="@option.EnumNames" OnSelected="@((string value) => SetConfigEnumValue( option, value ))"></DropdownButton>
-											}
-											else if ( option.Kind == MatchConfigOptionKind.Int )
-											{
-												<div class="match-config-stepper">
-													<GameButton Variant="match-config-step-button" OnClick="@(() => ChangeConfigIntValue( option, -option.Step ))">-</GameButton>
-													<div class="match-config-stepper-value">@GetConfigIntValue( option )</div>
-													<GameButton Variant="match-config-step-button" OnClick="@(() => ChangeConfigIntValue( option, option.Step ))">+</GameButton>
-												</div>
-											}
-										</div>
+									}
 									</div>
-								}
 								</div>
-							</div>
-						}
+							}
+						</div>
 
 						<div class="match-config-footer">
 							<GameButton Variant="match-config-secondary-button" OnClick="@CloseConfigMenu">Close</GameButton>

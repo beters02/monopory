@@ -46,6 +46,8 @@ public sealed class Board : Component
 
 	private float lastProcBoardWorldScale;
 	private float lastProcRefPanelSize;
+	private string lastCursorType;
+	private Vector2? lastPointerHoverPosition;
 
 	// Component
 
@@ -498,13 +500,51 @@ public sealed class Board : Component
 	private void UpdateSpaceHoverCursor()
 	{
 		var traceResult = GetSelectionMouseTraceResult();
-		var isHoveringSpace =
-			traceResult.HasValue &&
-			traceResult.Value.Hit &&
-			traceResult.Value.GameObject is not null &&
-			traceResult.Value.GameObject.Components.TryGet<BoardSpace>( out _ );
+		var isHoveringSpace = IsHoveringSelectableSpace( traceResult );
+		var desiredCursor = isHoveringSpace ? "pointer" : null;
+		const float PointerLatchRadius = 4f;
 
-		Mouse.CursorType = isHoveringSpace ? "pointer" : null;
+		// Some click frames briefly miss ray hits even when hovering the same space.
+		// Preserve prior pointer state near the last confirmed pointer-hover location.
+		if ( desiredCursor is null &&
+			lastPointerHoverPosition.HasValue &&
+			(Mouse.Position - lastPointerHoverPosition.Value).Length <= PointerLatchRadius &&
+			string.Equals( lastCursorType, "pointer", StringComparison.Ordinal ) )
+		{
+			desiredCursor = "pointer";
+		}
+
+		Mouse.CursorType = desiredCursor;
+		if ( string.Equals( desiredCursor, "pointer", StringComparison.Ordinal ) && isHoveringSpace )
+			lastPointerHoverPosition = Mouse.Position;
+		lastCursorType = desiredCursor;
+	}
+
+	private bool IsHoveringSelectableSpace( SceneTraceResult? traceResult )
+	{
+		if ( !traceResult.HasValue || !traceResult.Value.Hit || traceResult.Value.GameObject is null )
+			return false;
+
+		if ( !TryGetBoardSpaceFromGameObject( traceResult.Value.GameObject, out var space ) || space?.Def is null )
+			return false;
+
+		return GameRef?.ShouldShowSelectedSpaceCard( space.Def.Type ) ?? true;
+	}
+
+	private static bool TryGetBoardSpaceFromGameObject( GameObject gameObject, out BoardSpace space )
+	{
+		space = null;
+
+		for ( var current = gameObject; current is not null; current = current.Parent )
+		{
+			if ( current.Components.TryGet<BoardSpace>( out var foundSpace ) )
+			{
+				space = foundSpace;
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	private void HandleTraceResult(SceneTraceResult traceResult, out BoardSpace foundSpace, out SpaceDef foundSpaceDef)

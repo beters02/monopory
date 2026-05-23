@@ -463,6 +463,11 @@
 		hash.Add( GameRef?.FreeParkingBank ?? 0 );
 		hash.Add( GameRef?.Config?.VacationCash ?? false );
 		hash.Add( GameRef?.Config?.CanSkipUnowned ?? false );
+		hash.Add( GameRef?.ShowSelectedSpaceCardOnGo ?? false );
+		hash.Add( GameRef?.ShowSelectedSpaceCardOnTax ?? false );
+		hash.Add( GameRef?.ShowSelectedSpaceCardOnJail ?? false );
+		hash.Add( GameRef?.ShowSelectedSpaceCardOnGoToJail ?? false );
+		hash.Add( GameRef?.ShowSelectedSpaceCardOnFreeParking ?? false );
 		hash.Add( GameRef?.LocalPlayer?.Money ?? 0 );
 		hash.Add( HudUi.GetPropertyOwnersHash( GameRef ) );
 		hash.Add( HudUi.GetMortgagedPropertiesHash( GameRef ) );
