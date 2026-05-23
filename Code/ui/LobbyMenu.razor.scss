@@ -411,6 +411,35 @@
 	text-align: center;
 }
 
+.match-config-readonly-value {
+	width: 100%;
+	min-width: 0;
+	min-height: 42px;
+	padding: 10px 12px;
+
+	background-color: rgba(5, 5, 5, 0.08);
+	border: 3px solid rgba(18, 31, 29, 0.22);
+	border-radius: $monopoly-radius-board;
+
+	font-size: 14px;
+	font-weight: 900;
+	line-height: 18px;
+	display: flex;
+	align-items: center;
+	justify-content: flex-start;
+	white-space: normal;
+	overflow: visible;
+	text-overflow: clip;
+}
+
+.match-config-readonly-value .label {
+	width: 100%;
+	min-width: 0;
+	white-space: normal;
+	overflow: visible;
+	text-overflow: clip;
+}
+
 .match-config-footer {
 	justify-content: flex-end;
 	flex-shrink: 0;
