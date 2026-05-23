@@ -147,8 +147,8 @@ LobbyMenu {
 	}
 
 	.lobby-panel .flow-actions .monopoly-button {
-		flex: 1 1 128px;
-		min-width: 128px;
+		flex: 1 1 0;
+		min-width: 0;
 		padding-left: 10px;
 		padding-right: 10px;
 
@@ -158,8 +158,13 @@ LobbyMenu {
 	}
 
 	.lobby-panel .flow-actions .flow-config-button {
-		flex-basis: 148px;
-		min-width: 148px;
+		flex-basis: 0;
+		min-width: 0;
+	}
+
+	.lobby-panel .flow-actions .flow-back-button {
+		flex: 1 1 100%;
+		min-width: 100%;
 	}
 
 	.flow-primary-button {
@@ -174,6 +179,15 @@ LobbyMenu {
 
 	.flow-secondary-button:hover {
 		background-color: $monopoly-ink-hover;
+	}
+
+	.flow-utility-button {
+		background-color: $monopoly-utility;
+		color: $monopoly-board;
+	}
+
+	.flow-utility-button:hover {
+		background-color: $monopoly-utility-hover;
 	}
 
 	.lobby-list {

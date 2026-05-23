@@ -128,8 +128,8 @@
 					<GameButton Variant="@ReadyButtonClasses" OnClick="@ToggleReady">@ReadyButtonLabel</GameButton>
 					<GameButton Variant="@StartButtonClasses" CanClick="@CanClickStartGame" OnClick="@StartGame" BlockedPopupTitle="Cannot start game" BlockedPopupMessage="@StartBlockedMessage">Start Game</GameButton>
 					<GameButton Variant="@ConfigButtonClasses" CanClick="@CanOpenConfig" OnClick="@OpenConfigMenu" BlockedPopupTitle="Host only" BlockedPopupMessage="Only the host can change lobby game settings.">Game Config</GameButton>
-					<GameButton Variant="flow-secondary-button" OnClick="@InviteFriends">Invite</GameButton>
-					<GameButton Variant="flow-secondary-button" OnClick="@BackToMenu">Back</GameButton>
+					<GameButton Variant="flow-secondary-button flow-utility-button" OnClick="@InviteFriends">Invite</GameButton>
+					<GameButton Variant="flow-secondary-button flow-back-button" OnClick="@BackToMenu">Back</GameButton>
 				</div>
 			}
 		</div>
@@ -186,7 +186,7 @@
 	private string ReadyButtonLabel => LocalPlayer?.IsReady == true ? "Unready" : "Ready";
 	private string ReadyButtonClasses => LocalPlayer?.IsReady == true ? "flow-secondary-button ready" : "flow-primary-button";
 	private string StartButtonClasses => CanClickStartGame ? "flow-primary-button" : "flow-primary-button blocked-action-button";
-	private string ConfigButtonClasses => "flow-secondary-button flow-config-button";
+	private string ConfigButtonClasses => "flow-secondary-button flow-utility-button flow-config-button";
 	private string ConfigMenuCopy => CanEditConfig
 		? "Changes stay local to the host until you press Save."
 		: "Viewing current host settings. Only the host can change or save configuration.";
