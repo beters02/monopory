@@ -56,8 +56,6 @@
 
 						@if ( isReceiver )
 						{
-							<GameButton Variant="trade-icon-button accept" OnClick="@(() => AcceptTrade( trade.Id ))">OK</GameButton>
-							<GameButton Variant="trade-icon-button negotiate" OnClick="@(() => NegotiateTrade( trade.Id ))">Negotiate</GameButton>
 							<GameButton Variant="trade-icon-button deny" OnClick="@(() => DenyTrade( trade.Id ))">X</GameButton>
 						}
 						else if ( isSender )
