@@ -37,7 +37,7 @@ public sealed partial class GameController : Component
 	}
 
 	[Property] public List<PlayerState> Players { get; set; } = new();
-	[Property] public MatchConfig Config { get; set; } = new();
+	public MatchConfig Config { get; set; } = new();
 	[Property] public GameObject TokenPrefab { get; set; }
 
 	[Property, Sync] public MatchLifecycleState MatchState { get; set; } = MatchLifecycleState.Lobby;
@@ -161,3 +161,4 @@ public sealed partial class GameController : Component
 			MatchBootstrap.Clear();
 	}
 }
+

@@ -189,6 +189,7 @@ public static class MatchConfigSchema
 			IntOption( "StartingMoney", "Economy", "Starting Money", "Cash each player begins the game with.", 20, 0, 10000, 100, config => config.StartingMoney, ( config, value ) => config.StartingMoney = value ),
 			IntOption( "LandOnGoMoney", "Economy", "Land On GO Additional Money", "Additional bonus paid on top of Pass GO Money when a move ends on GO.", 21, 0, 5000, 50, config => config.LandOnGoMoney, ( config, value ) => config.LandOnGoMoney = value ),
 			IntOption( "PassGoMoney", "Economy", "Pass GO Money", "Bonus for passing GO during movement.", 22, 0, 5000, 50, config => config.PassGoMoney, ( config, value ) => config.PassGoMoney = value ),
+			IntOption( "SnakeEyesBonusMoney", "Economy", "Snake Eyes Bonus Money", "Bonus awarded when a player rolls snake eyes.", 23, 0, 5000, 50, config => config.SnakeEyesBonusMoney, ( config, value ) => config.SnakeEyesBonusMoney = value ),
 			BoolOption( "DoublesGoesAgain", "Turn Rules", "Doubles Goes Again", "Lets players take another turn after rolling doubles.", 30, config => config.DoublesGoesAgain, ( config, value ) => config.DoublesGoesAgain = value ),
 			BoolOption( "RandomizeTurnOrder", "Turn Rules", "Randomize Turn Order", "Shuffles the starting player order at match start.", 31, config => config.RandomizeTurnOrder, ( config, value ) => config.RandomizeTurnOrder = value ),
 			BoolOption( "ForceJailFineAfterFailedDoubles", "Turn Rules", "Force Jail Fine After Failed Doubles", "After the final failed jail roll, automatically pay the fine to leave jail.", 32, config => config.ForceJailFineAfterFailedDoubles, ( config, value ) => config.ForceJailFineAfterFailedDoubles = value ),
@@ -304,4 +305,5 @@ public static class MatchConfigSchema
 			}
 		};
 	}
+
 }

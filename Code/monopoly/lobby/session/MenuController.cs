@@ -6,7 +6,7 @@ using System;
 
 public sealed class MenuController : Component
 {
-	[Property] public MatchConfig Config { get; set; } = new();
+	public MatchConfig Config { get; set; } = new();
 
 
 
@@ -52,3 +52,4 @@ public sealed class MenuController : Component
 		SceneFlow.LoadLobby( Scene );
 	}
 }
+
