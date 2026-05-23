@@ -28,6 +28,8 @@ public sealed class GameCamera : Component
 	[Property] public float FreeCamMinDistance { get; set; } = 75f;
 	[Property] public float FreeCamMaxDistance { get; set; } = 1200f;
 	[Property] public float FreeCamBoundsPadding { get; set; } = 48f;
+	[Property] public float DiceFramingPadding { get; set; } = 16f;
+	[Property] public float DiceFramingMinDistance { get; set; } = 140f;
 
 	public BoardCameraMode Mode { get; private set; } = BoardCameraMode.Default;
 
@@ -61,8 +63,19 @@ public sealed class GameCamera : Component
 		var yaw = Mode == BoardCameraMode.Default
 			? GetCurrentTokenYaw()
 			: 0f;
+		var distance = Mode == BoardCameraMode.Default ? DefaultModeDistance : Distance;
 
-		ApplyView( center, Mode == BoardCameraMode.Default ? DefaultModeDistance : Distance, yaw, true );
+		if ( Mode == BoardCameraMode.Default )
+		{
+			var controller = GameController.Instance;
+			if ( controller?.IsResolvingPhysicalDice == true &&
+				controller.TryGetPhysicalDice( out var dieA, out var dieB ) )
+			{
+				distance = GetDiceFramingDistance( center, yaw, dieA.GameObject.WorldPosition, dieB.GameObject.WorldPosition );
+			}
+		}
+
+		ApplyView( center, distance, yaw, true );
 	}
 
 	public void SetMode( BoardCameraMode mode )
@@ -237,6 +250,29 @@ public sealed class GameCamera : Component
 			3 => 180f,
 			_ => 90f
 		};
+	}
+
+	private float GetDiceFramingDistance( Vector3 center, float yaw, Vector3 dieAPosition, Vector3 dieBPosition )
+	{
+		var rotation = Rotation.From( DefaultModePitch, yaw, 0f );
+		var right = rotation.Right;
+		var up = rotation.Up;
+
+		var localA = dieAPosition - center;
+		var localB = dieBPosition - center;
+
+		var halfWidth = Math.Max( Math.Abs( Vector3.Dot( localA, right ) ), Math.Abs( Vector3.Dot( localB, right ) ) ) + DiceFramingPadding;
+		var halfHeight = Math.Max( Math.Abs( Vector3.Dot( localA, up ) ), Math.Abs( Vector3.Dot( localB, up ) ) ) + DiceFramingPadding;
+
+		var verticalFovRadians = Fov.DegreeToRadian();
+		var aspect = Math.Max( 0.01f, Screen.Width / (float)Math.Max( 1, Screen.Height ) );
+		var horizontalFovRadians = 2f * MathF.Atan( MathF.Tan( verticalFovRadians * 0.5f ) * aspect );
+
+		var requiredByHeight = halfHeight / Math.Max( 0.01f, MathF.Tan( verticalFovRadians * 0.5f ) );
+		var requiredByWidth = halfWidth / Math.Max( 0.01f, MathF.Tan( horizontalFovRadians * 0.5f ) );
+		var requiredDistance = Math.Max( requiredByWidth, requiredByHeight );
+
+		return Math.Max( Math.Max( DefaultModeDistance, DiceFramingMinDistance ), requiredDistance );
 	}
 
 	private void ApplyView( Vector3 center, float distance, float yaw, bool smooth )
