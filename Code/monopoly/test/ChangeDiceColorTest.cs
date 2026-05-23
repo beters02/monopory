@@ -37,7 +37,6 @@ public sealed class ChangeDiceColorTest : Component
 
 	protected override void OnUpdate()
 	{
-        Log.Info(defaultColorTint);
 		if (Input.Pressed("ParticleTest") && !didInit)
         {
             didInit = true;

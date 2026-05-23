@@ -35,6 +35,7 @@
 				{
 					<div class="trade-modal-actions">
 						<GameButton Variant="trade-send-button" OnClick="@(() => AcceptTrade( Trade.Id ))">Accept</GameButton>
+						<GameButton Variant="trade-negotiate-button" OnClick="@(() => NegotiateTrade( Trade.Id ))">Negotiate</GameButton>
 						<GameButton Variant="trade-deny-button" OnClick="@(() => DenyTrade( Trade.Id ))">Deny</GameButton>
 					</div>
 				}
@@ -49,10 +50,12 @@
 	[Parameter] public TradeRequest Trade { get; set; }
 	[Parameter] public Action OnClose { get; set; }
 	[Parameter] public Action<int> OnAccept { get; set; }
+	[Parameter] public Action<int> OnNegotiate { get; set; }
 	[Parameter] public Action<int> OnDeny { get; set; }
 
 	private void Close() => OnClose?.Invoke();
 	private void AcceptTrade( int tradeId ) => OnAccept?.Invoke( tradeId );
+	private void NegotiateTrade( int tradeId ) => OnNegotiate?.Invoke( tradeId );
 	private void DenyTrade( int tradeId ) => OnDeny?.Invoke( tradeId );
 
 	private string GetPlayerName( int playerIndex )

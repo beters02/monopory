@@ -217,6 +217,7 @@
 .trade-property-chip.color-none { background-color: $property-none; }
 
 .trade-send-button,
+.trade-negotiate-button,
 .trade-deny-button {
 	align-self: center;
 	min-width: 0;
@@ -251,7 +252,18 @@
 	background-color: $monopoly-gold-hover;
 }
 
+.trade-negotiate-button {
+	background-color: $monopoly-gold;
+	color: $monopoly-ink;
+	width: 132px;
+}
+
+.trade-negotiate-button:hover {
+	background-color: $monopoly-gold-hover;
+}
+
 .trade-send-button .label,
+.trade-negotiate-button .label,
 .trade-deny-button .label {
 	width: 100%;
 	color: $monopoly-ink;

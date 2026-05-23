@@ -225,6 +225,12 @@
 	background-color: $monopoly-success;
 }
 
+.trade-icon-button.negotiate {
+	width: 94px;
+	background-color: $monopoly-gold;
+	color: $monopoly-ink;
+}
+
 .trade-icon-button.deny {
 	background-color: $monopoly-danger;
 }
