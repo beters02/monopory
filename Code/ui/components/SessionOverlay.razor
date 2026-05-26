@@ -13,7 +13,7 @@
 			<div class="session-panel">
 				<div class="session-kicker">Game Over</div>
 				<div class="session-title">@WinnerName Wins</div>
-				@if (Networking.IsHost)
+				@if (CanUseHostControls)
 				{
 					<div class="session-copy">Return your group back to the lobby, or leave lobby.</div>
 					<div class="session-actions">
@@ -54,7 +54,7 @@
 				<div class="session-copy">The table is frozen until the host resumes or returns everyone to the lobby.</div>
 				<div class="session-actions">
 					<GameButton Variant="session-primary-button" OnClick="@ResumeGame">Resume</GameButton>
-					@if ( Networking.IsHost )
+					@if ( CanUseHostControls )
 					{
 						<GameButton Variant="session-secondary-button" OnClick="@ReturnToLobby">Back To Lobby</GameButton>
 					} else {
@@ -80,6 +80,8 @@
 
 	private string WinnerName =>
 		GameRef?.Winner?.PlayerName ?? "No One";
+	private bool CanUseHostControls =>
+		Networking.IsHost || GameRef?.IsLocalEffectiveHost == true;
 
 	private void ResumeGame() => OnResumeGame?.Invoke();
 	private void OpenOptions() => OnOpenOptions?.Invoke();
@@ -94,6 +96,7 @@
 			GameRef?.MatchState ?? 0,
 			GameRef?.WinnerPlayerIndex ?? -1,
 			WinnerName,
+			CanUseHostControls,
 			IsEscapeMenuOpen,
 			IsOptionsMenuOpen
 		);

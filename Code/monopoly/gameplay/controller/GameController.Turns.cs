@@ -51,6 +51,8 @@ public sealed partial class GameController : Component
 			ClearAuction();
 
 		CurrentTurnGetsExtraRoll = false;
+		CurrentTurnConsecutiveDoubles = 0;
+		CurrentTurnDoublesPlayerIndex = -1;
 		CurrentTurnEndsAt = 0f;
 
 		if ( skippedPlayer is null || !skippedPlayer.IsAssigned || skippedPlayer.IsBankrupt )
@@ -142,6 +144,7 @@ public sealed partial class GameController : Component
 			return;
 
 		BeginResolvedAction();
+		BeginPendingRoll( CurrentPlayerIndex, RollExecutionKind.JailRelease, true, true );
 
 		int total;
 		bool rolledDoubles = false;
@@ -159,10 +162,17 @@ public sealed partial class GameController : Component
 			rolledDoubles = LastDieA == LastDieB;
 		}
 
+		PendingRollTotal = total;
+		await CompletePendingJailRollAsync( total, rolledDoubles );
+	}
+
+	private async Task CompletePendingJailRollAsync( int total, bool rolledDoubles )
+	{
 		if ( rolledDoubles )
 		{
 			ReleasePlayerFromJail( CurrentPlayer );
 			Log.Info( $"{CurrentPlayer.PlayerName} rolled doubles to leave Jail." );
+			ClearPendingRollState();
 			await MoveCurrentPlayerAfterRoll( total, RollExecutionKind.JailRelease );
 			return;
 		}
@@ -175,12 +185,14 @@ public sealed partial class GameController : Component
 			if ( Config?.ForceJailFineAfterFailedDoubles != true )
 			{
 				Log.Info( $"{CurrentPlayer.PlayerName} stayed in Jail after their third failed doubles attempt." );
+				ClearPendingRollState();
 				Phase = GamePhase.TurnEnded;
 				return;
 			}
 
 			if ( !PayBank( CurrentPlayer, JailFineAmount ) )
 			{
+				ClearPendingRollState();
 				Phase = GamePhase.TurnEnded;
 				SendPopupToPlayer( CurrentPlayer, "Jail fine", $"Raise ${JailFineAmount} to leave Jail.", PopupKind.Warning );
 				return;
@@ -188,16 +200,19 @@ public sealed partial class GameController : Component
 
 			ReleasePlayerFromJail( CurrentPlayer );
 			SendPopupToAll( "Jail fine paid", $"{CurrentPlayer.PlayerName} paid ${JailFineAmount} after three failed Jail rolls.", PopupKind.Info, true, 4f );
+			ClearPendingRollState();
 			await MoveCurrentPlayerAfterRoll( total, RollExecutionKind.JailRelease );
 			return;
 		}
 
+		ClearPendingRollState();
 		Phase = GamePhase.TurnEnded;
 	}
 
 	private async Task RollCurrentPlayerAsync( int amount, bool suppressDoublesExtraTurn, RollExecutionKind executionKind, float throwStrength = 0.5f )
 	{
 		BeginResolvedAction();
+		BeginPendingRoll( CurrentPlayerIndex, executionKind, suppressDoublesExtraTurn, false );
 
 		int total;
 		bool rolledDoubles = false;
@@ -215,13 +230,87 @@ public sealed partial class GameController : Component
 			rolledDoubles = LastDieA == LastDieB;
 		}
 
+		PendingRollTotal = total;
+		await CompletePendingNormalRollAsync( total, rolledDoubles );
+	}
+
+	private async Task CompletePendingNormalRollAsync( int total, bool rolledDoubles )
+	{
+		if ( PendingRollPlayerIndex >= 0 )
+			CurrentPlayerIndex = PendingRollPlayerIndex;
+
+		var suppressDoublesExtraTurn = PendingRollSuppressDoublesExtraTurn;
+		var executionKind = PendingRollExecutionKind >= 0
+			? (RollExecutionKind)PendingRollExecutionKind
+			: RollExecutionKind.Physical;
+
 		if ( !suppressDoublesExtraTurn && Config?.DoublesGoesAgain == true && ApplyDoublesRule( rolledDoubles ) )
+		{
+			ClearPendingRollState();
 			return;
+		}
 
 		if ( CurrentPlayer is null || CurrentPlayer.IsInJail )
+		{
+			ClearPendingRollState();
+			return;
+		}
+
+		ClearPendingRollState();
+		await MoveCurrentPlayerAfterRoll( total, executionKind );
+	}
+
+	private void BeginPendingRoll( int playerIndex, RollExecutionKind executionKind, bool suppressDoublesExtraTurn, bool isJailAttempt )
+	{
+		PendingRollPlayerIndex = playerIndex;
+		PendingRollExecutionKind = (int)executionKind;
+		PendingRollTotal = 0;
+		PendingRollSuppressDoublesExtraTurn = suppressDoublesExtraTurn;
+		PendingRollIsJailAttempt = isJailAttempt;
+		PendingRollStartedAt = Time.Now;
+	}
+
+	private void ClearPendingRollState()
+	{
+		PendingRollPlayerIndex = -1;
+		PendingRollExecutionKind = -1;
+		PendingRollTotal = 0;
+		PendingRollSuppressDoublesExtraTurn = false;
+		PendingRollIsJailAttempt = false;
+		PendingRollStartedAt = 0f;
+		IsResolvingPhysicalDice = false;
+		PhysicalDiceStartedAt = 0f;
+	}
+
+	private async Task RecoverPendingRollAsync()
+	{
+		if ( PendingRollPlayerIndex < 0 )
 			return;
 
-		await MoveCurrentPlayerAfterRoll( total, executionKind );
+		CurrentPlayerIndex = PendingRollPlayerIndex;
+		var total = PendingRollTotal;
+		bool rolledDoubles;
+
+		if ( total > 0 )
+		{
+			rolledDoubles = LastDieA >= 1 && LastDieB >= 1 && LastDieA == LastDieB;
+		}
+		else
+		{
+			var (dieA, dieB) = await WaitForPhysicalDiceResultAsync();
+			LastDieA = dieA;
+			LastDieB = dieB;
+			total = LastDieA + LastDieB;
+			PendingRollTotal = total;
+			rolledDoubles = LastDieA == LastDieB;
+		}
+
+		Log.Warning( $"Recovered pending roll as {LastDieA} + {LastDieB} = {total}." );
+
+		if ( PendingRollIsJailAttempt )
+			await CompletePendingJailRollAsync( total, rolledDoubles );
+		else
+			await CompletePendingNormalRollAsync( total, rolledDoubles );
 	}
 
 	private bool ApplyDoublesRule( bool rolledDoubles )
@@ -229,10 +318,18 @@ public sealed partial class GameController : Component
 		if ( CurrentPlayer is null )
 			return false;
 
+		if ( CurrentTurnDoublesPlayerIndex != CurrentPlayerIndex )
+		{
+			CurrentTurnDoublesPlayerIndex = CurrentPlayerIndex;
+			CurrentTurnConsecutiveDoubles = 0;
+			CurrentPlayer.ConsecutiveDoubles = 0;
+		}
+
 		if ( rolledDoubles )
 		{
-			CurrentPlayer.ConsecutiveDoubles++;
-			if ( CurrentPlayer.ConsecutiveDoubles >= 3 )
+			CurrentTurnConsecutiveDoubles++;
+			CurrentPlayer.ConsecutiveDoubles = CurrentTurnConsecutiveDoubles;
+			if ( CurrentTurnConsecutiveDoubles >= 3 )
 			{
 				SendPopupToAll(
 					"Three doubles",
@@ -242,6 +339,8 @@ public sealed partial class GameController : Component
 					5f
 				);
 				SendPlayerToJail( CurrentPlayer );
+				CurrentTurnConsecutiveDoubles = 0;
+				CurrentTurnDoublesPlayerIndex = -1;
 				CurrentPlayer.ConsecutiveDoubles = 0;
 				Log.Info( $"{CurrentPlayer.PlayerName} rolled three doubles in a row and went to Jail." );
 				AdvanceTurnImmediately();
@@ -259,6 +358,8 @@ public sealed partial class GameController : Component
 			return false;
 		}
 
+		CurrentTurnConsecutiveDoubles = 0;
+		CurrentTurnDoublesPlayerIndex = CurrentPlayerIndex;
 		CurrentPlayer.ConsecutiveDoubles = 0;
 		return false;
 	}
@@ -338,6 +439,7 @@ public sealed partial class GameController : Component
 			BeginPendingLanding( ActiveMovementPlayerIndex, player.SpaceIndex, ActiveMovementGoPassCount );
 			ResolvePendingLandingOnce();
 			FinalizeResolvedActionAfterLanding();
+			UpdateHostRecoveryStateFlag();
 		}
 		finally
 		{
@@ -413,6 +515,8 @@ public sealed partial class GameController : Component
 		player.JailTurnsRemaining = JailTurnCount;
 		player.ConsecutiveDoubles = 0;
 		CurrentTurnGetsExtraRoll = false;
+		CurrentTurnConsecutiveDoubles = 0;
+		CurrentTurnDoublesPlayerIndex = -1;
 
 		Log.Info( $"{player.PlayerName} was sent to Jail." );
 	}
@@ -434,6 +538,7 @@ public sealed partial class GameController : Component
 		CurrentTurnGetsExtraRoll = false;
 		resolvedActionOutcome = ResolvedActionOutcome.StayInTurnEnded;
 		ClearMovementRecoveryState();
+		ClearPendingRollState();
 	}
 
 	private void MarkResolvedActionToAdvanceImmediately()
@@ -459,6 +564,8 @@ public sealed partial class GameController : Component
 		ClearSelectedSpaceForPlayer( CurrentPlayer );
 		if ( CurrentPlayer is not null )
 			CurrentPlayer.ConsecutiveDoubles = 0;
+		CurrentTurnConsecutiveDoubles = 0;
+		CurrentTurnDoublesPlayerIndex = -1;
 		AdvanceTurn();
 	}
 
@@ -509,6 +616,7 @@ public sealed partial class GameController : Component
 
 			if ( player.IsAssigned && !player.IsBankrupt )
 			{
+				BeginTurnForCurrentPlayer();
 				Phase = GamePhase.WaitingToRoll;
 				StartTurnTimer();
 				return;
@@ -522,6 +630,7 @@ public sealed partial class GameController : Component
 
 			if ( Players[CurrentPlayerIndex].IsAssigned && !Players[CurrentPlayerIndex].IsBankrupt )
 			{
+				BeginTurnForCurrentPlayer();
 				Phase = GamePhase.WaitingToRoll;
 				StartTurnTimer();
 				return;
@@ -529,5 +638,16 @@ public sealed partial class GameController : Component
 		}
 
 		CurrentTurnEndsAt = 0f;
+	}
+
+	private void BeginTurnForCurrentPlayer()
+	{
+		CurrentTurnGetsExtraRoll = false;
+		CurrentTurnConsecutiveDoubles = 0;
+		CurrentTurnDoublesPlayerIndex = CurrentPlayerIndex;
+
+		var player = CurrentPlayer;
+		if ( player is not null )
+			player.ConsecutiveDoubles = 0;
 	}
 }

@@ -67,22 +67,43 @@ public sealed partial class GameController : Component
 		{
 			ThrowPhysicalDice( originA, originB, rotationA, rotationB, velocityA, velocityB, spinA, spinB );
 
-			var startedAt = Time.Now;
-			while ( Time.Now - startedAt < DiceSettleTimeout )
-			{
-				if ( dieA.IsSettled() && dieB.IsSettled() )
-					break;
-
-				await Task.Frame();
-			}
-
-			return (dieA.GetTopFaceValue(), dieB.GetTopFaceValue());
+			return await WaitForPhysicalDiceResultAsync();
 		}
 		finally
 		{
 			IsResolvingPhysicalDice = false;
 			PhysicalDiceStartedAt = 0f;
 		}
+	}
+
+	private async Task<(int DieA, int DieB)> WaitForPhysicalDiceResultAsync()
+	{
+		if ( !TryGetPhysicalDice( out var dieA, out var dieB ) )
+			return GetFallbackDiceResult();
+
+		var startedAt = Time.Now;
+		while ( Time.Now - startedAt < DiceSettleTimeout )
+		{
+			if ( dieA.IsSettled() && dieB.IsSettled() )
+				break;
+
+			await Task.Frame();
+		}
+
+		var dieAValue = dieA.GetTopFaceValue();
+		var dieBValue = dieB.GetTopFaceValue();
+		if ( dieAValue >= 1 && dieAValue <= 6 && dieBValue >= 1 && dieBValue <= 6 )
+			return (dieAValue, dieBValue);
+
+		return GetFallbackDiceResult();
+	}
+
+	private (int DieA, int DieB) GetFallbackDiceResult()
+	{
+		if ( LastDieA >= 1 && LastDieA <= 6 && LastDieB >= 1 && LastDieB <= 6 )
+			return (LastDieA, LastDieB);
+
+		return (Game.Random.Int( 1, 6 ), Game.Random.Int( 1, 6 ));
 	}
 
 	private Vector3 GetDiceThrowCenter()

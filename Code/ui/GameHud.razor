@@ -39,6 +39,20 @@
 			OnExitGame="@ExitGame">
 		</SessionOverlay>
 
+		@if ( GameRef.IsRecoveringHostState )
+		{
+			<div class="host-recovery-screen">
+				<div class="host-recovery-card">
+					<div class="host-recovery-spinner"></div>
+					<div class="host-recovery-copy">
+						<div class="host-recovery-kicker">Host recovery</div>
+						<div class="host-recovery-title">Rebuilding the table state</div>
+						<div class="host-recovery-body">Hold tight while the new host finishes the interrupted action.</div>
+					</div>
+				</div>
+			</div>
+		}
+
 		@if ( GameRef.MatchState != MatchLifecycleState.GameOver )
 		{
 			<GameStatusPanel GameRef="@GameRef"></GameStatusPanel>
@@ -213,6 +227,7 @@
 		var hash = new HashCode();
 		hash.Add( GameRef?.MatchState ?? 0 );
 		hash.Add( GameRef?.WinnerPlayerIndex ?? -1 );
+		hash.Add( GameRef?.IsRecoveringHostState ?? false );
 		hash.Add( IsEscapeMenuOpen );
 		hash.Add( IsOptionsMenuOpen );
 		hash.Add( AppSettings.SettingsAvailable );

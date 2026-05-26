@@ -49,8 +49,15 @@ public sealed partial class GameController : Component, Component.INetworkListen
 	[Property, Sync] public int LastDieB { get; set; }
 	[Property, Sync] public bool IsResolvingPhysicalDice { get; set; }
 	[Property, Sync] public float PhysicalDiceStartedAt { get; set; }
+	[Property, Sync] public int PendingRollPlayerIndex { get; set; } = -1;
+	[Property, Sync] public int PendingRollExecutionKind { get; set; } = -1;
+	[Property, Sync] public int PendingRollTotal { get; set; }
+	[Property, Sync] public bool PendingRollSuppressDoublesExtraTurn { get; set; }
+	[Property, Sync] public bool PendingRollIsJailAttempt { get; set; }
+	[Property, Sync] public float PendingRollStartedAt { get; set; }
 	[Property, Sync] public long PreferredHostOwnerId { get; set; }
 	[Property, Sync] public bool PreferredHostDisconnected { get; set; }
+	[Property, Sync] public bool IsRecoveringHostState { get; set; }
 	[Property, Sync] public NetDictionary<int, int> PropertyOwners { get; set; } = new();
 	[Property, Sync] public NetDictionary<int, int> PropertyImprovements { get; set; } = new();
 	[Property, Sync] public NetDictionary<int, bool> MortgagedProperties { get; set; } = new();
@@ -71,6 +78,8 @@ public sealed partial class GameController : Component, Component.INetworkListen
 	[Property, Sync] public int NextTradeId { get; set; } = 1;
 	[Property, Sync] public int FreeParkingBank { get; set; }
 	[Property, Sync] public bool CurrentTurnGetsExtraRoll { get; set; }
+	[Property, Sync] public int CurrentTurnConsecutiveDoubles { get; set; }
+	[Property, Sync] public int CurrentTurnDoublesPlayerIndex { get; set; } = -1;
 	[Property, Sync] public float CurrentTurnEndsAt { get; set; }
 	[Property, Sync] public int PendingForcedPaymentPlayerIndex { get; set; } = -1;
 	[Property, Sync] public int PendingForcedPaymentAmount { get; set; }
@@ -107,6 +116,7 @@ public sealed partial class GameController : Component, Component.INetworkListen
 	private float pausedTurnRemainingSeconds;
 	private float pausedAuctionRemainingSeconds;
 	private bool isContinuingRecoveredMovement;
+	private bool isRecoveringPendingRoll;
 	private float lastRecoveryAttemptAt;
 	private ResolvedActionOutcome resolvedActionOutcome = ResolvedActionOutcome.StayInTurnEnded;
 

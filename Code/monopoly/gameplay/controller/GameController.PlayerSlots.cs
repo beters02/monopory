@@ -233,13 +233,17 @@ public sealed partial class GameController : Component
 		LastDieB = 0;
 		IsResolvingPhysicalDice = false;
 		PhysicalDiceStartedAt = 0f;
+		ClearPendingRollState();
 		Phase = GamePhase.WaitingToRoll;
 		PendingPurchaseSpaceIndex = -1;
 		ClearAuction();
 		NextTradeId = 1;
 		FreeParkingBank = 0;
 		CurrentTurnGetsExtraRoll = false;
+		CurrentTurnConsecutiveDoubles = 0;
+		CurrentTurnDoublesPlayerIndex = -1;
 		CurrentTurnEndsAt = 0f;
+		IsRecoveringHostState = false;
 		WinnerPlayerIndex = -1;
 		GameStartedAt = 0f;
 		StartingPlayerCount = 0;

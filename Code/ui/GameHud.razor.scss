@@ -33,4 +33,73 @@ GameHud {
 
 		pointer-events: none;
 	}
+
+	.host-recovery-screen {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		z-index: 44;
+
+		background: radial-gradient(circle at 50% 42%, rgba(244, 207, 91, 0.20), rgba(8, 17, 15, 0.58) 58%, rgba(8, 17, 15, 0.74));
+
+		display: flex;
+		align-items: center;
+		justify-content: center;
+
+		pointer-events: all;
+	}
+
+	.host-recovery-card {
+		min-width: 480px;
+		max-width: 82%;
+		padding: 26px 28px;
+
+		background-color: $monopoly-board;
+		border: 4px solid $monopoly-ink;
+		border-radius: $monopoly-radius-board;
+		box-shadow: 0 20px 70px rgba(0, 0, 0, 0.42);
+
+		display: flex;
+		align-items: center;
+		gap: 20px;
+
+		color: $monopoly-ink;
+		font-family: $monopoly-font-family;
+	}
+
+	.host-recovery-spinner {
+		width: 62px;
+		height: 62px;
+		border: 7px solid rgba(18, 31, 29, 0.16);
+		border-top-color: $monopoly-gold;
+		border-right-color: $monopoly-danger;
+		border-radius: 50%;
+	}
+
+	.host-recovery-copy {
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+	}
+
+	.host-recovery-kicker {
+		color: $monopoly-danger;
+		font-size: 13px;
+		font-weight: 900;
+		text-transform: uppercase;
+	}
+
+	.host-recovery-title {
+		font-size: 30px;
+		font-weight: 900;
+		line-height: 32px;
+	}
+
+	.host-recovery-body {
+		font-size: 16px;
+		font-weight: 700;
+		opacity: 0.72;
+	}
 }

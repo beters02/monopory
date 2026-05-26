@@ -53,6 +53,7 @@ public sealed partial class GameController : Component
 		MatchState = MatchLifecycleState.Starting;
 		GameStartedAt = Time.Now;
 		MatchState = MatchLifecycleState.InGame;
+		BeginTurnForCurrentPlayer();
 		StartTurnTimer();
 
 		SendPopupToAll( "Game started", "The first turn is live.", PopupKind.Success, true, 4f );
@@ -142,6 +143,8 @@ public sealed partial class GameController : Component
 		ClearPendingForcedPayment();
 		PendingPurchaseSpaceIndex = -1;
 		CurrentTurnGetsExtraRoll = false;
+		CurrentTurnConsecutiveDoubles = 0;
+		CurrentTurnDoublesPlayerIndex = -1;
 
 		Phase = GamePhase.TurnEnded;
 		MatchState = MatchLifecycleState.GameOver;
