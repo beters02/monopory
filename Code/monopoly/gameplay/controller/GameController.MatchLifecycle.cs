@@ -148,6 +148,8 @@ public sealed partial class GameController : Component
 
 		Phase = GamePhase.TurnEnded;
 		MatchState = MatchLifecycleState.GameOver;
+		if ( Networking.IsHost && Connection.All.Count <= 1 )
+			NetworkSession.ClearRejoinWindow();
 
 		SendPopupToAll(
 			"Game ended",

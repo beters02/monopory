@@ -85,11 +85,20 @@
 		{
 			IsEscapeMenuOpen = false;
 			IsOptionsMenuOpen = false;
-			return;
+			if ( GameRef is null )
+				return;
 		}
 
 		if ( NetworkSession.IsEditorSoftLeftLobby )
 		{
+			Mouse.Visibility = MouseVisibility.Visible;
+			return;
+		}
+
+		if ( GameRef.IsRecoveringHostState )
+		{
+			IsEscapeMenuOpen = false;
+			IsOptionsMenuOpen = false;
 			Mouse.Visibility = MouseVisibility.Visible;
 			return;
 		}
@@ -171,14 +180,35 @@
 
 		if ( !NetworkSession.CanUseEditorSoftLeave )
 		{
-			var lobbyId = SteamInviteBridge.GetActiveLobbyIdValue();
-			var connectTarget = Networking.ServerName ?? "";
-			var abandonTimeoutSeconds = Math.Max( GameRef?.Config?.AbandonTimeoutSeconds ?? 180, 1 );
-			if ( lobbyId != 0 || !string.IsNullOrWhiteSpace( connectTarget ) )
-				NetworkSession.SetRejoinWindow( lobbyId, connectTarget, Time.Now + abandonTimeoutSeconds );
+			if ( ShouldCreateRejoinWindow() )
+			{
+				var lobbyId = SteamInviteBridge.GetActiveLobbyIdValue();
+				var connectTarget = Networking.ServerName ?? "";
+				var abandonTimeoutSeconds = Math.Max( GameRef?.Config?.AbandonTimeoutSeconds ?? 180, 1 );
+				if ( lobbyId != 0 || !string.IsNullOrWhiteSpace( connectTarget ) )
+					NetworkSession.SetRejoinWindow( lobbyId, connectTarget, Time.Now + abandonTimeoutSeconds );
+			}
+			else
+			{
+				NetworkSession.ClearRejoinWindow();
+			}
 		}
 
 		NetworkSession.LeaveCurrentLobby( Scene );
+	}
+
+	private bool ShouldCreateRejoinWindow()
+	{
+		if ( GameRef is null )
+			return false;
+
+		if ( GameRef.MatchState == MatchLifecycleState.GameOver )
+			return false;
+
+		if ( Networking.IsHost && Connection.All.Count <= 1 )
+			return false;
+
+		return Networking.IsActive;
 	}
 
 	private void RejoinSoftLeftMatch()

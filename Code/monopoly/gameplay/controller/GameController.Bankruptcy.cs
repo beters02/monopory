@@ -109,6 +109,8 @@ public sealed partial class GameController : Component
 		PendingPurchaseSpaceIndex = -1;
 		Phase = GamePhase.TurnEnded;
 		MatchState = MatchLifecycleState.GameOver;
+		if ( Networking.IsHost && Connection.All.Count <= 1 )
+			NetworkSession.ClearRejoinWindow();
 
 		var winnerName = Winner?.PlayerName ?? "No one";
 		SendPopupToAll( "Game over", $"{winnerName} won the game.", PopupKind.Success, true, 8f );

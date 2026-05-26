@@ -60,7 +60,10 @@ public static class NetworkSession
 			}
 
 			if ( !connected )
+			{
+				ClearRejoinWindow();
 				return false;
+			}
 
 			ClearRejoinWindow();
 			if ( Networking.IsHost )
@@ -70,6 +73,7 @@ public static class NetworkSession
 		catch ( Exception exception )
 		{
 			Log.Warning( $"TryRejoinLobby failed: {exception.Message}" );
+			ClearRejoinWindow();
 			return false;
 		}
 	}
