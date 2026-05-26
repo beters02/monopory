@@ -154,4 +154,37 @@ public sealed partial class GameController : Component
 
 		PublishTokenPhysicsState( playerIndex, position, velocity );
 	}
+
+	private void RemovePlayerForAfkTimeout( PlayerState player )
+	{
+		if ( !Networking.IsHost || player is null || !player.IsAssigned )
+			return;
+
+		var connection = GetConnectionForPlayer( player );
+		if ( connection is null )
+		{
+			HandleDisconnectedPlayerSlot( player );
+			return;
+		}
+
+		var lobbyId = SteamInviteBridge.GetActiveLobbyIdValue();
+		var connectTarget = Networking.ServerName ?? "";
+		var abandonTimeoutSeconds = Math.Max( Config?.AbandonTimeoutSeconds ?? 180, 1 );
+		var rejoinExpiresAt = Time.Now + abandonTimeoutSeconds;
+
+		player.IsDisconnected = true;
+		player.AbandonEndsAt = rejoinExpiresAt;
+		RemoveTradesForPlayer( Players.IndexOf( player ) );
+
+		using ( Rpc.FilterInclude( connection ) )
+		{
+			LeaveForAfkTimeout( lobbyId, connectTarget, rejoinExpiresAt );
+		}
+	}
+
+	[Rpc.Broadcast]
+	private void LeaveForAfkTimeout( long lobbyId, string connectTarget, float rejoinExpiresAt )
+	{
+		NetworkSession.LeaveCurrentLobbyWithRejoinWindow( Scene, lobbyId, connectTarget, rejoinExpiresAt );
+	}
 }

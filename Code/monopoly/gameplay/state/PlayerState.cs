@@ -15,6 +15,7 @@ public sealed class PlayerState : Component
 	[Property, Sync] public bool IsReady { get; set; }
 	[Property, Sync] public bool IsDisconnected { get; set; }
 	[Property, Sync] public float AbandonEndsAt { get; set; }
+	[Property, Sync] public int TurnTimeoutCount { get; set; }
 
 	[Property, Sync] public string PlayerName { get; set; } = "Player";
 

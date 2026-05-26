@@ -56,6 +56,7 @@ public sealed partial class GameController : Component
 
 				player.IsDisconnected = false;
 				player.AbandonEndsAt = 0f;
+				player.TurnTimeoutCount = 0;
 				continue;
 			}
 
@@ -207,6 +208,7 @@ public sealed partial class GameController : Component
 		player.IsReady = false;
 		player.IsDisconnected = false;
 		player.AbandonEndsAt = 0f;
+		player.TurnTimeoutCount = 0;
 		ResetPlayerForGame( player );
 	}
 
@@ -224,6 +226,7 @@ public sealed partial class GameController : Component
 		player.IsBankrupt = false;
 		player.IsDisconnected = false;
 		player.AbandonEndsAt = 0f;
+		player.TurnTimeoutCount = 0;
 	}
 
 	private void ResetGameState( bool resetPlayers )

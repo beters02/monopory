@@ -185,8 +185,8 @@
 				var lobbyId = SteamInviteBridge.GetActiveLobbyIdValue();
 				var connectTarget = Networking.ServerName ?? "";
 				var abandonTimeoutSeconds = Math.Max( GameRef?.Config?.AbandonTimeoutSeconds ?? 180, 1 );
-				if ( lobbyId != 0 || !string.IsNullOrWhiteSpace( connectTarget ) )
-					NetworkSession.SetRejoinWindow( lobbyId, connectTarget, Time.Now + abandonTimeoutSeconds );
+				NetworkSession.LeaveCurrentLobbyWithRejoinWindow( Scene, lobbyId, connectTarget, Time.Now + abandonTimeoutSeconds );
+				return;
 			}
 			else
 			{

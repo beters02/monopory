@@ -108,6 +108,19 @@ public static class NetworkSession
 		SceneFlow.LoadMenu( scene );
 	}
 
+	public static void LeaveCurrentLobbyWithRejoinWindow( Scene scene, long lobbyId, string connectTarget, float rejoinExpiresAt )
+	{
+		if ( !CanUseEditorSoftLeave )
+		{
+			if ( lobbyId != 0 || !string.IsNullOrWhiteSpace( connectTarget ) )
+				SetRejoinWindow( lobbyId, connectTarget, rejoinExpiresAt );
+			else
+				ClearRejoinWindow();
+		}
+
+		LeaveCurrentLobby( scene );
+	}
+
 	public static void ReturnFromEditorSoftLeave()
 	{
 		IsEditorSoftLeftLobby = false;

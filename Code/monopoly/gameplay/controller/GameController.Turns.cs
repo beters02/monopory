@@ -64,9 +64,20 @@ public sealed partial class GameController : Component
 		if ( HasPendingForcedPaymentForPlayer( skippedPlayerIndex ) )
 			BankruptPlayer( skippedPlayerIndex, Players.ElementAtOrDefault( PendingForcedPaymentReceiverIndex ) );
 
-		Log.Info( $"{skippedPlayer.PlayerName}'s turn timed out and was skipped." );
-		SendPopupToAll( "Turn skipped", $"{skippedPlayer.PlayerName}'s turn timed out.", PopupKind.Warning, true, 4f );
+		skippedPlayer.TurnTimeoutCount = Math.Max( skippedPlayer.TurnTimeoutCount + 1, 1 );
 		ClearSelectedSpaceForPlayer( skippedPlayer );
+
+		if ( skippedPlayer.TurnTimeoutCount >= 2 )
+		{
+			Log.Info( $"{skippedPlayer.PlayerName}'s turn timed out twice and they were removed for AFK." );
+			SendPopupToAll( "Player removed", $"{skippedPlayer.PlayerName} timed out twice and was removed for AFK.", PopupKind.Warning, true, 5f );
+			RemovePlayerForAfkTimeout( skippedPlayer );
+			AdvanceTurn();
+			return;
+		}
+
+		Log.Info( $"{skippedPlayer.PlayerName}'s turn timed out and was skipped. Timeout strike {skippedPlayer.TurnTimeoutCount}/2." );
+		SendPopupToAll( "Turn skipped", $"{skippedPlayer.PlayerName}'s turn timed out. One more timeout will remove them.", PopupKind.Warning, true, 4f );
 
 		AdvanceTurn();
 	}
@@ -563,7 +574,10 @@ public sealed partial class GameController : Component
 
 		ClearSelectedSpaceForPlayer( CurrentPlayer );
 		if ( CurrentPlayer is not null )
+		{
 			CurrentPlayer.ConsecutiveDoubles = 0;
+			CurrentPlayer.TurnTimeoutCount = 0;
+		}
 		CurrentTurnConsecutiveDoubles = 0;
 		CurrentTurnDoublesPlayerIndex = -1;
 		AdvanceTurn();
