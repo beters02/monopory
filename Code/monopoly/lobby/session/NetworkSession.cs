@@ -7,6 +7,10 @@ public static class NetworkSession
 	public static long RejoinLobbyId { get; private set; }
 	public static string RejoinConnectTarget { get; private set; } = "";
 	public static float RejoinExpiresAt { get; private set; }
+	public static bool IsEditorSoftLeftLobby { get; private set; }
+
+	public static bool CanUseEditorSoftLeave =>
+		!MonopolyApp.IsStandalone && Networking.IsClient && Networking.IsActive;
 
 	public static bool CanRejoinLobby =>
 		(RejoinLobbyId != 0 || !string.IsNullOrWhiteSpace( RejoinConnectTarget )) && RejoinExpiresAt > Time.Now;
@@ -86,6 +90,28 @@ public static class NetworkSession
 
 	public static void LeaveCurrentLobby( Scene scene )
 	{
+		if ( CanUseEditorSoftLeave )
+		{
+			IsEditorSoftLeftLobby = true;
+			return;
+		}
+
+		IsEditorSoftLeftLobby = false;
+
+		if ( Networking.IsActive )
+			Networking.Disconnect();
+
+		SceneFlow.LoadMenu( scene );
+	}
+
+	public static void ReturnFromEditorSoftLeave()
+	{
+		IsEditorSoftLeftLobby = false;
+	}
+
+	public static void ForceDisconnectToMenu( Scene scene )
+	{
+		IsEditorSoftLeftLobby = false;
 		if ( Networking.IsActive )
 			Networking.Disconnect();
 

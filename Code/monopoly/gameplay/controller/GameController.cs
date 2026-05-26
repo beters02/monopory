@@ -21,7 +21,7 @@ public enum MatchLifecycleState
 	GameOver
 }
 
-public sealed partial class GameController : Component
+public sealed partial class GameController : Component, Component.INetworkListener
 {
 	private enum ResolvedActionOutcome
 	{
@@ -48,6 +48,9 @@ public sealed partial class GameController : Component
 	[Property, Sync] public int LastDieA { get; set; }
 	[Property, Sync] public int LastDieB { get; set; }
 	[Property, Sync] public bool IsResolvingPhysicalDice { get; set; }
+	[Property, Sync] public float PhysicalDiceStartedAt { get; set; }
+	[Property, Sync] public long PreferredHostOwnerId { get; set; }
+	[Property, Sync] public bool PreferredHostDisconnected { get; set; }
 	[Property, Sync] public NetDictionary<int, int> PropertyOwners { get; set; } = new();
 	[Property, Sync] public NetDictionary<int, int> PropertyImprovements { get; set; } = new();
 	[Property, Sync] public NetDictionary<int, bool> MortgagedProperties { get; set; } = new();
@@ -75,6 +78,15 @@ public sealed partial class GameController : Component
 	[Property, Sync] public bool PendingForcedPaymentToBank { get; set; }
 	[Property, Sync] public bool PendingForcedPaymentToEachPlayer { get; set; }
 	[Property, Sync] public int PendingForcedPaymentEachPlayerAmount { get; set; }
+	[Property, Sync] public int ActiveMovementPlayerIndex { get; set; } = -1;
+	[Property, Sync] public int ActiveMovementRemainingSteps { get; set; }
+	[Property, Sync] public int ActiveMovementGoPassCount { get; set; }
+	[Property, Sync] public int ActiveMovementTargetSpaceIndex { get; set; } = -1;
+	[Property, Sync] public float ActiveMovementLastProgressAt { get; set; }
+	[Property, Sync] public int PendingLandingPlayerIndex { get; set; } = -1;
+	[Property, Sync] public int PendingLandingSpaceIndex { get; set; } = -1;
+	[Property, Sync] public int PendingLandingGoPassCount { get; set; }
+	[Property, Sync] public bool PendingLandingResolved { get; set; }
 
 	public bool HasPendingForcedPayment =>
 		PendingForcedPaymentPlayerIndex >= 0 && PendingForcedPaymentAmount > 0;
@@ -94,6 +106,8 @@ public sealed partial class GameController : Component
 	private readonly List<GameObject> spawnedTokenObjects = new();
 	private float pausedTurnRemainingSeconds;
 	private float pausedAuctionRemainingSeconds;
+	private bool isContinuingRecoveredMovement;
+	private float lastRecoveryAttemptAt;
 	private ResolvedActionOutcome resolvedActionOutcome = ResolvedActionOutcome.StayInTurnEnded;
 
 	public static GameController Instance => instance;
@@ -114,6 +128,7 @@ public sealed partial class GameController : Component
 		if ( bootstrap?.HasConfig == true )
 			Config = bootstrap.Config;
 
+		EnsurePreferredHostOwnerId();
 		EnsurePlayerSlots();
 		ResetGameState( false );
 		MatchState = MatchLifecycleState.Lobby;
@@ -127,6 +142,7 @@ public sealed partial class GameController : Component
 		RefreshReplicatedPlayerSlots();
 		UpdatePopups();
 		UpdateVisualTokens();
+		RecoverPendingPurchaseSelection();
 
 		if ( !Networking.IsHost )
 			return;
@@ -140,6 +156,7 @@ public sealed partial class GameController : Component
 			return;
 
 		RemoveInvalidTrades();
+		UpdateHostRecoveryWatchdog();
 		UpdateAuction();
 		UpdateTurnTimer();
 		CheckForGameOver();

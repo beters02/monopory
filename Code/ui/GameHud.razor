@@ -1,6 +1,7 @@
 @using Sandbox;
 @using Sandbox.UI;
 @using Sandbox.ui.components;
+@using Sandbox.ui.components.buttons;
 @using System;
 @inherits PanelComponent
 
@@ -8,6 +9,22 @@
 	<ButtonPopLayer></ButtonPopLayer>
 	@if ( GameRef is not null )
 	{
+		@if ( NetworkSession.IsEditorSoftLeftLobby )
+		{
+			<div class="flow-screen lobby-screen">
+				<div class="flow-panel lobby-panel">
+					<div class="flow-kicker">Lobby</div>
+					<div class="flow-title">Editor Leave Mode</div>
+					<div class="flow-copy">You left locally without disconnecting. You are still connected to the match host.</div>
+					<div class="flow-actions">
+						<GameButton Variant="flow-primary-button" OnClick="@RejoinSoftLeftMatch">Rejoin Match</GameButton>
+						<GameButton Variant="flow-secondary-button" OnClick="@LeaveForReal">Leave For Real</GameButton>
+					</div>
+				</div>
+			</div>
+		}
+		else
+		{
 		<PopupStack Popups="@Popups" OnDismiss="@DismissPopup"></PopupStack>
 
 		<SessionOverlay
@@ -29,6 +46,7 @@
 			<TradePanel GameRef="@GameRef"></TradePanel>
 			<AuctionModal GameRef="@GameRef"></AuctionModal>
 			<SelectedSpacePanel GameRef="@GameRef"></SelectedSpacePanel>
+		}
 		}
 	}
 </root>
@@ -53,6 +71,12 @@
 		{
 			IsEscapeMenuOpen = false;
 			IsOptionsMenuOpen = false;
+			return;
+		}
+
+		if ( NetworkSession.IsEditorSoftLeftLobby )
+		{
+			Mouse.Visibility = MouseVisibility.Visible;
 			return;
 		}
 
@@ -114,6 +138,12 @@
 		if ( GameRef is null )
 			return;
 		
+		if ( !Networking.IsHost && GameRef.IsLocalEffectiveHost )
+		{
+			GameRef.RequestReturnToLobby();
+			return;
+		}
+
 		if (!Networking.IsHost)
 			return;
 
@@ -122,15 +152,31 @@
 
 	private void LeaveLobby()
 	{
-		var lobbyId = SteamInviteBridge.GetActiveLobbyIdValue();
-		var connectTarget = Networking.ServerName ?? "";
-		var abandonTimeoutSeconds = Math.Max( GameRef?.Config?.AbandonTimeoutSeconds ?? 180, 1 );
-		if ( lobbyId != 0 || !string.IsNullOrWhiteSpace( connectTarget ) )
-			NetworkSession.SetRejoinWindow( lobbyId, connectTarget, Time.Now + abandonTimeoutSeconds );
-
 		IsEscapeMenuOpen = false;
 		IsOptionsMenuOpen = false;
+
+		if ( !NetworkSession.CanUseEditorSoftLeave )
+		{
+			var lobbyId = SteamInviteBridge.GetActiveLobbyIdValue();
+			var connectTarget = Networking.ServerName ?? "";
+			var abandonTimeoutSeconds = Math.Max( GameRef?.Config?.AbandonTimeoutSeconds ?? 180, 1 );
+			if ( lobbyId != 0 || !string.IsNullOrWhiteSpace( connectTarget ) )
+				NetworkSession.SetRejoinWindow( lobbyId, connectTarget, Time.Now + abandonTimeoutSeconds );
+		}
+
 		NetworkSession.LeaveCurrentLobby( Scene );
+	}
+
+	private void RejoinSoftLeftMatch()
+	{
+		NetworkSession.ReturnFromEditorSoftLeave();
+	}
+
+	private void LeaveForReal()
+	{
+		IsEscapeMenuOpen = false;
+		IsOptionsMenuOpen = false;
+		NetworkSession.ForceDisconnectToMenu( Scene );
 	}
 
 	private void ExitGame()

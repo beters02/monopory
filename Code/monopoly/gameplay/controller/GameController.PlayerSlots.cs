@@ -51,6 +51,9 @@ public sealed partial class GameController : Component
 			var hasConnection = Connection.All.Any( connection => connection.SteamId == player.OwnerId );
 			if ( hasConnection )
 			{
+				if ( player.IsDisconnected )
+					Log.Info( $"{player.PlayerName} reconnected." );
+
 				player.IsDisconnected = false;
 				player.AbandonEndsAt = 0f;
 				continue;
@@ -228,6 +231,8 @@ public sealed partial class GameController : Component
 		CurrentPlayerIndex = 0;
 		LastDieA = 0;
 		LastDieB = 0;
+		IsResolvingPhysicalDice = false;
+		PhysicalDiceStartedAt = 0f;
 		Phase = GamePhase.WaitingToRoll;
 		PendingPurchaseSpaceIndex = -1;
 		ClearAuction();
@@ -241,6 +246,7 @@ public sealed partial class GameController : Component
 		pausedTurnRemainingSeconds = 0f;
 		pausedAuctionRemainingSeconds = 0f;
 		LocalSelectedDrawnCardText = "";
+		ClearMovementRecoveryState();
 		ClearPendingForcedPayment();
 		PropertyOwners.Clear();
 		PropertyImprovements.Clear();
@@ -279,6 +285,9 @@ public sealed partial class GameController : Component
 		emptySlot.IsReady = false;
 		ResetPlayerForGame( emptySlot );
 
+		if ( PreferredHostOwnerId == 0 )
+			PreferredHostOwnerId = connection.SteamId;
+
 		Log.Info( $"Assigned {connection.DisplayName} to player slot {Players.IndexOf( emptySlot )}" );
 	}
 
@@ -315,7 +324,14 @@ public sealed partial class GameController : Component
 		ClearPlayerSlot( player );
 
 		if ( CurrentPlayerIndex == playerIndex && MatchState == MatchLifecycleState.InGame )
-			AdvanceTurn();
+		{
+			if ( Phase == GamePhase.WaitingForBuyDecision && PendingPurchaseSpaceIndex >= 0 )
+				AuctionPendingProperty();
+			else if ( Phase == GamePhase.TurnEnded )
+				CompleteTurn();
+			else
+				AdvanceTurn();
+		}
 	}
 
 	private void RemoveTradesForPlayer( int playerIndex )

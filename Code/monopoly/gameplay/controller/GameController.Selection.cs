@@ -53,6 +53,23 @@ public sealed partial class GameController : Component
 		SelectSpaceAsync( spaceIndex );
 	}
 
+	private void RecoverPendingPurchaseSelection()
+	{
+		if ( Phase != GamePhase.WaitingForBuyDecision )
+			return;
+
+		if ( PendingPurchaseSpaceIndex < 0 || LocalSelectedSpaceIndex == PendingPurchaseSpaceIndex )
+			return;
+
+		if ( CurrentPlayerIndex != LocalPlayerIndex )
+			return;
+
+		if ( !ShouldShowSelectedSpaceCardAtIndex( PendingPurchaseSpaceIndex ) )
+			return;
+
+		SelectSpaceAsync( PendingPurchaseSpaceIndex );
+	}
+
 	public bool ShouldShowSelectedSpaceCard( SpaceType type )
 	{
 		return type switch

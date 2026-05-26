@@ -61,6 +61,7 @@ public sealed partial class GameController : Component
 		var spinB = new Vector3( Game.Random.Float( -1f, 1f ), Game.Random.Float( -1f, 1f ), Game.Random.Float( -1f, 1f ) ).Normal * spin;
 
 		IsResolvingPhysicalDice = true;
+		PhysicalDiceStartedAt = Time.Now;
 
 		try
 		{
@@ -80,6 +81,7 @@ public sealed partial class GameController : Component
 		finally
 		{
 			IsResolvingPhysicalDice = false;
+			PhysicalDiceStartedAt = 0f;
 		}
 	}
 

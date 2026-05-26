@@ -8,10 +8,7 @@ public sealed partial class GameController : Component
 
 	private bool IsHostCaller( Connection caller )
 	{
-		if ( Networking.IsHost && (caller is null || caller == Connection.Local) )
-			return true;
-
-		return false;
+		return IsEffectiveHostCaller( caller );
 	}
 
 	private bool CanAcceptGameplayInput()
@@ -24,6 +21,7 @@ public sealed partial class GameController : Component
 		if ( !Networking.IsHost )
 			return false;
 
+		EnsurePreferredHostOwnerId();
 		SyncLobbyConnections();
 
 		if ( requireReady && !CanStartGame )

@@ -19,6 +19,14 @@ public sealed partial class GameController : Component
 	}
 
 	public int LocalPlayerIndex => Players.IndexOf( LocalPlayer );
+	public bool IsLocalEffectiveHost
+	{
+		get
+		{
+			var localSteamId = GetLocalSteamId();
+			return localSteamId.HasValue && PreferredHostOwnerId != 0 && localSteamId.Value == PreferredHostOwnerId;
+		}
+	}
 
 	public int GetPlayerIndex( PlayerState player )
 	{

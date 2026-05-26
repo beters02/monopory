@@ -271,6 +271,110 @@ public sealed partial class GameController : Component
 
 		Log.Info( $"Player {CurrentPlayerIndex + 1} rolled {LastDieA} + {LastDieB} = {total}" );
 
+		// Roll origin affects dice generation and jail handling, but normal post-landing
+		// turn flow should be determined by the resolved gameplay state itself.
+		_ = executionKind;
+	}
+
+	private async Task MovePlayerSteps(PlayerState player, int steps)
+	{
+		if ( player is null )
+			return;
+
+		var playerIndex = GetPlayerIndex( player );
+		if ( playerIndex < 0 )
+			return;
+
+		BeginActiveMovement( playerIndex, Math.Max( steps, 0 ) );
+		await ContinueActiveMovementAsync();
+	}
+
+	private void BeginActiveMovement( int playerIndex, int steps )
+	{
+		var player = Players.ElementAtOrDefault( playerIndex );
+		if ( player is null )
+			return;
+
+		ActiveMovementPlayerIndex = playerIndex;
+		ActiveMovementRemainingSteps = steps;
+		ActiveMovementGoPassCount = 0;
+		ActiveMovementTargetSpaceIndex = NormalizeSpaceIndex( player.SpaceIndex + steps );
+		ActiveMovementLastProgressAt = Time.Now;
+		PendingLandingPlayerIndex = -1;
+		PendingLandingSpaceIndex = -1;
+		PendingLandingGoPassCount = 0;
+		PendingLandingResolved = false;
+	}
+
+	private async Task ContinueActiveMovementAsync()
+	{
+		if ( isContinuingRecoveredMovement )
+			return;
+
+		if ( ActiveMovementPlayerIndex < 0 )
+			return;
+
+		var player = Players.ElementAtOrDefault( ActiveMovementPlayerIndex );
+		if ( player is null )
+			return;
+
+		isContinuingRecoveredMovement = true;
+		SetPlayerTokenWalking( player, true );
+
+		try
+		{
+			while ( ActiveMovementRemainingSteps > 0 )
+			{
+				player.SpaceIndex = NormalizeSpaceIndex( player.SpaceIndex + 1 );
+
+				ActiveMovementRemainingSteps = Math.Max( ActiveMovementRemainingSteps - 1, 0 );
+				if ( player.SpaceIndex == 0 )
+					ActiveMovementGoPassCount++;
+
+				ActiveMovementLastProgressAt = Time.Now;
+				await Task.DelaySeconds( 0.4f );
+			}
+
+			BeginPendingLanding( ActiveMovementPlayerIndex, player.SpaceIndex, ActiveMovementGoPassCount );
+			ResolvePendingLandingOnce();
+			FinalizeResolvedActionAfterLanding();
+		}
+		finally
+		{
+			SetPlayerTokenWalking( player, false );
+			isContinuingRecoveredMovement = false;
+		}
+	}
+
+	private void BeginPendingLanding( int playerIndex, int spaceIndex, int goPassCount )
+	{
+		PendingLandingPlayerIndex = playerIndex;
+		PendingLandingSpaceIndex = NormalizeSpaceIndex( spaceIndex );
+		PendingLandingGoPassCount = Math.Max( goPassCount, 0 );
+		PendingLandingResolved = false;
+	}
+
+	private void ResolvePendingLandingOnce()
+	{
+		if ( PendingLandingResolved || PendingLandingPlayerIndex < 0 )
+			return;
+
+		var player = Players.ElementAtOrDefault( PendingLandingPlayerIndex );
+		if ( player is null )
+		{
+			ClearMovementRecoveryState();
+			return;
+		}
+
+		player.SpaceIndex = PendingLandingSpaceIndex;
+		PendingLandingResolved = true;
+		ResolveLanding( player, PendingLandingGoPassCount );
+	}
+
+	private void FinalizeResolvedActionAfterLanding()
+	{
+		ClearMovementRecoveryState();
+
 		if ( Phase != GamePhase.ResolvingSpace )
 			return;
 
@@ -286,36 +390,20 @@ public sealed partial class GameController : Component
 			return;
 		}
 
-		// Roll origin affects dice generation and jail handling, but normal post-landing
-		// turn flow should be determined by the resolved gameplay state itself.
-		_ = executionKind;
-
 		Phase = GamePhase.TurnEnded;
 	}
 
-	private async Task MovePlayerSteps(PlayerState player, int steps)
+	private void ClearMovementRecoveryState()
 	{
-		SetPlayerTokenWalking( player, true );
-		var goPassCount = 0;
-
-		try
-		{
-			for ( int i = 0; i < steps; i++ )
-			{
-				player.SpaceIndex = NormalizeSpaceIndex(player.SpaceIndex + 1);
-
-				await Task.DelaySeconds( 0.4f );
-
-				if ( player.SpaceIndex == 0 )
-					goPassCount++;
-			}
-
-			ResolveLanding( player, goPassCount );
-		}
-		finally
-		{
-			SetPlayerTokenWalking( player, false );
-		}
+		ActiveMovementPlayerIndex = -1;
+		ActiveMovementRemainingSteps = 0;
+		ActiveMovementGoPassCount = 0;
+		ActiveMovementTargetSpaceIndex = -1;
+		ActiveMovementLastProgressAt = 0f;
+		PendingLandingPlayerIndex = -1;
+		PendingLandingSpaceIndex = -1;
+		PendingLandingGoPassCount = 0;
+		PendingLandingResolved = false;
 	}
 
 	private void SendPlayerToJail( PlayerState player )
@@ -345,6 +433,7 @@ public sealed partial class GameController : Component
 		Phase = GamePhase.ResolvingSpace;
 		CurrentTurnGetsExtraRoll = false;
 		resolvedActionOutcome = ResolvedActionOutcome.StayInTurnEnded;
+		ClearMovementRecoveryState();
 	}
 
 	private void MarkResolvedActionToAdvanceImmediately()
@@ -368,7 +457,8 @@ public sealed partial class GameController : Component
 		}
 
 		ClearSelectedSpaceForPlayer( CurrentPlayer );
-		CurrentPlayer.ConsecutiveDoubles = 0;
+		if ( CurrentPlayer is not null )
+			CurrentPlayer.ConsecutiveDoubles = 0;
 		AdvanceTurn();
 	}
 
