@@ -1,6 +1,7 @@
 using Sandbox;
 #if STANDALONE
 using System;
+using System.Collections;
 using System.Reflection;
 #endif
 
@@ -54,16 +55,15 @@ public static class SteamInviteBridge
 		{
 			var lobbyManagerType = FindLoadedType( "Sandbox.LobbyManager" );
 			var activeLobbiesProperty = lobbyManagerType?.GetProperty( "ActiveLobbies", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static );
-			var activeLobbies = activeLobbiesProperty?.GetValue( null ) as System.Collections.IEnumerable;
+			var activeLobbies = activeLobbiesProperty?.GetValue( null ) as IEnumerable;
 			if ( activeLobbies is null )
 				return 0;
 
 			foreach ( var lobby in activeLobbies )
 			{
-				var idProperty = lobby?.GetType().GetProperty( "Id", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance );
-				var idValue = idProperty?.GetValue( lobby );
-				if ( idValue is SteamId steamId && steamId.ValueUnsigned != 0 )
-					return (long)steamId.ValueUnsigned;
+				var lobbyId = Convert.ToUInt64( lobby );
+				if ( lobbyId != 0 )
+					return unchecked((long)lobbyId);
 			}
 		}
 		catch
@@ -74,6 +74,19 @@ public static class SteamInviteBridge
 	}
 
 #if STANDALONE
+	private static Type FindLoadedType( string typeName )
+	{
+		var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+		for ( var i = 0; i < assemblies.Length; i++ )
+		{
+			var type = assemblies[i].GetType( typeName, false );
+			if ( type is not null )
+				return type;
+		}
+
+		return null;
+	}
+
 	private static async void OnGameLobbyJoinRequested( SteamId lobbyId )
 	{
 		var lobbyIdValue = lobbyId.ValueUnsigned;
@@ -90,19 +103,6 @@ public static class SteamInviteBridge
 
 		Log.Info( $"Joined Steam lobby invite {lobbyIdValue}." );
 		SceneFlow.LoadLobby( currentScene );
-	}
-
-	private static Type FindLoadedType( string typeName )
-	{
-		var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-		for ( var i = 0; i < assemblies.Length; i++ )
-		{
-			var type = assemblies[i].GetType( typeName, false );
-			if ( type is not null )
-				return type;
-		}
-
-		return null;
 	}
 #endif
 }

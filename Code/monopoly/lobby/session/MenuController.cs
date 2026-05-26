@@ -8,8 +8,6 @@ public sealed class MenuController : Component
 {
 	public MatchConfig Config { get; set; } = new();
 
-
-
 	protected override void OnStart()
 	{
 		GameAssets.PrewarmUiAssets();
@@ -19,6 +17,7 @@ public sealed class MenuController : Component
 
 	public bool TryOpenLobby()
 	{
+		NetworkSession.ClearRejoinWindow();
 		//if ( Networking.IsActive )
 		//	Networking.Disconnect();
 

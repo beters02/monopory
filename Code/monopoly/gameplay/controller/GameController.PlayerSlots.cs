@@ -39,14 +39,12 @@ public sealed partial class GameController : Component
 		if ( !Networking.IsHost )
 			return;
 
-		if ( HasStarted && MatchState != MatchLifecycleState.GameOver )
-			return;
-
 		EnsurePlayerSlots();
 		SeedBootstrappedPlayers();
 
 		var availableSlotCount = Players.Count( player => player is not null );
 		var registrationLimit = Math.Min( MaxPlayers, availableSlotCount );
+		var allowNewRegistrations = MatchState == MatchLifecycleState.Lobby || MatchState == MatchLifecycleState.GameOver;
 
 		foreach ( var player in Players.Where( player => player is not null && player.IsAssigned ).ToList() )
 		{
@@ -67,6 +65,9 @@ public sealed partial class GameController : Component
 		foreach ( var connection in Connection.All )
 		{
 			if ( GetPlayerForConnection( connection ) is not null )
+				continue;
+
+			if ( !allowNewRegistrations )
 				continue;
 
 			if ( GetAssignedPlayers().Count >= registrationLimit )

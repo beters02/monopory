@@ -63,9 +63,9 @@
 		Menu.TryOpenLobby();
 	}
 
-	private void RejoinLobby()
+	private async void RejoinLobby()
 	{
-		_ = NetworkSession.TryRejoinLobby( Scene );
+		await NetworkSession.TryRejoinLobby( Scene );
 	}
 
 	protected override int BuildHash()
@@ -73,6 +73,7 @@
 		var hash = new HashCode();
 		hash.Add( IsOptionsMenuOpen );
 		hash.Add( NetworkSession.RejoinLobbyId );
+		hash.Add( NetworkSession.RejoinConnectTarget );
 		hash.Add( NetworkSession.RejoinSecondsRemaining );
 		hash.Add( AppSettings.SettingsAvailable );
 		hash.Add( AppSettings.GetFullscreenMode() );

@@ -43,7 +43,7 @@ public sealed class MatchConfig
 	public bool OnlyHostStartsGame { get; set; } = true;
 
 	[MatchConfigOption( "Lobby", "Abandon Timeout Seconds", Description = "How long disconnected players can rejoin before they are abandoned and removed.", Order = 3, Min = 15, Max = 1800, Step = 15 )]
-	public int AbandonTimeoutSeconds { get; set; } = 180;
+	public int AbandonTimeoutSeconds { get; set; } = 10;
 
 	[MatchConfigOption( "Property Rules", "Affordable Unowned Landing", Description = "What happens when a player can afford an unowned property.", Order = 10 )]
 	public UnownedAffordableLandingMode LandedUnownedCanAffordMode { get; set; } = UnownedAffordableLandingMode.Decision;
