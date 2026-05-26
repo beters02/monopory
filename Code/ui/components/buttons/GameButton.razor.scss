@@ -101,7 +101,7 @@
 
 .monopoly-button.property-square.mortgaged {
     filter: saturate(0.32) brightness(0.72);
-    background-image: linear-gradient(135deg, rgba(0, 0, 0, 0.42) 0%, rgba(0, 0, 0, 0.42) 50%, rgba(255, 255, 255, 0.16) 50%, rgba(255, 255, 255, 0.16) 100%);
+    background-color: rgba(0, 0, 0, 0.42);
 }
 
 .monopoly-button.property-square.selected {

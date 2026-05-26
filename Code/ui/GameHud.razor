@@ -106,14 +106,24 @@
 		if ( IsEscapeMenuOpen || IsOptionsMenuOpen )
 			Mouse.Visibility = MouseVisibility.Visible;
 
+		if ( StandaloneConsole.IsConsoleOpen )
+		{
+			Mouse.Visibility = MouseVisibility.Visible;
+			IsEscapeMenuOpen = false;
+			IsOptionsMenuOpen = false;
+			return;
+		}
+
 		HandleMenuOpen();
 	}
 
 	private void HandleMenuOpen()
 	{	
-		if (MonopolyApp.IsStandalone && Input.EscapePressed)
+		if (MonopolyApp.IsStandalone)
 		{
-			ToggleEscapeMenu();
+			if (Input.EscapePressed)
+				ToggleEscapeMenu();
+			
 			return;
 		}
 

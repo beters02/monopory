@@ -6627,6 +6627,11 @@
               "__guid": "60763db4-1a8a-48a6-b49e-9a59bae142f3",
               "__enabled": true,
               "Flags": 0,
+              "ActiveMovementGoPassCount": 0,
+              "ActiveMovementLastProgressAt": 0,
+              "ActiveMovementPlayerIndex": -1,
+              "ActiveMovementRemainingSteps": 0,
+              "ActiveMovementTargetSpaceIndex": -1,
               "AuctionCurrentBid": 0,
               "AuctionEndsAt": 0,
               "AuctionHighBidderIndex": -1,
@@ -6637,24 +6642,9 @@
                 "go": "469cf384-89f4-4353-99dd-4b89667eff1f",
                 "component_type": "Board"
               },
-              "Config": {
-                "MinPlayers": 1,
-                "MaxPlayers": 6,
-                "OnlyHostStartsGame": true,
-                "LandedUnownedCanAffordMode": "Decision",
-                "LandedUnownedCantAffordMode": "ForceAuction",
-                "CanSkipUnowned": false,
-                "StartingMoney": 1500,
-                "LandOnGoMoney": 200,
-                "PassGoMoney": 200,
-                "DoublesGoesAgain": false,
-                "ForceJailFineAfterFailedDoubles": true,
-                "TurnTimeLimitSeconds": 180,
-                "VacationCash": false,
-                "DontCollectRentWhileInPrison": false,
-                "EvenBuild": true
-              },
               "CurrentPlayerIndex": 0,
+              "CurrentTurnConsecutiveDoubles": 0,
+              "CurrentTurnDoublesPlayerIndex": -1,
               "CurrentTurnEndsAt": 0,
               "CurrentTurnGetsExtraRoll": false,
               "DiceMaxDropSpeed": 540,
@@ -6671,6 +6661,7 @@
               "DieB": null,
               "FreeParkingBank": 0,
               "GameStartedAt": 0,
+              "IsRecoveringHostState": false,
               "IsResolvingPhysicalDice": false,
               "LastDieA": 0,
               "LastDieB": 0,
@@ -6689,9 +6680,20 @@
               "PendingForcedPaymentReceiverIndex": -1,
               "PendingForcedPaymentToBank": false,
               "PendingForcedPaymentToEachPlayer": false,
+              "PendingLandingGoPassCount": 0,
+              "PendingLandingPlayerIndex": -1,
+              "PendingLandingResolved": false,
+              "PendingLandingSpaceIndex": -1,
               "PendingPurchaseSpaceIndex": -1,
+              "PendingRollExecutionKind": -1,
+              "PendingRollIsJailAttempt": false,
+              "PendingRollPlayerIndex": -1,
+              "PendingRollStartedAt": 0,
+              "PendingRollSuppressDoublesExtraTurn": false,
+              "PendingRollTotal": 0,
               "PendingTrades": {},
               "Phase": "WaitingToRoll",
+              "PhysicalDiceStartedAt": 0,
               "Players": [
                 {
                   "_type": "component",
@@ -6730,8 +6732,15 @@
                   "component_type": "PlayerState"
                 }
               ],
+              "PreferredHostDisconnected": false,
+              "PreferredHostOwnerId": 0,
               "PropertyImprovements": {},
               "PropertyOwners": {},
+              "ShowSelectedSpaceCardOnFreeParking": false,
+              "ShowSelectedSpaceCardOnGo": false,
+              "ShowSelectedSpaceCardOnGoToJail": false,
+              "ShowSelectedSpaceCardOnJail": false,
+              "ShowSelectedSpaceCardOnTax": false,
               "StartingPlayerCount": 0,
               "TokenPhysicsStates": {},
               "TokenPrefab": {
@@ -6765,8 +6774,10 @@
                   "__guid": "76b0f195-5515-4876-97de-be8112bba118",
                   "__enabled": true,
                   "Flags": 0,
+                  "AbandonEndsAt": 0,
                   "ConsecutiveDoubles": 0,
                   "IsBankrupt": false,
+                  "IsDisconnected": false,
                   "IsInJail": false,
                   "IsReady": false,
                   "JailTurnsRemaining": 0,
@@ -6780,7 +6791,8 @@
                   "OwnerId": 0,
                   "PlayerName": "Player 3",
                   "SkipsNextTurn": false,
-                  "SpaceIndex": 0
+                  "SpaceIndex": 0,
+                  "TurnTimeoutCount": 0
                 }
               ],
               "Children": []
@@ -6806,8 +6818,10 @@
                   "__guid": "ce8d1550-b841-4ad2-be2a-64acfaf9e073",
                   "__enabled": true,
                   "Flags": 0,
+                  "AbandonEndsAt": 0,
                   "ConsecutiveDoubles": 0,
                   "IsBankrupt": false,
+                  "IsDisconnected": false,
                   "IsInJail": false,
                   "IsReady": false,
                   "JailTurnsRemaining": 0,
@@ -6821,7 +6835,8 @@
                   "OwnerId": 0,
                   "PlayerName": "Player 4",
                   "SkipsNextTurn": false,
-                  "SpaceIndex": 0
+                  "SpaceIndex": 0,
+                  "TurnTimeoutCount": 0
                 }
               ],
               "Children": []
@@ -6847,8 +6862,10 @@
                   "__guid": "a98209a1-3b0e-410d-966e-fa143d443bf5",
                   "__enabled": true,
                   "Flags": 0,
+                  "AbandonEndsAt": 0,
                   "ConsecutiveDoubles": 0,
                   "IsBankrupt": false,
+                  "IsDisconnected": false,
                   "IsInJail": false,
                   "IsReady": false,
                   "JailTurnsRemaining": 0,
@@ -6862,7 +6879,8 @@
                   "OwnerId": 0,
                   "PlayerName": "Player 5",
                   "SkipsNextTurn": false,
-                  "SpaceIndex": 0
+                  "SpaceIndex": 0,
+                  "TurnTimeoutCount": 0
                 }
               ],
               "Children": []
@@ -6888,8 +6906,10 @@
                   "__guid": "a7551c58-cdd2-4374-b4db-b597c957a364",
                   "__enabled": true,
                   "Flags": 0,
+                  "AbandonEndsAt": 0,
                   "ConsecutiveDoubles": 0,
                   "IsBankrupt": false,
+                  "IsDisconnected": false,
                   "IsInJail": false,
                   "IsReady": false,
                   "JailTurnsRemaining": 0,
@@ -6903,7 +6923,8 @@
                   "OwnerId": 0,
                   "PlayerName": "Player 6",
                   "SkipsNextTurn": false,
-                  "SpaceIndex": 0
+                  "SpaceIndex": 0,
+                  "TurnTimeoutCount": 0
                 }
               ],
               "Children": []
@@ -6929,8 +6950,10 @@
                   "__guid": "a8d58493-4ea8-488b-8d97-e1b34451ae55",
                   "__enabled": true,
                   "Flags": 0,
+                  "AbandonEndsAt": 0,
                   "ConsecutiveDoubles": 0,
                   "IsBankrupt": false,
+                  "IsDisconnected": false,
                   "IsInJail": false,
                   "IsReady": false,
                   "JailTurnsRemaining": 0,
@@ -6944,7 +6967,8 @@
                   "OwnerId": 0,
                   "PlayerName": "Player 1",
                   "SkipsNextTurn": false,
-                  "SpaceIndex": 0
+                  "SpaceIndex": 0,
+                  "TurnTimeoutCount": 0
                 }
               ],
               "Children": []
@@ -6970,8 +6994,10 @@
                   "__guid": "121f6d6a-0e75-452b-ab4d-7e6cab3c6a03",
                   "__enabled": true,
                   "Flags": 0,
+                  "AbandonEndsAt": 0,
                   "ConsecutiveDoubles": 0,
                   "IsBankrupt": false,
+                  "IsDisconnected": false,
                   "IsInJail": false,
                   "IsReady": false,
                   "JailTurnsRemaining": 0,
@@ -6985,7 +7011,8 @@
                   "OwnerId": 0,
                   "PlayerName": "Player 2",
                   "SkipsNextTurn": false,
-                  "SpaceIndex": 0
+                  "SpaceIndex": 0,
+                  "TurnTimeoutCount": 0
                 }
               ],
               "Children": []
@@ -7017,6 +7044,8 @@
           "Flags": 0,
           "DefaultModeDistance": 150,
           "DefaultModePitch": 75,
+          "DiceFramingMinDistance": 140,
+          "DiceFramingPadding": 16,
           "Distance": 350,
           "FollowLerpSpeed": 3,
           "Fov": 35,
@@ -7185,6 +7214,37 @@
                 "go": "3926108a-01b6-40be-beb6-9bf93b305607",
                 "component_type": "GameController"
               },
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null
+            }
+          ],
+          "Children": []
+        },
+        {
+          "__guid": "3fa4a167-6151-43c9-9ab8-a19edb18c348",
+          "__version": 2,
+          "Flags": 0,
+          "Name": "StandaloneConsole",
+          "Position": "0,0,0",
+          "Rotation": "0,0,0,1",
+          "Scale": "1,1,1",
+          "Tags": "",
+          "Enabled": true,
+          "NetworkMode": 2,
+          "NetworkFlags": 0,
+          "NetworkOrphaned": 0,
+          "NetworkTransmit": true,
+          "OwnerTransfer": 1,
+          "Components": [
+            {
+              "__type": "Sandbox.ui.components.StandaloneConsole",
+              "__guid": "13abb119-8898-41f2-be9e-fd83ae058376",
+              "__enabled": true,
+              "Flags": 0,
               "OnComponentDestroy": null,
               "OnComponentDisabled": null,
               "OnComponentEnabled": null,
@@ -7823,14 +7883,14 @@
       "CustomBounds": false
     },
     "GameObjectSystems": {
-      "Sandbox.Clutter.ClutterGridSystem": {
-        "Storage": {
-          "$blob": "7664decd-7b1f-4214-a5a2-850285e10057"
-        }
-      },
       "Sandbox.SelectionSetsSystem": {
         "Data": {
           "SelectionSets": []
+        }
+      },
+      "Sandbox.Clutter.ClutterGridSystem": {
+        "Storage": {
+          "$blob": "7664decd-7b1f-4214-a5a2-850285e10057"
         }
       }
     }

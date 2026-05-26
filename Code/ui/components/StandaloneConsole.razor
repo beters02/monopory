@@ -1,0 +1,292 @@
+@using Sandbox;
+@using Sandbox.UI;
+@using System;
+@using System.Linq;
+@inherits PanelComponent
+
+<root class="@RootClasses">
+	@if ( IsOpen )
+	{
+		<div class="standalone-console-window">
+			<div class="standalone-console-output" @ref="OutputPanel">
+				@foreach ( var entry in FilteredEntries )
+				{
+					<div class="standalone-console-line @entry.Kind">
+						<span class="standalone-console-time">@entry.TimeText</span>
+						<span class="standalone-console-message">@entry.Message</span>
+					</div>
+				}
+			</div>
+
+			<div class="standalone-console-toolbar">
+				<TextEntry @ref="CommandInput"
+					class="standalone-console-input"
+					Placeholder="Enter console command..."
+					onsubmit="@SubmitCommand" />
+
+				<TextEntry class="standalone-console-filter"
+					Placeholder="Filter..."
+					OnTextEdited="@SetFilter" />
+
+				<button class="standalone-console-type msg @(ShowMessages ? "active" : "")" onclick="@ToggleMessages">@MessageCount</button>
+				<button class="standalone-console-type wrn @(ShowWarnings ? "active" : "")" onclick="@ToggleWarnings">@WarningCount</button>
+				<button class="standalone-console-type err @(ShowErrors ? "active" : "")" onclick="@ToggleErrors">@ErrorCount</button>
+				<button class="standalone-console-clear" onclick="@Clear">clear</button>
+			</div>
+		</div>
+	}
+</root>
+
+@code
+{
+	private readonly record struct ConsoleEntry( string Message, string Kind, DateTime Time )
+	{
+		public string TimeText => Time.ToString( "HH:mm:ss" );
+	}
+
+	private static readonly string[] KnownCommands =
+	{
+		"clear",
+		"debug",
+		"buy_property",
+		"buy_property_set",
+		"roll_dice",
+		"change_money",
+		"sv_cheats",
+		"quit",
+		"disconnect"
+	};
+
+	private readonly List<ConsoleEntry> Entries = new();
+	private TextEntry CommandInput = null!;
+	private Panel OutputPanel = null!;
+	private bool WantsFocus;
+	private string Filter = "";
+
+	public static bool IsConsoleOpen { get; private set; }
+	public bool IsOpen { get; private set; }
+	private bool ShowMessages { get; set; } = true;
+	private bool ShowWarnings { get; set; } = true;
+	private bool ShowErrors { get; set; } = true;
+	private bool HasShownReadyLine;
+
+	private string RootClasses => IsOpen ? "standalone-console-root open" : "standalone-console-root";
+	private int MessageCount => Entries.Count( entry => entry.Kind == "msg" || entry.Kind == "cmd" );
+	private int WarningCount => Entries.Count( entry => entry.Kind == "wrn" );
+	private int ErrorCount => Entries.Count( entry => entry.Kind == "err" );
+
+	private IEnumerable<ConsoleEntry> FilteredEntries => Entries.Where( ShouldShowEntry );
+
+	protected override void OnUpdate()
+	{
+		base.OnUpdate();
+
+		ConfigureInput();
+
+		if ( !HasShownReadyLine )
+		{
+			HasShownReadyLine = true;
+			AddEntry( "Standalone console ready. Press ` or F1 to close.", "msg" );
+		}
+
+		if ( ShouldToggleConsole() )
+		{
+			Log.Info("Toggling console");
+			Toggle();
+			return;
+		}
+
+		if ( IsOpen && Input.EscapePressed )
+		{
+			Close();
+			return;
+		}
+
+		if ( WantsFocus && CommandInput is not null )
+		{
+			CommandInput.Focus();
+
+			if ( CommandInput.HasFocus )
+				WantsFocus = false;
+		}
+	}
+
+	private void ConfigureInput()
+	{
+		if ( CommandInput is null )
+			return;
+
+		CommandInput.HistoryCookie = "monopory-standalone-console-history";
+		CommandInput.AutoComplete = GetAutoComplete;
+	}
+
+	private static bool ShouldToggleConsole()
+	{
+		if (MonopolyApp.IsStandalone)
+		{
+			return Input.Pressed("Console") ||
+				Input.Keyboard.Pressed( "`" ) ||
+				Input.Keyboard.Pressed( "BACKQUOTE" ) ||
+				Input.Keyboard.Pressed( "F1" );
+		}
+
+		return Input.Pressed( "EditorConsole" ) ||
+			Input.Keyboard.Pressed( "`" ) ||
+			Input.Keyboard.Pressed( "BACKQUOTE" ) ||
+			Input.Keyboard.Pressed( "F1" );
+	}
+
+	private void Toggle()
+	{
+		if ( IsOpen )
+			Close();
+		else
+			Open();
+	}
+
+	private void Open()
+	{
+		IsOpen = true;
+		IsConsoleOpen = true;
+		WantsFocus = true;
+		Mouse.Visibility = MouseVisibility.Visible;
+		StateHasChanged();
+	}
+
+	private void Close()
+	{
+		IsOpen = false;
+		IsConsoleOpen = false;
+		WantsFocus = false;
+		CommandInput?.Blur();
+		StateHasChanged();
+	}
+
+	private void SubmitCommand()
+	{
+		if ( CommandInput is null )
+			return;
+
+		var command = CommandInput.Text?.Trim() ?? "";
+		CommandInput.Text = "";
+
+		if ( string.IsNullOrWhiteSpace( command ) )
+		{
+			Close();
+			return;
+		}
+
+		CommandInput.AddToHistory( command );
+		CommandInput.DestroyAutoComplete();
+
+		if ( string.Equals( command, "clear", StringComparison.OrdinalIgnoreCase ) )
+		{
+			Clear();
+			FocusInput();
+			return;
+		}
+
+		foreach ( var line in SplitCommandLines( command ) )
+			RunCommandLine( line );
+
+		FocusInput();
+	}
+
+	private static IEnumerable<string> SplitCommandLines( string command )
+	{
+		return command
+			.Split( new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries )
+			.Select( line => line.Trim() )
+			.Where( line => !string.IsNullOrWhiteSpace( line ) );
+	}
+
+	private void RunCommandLine( string command )
+	{
+		AddEntry( $"> {command}", "cmd" );
+
+		try
+		{
+			ConsoleSystem.Run( command );
+		}
+		catch ( Exception exception )
+		{
+			AddEntry( exception.Message, "err" );
+		}
+	}
+
+	private void AddEntry( string message, string kind )
+	{
+		Entries.Add( new ConsoleEntry( message, kind, DateTime.Now ) );
+
+		while ( Entries.Count > 500 )
+			Entries.RemoveAt( 0 );
+
+		StateHasChanged();
+		OutputPanel?.TryScrollToBottom();
+	}
+
+	private bool ShouldShowEntry( ConsoleEntry entry )
+	{
+		if ( (entry.Kind == "msg" || entry.Kind == "cmd") && !ShowMessages )
+			return false;
+
+		if ( entry.Kind == "wrn" && !ShowWarnings )
+			return false;
+
+		if ( entry.Kind == "err" && !ShowErrors )
+			return false;
+
+		return string.IsNullOrWhiteSpace( Filter ) ||
+			entry.Message.Contains( Filter, StringComparison.OrdinalIgnoreCase );
+	}
+
+	private void SetFilter( string value )
+	{
+		Filter = value ?? "";
+		StateHasChanged();
+	}
+
+	private void ToggleMessages()
+	{
+		ShowMessages = !ShowMessages;
+		StateHasChanged();
+	}
+
+	private void ToggleWarnings()
+	{
+		ShowWarnings = !ShowWarnings;
+		StateHasChanged();
+	}
+
+	private void ToggleErrors()
+	{
+		ShowErrors = !ShowErrors;
+		StateHasChanged();
+	}
+
+	private void Clear()
+	{
+		Entries.Clear();
+		StateHasChanged();
+	}
+
+	private void FocusInput()
+	{
+		WantsFocus = true;
+		CommandInput?.Focus();
+		OutputPanel?.TryScrollToBottom();
+		StateHasChanged();
+	}
+
+	private object[] GetAutoComplete( string value )
+	{
+		if ( string.IsNullOrWhiteSpace( value ) )
+			return Array.Empty<object>();
+
+		return KnownCommands
+			.Where( command => command.StartsWith( value, StringComparison.OrdinalIgnoreCase ) )
+			.Take( 20 )
+			.Select( command => (object)new TextEntry.AutocompleteEntry { Title = command, Value = command } )
+			.ToArray();
+	}
+}

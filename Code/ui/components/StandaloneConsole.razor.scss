@@ -1,0 +1,142 @@
+StandaloneConsole {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	z-index: 1000;
+	pointer-events: none;
+
+	.standalone-console-root {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		pointer-events: none;
+
+		&.open {
+			pointer-events: all;
+		}
+	}
+
+	.standalone-console-window {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		height: 46%;
+		min-height: 320px;
+		background-color: rgba( 9, 10, 12, 0.94 );
+		border-bottom: 1px solid rgba( 255, 255, 255, 0.16 );
+		box-shadow: 0 16px 44px rgba( 0, 0, 0, 0.42 );
+		font-family: Consolas, "Courier New", monospace;
+		color: #d7dde7;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.standalone-console-output {
+		flex: 1;
+		overflow: scroll;
+		padding: 8px 10px 6px;
+		font-size: 13px;
+		line-height: 17px;
+	}
+
+	.standalone-console-line {
+		min-height: 17px;
+		white-space: normal;
+		display: flex;
+		gap: 8px;
+
+		&.cmd .standalone-console-message {
+			color: #9fd0ff;
+		}
+
+		&.wrn .standalone-console-message {
+			color: #ffd071;
+		}
+
+		&.err .standalone-console-message {
+			color: #ff7676;
+		}
+	}
+
+	.standalone-console-time {
+		width: 64px;
+		flex-shrink: 0;
+		color: rgba( 215, 221, 231, 0.48 );
+	}
+
+	.standalone-console-message {
+		flex: 1;
+		min-width: 0;
+	}
+
+	.standalone-console-toolbar {
+		height: 36px;
+		padding: 4px 6px;
+		border-top: 1px solid rgba( 255, 255, 255, 0.12 );
+		background-color: rgba( 0, 0, 0, 0.34 );
+		display: flex;
+		align-items: center;
+		gap: 6px;
+	}
+
+	.standalone-console-input,
+	.standalone-console-filter {
+		height: 28px;
+		border-radius: 2px;
+		background-color: rgba( 255, 255, 255, 0.08 );
+		border: 1px solid rgba( 255, 255, 255, 0.13 );
+		color: #f2f5f8;
+		font-size: 13px;
+		padding: 5px 8px;
+	}
+
+	.standalone-console-input {
+		flex: 1;
+	}
+
+	.standalone-console-filter {
+		width: 210px;
+	}
+
+	.standalone-console-type,
+	.standalone-console-clear {
+		height: 28px;
+		min-width: 36px;
+		border-radius: 2px;
+		border: 1px solid rgba( 255, 255, 255, 0.12 );
+		background-color: rgba( 255, 255, 255, 0.06 );
+		color: rgba( 242, 245, 248, 0.82 );
+		font-size: 12px;
+		font-weight: 700;
+		padding: 0 9px;
+		align-items: center;
+		justify-content: center;
+
+		&:hover {
+			background-color: rgba( 255, 255, 255, 0.12 );
+		}
+
+		&.active.msg,
+		&.active {
+			color: #f2f5f8;
+		}
+
+		&.wrn.active {
+			color: #ffd071;
+		}
+
+		&.err.active {
+			color: #ff7676;
+		}
+	}
+
+	.standalone-console-clear {
+		min-width: 54px;
+		text-transform: uppercase;
+	}
+}
