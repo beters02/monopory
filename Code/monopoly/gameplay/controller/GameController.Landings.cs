@@ -44,7 +44,7 @@ public sealed partial class GameController : Component
 				break;
 
 			case SpaceType.Tax:
-				if ( PayBank( player, spaceDef.TaxAmount ) )
+				if ( PayBank( player, spaceDef.TaxAmount, true, BankPaymentSource.TaxSpace ) )
 					Log.Info( $"{player.PlayerName} paid ${spaceDef.TaxAmount} tax." );
 				break;
 

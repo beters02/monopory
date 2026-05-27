@@ -408,6 +408,34 @@ public sealed class PlayerToken : Component
 		ApplyWalkingAnim( walking );
 	}
 
+	public void ApplyPieceDefinition( PieceDefinition piece )
+	{
+		var selectedPiece = piece ?? PieceCatalog.GetByIdOrDefault( PieceCatalog.DefaultPieceId );
+		var visualObject = GameObject.Children.FirstOrDefault( child => string.Equals( child?.Name, "Visual", StringComparison.OrdinalIgnoreCase ) );
+		var renderHost = visualObject?.Children.FirstOrDefault() ?? visualObject;
+		if ( renderHost is null )
+			return;
+
+		var modelRenderer = renderHost.Components.Get<ModelRenderer>();
+		var skinnedRenderer = renderHost.Components.Get<SkinnedModelRenderer>();
+		var model = Model.Load( selectedPiece.ModelPath );
+		if ( model is null )
+		{
+			Log.Warning( $"Unable to load model '{selectedPiece.ModelPath}' for piece '{selectedPiece.Id}'." );
+			return;
+		}
+
+		if ( skinnedRenderer is not null )
+			skinnedRenderer.Model = model;
+
+		if ( modelRenderer is not null )
+			modelRenderer.Model = model;
+
+		renderHost.LocalScale = selectedPiece.LocalVisualScale;
+		renderHost.LocalPosition = selectedPiece.LocalVisualOffset;
+		HeightOffset = selectedPiece.HeightOffset;
+	}
+
 	public void ApplyPlayerColor( Color color )
 	{
 		EnsurePlayerMarker();

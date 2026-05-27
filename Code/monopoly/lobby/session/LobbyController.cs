@@ -8,6 +8,7 @@ public sealed partial class LobbyController : Component
 	[Property, Sync] public NetDictionary<string, bool> ReadyPlayers { get; set; } = new();
 	[Property, Sync] public NetDictionary<string, string> KnownPlayerNames { get; set; } = new();
 	[Property, Sync] public NetDictionary<string, float> DisconnectedPlayers { get; set; } = new();
+	[Property, Sync] public NetDictionary<string, string> SelectedPieces { get; set; } = new();
 	[Property, Sync] public long PreferredHostOwnerId { get; set; }
 	private string lastAppliedHostedConfigSnapshot = "";
 
@@ -92,6 +93,7 @@ public sealed partial class LobbyController : Component
 			DisconnectedPlayers.Remove( entry.Key );
 			ReadyPlayers.Remove( entry.Key );
 			KnownPlayerNames.Remove( entry.Key );
+			SelectedPieces.Remove( entry.Key );
 
 			if ( long.TryParse( entry.Key, out var expiredOwnerId ) && PreferredHostOwnerId == expiredOwnerId )
 				PreferredHostOwnerId = Connection.Host?.SteamId ?? 0L;

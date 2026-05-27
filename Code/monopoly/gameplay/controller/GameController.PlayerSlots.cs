@@ -101,6 +101,7 @@ public sealed partial class GameController : Component
 
 			emptySlot.OwnerId = startingPlayer.OwnerId;
 			emptySlot.PlayerName = string.IsNullOrWhiteSpace( startingPlayer.Name ) ? "Player" : startingPlayer.Name;
+			emptySlot.SelectedPieceId = PieceCatalog.GetByIdOrDefault( startingPlayer.SelectedPieceId ).Id;
 			emptySlot.IsReady = false;
 			ResetPlayerForGame( emptySlot );
 		}
@@ -228,6 +229,7 @@ public sealed partial class GameController : Component
 		player.AbandonEndsAt = 0f;
 		player.TurnTimeoutCount = 0;
 		player.ColorSlot = -1;
+		player.SelectedPieceId = PieceCatalog.DefaultPieceId;
 	}
 
 	private void ResetGameState( bool resetPlayers )

@@ -48,6 +48,7 @@ public sealed partial class GameController : Component
 			var token = tokenObject.Components.Get<PlayerToken>() ?? tokenObject.Components.Create<PlayerToken>();
 			token.Board = Board;
 			token.PlayerState = player;
+			token.ApplyPieceDefinition( PieceCatalog.GetByIdOrDefault( player.SelectedPieceId ) );
 			var colorIndex = player.ColorSlot >= 0 ? player.ColorSlot : i;
 			var playerColor = Theme is not null ? Theme.GetPlayerColor( colorIndex ) : Color.White;
 			token.ApplyPlayerColor( playerColor );

@@ -3,6 +3,30 @@ using System;
 
 public sealed partial class LobbyController
 {
+	public bool TrySetSelectedPiece( long ownerId, string pieceId )
+	{
+		if ( !Networking.IsHost )
+			return false;
+
+		if ( ownerId == 0 || !HasConnection( ownerId ) || IsMarkedDisconnected( ownerId ) )
+			return false;
+
+		var normalizedPieceId = PieceCatalog.GetByIdOrDefault( pieceId ).Id;
+		SelectedPieces[GetReadyKey( ownerId )] = normalizedPieceId;
+		return true;
+	}
+
+	public string GetSelectedPieceForOwner( long ownerId )
+	{
+		if ( ownerId == 0 )
+			return PieceCatalog.DefaultPieceId;
+
+		if ( SelectedPieces.TryGetValue( GetReadyKey( ownerId ), out var selectedPieceId ) && PieceCatalog.IsValidPieceId( selectedPieceId ) )
+			return PieceCatalog.GetByIdOrDefault( selectedPieceId ).Id;
+
+		return PieceCatalog.DefaultPieceId;
+	}
+
 	public bool TrySetReady( long ownerId, bool isReady )
 	{
 		if ( !Networking.IsHost )
@@ -39,6 +63,7 @@ public sealed partial class LobbyController
 				OwnerId = ownerId,
 				Name = connection?.DisplayName ?? GetKnownNameForOwner( ownerId ),
 				IsLocal = localSteamId.HasValue && ownerId == localSteamId.Value,
+				SelectedPieceId = GetSelectedPieceForOwner( ownerId ),
 				IsReady = ReadyPlayers.TryGetValue( GetReadyKey( ownerId ), out var ready ) && ready,
 				IsConnected = connection is not null && !isDisconnected,
 				IsHost = ownerId == effectiveHostOwnerId,

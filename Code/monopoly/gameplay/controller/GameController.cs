@@ -36,6 +36,13 @@ public sealed partial class GameController : Component, Component.INetworkListen
 		JailRelease
 	}
 
+	private enum BankPaymentSource
+	{
+		Other,
+		TaxSpace,
+		ChanceOrCommunityChest
+	}
+
 	[Property] public List<PlayerState> Players { get; set; } = new();
 	public MatchConfig Config { get; set; } = new();
 	[Property] public GameObject TokenPrefab { get; set; }
@@ -88,6 +95,7 @@ public sealed partial class GameController : Component, Component.INetworkListen
 	[Property, Sync] public int PendingForcedPaymentAmount { get; set; }
 	[Property, Sync] public int PendingForcedPaymentReceiverIndex { get; set; } = -1;
 	[Property, Sync] public bool PendingForcedPaymentToBank { get; set; }
+	[Property, Sync] public bool PendingForcedPaymentAddsToFreeParking { get; set; }
 	[Property, Sync] public bool PendingForcedPaymentToEachPlayer { get; set; }
 	[Property, Sync] public int PendingForcedPaymentEachPlayerAmount { get; set; }
 	[Property, Sync] public int ActiveMovementPlayerIndex { get; set; } = -1;

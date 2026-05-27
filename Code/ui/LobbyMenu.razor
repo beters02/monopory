@@ -95,6 +95,38 @@
 				</div>
 			</div>
 		}
+		@if ( IsCustomizeMenuOpen )
+		{
+			<div class="piece-customize-root open">
+				<div class="piece-customize-screen">
+					<div class="piece-customize-panel">
+						<div class="piece-customize-header">
+							<div class="piece-customize-header-text">
+								<div class="match-config-kicker">Lobby</div>
+								<div class="piece-customize-title">Customize Piece</div>
+							</div>
+							<GameButton Variant="match-config-close-button" Title="Close" OnClick="@CloseCustomizeMenu">X</GameButton>
+						</div>
+						<div class="piece-customize-copy">Pick your piece. New pieces can be added to <code>PieceCatalog.All</code> and this list will update automatically.</div>
+						<div class="piece-customize-grid">
+							@foreach ( var piece in AvailablePieces )
+							{
+								<div class="@GetPieceCardClasses( piece )">
+									<div class="piece-customize-card-title">@piece.Label</div>
+									<div class="piece-customize-card-copy">@piece.Description</div>
+									<GameButton Variant="@GetPieceSelectButtonClasses( piece )" OnClick="@(() => SelectPiece( piece.Id ))">
+										@(IsSelectedPiece( piece ) ? "Selected" : "Select")
+									</GameButton>
+								</div>
+							}
+						</div>
+						<div class="piece-customize-footer">
+							<GameButton Variant="match-config-secondary-button" OnClick="@CloseCustomizeMenu">Done</GameButton>
+						</div>
+					</div>
+				</div>
+			</div>
+		}
 		<GameButton Variant="flow-settings-button" Title="Options" OnClick="@OpenOptionsMenu">
 			<ChildContent>
 				<div class="flow-settings-icon"></div>
@@ -125,11 +157,16 @@
 
 				<div class="flow-copy">@LobbyStatusText</div>
 				<div class="flow-actions">
-					<GameButton Variant="@ReadyButtonClasses" OnClick="@ToggleReady">@ReadyButtonLabel</GameButton>
-					<GameButton Variant="@StartButtonClasses" CanClick="@CanClickStartGame" OnClick="@StartGame" BlockedPopupTitle="Cannot start game" BlockedPopupMessage="@StartBlockedMessage">Start Game</GameButton>
-					<GameButton Variant="@ConfigButtonClasses" CanClick="@CanOpenConfig" OnClick="@OpenConfigMenu" BlockedPopupTitle="Host only" BlockedPopupMessage="Only the host can change lobby game settings.">Game Config</GameButton>
-					<GameButton Variant="flow-secondary-button flow-utility-button" OnClick="@InviteFriends">Invite</GameButton>
-					<GameButton Variant="flow-secondary-button flow-back-button" OnClick="@BackToMenu">Back</GameButton>
+					<div class="lobby-action-row lobby-action-row-top">
+						<GameButton Variant="@ReadyButtonClasses" OnClick="@ToggleReady">@ReadyButtonLabel</GameButton>
+						<GameButton Variant="@StartButtonClasses" CanClick="@CanClickStartGame" OnClick="@StartGame" BlockedPopupTitle="Cannot start game" BlockedPopupMessage="@StartBlockedMessage">Start Game</GameButton>
+						<GameButton Variant="@ConfigButtonClasses" CanClick="@CanOpenConfig" OnClick="@OpenConfigMenu" BlockedPopupTitle="Host only" BlockedPopupMessage="Only the host can change lobby game settings.">Game Config</GameButton>
+						<GameButton Variant="flow-secondary-button flow-utility-button" OnClick="@CustomizePiece">Customize</GameButton>
+					</div>
+					<div class="lobby-action-row lobby-action-row-bottom">
+						<GameButton Variant="flow-secondary-button flow-back-button" OnClick="@BackToMenu">Back</GameButton>
+						<GameButton Variant="flow-secondary-button flow-utility-button" OnClick="@InviteFriends">Invite</GameButton>
+					</div>
 				</div>
 			}
 		</div>
@@ -147,8 +184,10 @@
 	private bool CanClickStartGame => Lobby?.CanLocalPlayerStartGame == true;
 	private bool IsOptionsMenuOpen;
 	private bool IsConfigMenuOpen;
+	private bool IsCustomizeMenuOpen;
 	private bool CanOpenConfig => Lobby is not null;
 	private bool CanEditConfig => Lobby?.IsLocalEffectiveHost == true;
+	private IReadOnlyList<PieceDefinition> AvailablePieces => PieceCatalog.All;
 	private MatchConfig EditableConfig;
 	private string LoadedConfigSnapshot = "";
 	private int configRevision;
@@ -218,6 +257,7 @@
 		hash.Add( Lobby?.IsLocalEffectiveHost ?? false );
 		hash.Add( IsOptionsMenuOpen );
 		hash.Add( IsConfigMenuOpen );
+		hash.Add( IsCustomizeMenuOpen );
 		hash.Add( Lobby?.HostedConfigSnapshot ?? "" );
 		hash.Add( configRevision );
 		hash.Add( AppSettings.SettingsAvailable );
@@ -236,6 +276,7 @@
 			hash.Add( player.IsConnected );
 			hash.Add( player.IsHost );
 			hash.Add( player.AbandonEndsAt );
+			hash.Add( player.SelectedPieceId ?? "" );
 		}
 
 		if ( EditableConfig is not null )
@@ -288,10 +329,53 @@
 		Lobby?.TryOpenInviteOverlay();
 	}
 
+	private void CustomizePiece()
+	{
+		IsCustomizeMenuOpen = true;
+		IsConfigMenuOpen = false;
+		IsOptionsMenuOpen = false;
+	}
+
+	private void CloseCustomizeMenu()
+	{
+		IsCustomizeMenuOpen = false;
+	}
+
+	private bool IsSelectedPiece( PieceDefinition piece )
+	{
+		if ( piece is null )
+			return false;
+
+		var selectedPieceId = LocalPlayer?.SelectedPieceId ?? PieceCatalog.DefaultPieceId;
+		return string.Equals( selectedPieceId, piece.Id, StringComparison.OrdinalIgnoreCase );
+	}
+
+	private string GetPieceCardClasses( PieceDefinition piece )
+	{
+		return IsSelectedPiece( piece ) ? "piece-customize-card selected" : "piece-customize-card";
+	}
+
+	private string GetPieceSelectButtonClasses( PieceDefinition piece )
+	{
+		return IsSelectedPiece( piece ) ? "match-config-save-button" : "match-config-secondary-button";
+	}
+
+	private void SelectPiece( string pieceId )
+	{
+		if ( Lobby is null || LocalPlayer is null )
+			return;
+
+		if ( Networking.IsHost )
+			Lobby.TrySetSelectedPiece( LocalPlayer.OwnerId, pieceId );
+		else
+			Lobby.RequestSetSelectedPiece( pieceId );
+	}
+
 	private void OpenOptionsMenu()
 	{
 		IsOptionsMenuOpen = true;
 		IsConfigMenuOpen = false;
+		IsCustomizeMenuOpen = false;
 	}
 
 	private void CloseOptionsMenu()
@@ -306,6 +390,7 @@
 
 		IsConfigMenuOpen = true;
 		IsOptionsMenuOpen = false;
+		IsCustomizeMenuOpen = false;
 		EnsureEditableConfigCurrent();
 	}
 

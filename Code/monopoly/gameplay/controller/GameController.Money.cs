@@ -60,12 +60,14 @@ public sealed partial class GameController : Component
 		return true;
 	}
 
-	private bool PayBank( PlayerState player, int amount, bool showForcedPaymentPopup = true )
+	private bool PayBank( PlayerState player, int amount, bool showForcedPaymentPopup = true, BankPaymentSource source = BankPaymentSource.Other )
 	{
 		if ( player is null || amount <= 0 )
 			return true;
 
-		if ( !TryMakeForcedPayment( player, amount, -1, true, showForcedPaymentPopup ) )
+		var addToFreeParking = source is BankPaymentSource.TaxSpace or BankPaymentSource.ChanceOrCommunityChest;
+
+		if ( !TryMakeForcedPayment( player, amount, -1, true, showForcedPaymentPopup, addToFreeParking ) )
 			return false;
 
 		return true;

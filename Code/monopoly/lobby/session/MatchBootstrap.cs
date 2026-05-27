@@ -62,7 +62,8 @@ public sealed class MatchBootstrap
 				OwnerId = player.OwnerId,
 				Name = player.Name,
 				IsReady = player.IsReady,
-				IsLocal = player.IsLocal
+				IsLocal = player.IsLocal,
+				SelectedPieceId = PieceCatalog.GetByIdOrDefault( player.SelectedPieceId ).Id
 			} )
 			.ToList();
 	}

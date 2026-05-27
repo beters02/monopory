@@ -8,4 +8,5 @@ public sealed class LobbyPlayer
 	public bool IsHost { get; set; }
 	public bool IsAbandoned { get; set; }
 	public float AbandonEndsAt { get; set; }
+	public string SelectedPieceId { get; set; } = PieceCatalog.DefaultPieceId;
 }

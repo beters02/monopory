@@ -72,7 +72,7 @@ public sealed partial class GameController : Component
 				break;
 
 			case CardAction.PayBank:
-				if ( PayBank( player, card.Amount ) )
+				if ( PayBank( player, card.Amount, true, BankPaymentSource.ChanceOrCommunityChest ) )
 					Log.Info( $"{player.PlayerName} paid ${card.Amount} from {card.Title}." );
 				break;
 
@@ -198,7 +198,7 @@ public sealed partial class GameController : Component
 			return;
 		}
 
-		if ( PayBank( player, amount ) )
+		if ( PayBank( player, amount, true, BankPaymentSource.ChanceOrCommunityChest ) )
 			Log.Info( $"{player.PlayerName} paid ${amount} for repairs." );
 	}
 

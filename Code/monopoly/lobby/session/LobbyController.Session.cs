@@ -33,6 +33,15 @@ public sealed partial class LobbyController
 	}
 
 	[Rpc.Host]
+	public void RequestSetSelectedPiece( string pieceId )
+	{
+		if ( Rpc.Caller is null )
+			return;
+
+		TrySetSelectedPiece( Rpc.Caller.SteamId, pieceId );
+	}
+
+	[Rpc.Host]
 	public void RequestStartGame()
 	{
 		if ( OnlyHostStartsGame && !IsEffectiveHostCaller( Rpc.Caller ) )

@@ -167,6 +167,12 @@ LobbyMenu {
 		min-width: 100%;
 	}
 
+	.lobby-panel .flow-actions .lobby-action-row-bottom .flow-back-button,
+	.lobby-panel .flow-actions .lobby-action-row-bottom .flow-utility-button {
+		flex: 1 1 0;
+		min-width: 0;
+	}
+
 	.flow-primary-button {
 		background-color: $monopoly-gold;
 		color: $monopoly-ink;
