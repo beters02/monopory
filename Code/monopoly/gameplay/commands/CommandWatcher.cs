@@ -40,6 +40,12 @@ public sealed class CommandWatcher : Component
 		LogCommandResult( "change_money", GameCommandManager.ChangeMoney( connection, amount, JoinPlayerName( playerName, playerNameTail ) ) );
 	}
 
+	[ConCmd( "change_vacation_cash" )]
+	private static void ChangeVacationCash( Connection connection, int amount )
+	{
+		LogCommandResult( "change_vacation_cash", GameCommandManager.ChangeVacationCash( connection, amount ) );
+	}
+
 	[ConVar( "debug" )]
 	public static bool Debug { get; set; } = false;
 

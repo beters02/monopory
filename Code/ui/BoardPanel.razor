@@ -85,6 +85,10 @@
 							}
 						}
 					</div>
+					@if ( ShouldShowFreeParkingBank( space ) )
+					{
+						<div class="corner-free-parking-bank">$@GetFreeParkingBank()</div>
+					}
 				</div>
 			</div>
 		}
@@ -150,6 +154,7 @@
 	private bool ShouldShowBoard => Board.Instance is null || Board.Instance.UseProceduralBoardPanel;
 	private readonly List<GameObject> materialColorLabels = new();
 	private int materialColorLabelsHash;
+	private GameController ActiveGame => GameController.Instance;
 
 	protected override void OnUpdate()
 	{
@@ -471,6 +476,17 @@
 		};
 	}
 
+	private bool ShouldShowFreeParkingBank( SpaceDef space )
+	{
+		return space.Type == SpaceType.FreeParking &&
+			ActiveGame?.Config?.VacationCash == true;
+	}
+
+	private int GetFreeParkingBank()
+	{
+		return ActiveGame?.FreeParkingBank ?? 0;
+	}
+
 	private static IEnumerable<string> GetSpaceNameLines( SpaceDef space )
 	{
 		return space.DisplayName
@@ -514,8 +530,18 @@
 			CornerSizePercent,
 			TrackDepthPercent,
 			GetWeightsHash(),
-			GetStyleHash()
+			GetStyleHash(),
+			GetGameplayHash()
 		);
+	}
+
+	private int GetGameplayHash()
+	{
+		var game = ActiveGame;
+		var hash = new HashCode();
+		hash.Add( game?.Config?.VacationCash ?? false );
+		hash.Add( game?.FreeParkingBank ?? 0 );
+		return hash.ToHashCode();
 	}
 
 	private int GetWeightsHash()

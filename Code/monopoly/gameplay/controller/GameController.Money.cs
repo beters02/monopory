@@ -44,6 +44,22 @@ public sealed partial class GameController : Component
 		return true;
 	}
 
+	public bool TryChangeVacationCash( int amount, out string message )
+	{
+		message = "";
+
+		if ( !Networking.IsHost )
+		{
+			message = "Only the host can change vacation cash directly.";
+			return false;
+		}
+
+		FreeParkingBank = amount;
+		Log.Info( $"Cheat changed vacation cash to ${FreeParkingBank}." );
+		message = $"Vacation cash is now ${FreeParkingBank}.";
+		return true;
+	}
+
 	private bool PayBank( PlayerState player, int amount, bool showForcedPaymentPopup = true )
 	{
 		if ( player is null || amount <= 0 )

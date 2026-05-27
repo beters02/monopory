@@ -119,6 +119,20 @@ public sealed class GameCommandManager : Component
 			: CommandResult.Fail( message );
 	}
 
+	public static CommandResult ChangeVacationCash( Connection caller, int amount )
+	{
+		if ( !CanUseCheatCommand( caller ) )
+			return CommandResult.Fail( "sv_cheats must be enabled to change vacation cash." );
+
+		var game = GameController.Instance;
+		if ( game is null )
+			return CommandResult.Fail( "No active game." );
+
+		return game.TryChangeVacationCash( amount, out var message )
+			? CommandResult.Success( message )
+			: CommandResult.Fail( message );
+	}
+
 	private static bool CanUseCheatCommand( Connection caller )
 	{
 		if ( Networking.IsHost && (caller is null || caller == Connection.Local) )

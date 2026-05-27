@@ -24,6 +24,7 @@ public sealed class PlayerToken : Component
 	[Property] public float CollisionRestitution { get; set; } = 0.75f;
 	[Property] public float CollisionImpulseScale { get; set; } = 0.85f;
 	[Property] public bool ReturnToSpaceAfterPhysics { get; set; } = true;
+	[Property] public float SharedSpaceOffsetDistance { get; set; } = 10f;
 
 	private SkinnedModelRenderer renderer;
 	private ModelRenderer markerRenderer;
@@ -340,7 +341,53 @@ public sealed class PlayerToken : Component
 
 	private Vector3 GetSpaceTargetPosition()
 	{
-		return Board.GetSpacePosition( PlayerState.SpaceIndex ) + Vector3.Up * HeightOffset;
+		return Board.GetSpacePosition( PlayerState.SpaceIndex ) + GetSharedSpaceOffset() + Vector3.Up * HeightOffset;
+	}
+
+	private Vector3 GetSharedSpaceOffset()
+	{
+		if ( Scene is null || PlayerState is null || SharedSpaceOffsetDistance <= 0f )
+			return Vector3.Zero;
+
+		var sameSpaceTokens = Scene.GetAllComponents<PlayerToken>()
+			.Where( token =>
+				token is not null &&
+				token.PlayerState is not null &&
+				token.PlayerState.SpaceIndex == PlayerState.SpaceIndex )
+			.OrderBy( token => GetStablePlayerOrder( token.PlayerState ) )
+			.ToList();
+
+		var myIndex = sameSpaceTokens.IndexOf( this );
+		if ( myIndex < 0 || sameSpaceTokens.Count <= 1 )
+			return Vector3.Zero;
+
+		var rowSize = Math.Max( 1, (int)MathF.Ceiling( MathF.Sqrt( sameSpaceTokens.Count ) ) );
+		var col = myIndex % rowSize;
+		var row = myIndex / rowSize;
+		var center = (rowSize - 1) * 0.5f;
+		var offsetX = (col - center) * SharedSpaceOffsetDistance;
+		var offsetY = (row - center) * SharedSpaceOffsetDistance;
+
+		return new Vector3( offsetX, offsetY, 0f );
+	}
+
+	private static int GetStablePlayerOrder( PlayerState state )
+	{
+		if ( state is null )
+			return int.MaxValue;
+
+		var controller = GameController.Instance;
+		if ( controller is null )
+			return unchecked( (int)(state.OwnerId & 0x7FFFFFFF) );
+
+		var index = controller.GetPlayerIndex( state );
+		if ( index >= 0 )
+			return index;
+
+		if ( state.OwnerId != 0 )
+			return unchecked( (int)(state.OwnerId & 0x7FFFFFFF) );
+
+		return state.PlayerName?.GetHashCode() ?? int.MaxValue - 1;
 	}
 
 	private static Rotation GetRotation( int index )

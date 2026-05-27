@@ -158,8 +158,13 @@
 }
 
 .corner .space-content {
+	position: relative;
 	transform: none;
 	justify-content: center;
+}
+
+.board-space.corner.type-freeparking .space-content {
+	transform: none;
 }
 
 .space-title {
@@ -355,6 +360,25 @@
 	text-transform: uppercase;
 	font-weight: 900;
 	line-height: 13px;
+}
+
+.corner-free-parking-bank {
+	transform: rotate(180deg);
+	position: absolute;
+	top: 0px;
+	right: 10px;
+	font-size: 21px;
+	font-weight: 900;
+	line-height: 20px;
+	text-align: center;
+	white-space: nowrap;
+	overflow: visible;
+	color: #0f4d1a;
+	z-index: 4;
+}
+
+.corner-free-parking-bank .label {
+	align-self:auto;
 }
 
 .go-arrow {
