@@ -64,6 +64,7 @@ public static class GameAssets
 					PopupKind.Success => Success,
 					PopupKind.Warning => Warning,
 					PopupKind.Danger => Danger,
+					PopupKind.Confirmation => Warning,
 					_ => Info
 				};
 			}

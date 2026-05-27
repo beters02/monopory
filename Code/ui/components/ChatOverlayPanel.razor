@@ -1,0 +1,201 @@
+@namespace Sandbox.ui.components
+@using Sandbox
+@using Sandbox.UI
+@using System
+@inherits PanelComponent
+
+<root class="@GetRootClasses()">
+	<div class="chat-overlay-panel">
+		<div class="chat-overlay-messages" @ref="MessagesPanel">
+			@foreach ( var entry in ChatEntries )
+			{
+				<div class="chat-overlay-line">
+					<span class="chat-overlay-sender">@entry.Sender:</span>
+					<span class="chat-overlay-message">@entry.Message</span>
+				</div>
+			}
+		</div>
+
+		<div class="chat-overlay-input-row">
+			@if ( IsComposing )
+			{
+				<ConsoleCommandTextEntry @ref="ChatInput"
+					class="chat-overlay-input"
+					Placeholder="Type message and press Enter..."
+					OnConsoleCloseRequested="@CancelCompose"
+					onsubmit="@SubmitMessage" />
+			}
+			else
+			{
+				<div class="chat-overlay-input-placeholder">Press Enter to chat...</div>
+			}
+		</div>
+	</div>
+</root>
+
+@code
+{
+	[Property] public GameController GameRef { get; set; }
+	[Property] public float HideAfterSeconds { get; set; } = 8f;
+	private readonly record struct ChatEntry( int Id, string Sender, string Message );
+	private readonly List<ChatEntry> ChatEntries = new();
+	private ConsoleCommandTextEntry ChatInput = null!;
+	private Panel MessagesPanel = null!;
+	private bool IsComposing;
+	private bool WantsFocus;
+	private int ScrollToBottomFramesRemaining;
+	private float LastInteractionAt;
+	private int LastSeenChatId;
+
+	protected override void OnUpdate()
+	{
+		base.OnUpdate();
+
+		if ( LastInteractionAt <= 0f )
+			Touch();
+
+		SyncEntries();
+		if ( ScrollToBottomFramesRemaining > 0 && MessagesPanel is not null )
+		{
+			MessagesPanel.TryScrollToBottom();
+			ScrollToBottomFramesRemaining--;
+		}
+
+		if ( StandaloneConsole.IsConsoleOpen || NetworkSession.IsEditorSoftLeftLobby )
+		{
+			if ( IsComposing )
+				CancelCompose();
+			return;
+		}
+
+		if ( IsComposing )
+		{
+			Mouse.Visibility = MouseVisibility.Visible;
+
+			if ( Input.EscapePressed )
+			{
+				CancelCompose();
+				Input.EscapePressed = false;
+				return;
+			}
+
+			if ( WantsFocus && ChatInput is not null )
+			{
+				ChatInput.Focus();
+				if ( ChatInput.HasFocus )
+					WantsFocus = false;
+			}
+
+			return;
+		}
+
+		if ( Input.Keyboard.Pressed( "Enter" ) || Input.Keyboard.Pressed( "KP_ENTER" ) )
+			BeginCompose();
+	}
+
+	private void SyncEntries()
+	{
+		ChatEntries.Clear();
+
+		var game = GameRef ?? GameController.Instance;
+		if ( game?.ChatMessages is null )
+			return;
+
+		foreach ( var pair in game.ChatMessages.OrderBy( kv => kv.Key ) )
+		{
+			var payload = pair.Value ?? "";
+			var separator = payload.IndexOf( '\t' );
+			var sender = "Player";
+			var message = payload;
+
+			if ( separator >= 0 )
+			{
+				sender = payload[..separator];
+				message = separator + 1 < payload.Length ? payload[(separator + 1)..] : "";
+			}
+
+			ChatEntries.Add( new ChatEntry( pair.Key, sender, message ) );
+		}
+
+		var newestId = ChatEntries.Count > 0 ? ChatEntries[^1].Id : 0;
+		if ( newestId > LastSeenChatId )
+		{
+			LastSeenChatId = newestId;
+			Touch();
+			RequestScrollToBottom();
+		}
+	}
+
+	private void BeginCompose()
+	{
+		IsComposing = true;
+		WantsFocus = true;
+		Touch();
+		StateHasChanged();
+	}
+
+	private void CancelCompose()
+	{
+		IsComposing = false;
+		WantsFocus = false;
+		ChatInput?.Blur();
+		Touch();
+		StateHasChanged();
+	}
+
+	private void SubmitMessage()
+	{
+		if ( ChatInput is null )
+			return;
+
+		var message = (ChatInput.Text ?? "").Trim();
+		ChatInput.Text = "";
+
+		if ( !string.IsNullOrWhiteSpace( message ) )
+		{
+			var game = GameRef ?? GameController.Instance;
+			game?.RequestSendChatMessage( message );
+			RequestScrollToBottom();
+		}
+
+		CancelCompose();
+	}
+
+	private void Touch()
+	{
+		LastInteractionAt = Time.Now;
+	}
+
+	private void RequestScrollToBottom()
+	{
+		// Give layout a couple of frames to settle so we hit the true final bottom.
+		ScrollToBottomFramesRemaining = 3;
+	}
+
+	private bool IsVisible()
+	{
+		return IsComposing || (Time.Now - LastInteractionAt) <= HideAfterSeconds;
+	}
+
+	private string GetRootClasses()
+	{
+		return IsVisible() ? "chat-overlay-root visible" : "chat-overlay-root hidden";
+	}
+
+	protected override int BuildHash()
+	{
+		var hash = new HashCode();
+		hash.Add( IsComposing );
+		hash.Add( IsVisible() );
+		hash.Add( ChatEntries.Count );
+
+		foreach ( var entry in ChatEntries )
+		{
+			hash.Add( entry.Id );
+			hash.Add( entry.Sender );
+			hash.Add( entry.Message );
+		}
+
+		return hash.ToHashCode();
+	}
+}

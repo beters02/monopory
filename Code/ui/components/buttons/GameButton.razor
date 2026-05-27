@@ -18,6 +18,7 @@
 	[Parameter] public string BlockedPopupMessage { get; set; } = "This action is not available right now.";
 	[Parameter] public PopupKind BlockedPopupKind { get; set; } = PopupKind.Warning;
 	[Parameter] public float BlockedPopupLifetime { get; set; } = 3f;
+	[Parameter] public bool IgnoreGlobalPopupBlock { get; set; }
 	[Parameter] public GameSound Sound { get; set; } = GameAssets.Sounds.Click;
 	[Parameter] public GameSound BlockedSound { get; set; } = GameAssets.Sounds.Error;
 	[Parameter] public Action<float> OnHoldComplete { get; set; }
@@ -44,6 +45,9 @@
 			return;
 
 		if ( Disabled )
+			return;
+
+		if ( LocalPopups.HasBlockingPopup && !IgnoreGlobalPopupBlock )
 			return;
 
 		ButtonPopEffects.Show( Mouse.Position );
@@ -81,6 +85,9 @@
 		var strength = HoldMaxSeconds <= 0f ? 1f : Math.Clamp( heldSeconds / HoldMaxSeconds, 0f, 1f );
 
 		ButtonPopEffects.Show( Mouse.Position );
+
+		if ( LocalPopups.HasBlockingPopup && !IgnoreGlobalPopupBlock )
+			return;
 
 		if ( !CanClick )
 		{

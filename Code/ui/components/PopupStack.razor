@@ -6,10 +6,10 @@
 @inherits Panel
 
 <root class="monopoly-popup-stack-root">
-	@if ( RenderedPopups.Count > 0 )
+	@if ( StandardPopups.Count > 0 )
 	{
 		<div class="popup-stack">
-			@foreach ( var renderedPopup in RenderedPopups )
+			@foreach ( var renderedPopup in StandardPopups )
 			{
 				var popup = renderedPopup.Popup;
 				<div class="@GetPopupClasses( renderedPopup )">
@@ -31,12 +31,38 @@
 			}
 		</div>
 	}
+
+	@if ( ConfirmationPopups.Count > 0 )
+	{
+		<div class="popup-confirmation-overlay">
+			<div class="popup-confirmation-stack">
+				@foreach ( var renderedPopup in ConfirmationPopups )
+				{
+					var popup = renderedPopup.Popup;
+					<div class="@GetPopupClasses( renderedPopup )">
+						<div class="popup-content">
+							@if ( !string.IsNullOrWhiteSpace( popup.Title ) )
+							{
+								<div class="popup-title">@popup.Title</div>
+							}
+							<div class="popup-message">@popup.Message</div>
+						</div>
+						<div class="popup-confirmation-actions">
+							<GameButton Variant="popup-confirm-cancel" OnClick="@(() => Confirm( popup.Id, false ))" SoundEnabled="@false" IgnoreGlobalPopupBlock="@true">@popup.CancelLabel</GameButton>
+							<GameButton Variant="popup-confirm-accept" OnClick="@(() => Confirm( popup.Id, true ))" SoundEnabled="@false" IgnoreGlobalPopupBlock="@true">@popup.ConfirmLabel</GameButton>
+						</div>
+					</div>
+				}
+			</div>
+		</div>
+	}
 </root>
 
 @code
 {
 	[Parameter] public List<GamePopup> Popups { get; set; } = new();
 	[Parameter] public Action<int> OnDismiss { get; set; }
+	[Parameter] public Action<int, bool> OnConfirmDecision { get; set; }
 
 	private const float OutroDuration = 0.13f;
 	private readonly List<RenderedPopup> renderedPopups = new();
@@ -50,6 +76,12 @@
 		}
 	}
 
+	private List<RenderedPopup> StandardPopups =>
+		RenderedPopups.Where( popup => popup.Popup.Kind != PopupKind.Confirmation ).ToList();
+
+	private List<RenderedPopup> ConfirmationPopups =>
+		RenderedPopups.Where( popup => popup.Popup.Kind == PopupKind.Confirmation ).ToList();
+
 	private static string GetPopupClasses( RenderedPopup renderedPopup )
 	{
 		var popup = renderedPopup.Popup;
@@ -61,6 +93,14 @@
 	{
 		BeginClosing( popupId );
 		OnDismiss?.Invoke( popupId );
+		Popups.RemoveAll( popup => popup.Id == popupId );
+		StateHasChanged();
+	}
+
+	private void Confirm( int popupId, bool confirmed )
+	{
+		BeginClosing( popupId );
+		OnConfirmDecision?.Invoke( popupId, confirmed );
 		Popups.RemoveAll( popup => popup.Id == popupId );
 		StateHasChanged();
 	}
@@ -128,7 +168,10 @@
 			Message = popup.Message,
 			Kind = popup.Kind,
 			CanDismiss = popup.CanDismiss,
-			Lifetime = popup.Lifetime
+			Lifetime = popup.Lifetime,
+			IsBlocking = popup.IsBlocking,
+			ConfirmLabel = popup.ConfirmLabel,
+			CancelLabel = popup.CancelLabel
 		};
 	}
 

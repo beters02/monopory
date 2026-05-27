@@ -6642,6 +6642,7 @@
                 "go": "469cf384-89f4-4353-99dd-4b89667eff1f",
                 "component_type": "Board"
               },
+              "ChatMessages": {},
               "CurrentPlayerIndex": 0,
               "CurrentTurnConsecutiveDoubles": 0,
               "CurrentTurnDoublesPlayerIndex": -1,
@@ -6667,6 +6668,7 @@
               "LastDieB": 0,
               "MatchState": "Lobby",
               "MortgagedProperties": {},
+              "NextChatMessageId": 1,
               "NextTradeId": 1,
               "OnComponentDestroy": null,
               "OnComponentDisabled": null,
@@ -7245,6 +7247,44 @@
               "__guid": "13abb119-8898-41f2-be9e-fd83ae058376",
               "__enabled": true,
               "Flags": 0,
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null
+            }
+          ],
+          "Children": []
+        },
+        {
+          "__guid": "8dce9937-7907-4836-9021-1bd921c52539",
+          "__version": 2,
+          "Flags": 0,
+          "Name": "ChatOverlay",
+          "Position": "0,0,0",
+          "Rotation": "0,0,0,1",
+          "Scale": "1,1,1",
+          "Tags": "",
+          "Enabled": true,
+          "NetworkMode": 2,
+          "NetworkFlags": 0,
+          "NetworkOrphaned": 0,
+          "NetworkTransmit": true,
+          "OwnerTransfer": 1,
+          "Components": [
+            {
+              "__type": "Sandbox.ui.components.ChatOverlayPanel",
+              "__guid": "0589acc2-64bd-4cb4-b228-82c921be04c5",
+              "__enabled": true,
+              "Flags": 0,
+              "GameRef": {
+                "_type": "component",
+                "component_id": "60763db4-1a8a-48a6-b49e-9a59bae142f3",
+                "go": "3926108a-01b6-40be-beb6-9bf93b305607",
+                "component_type": "GameController"
+              },
+              "HideAfterSeconds": 8,
               "OnComponentDestroy": null,
               "OnComponentDisabled": null,
               "OnComponentEnabled": null,
@@ -7883,14 +7923,14 @@
       "CustomBounds": false
     },
     "GameObjectSystems": {
-      "Sandbox.SelectionSetsSystem": {
-        "Data": {
-          "SelectionSets": []
-        }
-      },
       "Sandbox.Clutter.ClutterGridSystem": {
         "Storage": {
           "$blob": "7664decd-7b1f-4214-a5a2-850285e10057"
+        }
+      },
+      "Sandbox.SelectionSetsSystem": {
+        "Data": {
+          "SelectionSets": []
         }
       }
     }

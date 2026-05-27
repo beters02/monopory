@@ -430,19 +430,35 @@
 
 	private void Mortgage()
 	{
-		if ( SelectedSpaceIndex < 0 )
+		if ( SelectedSpaceIndex < 0 || LocalPopups.HasBlockingPopup )
 			return;
 
 		if ( IsSelectedSpaceMortgaged )
 		{
-			if ( CanUnmortgageSelectedSpace )
-				GameRef?.RequestUnmortgageProperty( SelectedSpaceIndex );
+			if ( !CanUnmortgageSelectedSpace )
+				return;
+
+			var spaceName = SelectedSpace?.DisplayName ?? "this property";
+			LocalPopups.ShowConfirmation(
+				"Confirm unmortgage",
+				$"Are you sure you want to unmortgage {spaceName} for ${SelectedUnmortgageCost}?",
+				() => GameRef?.RequestUnmortgageProperty( SelectedSpaceIndex ),
+				confirmLabel: "Unmortgage"
+			);
 
 			return;
 		}
 
-		if ( CanMortgageSelectedSpace )
-			GameRef?.RequestMortgageProperty( SelectedSpaceIndex );
+		if ( !CanMortgageSelectedSpace )
+			return;
+
+		var mortgageSpaceName = SelectedSpace?.DisplayName ?? "this property";
+		LocalPopups.ShowConfirmation(
+			"Confirm mortgage",
+			$"Are you sure you want to mortgage {mortgageSpaceName} for ${SelectedMortgageValue}?",
+			() => GameRef?.RequestMortgageProperty( SelectedSpaceIndex ),
+			confirmLabel: "Mortgage"
+		);
 	}
 
 	private async Task DelayedStateHasChanged(float time)

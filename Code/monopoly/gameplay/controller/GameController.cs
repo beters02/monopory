@@ -64,6 +64,7 @@ public sealed partial class GameController : Component, Component.INetworkListen
 	[Property, Sync] public NetDictionary<int, string> PendingTrades { get; set; } = new();
 	[Property, Sync] public NetDictionary<int, string> TradeViewers { get; set; } = new();
 	[Property, Sync] public NetDictionary<int, string> TokenPhysicsStates { get; set; } = new();
+	[Property, Sync] public NetDictionary<int, string> ChatMessages { get; set; } = new();
 	[Property] public Board Board { get; set; }
 
 	public PlayerState CurrentPlayer =>
@@ -76,6 +77,7 @@ public sealed partial class GameController : Component, Component.INetworkListen
 	[Property, Sync] public int AuctionHighBidderIndex { get; set; } = -1;
 	[Property, Sync] public float AuctionEndsAt { get; set; }
 	[Property, Sync] public int NextTradeId { get; set; } = 1;
+	[Property, Sync] public int NextChatMessageId { get; set; } = 1;
 	[Property, Sync] public int FreeParkingBank { get; set; }
 	[Property, Sync] public bool CurrentTurnGetsExtraRoll { get; set; }
 	[Property, Sync] public int CurrentTurnConsecutiveDoubles { get; set; }

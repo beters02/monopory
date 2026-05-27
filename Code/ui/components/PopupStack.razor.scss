@@ -28,6 +28,33 @@
 	pointer-events: all;
 }
 
+.popup-confirmation-overlay {
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	z-index: 90;
+	background: rgba( 8, 12, 22, 0.45 );
+	backdrop-filter: blur( 6px );
+
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 20px;
+
+	pointer-events: all;
+}
+
+.popup-confirmation-stack {
+	width: 520px;
+	max-width: 92%;
+
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
 .game-popup {
 	transition: all 0.13s ease-out;
 	transform: scale( 1 );
@@ -62,6 +89,12 @@
 	gap: 12px;
 
 	pointer-events: all;
+}
+
+.game-popup.confirmation {
+	min-height: 120px;
+	padding: 16px 18px;
+	border-left-color: $monopoly-gold;
 }
 
 .game-popup.info {
@@ -114,4 +147,38 @@
 .popup-dismiss .monopoly-close-button {
 	cursor: pointer;
 	pointer-events: all;
+}
+
+.popup-confirmation-actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: 8px;
+	margin-top: 8px;
+}
+
+.popup-confirmation-actions .monopoly-button {
+	height: 40px;
+	min-width: 120px;
+	padding: 8px 14px;
+	border-radius: $monopoly-radius-board;
+	font-size: 14px;
+	font-weight: 800;
+}
+
+.popup-confirmation-actions .monopoly-button.popup-confirm-cancel {
+	background-color: $monopoly-blocked-action;
+	color: $monopoly-text;
+}
+
+.popup-confirmation-actions .monopoly-button.popup-confirm-cancel:hover {
+	background-color: $monopoly-blocked-action-hover;
+}
+
+.popup-confirmation-actions .monopoly-button.popup-confirm-accept {
+	background-color: $monopoly-gold;
+	color: $monopoly-ink;
+}
+
+.popup-confirmation-actions .monopoly-button.popup-confirm-accept:hover {
+	background-color: $monopoly-gold-hover;
 }

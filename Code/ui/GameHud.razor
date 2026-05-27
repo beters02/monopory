@@ -25,7 +25,7 @@
 		}
 		else
 		{
-		<PopupStack Popups="@Popups" OnDismiss="@DismissPopup"></PopupStack>
+		<PopupStack Popups="@Popups" OnDismiss="@DismissPopup" OnConfirmDecision="@HandleConfirmationDecision"></PopupStack>
 
 		<SessionOverlay
 			GameRef="@GameRef"
@@ -244,6 +244,11 @@
 	{
 		LocalPopups.Dismiss( popupId );
 		GameRef?.DismissPopup( popupId );
+	}
+
+	private void HandleConfirmationDecision( int popupId, bool confirmed )
+	{
+		LocalPopups.ResolveConfirmation( popupId, confirmed );
 	}
 
 	private int GetPopupsHash()
