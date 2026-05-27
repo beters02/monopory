@@ -55,6 +55,21 @@ public sealed partial class GameController
 		}
 	}
 
+	public void SendSystemChatMessage( string message )
+	{
+		if ( !Networking.IsHost )
+			return;
+
+		var text = (message ?? "").Trim();
+		if ( string.IsNullOrWhiteSpace( text ) )
+			return;
+
+		if ( text.Length > MaxChatMessageLength )
+			text = text[..MaxChatMessageLength];
+
+		AppendChatMessage( "System", text );
+	}
+
 	private static string SanitizeChatField( string value )
 	{
 		if ( string.IsNullOrEmpty( value ) )

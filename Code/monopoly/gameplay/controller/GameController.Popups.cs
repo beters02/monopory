@@ -28,6 +28,14 @@ public sealed partial class GameController : Component
 		if ( !Networking.IsHost )
 			return;
 
+		SendSystemChatMessage( FormatNotificationForChat( title, message ) );
+	}
+
+	public void SendGlobalPopupToAll( string title, string message, PopupKind kind = PopupKind.Info, bool canDismiss = true, float lifetime = 5f, bool soundEnabled = true )
+	{
+		if ( !Networking.IsHost )
+			return;
+
 		ShowPopup( nextPopupId++, title, message, kind, canDismiss, lifetime, soundEnabled );
 	}
 
@@ -105,11 +113,9 @@ public sealed partial class GameController : Component
 	// Custom Game Popups
 	public void ShowPropertyBoughtPopup( PlayerState player, SpaceDef def )
 	{
-		SendPopupToAll(
-			"Property purchased",
-			$"{player.PlayerName} has purchased {def.DisplayName} for {def.Price}!",
-			PopupKind.Success
-		);
+		var title = "Property purchased";
+		var message = $"{player.PlayerName} has purchased {def.DisplayName} for {def.Price}!";
+		SendGlobalPopupToAll( title, message, PopupKind.Success );
 	}
 
 	private void ShowMoneyReceivedPopup( PlayerState player, int amount, string source )
@@ -147,11 +153,9 @@ public sealed partial class GameController : Component
 		var title = "Forced payment";
 		var message = $"{payer.PlayerName} paid ${amount} to {receiver.PlayerName}.";
 
-		foreach ( var player in Players.Where( player => player is not null && player.IsAssigned && !player.IsBankrupt ) )
-		{
-			var kind = player == payer ? PopupKind.Danger : PopupKind.Success;
-			SendPopupToPlayer( player, title, message, kind, true, 4f );
-		}
+		SendPopupToPlayer( payer, title, message, PopupKind.Danger, true, 4f );
+		SendPopupToPlayer( receiver, title, message, PopupKind.Success, true, 4f );
+		SendSystemChatMessage( FormatNotificationForChat( title, message ) );
 	}
 
 	private void ShowForcedPaymentToBankPopup( PlayerState payer, int amount )
@@ -162,11 +166,8 @@ public sealed partial class GameController : Component
 		var title = "Forced payment";
 		var message = $"{payer.PlayerName} paid ${amount} to the bank.";
 
-		foreach ( var player in Players.Where( player => player is not null && player.IsAssigned && !player.IsBankrupt ) )
-		{
-			var kind = player == payer ? PopupKind.Danger : PopupKind.Success;
-			SendPopupToPlayer( player, title, message, kind, true, 4f );
-		}
+		SendPopupToPlayer( payer, title, message, PopupKind.Danger, true, 4f );
+		SendSystemChatMessage( FormatNotificationForChat( title, message ) );
 	}
 
 	private void ShowForcedPaymentToEachPlayerPopup( PlayerState payer, int amountPerPlayer )
@@ -177,11 +178,12 @@ public sealed partial class GameController : Component
 		var title = "Forced payment";
 		var message = $"{payer.PlayerName} paid ${amountPerPlayer} to every other player.";
 
-		foreach ( var player in Players.Where( player => player is not null && player.IsAssigned && !player.IsBankrupt ) )
-		{
-			var kind = player == payer ? PopupKind.Danger : PopupKind.Success;
-			SendPopupToPlayer( player, title, message, kind, true, 4f );
-		}
+		SendPopupToPlayer( payer, title, message, PopupKind.Danger, true, 4f );
+
+		foreach ( var player in Players.Where( player => player is not null && player.IsAssigned && !player.IsBankrupt && player != payer ) )
+			SendPopupToPlayer( player, title, message, PopupKind.Success, true, 4f );
+
+		SendSystemChatMessage( FormatNotificationForChat( title, message ) );
 	}
 
 	private HashSet<string> CaptureOwnedSetKeys( params int[] playerIndexes )
@@ -231,15 +233,22 @@ public sealed partial class GameController : Component
 				if ( previousKeys.Contains( setKey ) )
 					continue;
 
-				SendPopupToAll(
-					"Property set owned",
-					$"{player.PlayerName} now owns {GetOwnedSetDisplayName( setKey )}.",
-					PopupKind.Success,
-					true,
-					5f
-				);
+				var title = "Property set owned";
+				var message = $"{player.PlayerName} now owns {GetOwnedSetDisplayName( setKey )}.";
+				SendGlobalPopupToAll( title, message, PopupKind.Success, true, 5f );
 			}
 		}
+	}
+
+	private static string FormatNotificationForChat( string title, string message )
+	{
+		if ( string.IsNullOrWhiteSpace( title ) )
+			return message ?? "";
+
+		if ( string.IsNullOrWhiteSpace( message ) )
+			return title;
+
+		return $"{title}: {message}";
 	}
 
 	private static string GetOwnedSetDisplayName( string setKey )

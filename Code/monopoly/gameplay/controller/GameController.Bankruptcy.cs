@@ -70,6 +70,7 @@ public sealed partial class GameController : Component
 
 		var creditorText = creditor is null ? "" : $" while owing {creditor.PlayerName}";
 		Log.Info( $"{player.PlayerName} went bankrupt{creditorText}." );
+		SendGlobalPopupToAll( "Bankrupt", $"{player.PlayerName} is bankrupt.", PopupKind.Danger, true, 6f );
 
 		if ( advanceTurnIfCurrent &&
 			MatchState == MatchLifecycleState.InGame &&

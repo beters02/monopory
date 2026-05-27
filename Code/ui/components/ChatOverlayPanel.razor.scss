@@ -21,9 +21,9 @@
 }
 
 .chat-overlay-panel {
-	width: 58%;
-	max-width: 640px;
-	min-width: 440px;
+	width: 38%;
+	max-width: 420px;
+	min-width: 320px;
 	display: flex;
 	flex-direction: column;
 	gap: 8px;
@@ -31,14 +31,14 @@
 
 .chat-overlay-messages {
 	padding: 12px 14px;
-	border-radius: 14px;
-	border: 2px solid rgba(18, 31, 29, 0.65);
-	background-color: rgba(253, 249, 237, 0.92);
-	box-shadow: 0 8px 30px rgba(0, 0, 0, 0.26);
+	border-radius: $monopoly-radius-board;
+	border: 2px solid $monopoly-gold;
+	background-color: $monopoly-panel-strong;
+	box-shadow: 0 8px 30px rgba(0, 0, 0, 0.34);
 	display: flex;
 	flex-direction: column;
 	gap: 4px;
-	height: 210px;
+	height: 140px;
 	overflow-x: hidden;
 	overflow-y: scroll;
 	pointer-events: all;
@@ -47,6 +47,7 @@
 .chat-overlay-line {
 	display: flex;
 	flex-direction: row;
+	align-items: flex-start;
 	gap: 6px;
 	flex-shrink: 0;
 	min-height: 20px;
@@ -54,25 +55,34 @@
 	font-family: $monopoly-font-family;
 	font-size: 16px;
 	font-weight: 700;
-	color: rgba(18, 31, 29, 0.92);
+	color: $monopoly-text;
 }
 
 .chat-overlay-sender {
-	color: rgba(12, 111, 58, 0.92);
+	color: $monopoly-gold;
+	flex: 0 0 92px;
+	max-width: 92px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 .chat-overlay-message {
-	color: rgba(18, 31, 29, 0.92);
+	color: $monopoly-text;
+	flex: 1;
+	min-width: 0;
+	white-space: normal;
 }
 
 .chat-overlay-input-row {
 	height: 44px;
 	padding: 0 14px;
-	border-radius: 12px;
-	border: 2px solid rgba(18, 31, 29, 0.6);
-	background-color: rgba(255, 255, 255, 0.9);
+	border-radius: $monopoly-radius-board;
+	border: 2px solid $monopoly-gold;
+	background-color: $monopoly-panel-strong;
 	display: flex;
 	align-items: center;
+	gap: 10px;
 	pointer-events: all;
 }
 
@@ -80,7 +90,7 @@
 	font-family: $monopoly-font-family;
 	font-size: 15px;
 	font-weight: 600;
-	color: rgba(18, 31, 29, 0.6);
+	color: $monopoly-text-muted;
 }
 
 .chat-overlay-input {
@@ -92,5 +102,39 @@
 	font-family: $monopoly-font-family;
 	font-size: 15px;
 	font-weight: 600;
-	color: rgba(18, 31, 29, 0.96);
+	color: $monopoly-text;
+}
+
+.chat-overlay-send-button {
+	height: 34px;
+	min-width: 74px;
+	padding: 0 14px;
+	margin: 0;
+	border: 2px solid $monopoly-gold;
+	border-radius: $monopoly-radius-control;
+	background-color: $monopoly-gold;
+	color: $monopoly-ink;
+	font-family: $monopoly-font-family;
+	font-size: 13px;
+	font-weight: 800;
+	line-height: 18px;
+	text-align: center;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	white-space: nowrap;
+	pointer-events: all;
+	cursor: pointer;
+	box-shadow: 0 2px 0 rgba(0, 0, 0, 0.22);
+}
+
+.chat-overlay-send-button:hover {
+	background-color: $monopoly-gold-hover;
+	border-color: $monopoly-gold-hover;
+}
+
+.chat-overlay-send-button:active {
+	background-color: $monopoly-gold-soft;
+	transform: translateY(1px);
+	box-shadow: 0 1px 0 rgba(0, 0, 0, 0.18);
 }

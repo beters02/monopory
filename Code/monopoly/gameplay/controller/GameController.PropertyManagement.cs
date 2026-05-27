@@ -25,7 +25,9 @@ public sealed partial class GameController : Component
 
 		PropertyImprovements[spaceIndex] = count + 1;
 
-		Log.Info( $"{player.PlayerName} built on {Board.GetSpaceDef( spaceIndex )?.DisplayName} for ${cost}." );
+		var spaceName = Board.GetSpaceDef( spaceIndex )?.DisplayName ?? "property";
+		SendGlobalPopupToAll( "Improvement purchased", $"{player.PlayerName} built on {spaceName} for ${cost}.", PopupKind.Success, true, 4f );
+		Log.Info( $"{player.PlayerName} built on {spaceName} for ${cost}." );
 	}
 
 	[Rpc.Host]
@@ -51,7 +53,9 @@ public sealed partial class GameController : Component
 
 		TrySettlePendingForcedPaymentForPlayer( playerIndex );
 
-		Log.Info( $"{player.PlayerName} sold an improvement on {Board.GetSpaceDef( spaceIndex )?.DisplayName} for ${refund}." );
+		var soldSpaceName = Board.GetSpaceDef( spaceIndex )?.DisplayName ?? "property";
+		SendGlobalPopupToAll( "Improvement sold", $"{player.PlayerName} sold an improvement on {soldSpaceName} for ${refund}.", PopupKind.Warning, true, 4f );
+		Log.Info( $"{player.PlayerName} sold an improvement on {soldSpaceName} for ${refund}." );
 	}
 
 	[Rpc.Host]
@@ -72,7 +76,9 @@ public sealed partial class GameController : Component
 
 		TrySettlePendingForcedPaymentForPlayer( playerIndex );
 
-		Log.Info( $"{player.PlayerName} mortgaged {Board.GetSpaceDef( spaceIndex )?.DisplayName} for ${value}." );
+		var mortgagedSpaceName = Board.GetSpaceDef( spaceIndex )?.DisplayName ?? "property";
+		SendGlobalPopupToAll( "Property sold", $"{player.PlayerName} mortgaged {mortgagedSpaceName} for ${value}.", PopupKind.Warning, true, 4f );
+		Log.Info( $"{player.PlayerName} mortgaged {mortgagedSpaceName} for ${value}." );
 	}
 
 	[Rpc.Host]
@@ -93,6 +99,8 @@ public sealed partial class GameController : Component
 
 		MortgagedProperties.Remove( spaceIndex );
 
-		Log.Info( $"{player.PlayerName} unmortgaged {Board.GetSpaceDef( spaceIndex )?.DisplayName} for ${cost}." );
+		var unmortgagedSpaceName = Board.GetSpaceDef( spaceIndex )?.DisplayName ?? "property";
+		SendGlobalPopupToAll( "Property purchased", $"{player.PlayerName} unmortgaged {unmortgagedSpaceName} for ${cost}.", PopupKind.Success, true, 4f );
+		Log.Info( $"{player.PlayerName} unmortgaged {unmortgagedSpaceName} for ${cost}." );
 	}
 }

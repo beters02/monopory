@@ -25,7 +25,7 @@ public sealed partial class GameController : Component
 
 		string cardDisplayText = GetCardDisplayText( card );
 		ShowCardForPlayerWhoLanded( player, cardDisplayText );
-		SendPopupToAll( card.Title, card.Description, PopupKind.Info, true, 6f );
+		SendGlobalPopupToAll( card.Title, card.Description, PopupKind.Info, true, 6f );
 		Log.Info( $"{player.PlayerName} drew {deck}: {card.Title}." );
 		ApplyCard( player, card );
 	}
