@@ -23,6 +23,15 @@ public sealed partial class GameController : Component
         token?.SetWalkingAnim( walking );
     }
 
+    [Rpc.Broadcast]
+    private void PlayPlayerTokenStepForPlayer( int playerIndex )
+    {
+        if ( playerIndex < 0 || playerIndex >= Players.Count )
+            return;
+
+        GameAssets.Sounds.TokenStep.Play();
+    }
+
     private PlayerToken GetPlayerToken( PlayerState player )
     {
         if ( player is null )
