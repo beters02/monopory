@@ -15,9 +15,12 @@
 				{
 					var playerIndex = GameRef.GetPlayerIndex( player );
 
-					<Sandbox.ui.components.HudPanel.HudPanel Variant="@GetPropertyPanelClasses( playerIndex )">
+					<Sandbox.ui.components.HudPanel.HudPanel Variant="@GetPropertyPanelClasses( playerIndex )" style="@GetPlayerCardStyle( player )">
 						<ChildContent>
-							<div class="property-player-name">@player.PlayerName</div>
+							<div class="property-player-name-row">
+								<div class="property-player-name">@player.PlayerName</div>
+								<div class="property-player-chip" style="@GetPlayerChipStyle( player )"></div>
+							</div>
 							<div class="property-player-money">$@player.Money</div>
 							@if ( player.IsDisconnected && !player.IsBankrupt )
 							{
@@ -214,6 +217,36 @@
 		return classes;
 	}
 
+	private string GetPlayerCardStyle( PlayerState player )
+	{
+		var color = GetPlayerColor( player );
+		return $"border-color: {ToCssColor( color )};";
+	}
+
+	private string GetPlayerChipStyle( PlayerState player )
+	{
+		var color = GetPlayerColor( player );
+		return $"background-color: {ToCssColor( color )};";
+	}
+
+	private Color GetPlayerColor( PlayerState player )
+	{
+		if ( GameRef?.Theme is null || player is null )
+			return Color.White;
+
+		var colorIndex = player.ColorSlot >= 0 ? player.ColorSlot : GameRef.GetPlayerIndex( player );
+		return GameRef.Theme.GetPlayerColor( colorIndex );
+	}
+
+	private static string ToCssColor( Color color )
+	{
+		var r = (int)(Math.Clamp( color.r, 0f, 1f ) * 255f);
+		var g = (int)(Math.Clamp( color.g, 0f, 1f ) * 255f);
+		var b = (int)(Math.Clamp( color.b, 0f, 1f ) * 255f);
+		var a = Math.Clamp( color.a, 0f, 1f );
+		return $"rgba({r},{g},{b},{a:0.###})";
+	}
+
 	private string GetPropertySquareClasses( SpaceDef property, int playerIndex )
 	{
 		var ownerIndex = GameRef?.GetOwnerIndexForSpace( property.Index ) ?? -1;
@@ -254,6 +287,7 @@
 			foreach ( var player in GameRef.Players.Where( player => player is not null && player.IsAssigned ) )
 			{
 				hash.Add( player.OwnerId );
+				hash.Add( player.ColorSlot );
 				hash.Add( player.IsDisconnected );
 				hash.Add( player.AbandonEndsAt > 0f ? MathF.Ceiling( Math.Max( 0f, player.AbandonEndsAt - Time.Now ) ) : 0f );
 			}

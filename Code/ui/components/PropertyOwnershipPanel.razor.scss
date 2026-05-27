@@ -75,8 +75,8 @@
 }
 
 .property-player-name {
-	width: 100%;
-	padding: 8px 10px 0 10px;
+	flex: 1;
+	padding: 0;
 	text-align: left;
 	font-size: 15px;
 	font-weight: 800;
@@ -84,6 +84,22 @@
 	white-space: nowrap;
 	text-overflow: ellipsis;
 	overflow: hidden;
+}
+
+.property-player-name-row {
+	width: 100%;
+	padding: 8px 10px 0 10px;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	gap: 8px;
+}
+
+.property-player-chip {
+	width: 12px;
+	height: 12px;
+	border-radius: 3px;
+	flex-shrink: 0;
 }
 
 .property-player-money {
