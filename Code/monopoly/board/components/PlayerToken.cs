@@ -26,6 +26,9 @@ public sealed class PlayerToken : Component
 	[Property] public bool ReturnToSpaceAfterPhysics { get; set; } = true;
 
 	private SkinnedModelRenderer renderer;
+	private ModelRenderer markerRenderer;
+	private GameObject markerObject;
+	private HighlightOutline markerHighlight;
 	private bool walkingAnim;
 	private bool turningAnim;
 	private bool hasAppliedWalkingAnim;
@@ -43,6 +46,7 @@ public sealed class PlayerToken : Component
 	protected override void OnStart()
 	{
 		renderer = GameObject.GetComponentInChildren<SkinnedModelRenderer>();
+		EnsurePlayerMarker();
 	}
 
 	protected override void OnUpdate()
@@ -357,6 +361,19 @@ public sealed class PlayerToken : Component
 		ApplyWalkingAnim( walking );
 	}
 
+	public void ApplyPlayerColor( Color color )
+	{
+		EnsurePlayerMarker();
+		if ( markerRenderer is not null )
+			markerRenderer.Tint = color.WithAlpha( 0f );
+		
+		if (markerHighlight is not null)
+		{
+			markerHighlight.Color = color.WithAlpha( 1f ).Saturate( 1f );
+			markerHighlight.InsideColor = color.WithAlpha ( 0.55f );
+		}
+	}
+
 	private void ApplyWalkingAnim( bool walking )
 	{
 		if ( walkingAnim == walking && hasAppliedWalkingAnim )
@@ -394,6 +411,43 @@ public sealed class PlayerToken : Component
 			turningAnim = true;
 			renderer.Set( XDirectionParameterName, true );
 		}
+	}
+
+	private void EnsurePlayerMarker()
+	{
+		if ( markerRenderer is not null && markerObject is not null && markerObject.IsValid() )
+			return;
+
+		markerObject = new GameObject( true, "PlayerMarker" );
+		markerObject.SetParent( GameObject );
+		markerObject.LocalPosition = new Vector3( 0.69f, 0.32f, 0.82f );
+		markerObject.LocalRotation = Rotation.Identity;
+		markerObject.LocalScale = new Vector3( 0.1f, 0.1f, 0f );
+
+		markerRenderer = markerObject.Components.Create<ModelRenderer>();
+		markerRenderer.Model = ResolveMarkerModel();
+		//markerRenderer.Tint = Color.White.WithAlpha( 1f );
+
+		markerHighlight = markerObject.Components.Create<HighlightOutline>();
+	}
+
+	private static Model ResolveMarkerModel()
+	{
+		var preferredModels = new[]
+		{
+			"models/dev/sphere.vmdl",
+			"models/dev/cylinder.vmdl",
+			"models/dev/plane.vmdl"
+		};
+
+		foreach ( var path in preferredModels )
+		{
+			var model = Model.Load( path );
+			if ( model is not null )
+				return model;
+		}
+
+		return null;
 	}
 
 }

@@ -39,6 +39,7 @@ public sealed partial class GameController : Component, Component.INetworkListen
 	[Property] public List<PlayerState> Players { get; set; } = new();
 	public MatchConfig Config { get; set; } = new();
 	[Property] public GameObject TokenPrefab { get; set; }
+	[Property] public MonopolyTheme Theme { get; set; }
 
 	[Property, Sync] public MatchLifecycleState MatchState { get; set; } = MatchLifecycleState.Lobby;
 	[Property, Sync] public int WinnerPlayerIndex { get; set; } = -1;
@@ -132,6 +133,12 @@ public sealed partial class GameController : Component, Component.INetworkListen
 		GameAssets.PrewarmUiAssets();
 		SteamInviteBridge.Register( Scene );
 		RefreshReplicatedPlayerSlots();
+
+		if ( Theme is null )
+			Theme = Scene.GetAllComponents<MonopolyTheme>().FirstOrDefault();
+
+		if ( Theme is null )
+			Theme = Components.GetOrCreate<MonopolyTheme>();
 
 		if ( !Networking.IsHost )
 			return;

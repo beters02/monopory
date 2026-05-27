@@ -48,6 +48,9 @@ public sealed partial class GameController : Component
 			var token = tokenObject.Components.Get<PlayerToken>() ?? tokenObject.Components.Create<PlayerToken>();
 			token.Board = Board;
 			token.PlayerState = player;
+			var colorIndex = player.ColorSlot >= 0 ? player.ColorSlot : i;
+			var playerColor = Theme is not null ? Theme.GetPlayerColor( colorIndex ) : Color.White;
+			token.ApplyPlayerColor( playerColor );
 
 			if ( Board is not null )
 				tokenObject.WorldPosition = Board.GetSpacePosition( player.SpaceIndex ) + Vector3.Up * token.HeightOffset;

@@ -2,9 +2,6 @@
 @using Sandbox.UI;
 @using System;
 @using System.Collections.Concurrent;
-@using System.IO;
-@using System.Reflection;
-@using System.Text;
 @using System.Linq;
 @inherits PanelComponent
 
@@ -49,18 +46,7 @@
 		public string TimeText => Time.ToString( "HH:mm:ss" );
 	}
 
-	private const string LogTargetName = "monopory-standalone-console";
-	private const string LogRuleName = "monopory-standalone-console-rule";
 	private static readonly ConcurrentQueue<ConsoleEntry> PendingLogEntries = new();
-	private static bool LogTargetRegistered;
-	private static bool LogTargetRegistrationFailed;
-	private static bool StdoutCaptureRegistered;
-	private static TextWriter OriginalOut;
-	private static TextWriter OriginalError;
-	private FileInfo TailedLogFile;
-	private long TailedLogPosition;
-	private DateTime NextLogPollTime;
-
 	private static readonly string[] KnownCommands =
 	{
 		"clear",
@@ -99,9 +85,7 @@
 		base.OnUpdate();
 
 		ConfigureInput();
-		RegisterStdoutCapture();
-		RegisterLogTarget();
-		PollActiveLogFile();
+		PollStandaloneLogFile();
 		DrainLogQueue();
 
 		if ( !HasShownReadyLine )
@@ -140,149 +124,6 @@
 		CommandInput.AutoComplete = GetAutoComplete;
 	}
 
-	private static void RegisterStdoutCapture()
-	{
-		if ( StdoutCaptureRegistered )
-			return;
-
-		try
-		{
-			OriginalOut = System.Console.Out;
-			OriginalError = System.Console.Error;
-
-			System.Console.SetOut( new ConsoleMirrorWriter( OriginalOut, "msg" ) );
-			System.Console.SetError( new ConsoleMirrorWriter( OriginalError, "err" ) );
-			StdoutCaptureRegistered = true;
-		}
-		catch ( Exception exception )
-		{
-			StdoutCaptureRegistered = true;
-			PendingLogEntries.Enqueue( new ConsoleEntry( $"Could not attach stdout stream: {exception.Message}", "wrn", DateTime.Now ) );
-		}
-	}
-
-	private static void RegisterLogTarget()
-	{
-		if ( LogTargetRegistered || LogTargetRegistrationFailed )
-			return;
-
-		try
-		{
-			var nlogAssembly = GetNLogAssembly();
-			if ( nlogAssembly is null )
-			{
-				LogTargetRegistrationFailed = true;
-				return;
-			}
-
-			var logManagerType = nlogAssembly.GetType( "NLog.LogManager" );
-			var loggingConfigurationType = nlogAssembly.GetType( "NLog.Config.LoggingConfiguration" );
-			var loggingRuleType = nlogAssembly.GetType( "NLog.Config.LoggingRule" );
-			var logLevelType = nlogAssembly.GetType( "NLog.LogLevel" );
-			var methodCallTargetType = nlogAssembly.GetType( "NLog.Targets.MethodCallTarget" );
-			var methodCallParameterType = nlogAssembly.GetType( "NLog.Targets.MethodCallParameter" );
-			var simpleLayoutType = nlogAssembly.GetType( "NLog.Layouts.SimpleLayout" );
-
-			if ( logManagerType is null ||
-				loggingConfigurationType is null ||
-				loggingRuleType is null ||
-				logLevelType is null ||
-				methodCallTargetType is null ||
-				methodCallParameterType is null ||
-				simpleLayoutType is null )
-			{
-				LogTargetRegistrationFailed = true;
-				return;
-			}
-
-			var configurationProperty = logManagerType.GetProperty( "Configuration", BindingFlags.Public | BindingFlags.Static );
-			var configuration = configurationProperty?.GetValue( null ) ?? Activator.CreateInstance( loggingConfigurationType );
-			if ( configuration is null )
-			{
-				LogTargetRegistrationFailed = true;
-				return;
-			}
-
-			var findTargetByName = loggingConfigurationType
-				.GetMethods( BindingFlags.Public | BindingFlags.Instance )
-				.FirstOrDefault( method =>
-					method.Name == "FindTargetByName" &&
-					!method.IsGenericMethod &&
-					method.GetParameters().Length == 1 &&
-					method.GetParameters()[0].ParameterType == typeof( string ) );
-
-			var existingTarget = findTargetByName?.Invoke( configuration, new object[] { LogTargetName } );
-
-			if ( existingTarget is null )
-			{
-				var target = Activator.CreateInstance( methodCallTargetType );
-				methodCallTargetType.GetProperty( "Name" )?.SetValue( target, LogTargetName );
-				methodCallTargetType.GetProperty( "ClassName" )?.SetValue( target, typeof( StandaloneConsole ).AssemblyQualifiedName );
-				methodCallTargetType.GetProperty( "MethodName" )?.SetValue( target, nameof( ReceiveLogLine ) );
-
-				AddLogParameter( target, methodCallTargetType, methodCallParameterType, simpleLayoutType, "${level:uppercase=true}" );
-				AddLogParameter( target, methodCallTargetType, methodCallParameterType, simpleLayoutType, "${logger}" );
-				AddLogParameter( target, methodCallTargetType, methodCallParameterType, simpleLayoutType, "${message}" );
-				AddLogParameter( target, methodCallTargetType, methodCallParameterType, simpleLayoutType, "${date:format=HH\\:mm\\:ss}" );
-
-				var targetBaseType = GetBaseTypeByName( methodCallTargetType, "NLog.Targets.Target" );
-				if ( targetBaseType is null )
-				{
-					LogTargetRegistrationFailed = true;
-					return;
-				}
-
-				loggingConfigurationType
-					.GetMethod( "AddTarget", new[] { targetBaseType } )
-					?.Invoke( configuration, new[] { target } );
-
-				var traceLevel = logLevelType.GetField( "Trace", BindingFlags.Public | BindingFlags.Static )?.GetValue( null );
-				var fatalLevel = logLevelType.GetField( "Fatal", BindingFlags.Public | BindingFlags.Static )?.GetValue( null );
-				var rule = Activator.CreateInstance( loggingRuleType, "*", traceLevel, fatalLevel, target );
-				loggingRuleType.GetProperty( "RuleName" )?.SetValue( rule, LogRuleName );
-
-				var rules = loggingConfigurationType.GetProperty( "LoggingRules" )?.GetValue( configuration );
-				rules?.GetType().GetMethod( "Insert" )?.Invoke( rules, new object[] { 0, rule } );
-
-				configurationProperty?.SetValue( null, configuration );
-				logManagerType.GetMethod( "ReconfigExistingLoggers", Type.EmptyTypes )?.Invoke( null, null );
-			}
-
-			LogTargetRegistered = true;
-		}
-		catch ( Exception exception )
-		{
-			LogTargetRegistrationFailed = true;
-			PendingLogEntries.Enqueue( new ConsoleEntry( $"Could not attach log stream: {exception.Message}", "wrn", DateTime.Now ) );
-		}
-	}
-
-	private static Assembly GetNLogAssembly()
-	{
-		return AppDomain.CurrentDomain
-			.GetAssemblies()
-			.FirstOrDefault( assembly => string.Equals( assembly.GetName().Name, "NLog", StringComparison.OrdinalIgnoreCase ) );
-	}
-
-	private static void AddLogParameter( object target, Type targetType, Type parameterType, Type layoutType, string layout )
-	{
-		var simpleLayout = Activator.CreateInstance( layoutType, layout );
-		var parameter = Activator.CreateInstance( parameterType, simpleLayout );
-		var parameters = targetType.GetProperty( "Parameters" )?.GetValue( target );
-		parameters?.GetType().GetMethod( "Add" )?.Invoke( parameters, new[] { parameter } );
-	}
-
-	private static Type GetBaseTypeByName( Type type, string fullName )
-	{
-		for ( var current = type; current is not null; current = current.BaseType )
-		{
-			if ( string.Equals( current.FullName, fullName, StringComparison.Ordinal ) )
-				return current;
-		}
-
-		return null;
-	}
-
 	private void DrainLogQueue()
 	{
 		var didAdd = false;
@@ -299,107 +140,6 @@
 		TrimEntries();
 		StateHasChanged();
 		OutputPanel?.TryScrollToBottom();
-	}
-
-	private void PollActiveLogFile()
-	{
-		if ( DateTime.UtcNow < NextLogPollTime )
-			return;
-
-		NextLogPollTime = DateTime.UtcNow.AddMilliseconds( 150 );
-
-		var logFile = FindActiveLogFile();
-		if ( logFile is null )
-			return;
-
-		if ( TailedLogFile is null ||
-			!string.Equals( TailedLogFile.FullName, logFile.FullName, StringComparison.OrdinalIgnoreCase ) )
-		{
-			TailedLogFile = logFile;
-			TailedLogPosition = logFile.Exists ? logFile.Length : 0;
-			return;
-		}
-
-		logFile.Refresh();
-		if ( !logFile.Exists )
-			return;
-
-		if ( logFile.Length < TailedLogPosition )
-			TailedLogPosition = 0;
-
-		if ( logFile.Length == TailedLogPosition )
-			return;
-
-		try
-		{
-			using var stream = new FileStream( logFile.FullName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete );
-			stream.Seek( TailedLogPosition, SeekOrigin.Begin );
-
-			using var reader = new StreamReader( stream, Encoding.UTF8, true );
-			var text = reader.ReadToEnd();
-			TailedLogPosition = stream.Position;
-
-			foreach ( var line in SplitLogLines( text ) )
-				AddLogFileLine( line );
-		}
-		catch ( Exception exception )
-		{
-			PendingLogEntries.Enqueue( new ConsoleEntry( $"Could not read active log file: {exception.Message}", "wrn", DateTime.Now ) );
-		}
-	}
-
-	private static FileInfo FindActiveLogFile()
-	{
-		try
-		{
-			var logDirectory = new DirectoryInfo( Path.Combine( Environment.CurrentDirectory, "logs" ) );
-			if ( !logDirectory.Exists )
-				return null;
-
-			return logDirectory
-				.GetFiles( "*.log" )
-				.OrderByDescending( file => file.LastWriteTimeUtc )
-				.FirstOrDefault();
-		}
-		catch
-		{
-			return null;
-		}
-	}
-
-	private static void AddLogFileLine( string line )
-	{
-		if ( string.IsNullOrWhiteSpace( line ) )
-			return;
-
-		var kind = GetLogFileKind( line );
-		var message = StripLogFilePrefix( line );
-		PendingLogEntries.Enqueue( new ConsoleEntry( message, kind, DateTime.Now ) );
-	}
-
-	private static string GetLogFileKind( string line )
-	{
-		if ( line.Contains( "Error |", StringComparison.OrdinalIgnoreCase ) ||
-			line.Contains( "Exception", StringComparison.OrdinalIgnoreCase ) )
-			return "err";
-
-		if ( line.Contains( "Warning |", StringComparison.OrdinalIgnoreCase ) ||
-			line.Contains( "Warn |", StringComparison.OrdinalIgnoreCase ) )
-			return "wrn";
-
-		return "msg";
-	}
-
-	private static string StripLogFilePrefix( string line )
-	{
-		if ( line.Length > 24 && char.IsDigit( line[0] ) )
-		{
-			var firstTab = line.IndexOf( '\t' );
-			if ( firstTab >= 0 && firstTab + 1 < line.Length )
-				return line.Substring( firstTab + 1 );
-		}
-
-		return line;
 	}
 
 	private static bool ShouldToggleConsole()
@@ -609,83 +349,6 @@
 			.Take( 20 )
 			.Select( command => (object)new TextEntry.AutocompleteEntry { Title = command, Value = command } )
 			.ToArray();
-	}
-
-	private sealed class ConsoleMirrorWriter : TextWriter
-	{
-		private readonly TextWriter inner;
-		private readonly string kind;
-		private readonly StringBuilder pendingLine = new();
-
-		public ConsoleMirrorWriter( TextWriter inner, string kind )
-		{
-			this.inner = inner;
-			this.kind = kind;
-		}
-
-		public override Encoding Encoding => inner?.Encoding ?? Encoding.UTF8;
-
-		public override void Write( char value )
-		{
-			inner?.Write( value );
-			WriteCapturedCharacter( value );
-		}
-
-		public override void Write( string value )
-		{
-			inner?.Write( value );
-
-			if ( string.IsNullOrEmpty( value ) )
-				return;
-
-			foreach ( var character in value )
-				WriteCapturedCharacter( character );
-		}
-
-		public override void WriteLine( string value )
-		{
-			inner?.WriteLine( value );
-
-			if ( !string.IsNullOrEmpty( value ) )
-			{
-				foreach ( var character in value )
-					WriteCapturedCharacter( character );
-			}
-
-			FlushPendingLine();
-		}
-
-		public override void Flush()
-		{
-			inner?.Flush();
-			FlushPendingLine();
-		}
-
-		private void WriteCapturedCharacter( char value )
-		{
-			if ( value == '\r' )
-				return;
-
-			if ( value == '\n' )
-			{
-				FlushPendingLine();
-				return;
-			}
-
-			pendingLine.Append( value );
-		}
-
-		private void FlushPendingLine()
-		{
-			if ( pendingLine.Length == 0 )
-				return;
-
-			var line = pendingLine.ToString();
-			pendingLine.Clear();
-
-			if ( !string.IsNullOrWhiteSpace( line ) )
-				PendingLogEntries.Enqueue( new ConsoleEntry( line, kind, DateTime.Now ) );
-		}
 	}
 
 }

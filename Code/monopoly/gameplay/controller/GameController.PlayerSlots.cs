@@ -227,6 +227,7 @@ public sealed partial class GameController : Component
 		player.IsDisconnected = false;
 		player.AbandonEndsAt = 0f;
 		player.TurnTimeoutCount = 0;
+		player.ColorSlot = -1;
 	}
 
 	private void ResetGameState( bool resetPlayers )

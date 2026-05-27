@@ -18,6 +18,7 @@ public sealed class PlayerState : Component
 	[Property, Sync] public int TurnTimeoutCount { get; set; }
 
 	[Property, Sync] public string PlayerName { get; set; } = "Player";
+	[Property, Sync] public int ColorSlot { get; set; } = -1;
 
 	public bool IsOwner => OwnerId == Connection.Local.SteamId;
 

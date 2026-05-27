@@ -43,6 +43,7 @@ public sealed partial class GameController : Component
 		foreach ( var player in activePlayers )
 		{
 			ResetPlayerForGame( player );
+			player.ColorSlot = activePlayers.IndexOf( player );
 			player.IsReady = false;
 		}
 
