@@ -169,6 +169,7 @@ public sealed partial class GameController : Component, Component.INetworkListen
 		RefreshReplicatedPlayerSlots();
 		UpdatePopups();
 		UpdateVisualTokens();
+		UpdateRentCutscene();
 		RecoverPendingPurchaseSelection();
 
 		if ( !Networking.IsHost )

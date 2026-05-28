@@ -89,6 +89,13 @@ public sealed class PlayerToken : Component
 
 	private void UpdatePhysicsTestGrab()
 	{
+		if ( GameController.Instance?.IsLocalRentCutsceneActive == true )
+		{
+			if ( isGrabbed || isThrowing )
+				StopPhysicsTestMotion();
+			return;
+		}
+
 		if ( !EnablePhysicsTestGrab )
 			return;
 

@@ -100,7 +100,10 @@ public sealed partial class GameController : Component
 
 			var rent = GetRentForSpace( def.Index );
 			if ( PayPlayer( player, owner, rent ) )
+			{
+				PlayRentCutscene( GetPlayerIndex( player ), ownerIndex, rent );
 				Log.Info( $"{player.PlayerName} paid ${rent} rent to {owner.PlayerName}." );
+			}
 			return;
 		}
 	}

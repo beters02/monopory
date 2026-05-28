@@ -36,6 +36,11 @@ public sealed class GameCamera : Component
 	private Vector3 freeCamFocus;
 	private float freeCamDistance;
 	private bool hasFreeCamFocus;
+	private bool cinematicOverrideActive;
+	private Vector3 cinematicCenter;
+	private float cinematicDistance;
+	private float cinematicYaw;
+	private float cinematicPitch;
 
 	protected override void OnStart()
 	{
@@ -53,6 +58,12 @@ public sealed class GameCamera : Component
 
 	protected override void OnUpdate()
 	{
+		if ( cinematicOverrideActive )
+		{
+			ApplyCustomView( cinematicCenter, cinematicDistance, cinematicYaw, cinematicPitch, true );
+			return;
+		}
+
 		if ( Mode == BoardCameraMode.FreeCam )
 		{
 			UpdateFreeCam();
@@ -91,6 +102,20 @@ public sealed class GameCamera : Component
 			freeCamDistance = FreecamModeStartDistance;
 			hasFreeCamFocus = true;
 		}
+	}
+
+	public void SetCinematicView( Vector3 center, float distance, float yaw, float pitch )
+	{
+		cinematicCenter = center;
+		cinematicDistance = distance;
+		cinematicYaw = yaw;
+		cinematicPitch = pitch;
+		cinematicOverrideActive = true;
+	}
+
+	public void ClearCinematicView()
+	{
+		cinematicOverrideActive = false;
 	}
 
 	private void UpdateFreeCam()
@@ -277,7 +302,13 @@ public sealed class GameCamera : Component
 
 	private void ApplyView( Vector3 center, float distance, float yaw, bool smooth )
 	{
-		var rotation = Rotation.From( Mode == BoardCameraMode.Default ? DefaultModePitch : Pitch, yaw, 0f );
+		var pitch = Mode == BoardCameraMode.Default ? DefaultModePitch : Pitch;
+		ApplyCustomView( center, distance, yaw, pitch, smooth );
+	}
+
+	private void ApplyCustomView( Vector3 center, float distance, float yaw, float pitch, bool smooth )
+	{
+		var rotation = Rotation.From( pitch, yaw, 0f );
 		var offset = -rotation.Forward * distance;
 		var targetPosition = center + offset;
 

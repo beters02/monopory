@@ -452,6 +452,9 @@ public sealed class Board : Component
 	// Local Space Selection
 	private void UpdateLocalSpaceSelection()
 	{
+		if ( GameRef?.IsLocalRentCutsceneActive == true )
+			return;
+
 		if ( !Input.Pressed( "attack1" ) )
 			return;
 
