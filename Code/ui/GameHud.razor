@@ -9,6 +9,11 @@
 	<ButtonPopLayer></ButtonPopLayer>
 	@if ( GameRef is not null )
 	{
+		@if ( GameRef.LocalRentCutsceneFadeAlpha > 0f )
+		{
+			<div class="rent-cutscene-fade" style="@($"opacity: {GameRef.LocalRentCutsceneFadeAlpha:0.###};")"></div>
+		}
+
 		@if ( NetworkSession.IsEditorSoftLeftLobby )
 		{
 			<div class="flow-screen lobby-screen">
@@ -282,6 +287,7 @@
 		hash.Add( AppSettings.GetUpscaler() );
 		hash.Add( AppSettings.GetFsr3Quality() );
 		hash.Add( GetPopupsHash() );
+		hash.Add( (int)((GameRef?.LocalRentCutsceneFadeAlpha ?? 0f) * 100f) );
 
 		return hash.ToHashCode();
 	}

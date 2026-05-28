@@ -41,6 +41,7 @@ public sealed class GameCamera : Component
 	private float cinematicDistance;
 	private float cinematicYaw;
 	private float cinematicPitch;
+	private bool cinematicSmooth = true;
 
 	protected override void OnStart()
 	{
@@ -60,7 +61,7 @@ public sealed class GameCamera : Component
 	{
 		if ( cinematicOverrideActive )
 		{
-			ApplyCustomView( cinematicCenter, cinematicDistance, cinematicYaw, cinematicPitch, true );
+			ApplyCustomView( cinematicCenter, cinematicDistance, cinematicYaw, cinematicPitch, cinematicSmooth );
 			return;
 		}
 
@@ -104,12 +105,13 @@ public sealed class GameCamera : Component
 		}
 	}
 
-	public void SetCinematicView( Vector3 center, float distance, float yaw, float pitch )
+	public void SetCinematicView( Vector3 center, float distance, float yaw, float pitch, bool smooth = true )
 	{
 		cinematicCenter = center;
 		cinematicDistance = distance;
 		cinematicYaw = yaw;
 		cinematicPitch = pitch;
+		cinematicSmooth = smooth;
 		cinematicOverrideActive = true;
 	}
 

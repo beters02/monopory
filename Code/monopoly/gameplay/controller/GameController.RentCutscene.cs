@@ -3,10 +3,11 @@ using Sandbox;
 
 public sealed partial class GameController : Component
 {
-	private const float RentCutsceneDuration = 1.0f;
+	private const float RentCutsceneDuration = 2.0f;
 	private const float RentCutsceneCameraDistance = 165f;
 	private const float RentCutsceneCameraPitch = 34f;
 	private const float RentCutsceneMaxLifetime = 2.0f;
+	private const float RentCutsceneFadePhaseDuration = 0.18f;
 
 	private bool isRentCutsceneActive;
 	private float rentCutsceneStartedAt;
@@ -17,6 +18,7 @@ public sealed partial class GameController : Component
 	private Vector3 rentCutsceneReceiverBasePosition;
 
 	public bool IsLocalRentCutsceneActive => isRentCutsceneActive;
+	public float LocalRentCutsceneFadeAlpha { get; private set; }
 
 	[Rpc.Broadcast]
 	private void PlayRentCutscene( int payerIndex, int receiverIndex, int amount )
@@ -41,6 +43,7 @@ public sealed partial class GameController : Component
 		rentCutsceneAmount = Math.Max( amount, 0 );
 		rentCutscenePayerBasePosition = payerToken.GameObject.WorldPosition;
 		rentCutsceneReceiverBasePosition = receiverToken.GameObject.WorldPosition;
+		LocalRentCutsceneFadeAlpha = 1f;
 
 		Log.Info( $"Rent cutscene started. payer={payerIndex}, receiver={receiverIndex}, amount={rentCutsceneAmount}" );
 	}
@@ -74,6 +77,7 @@ public sealed partial class GameController : Component
 		}
 
 		var progress = MathX.Clamp( elapsed / RentCutsceneDuration, 0f, 1f );
+		LocalRentCutsceneFadeAlpha = GetFadeAlpha( progress );
 		var direction = (rentCutscenePayerBasePosition - rentCutsceneReceiverBasePosition).WithZ( 0f );
 		if ( direction.Length < 0.001f )
 			direction = Vector3.Forward;
@@ -86,7 +90,7 @@ public sealed partial class GameController : Component
 
 		var center = (payerToken.GameObject.WorldPosition + receiverToken.GameObject.WorldPosition) * 0.5f;
 		var yaw = Rotation.LookAt( direction, Vector3.Up ).Angles().yaw;
-		GameCamera.Instance?.SetCinematicView( center, RentCutsceneCameraDistance, yaw, RentCutsceneCameraPitch );
+		GameCamera.Instance?.SetCinematicView( center, RentCutsceneCameraDistance, yaw, RentCutsceneCameraPitch, false );
 	}
 
 	private void StopRentCutscene( string reason )
@@ -107,6 +111,7 @@ public sealed partial class GameController : Component
 
 		GameCamera.Instance?.ClearCinematicView();
 		isRentCutsceneActive = false;
+		LocalRentCutsceneFadeAlpha = 0f;
 		rentCutsceneStartedAt = 0f;
 		rentCutscenePayerIndex = -1;
 		rentCutsceneReceiverIndex = -1;
@@ -149,6 +154,23 @@ public sealed partial class GameController : Component
 		{
 			var t = (progress - 0.55f) / 0.30f;
 			return MathX.Lerp( 13f, 0f, t );
+		}
+
+		return 0f;
+	}
+
+	private static float GetFadeAlpha( float progress )
+	{
+		if ( progress < RentCutsceneFadePhaseDuration )
+		{
+			var t = progress / RentCutsceneFadePhaseDuration;
+			return MathX.Lerp( 1f, 0f, t );
+		}
+
+		if ( progress > 1f - RentCutsceneFadePhaseDuration )
+		{
+			var t = (progress - (1f - RentCutsceneFadePhaseDuration)) / RentCutsceneFadePhaseDuration;
+			return MathX.Lerp( 0f, 1f, t );
 		}
 
 		return 0f;

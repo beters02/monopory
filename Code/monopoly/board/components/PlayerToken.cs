@@ -53,6 +53,11 @@ public sealed class PlayerToken : Component
 	protected override void OnUpdate()
 	{
 		UpdatePhysicsTestGrab();
+		if ( GameController.Instance?.IsLocalRentCutsceneActive == true )
+		{
+			ApplyWalkingAnim( false );
+			return;
+		}
 
 		if ( isGrabbed || isThrowing )
 		{
