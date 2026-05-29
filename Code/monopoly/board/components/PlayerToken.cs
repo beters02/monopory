@@ -410,7 +410,6 @@ public sealed class PlayerToken : Component
 
 	public void ApplyPieceDefinition( PieceDefinition piece )
 	{
-		Log.Info(piece.Id);
 		var selectedPiece = piece ?? PieceCatalog.GetByIdOrDefault( PieceCatalog.DefaultPieceId );
 		var visualObject = GameObject.Children.FirstOrDefault( child => string.Equals( child?.Name, "Visual", StringComparison.OrdinalIgnoreCase ) );
 		var renderHost = visualObject?.Children.FirstOrDefault() ?? visualObject;
@@ -476,28 +475,6 @@ public sealed class PlayerToken : Component
 
 		renderer.Set( WalkingParameterName, walking );
 		hasAppliedWalkingAnim = true;
-	}
-
-	private void ApplyDirection( Vector3 dir )
-	{
-		if (renderer is null)
-			return;
-
-		if (turningAnim)
-		{
-			turningAnim = false;
-			renderer.Set( XDirectionParameterName, false );
-			return;
-		}
-
-		Log.Info(dir);
-
-		if ( dir != lastXDirection )
-		{
-			lastXDirection = dir;
-			turningAnim = true;
-			renderer.Set( XDirectionParameterName, true );
-		}
 	}
 
 	private void EnsurePlayerMarker()

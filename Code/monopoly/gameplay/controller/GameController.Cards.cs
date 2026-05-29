@@ -289,7 +289,6 @@ public sealed partial class GameController : Component
 
 		// did win
 		int randomInt = Game.Random.Int(0, 1);
-		Log.Info(randomInt);
 
 		if ( randomInt == 0 )
 		{

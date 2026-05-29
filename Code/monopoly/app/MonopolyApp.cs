@@ -7,7 +7,6 @@ public class MonopolyApp : Component
 #if STANDALONE
         IsStandalone = true;
 #endif
-		Log.Info("Awake!");
         Log.Info($"IsStandalone: {IsStandalone}");
 	}
 

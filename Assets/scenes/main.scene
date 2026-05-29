@@ -8101,6 +8101,69 @@
               "OnComponentFixedUpdate": null,
               "OnComponentStart": null,
               "OnComponentUpdate": null
+            },
+            {
+              "__type": "Sandbox.FilmGrain",
+              "__guid": "bc77e8eb-79ff-4013-be0c-e9c1fae55741",
+              "__enabled": true,
+              "Flags": 0,
+              "Intensity": 0.045375217,
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null,
+              "Response": 1
+            },
+            {
+              "__type": "Sandbox.ColorAdjustments",
+              "__guid": "776b6cdf-3809-46fa-b68b-a814cb42c25b",
+              "__enabled": true,
+              "Flags": 0,
+              "Blend": 1,
+              "Brightness": 0.9773124,
+              "Contrast": 1,
+              "HueRotate": 0,
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null,
+              "Saturation": 1.1343805
+            },
+            {
+              "__type": "Sandbox.Bloom",
+              "__guid": "aa8390bb-487a-4b0b-8baa-645129addfc8",
+              "__enabled": true,
+              "Flags": 0,
+              "__version": 1,
+              "Filter": "Biquadratic",
+              "Gamma": 2.2,
+              "Mode": "Additive",
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null,
+              "Strength": 0.33158812,
+              "Threshold": 1,
+              "Tint": "1,1,1,1"
+            },
+            {
+              "__type": "Sandbox.MotionBlur",
+              "__guid": "bd4c0da4-1ea3-48f9-98bb-6ddbea717c14",
+              "__enabled": true,
+              "Flags": 0,
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null,
+              "Scale": 0.21465969
             }
           ],
           "Children": []
@@ -8301,7 +8364,7 @@
         {
           "__type": "Sandbox.VolumetricFogVolume",
           "__guid": "7cc58eae-4c08-4c46-b729-df43255a96b1",
-          "__enabled": true,
+          "__enabled": false,
           "Flags": 0,
           "Bounds": {
             "Mins": "-200,-200,-200",
@@ -8315,6 +8378,24 @@
           "OnComponentStart": null,
           "OnComponentUpdate": null,
           "Strength": 1
+        },
+        {
+          "__type": "Sandbox.VolumetricFogVolume",
+          "__guid": "f4cc086a-2f77-4fc3-a0c3-1a570bcc5e92",
+          "__enabled": true,
+          "Flags": 0,
+          "Bounds": {
+            "Mins": "-1000,-1000,-1000",
+            "Maxs": "1000,1000,1000"
+          },
+          "FalloffExponent": 1,
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null,
+          "Strength": 0.26010546
         }
       ],
       "Children": []
@@ -8385,50 +8466,11 @@
           "OnComponentUpdate": null,
           "ShadowBias": 0.0005,
           "ShadowCascadeCount": 4,
-          "ShadowCascadeSplitRatio": 0.91,
-          "ShadowHardness": 0.25490198,
+          "ShadowCascadeSplitRatio": 0.855,
+          "ShadowHardness": 0,
           "Shadows": true,
           "SkyColor": "0,0,0,0",
           "Visualizer": {}
-        }
-      ],
-      "Children": []
-    },
-    {
-      "__guid": "bad7d9da-669c-4280-a1e6-9aed077d26f1",
-      "__version": 2,
-      "Flags": 0,
-      "Name": "Point Light",
-      "Position": "-127.888947,-245.285065,85.0305481",
-      "Rotation": "0,0,0,1",
-      "Scale": "1,1,1",
-      "Tags": "light_point,light",
-      "Enabled": true,
-      "NetworkMode": 2,
-      "NetworkFlags": 0,
-      "NetworkOrphaned": 0,
-      "NetworkTransmit": true,
-      "OwnerTransfer": 1,
-      "Components": [
-        {
-          "__type": "Sandbox.PointLight",
-          "__guid": "fb4f6ff5-a706-49b2-9f70-95b00d5d4718",
-          "__enabled": true,
-          "Flags": 0,
-          "Attenuation": 1,
-          "FogMode": "Enabled",
-          "FogStrength": 1,
-          "LightColor": "0.91373,0.98039,1,1",
-          "OnComponentDestroy": null,
-          "OnComponentDisabled": null,
-          "OnComponentEnabled": null,
-          "OnComponentFixedUpdate": null,
-          "OnComponentStart": null,
-          "OnComponentUpdate": null,
-          "Radius": 400,
-          "ShadowBias": 0.0005,
-          "ShadowHardness": 0,
-          "Shadows": true
         }
       ],
       "Children": []
