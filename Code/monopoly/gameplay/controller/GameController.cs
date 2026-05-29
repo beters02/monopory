@@ -43,70 +43,70 @@ public sealed partial class GameController : Component, Component.INetworkListen
 		ChanceOrCommunityChest
 	}
 
-	[Property] public List<PlayerState> Players { get; set; } = new();
+	public List<PlayerState> Players { get; set; } = new();
 	public MatchConfig Config { get; set; } = new();
 	[Property] public GameObject TokenPrefab { get; set; }
 	[Property] public MonopolyTheme Theme { get; set; }
 
-	[Property, Sync] public MatchLifecycleState MatchState { get; set; } = MatchLifecycleState.Lobby;
-	[Property, Sync] public int WinnerPlayerIndex { get; set; } = -1;
-	[Property, Sync] public float GameStartedAt { get; set; }
-	[Property, Sync] public int StartingPlayerCount { get; set; }
-	[Property, Sync] public int CurrentPlayerIndex { get; set; }
-	[Property, Sync] public int LastDieA { get; set; }
-	[Property, Sync] public int LastDieB { get; set; }
-	[Property, Sync] public bool IsResolvingPhysicalDice { get; set; }
-	[Property, Sync] public float PhysicalDiceStartedAt { get; set; }
-	[Property, Sync] public int PendingRollPlayerIndex { get; set; } = -1;
-	[Property, Sync] public int PendingRollExecutionKind { get; set; } = -1;
-	[Property, Sync] public int PendingRollTotal { get; set; }
-	[Property, Sync] public bool PendingRollSuppressDoublesExtraTurn { get; set; }
-	[Property, Sync] public bool PendingRollIsJailAttempt { get; set; }
-	[Property, Sync] public float PendingRollStartedAt { get; set; }
-	[Property, Sync] public long PreferredHostOwnerId { get; set; }
-	[Property, Sync] public bool PreferredHostDisconnected { get; set; }
-	[Property, Sync] public bool IsRecoveringHostState { get; set; }
-	[Property, Sync] public NetDictionary<int, int> PropertyOwners { get; set; } = new();
-	[Property, Sync] public NetDictionary<int, int> PropertyImprovements { get; set; } = new();
-	[Property, Sync] public NetDictionary<int, bool> MortgagedProperties { get; set; } = new();
-	[Property, Sync] public NetDictionary<int, string> PendingTrades { get; set; } = new();
-	[Property, Sync] public NetDictionary<int, string> TradeViewers { get; set; } = new();
-	[Property, Sync] public NetDictionary<int, string> TokenPhysicsStates { get; set; } = new();
-	[Property, Sync] public NetDictionary<int, string> ChatMessages { get; set; } = new();
+	[Sync] public MatchLifecycleState MatchState { get; set; } = MatchLifecycleState.Lobby;
+	[Sync] public int WinnerPlayerIndex { get; set; } = -1;
+	[Sync] public float GameStartedAt { get; set; }
+	[Sync] public int StartingPlayerCount { get; set; }
+	[Sync] public int CurrentPlayerIndex { get; set; }
+	[Sync] public int LastDieA { get; set; }
+	[Sync] public int LastDieB { get; set; }
+	[Sync] public bool IsResolvingPhysicalDice { get; set; }
+	[Sync] public float PhysicalDiceStartedAt { get; set; }
+	[Sync] public int PendingRollPlayerIndex { get; set; } = -1;
+	[Sync] public int PendingRollExecutionKind { get; set; } = -1;
+	[Sync] public int PendingRollTotal { get; set; }
+	[Sync] public bool PendingRollSuppressDoublesExtraTurn { get; set; }
+	[Sync] public bool PendingRollIsJailAttempt { get; set; }
+	[Sync] public float PendingRollStartedAt { get; set; }
+	[Sync] public long PreferredHostOwnerId { get; set; }
+	[Sync] public bool PreferredHostDisconnected { get; set; }
+	[Sync] public bool IsRecoveringHostState { get; set; }
+	[Sync] public NetDictionary<int, int> PropertyOwners { get; set; } = new();
+	[Sync] public NetDictionary<int, int> PropertyImprovements { get; set; } = new();
+	[Sync] public NetDictionary<int, bool> MortgagedProperties { get; set; } = new();
+	[Sync] public NetDictionary<int, string> PendingTrades { get; set; } = new();
+	[Sync] public NetDictionary<int, string> TradeViewers { get; set; } = new();
+	[Sync] public NetDictionary<int, string> TokenPhysicsStates { get; set; } = new();
+	[Sync] public NetDictionary<int, string> ChatMessages { get; set; } = new();
 	[Property] public Board Board { get; set; }
 
 	public PlayerState CurrentPlayer =>
 		Players.Count == 0 || CurrentPlayerIndex < 0 || CurrentPlayerIndex >= Players.Count ? null : Players[CurrentPlayerIndex];
 
-	[Property, Sync] public GamePhase Phase { get; set; } = GamePhase.WaitingToRoll;
-	[Property, Sync] public int PendingPurchaseSpaceIndex { get; set; } = -1;
-	[Property, Sync] public int AuctionSpaceIndex { get; set; } = -1;
-	[Property, Sync] public int AuctionCurrentBid { get; set; }
-	[Property, Sync] public int AuctionHighBidderIndex { get; set; } = -1;
-	[Property, Sync] public float AuctionEndsAt { get; set; }
-	[Property, Sync] public int NextTradeId { get; set; } = 1;
-	[Property, Sync] public int NextChatMessageId { get; set; } = 1;
-	[Property, Sync] public int FreeParkingBank { get; set; }
-	[Property, Sync] public bool CurrentTurnGetsExtraRoll { get; set; }
-	[Property, Sync] public int CurrentTurnConsecutiveDoubles { get; set; }
-	[Property, Sync] public int CurrentTurnDoublesPlayerIndex { get; set; } = -1;
-	[Property, Sync] public float CurrentTurnEndsAt { get; set; }
-	[Property, Sync] public int PendingForcedPaymentPlayerIndex { get; set; } = -1;
-	[Property, Sync] public int PendingForcedPaymentAmount { get; set; }
-	[Property, Sync] public int PendingForcedPaymentReceiverIndex { get; set; } = -1;
-	[Property, Sync] public bool PendingForcedPaymentToBank { get; set; }
-	[Property, Sync] public bool PendingForcedPaymentAddsToFreeParking { get; set; }
-	[Property, Sync] public bool PendingForcedPaymentToEachPlayer { get; set; }
-	[Property, Sync] public int PendingForcedPaymentEachPlayerAmount { get; set; }
-	[Property, Sync] public int ActiveMovementPlayerIndex { get; set; } = -1;
-	[Property, Sync] public int ActiveMovementRemainingSteps { get; set; }
-	[Property, Sync] public int ActiveMovementGoPassCount { get; set; }
-	[Property, Sync] public int ActiveMovementTargetSpaceIndex { get; set; } = -1;
-	[Property, Sync] public float ActiveMovementLastProgressAt { get; set; }
-	[Property, Sync] public int PendingLandingPlayerIndex { get; set; } = -1;
-	[Property, Sync] public int PendingLandingSpaceIndex { get; set; } = -1;
-	[Property, Sync] public int PendingLandingGoPassCount { get; set; }
-	[Property, Sync] public bool PendingLandingResolved { get; set; }
+	[Sync] public GamePhase Phase { get; set; } = GamePhase.WaitingToRoll;
+	[Sync] public int PendingPurchaseSpaceIndex { get; set; } = -1;
+	[Sync] public int AuctionSpaceIndex { get; set; } = -1;
+	[Sync] public int AuctionCurrentBid { get; set; }
+	[Sync] public int AuctionHighBidderIndex { get; set; } = -1;
+	[Sync] public float AuctionEndsAt { get; set; }
+	[Sync] public int NextTradeId { get; set; } = 1;
+	[Sync] public int NextChatMessageId { get; set; } = 1;
+	[Sync] public int FreeParkingBank { get; set; }
+	[Sync] public bool CurrentTurnGetsExtraRoll { get; set; }
+	[Sync] public int CurrentTurnConsecutiveDoubles { get; set; }
+	[Sync] public int CurrentTurnDoublesPlayerIndex { get; set; } = -1;
+	[Sync] public float CurrentTurnEndsAt { get; set; }
+	[Sync] public int PendingForcedPaymentPlayerIndex { get; set; } = -1;
+	[Sync] public int PendingForcedPaymentAmount { get; set; }
+	[Sync] public int PendingForcedPaymentReceiverIndex { get; set; } = -1;
+	[Sync] public bool PendingForcedPaymentToBank { get; set; }
+	[Sync] public bool PendingForcedPaymentAddsToFreeParking { get; set; }
+	[Sync] public bool PendingForcedPaymentToEachPlayer { get; set; }
+	[Sync] public int PendingForcedPaymentEachPlayerAmount { get; set; }
+	[Sync] public int ActiveMovementPlayerIndex { get; set; } = -1;
+	[Sync] public int ActiveMovementRemainingSteps { get; set; }
+	[Sync] public int ActiveMovementGoPassCount { get; set; }
+	[Sync] public int ActiveMovementTargetSpaceIndex { get; set; } = -1;
+	[Sync] public float ActiveMovementLastProgressAt { get; set; }
+	[Sync] public int PendingLandingPlayerIndex { get; set; } = -1;
+	[Sync] public int PendingLandingSpaceIndex { get; set; } = -1;
+	[Sync] public int PendingLandingGoPassCount { get; set; }
+	[Sync] public bool PendingLandingResolved { get; set; }
 
 	public bool HasPendingForcedPayment =>
 		PendingForcedPaymentPlayerIndex >= 0 && PendingForcedPaymentAmount > 0;

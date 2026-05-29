@@ -5,11 +5,11 @@ using Sandbox;
 
 public sealed partial class GameController : Component
 {
-	[Property] public bool ShowSelectedSpaceCardOnGo { get; set; } = false;
-	[Property] public bool ShowSelectedSpaceCardOnTax { get; set; } = false;
-	[Property] public bool ShowSelectedSpaceCardOnJail { get; set; } = false;
-	[Property] public bool ShowSelectedSpaceCardOnGoToJail { get; set; } = false;
-	[Property] public bool ShowSelectedSpaceCardOnFreeParking { get; set; } = false;
+	public bool ShowSelectedSpaceCardOnGo { get; set; } = false;
+	public bool ShowSelectedSpaceCardOnTax { get; set; } = false;
+	public bool ShowSelectedSpaceCardOnJail { get; set; } = false;
+	public bool ShowSelectedSpaceCardOnGoToJail { get; set; } = false;
+	public bool ShowSelectedSpaceCardOnFreeParking { get; set; } = false;
 
 	public int LocalSelectedSpaceIndex { get; set; } = -1;
 	public string LocalSelectedDrawnCardText { get; set; } = "";
