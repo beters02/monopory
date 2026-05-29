@@ -7,7 +7,8 @@ public sealed partial class LobbyController
 		if ( !Networking.IsHost || !CanStartGame || !IsLocalEffectiveHost )
 			return false;
 
-		MatchBootstrap.PrepareGame( GetGameConfig(), Players );
+		var startingPlayers = BuildPlayers();
+		MatchBootstrap.PrepareGame( GetGameConfig(), startingPlayers );
 		LoadGameScene();
 		return true;
 	}

@@ -410,6 +410,7 @@ public sealed class PlayerToken : Component
 
 	public void ApplyPieceDefinition( PieceDefinition piece )
 	{
+		Log.Info(piece.Id);
 		var selectedPiece = piece ?? PieceCatalog.GetByIdOrDefault( PieceCatalog.DefaultPieceId );
 		var visualObject = GameObject.Children.FirstOrDefault( child => string.Equals( child?.Name, "Visual", StringComparison.OrdinalIgnoreCase ) );
 		var renderHost = visualObject?.Children.FirstOrDefault() ?? visualObject;
@@ -426,7 +427,18 @@ public sealed class PlayerToken : Component
 		}
 
 		if ( skinnedRenderer is not null )
+		{
 			skinnedRenderer.Model = model;
+			
+			if (piece.AnimgraphPath is not null && piece.AnimgraphPath != "")
+			{
+				var animgraph = AnimationGraph.Load(piece.AnimgraphPath);
+				if (animgraph is null)
+					Log.Warning( $"Unable to load animgraph for '{selectedPiece.Id}'");
+				else
+					skinnedRenderer.AnimationGraph = animgraph;
+			}
+		}
 
 		if ( modelRenderer is not null )
 			modelRenderer.Model = model;
@@ -495,7 +507,7 @@ public sealed class PlayerToken : Component
 
 		markerObject = new GameObject( true, "PlayerMarker" );
 		markerObject.SetParent( GameObject );
-		markerObject.LocalPosition = new Vector3( 0.69f, 0.32f, 0.82f );
+		markerObject.LocalPosition = new Vector3( 0.69f, 0.32f, -2.16f );
 		markerObject.LocalRotation = Rotation.Identity;
 		markerObject.LocalScale = new Vector3( 0.1f, 0.1f, 0f );
 

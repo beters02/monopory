@@ -20,6 +20,7 @@ public sealed class GameCamera : Component
 	[Property] public float DefaultModeDistance { get; set; } = 200f;
 	[Property] public float Pitch { get; set; } = 60f;
 	[Property] public float DefaultModePitch { get; set; } = 75f;
+	[Property] public float DefaultModeDicePitch { get; set; } = 75f;
 	[Property] public float Fov { get; set; } = 35f;
 	[Property] public float FollowLerpSpeed { get; set; } = 3f;
 	[Property] public float RotationLerpSpeed { get; set; } = 2.5f;
@@ -64,6 +65,7 @@ public sealed class GameCamera : Component
 			? GetCurrentTokenYaw()
 			: 0f;
 		var distance = Mode == BoardCameraMode.Default ? DefaultModeDistance : Distance;
+		float pitch = Mode == BoardCameraMode.Default ? DefaultModePitch : Pitch;
 
 		if ( Mode == BoardCameraMode.Default )
 		{
@@ -72,10 +74,12 @@ public sealed class GameCamera : Component
 				controller.TryGetPhysicalDice( out var dieA, out var dieB ) )
 			{
 				distance = GetDiceFramingDistance( center, yaw, dieA.GameObject.WorldPosition, dieB.GameObject.WorldPosition );
+				if (Mode == BoardCameraMode.Default)
+					pitch = DefaultModeDicePitch;
 			}
 		}
 
-		ApplyView( center, distance, yaw, true );
+		ApplyView( center, distance, yaw, pitch, true );
 	}
 
 	public void SetMode( BoardCameraMode mode )
@@ -120,7 +124,7 @@ public sealed class GameCamera : Component
 			);
 		}
 
-		ApplyView( freeCamFocus, freeCamDistance, 0f, true );
+		ApplyView( freeCamFocus, freeCamDistance, 0f, Pitch, true );
 	}
 
 	private Vector3 GetFreeCamMoveInput()
@@ -254,7 +258,7 @@ public sealed class GameCamera : Component
 
 	private float GetDiceFramingDistance( Vector3 center, float yaw, Vector3 dieAPosition, Vector3 dieBPosition )
 	{
-		var rotation = Rotation.From( DefaultModePitch, yaw, 0f );
+		var rotation = Rotation.From( DefaultModeDicePitch, yaw, 0f );
 		var right = rotation.Right;
 		var up = rotation.Up;
 
@@ -275,9 +279,9 @@ public sealed class GameCamera : Component
 		return Math.Max( Math.Max( DefaultModeDistance, DiceFramingMinDistance ), requiredDistance );
 	}
 
-	private void ApplyView( Vector3 center, float distance, float yaw, bool smooth )
+	private void ApplyView( Vector3 center, float distance, float yaw, float pitch, bool smooth )
 	{
-		var rotation = Rotation.From( Mode == BoardCameraMode.Default ? DefaultModePitch : Pitch, yaw, 0f );
+		var rotation = Rotation.From( pitch, yaw, 0f );
 		var offset = -rotation.Forward * distance;
 		var targetPosition = center + offset;
 

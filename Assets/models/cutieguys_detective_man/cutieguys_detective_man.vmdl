@@ -1,0 +1,182 @@
+<!-- kv3 encoding:text:version{e21c7f3c-8a33-41c5-9977-a76d3a32aa0d} format:modeldoc30:version{8c2d7a91-9c42-4bf0-883a-5a3b1762d4f1} -->
+{
+	rootNode = 
+	{
+		_class = "RootNode"
+		children = 
+		[
+			{
+				_class = "MaterialGroupList"
+				children = 
+				[
+					{
+						_class = "DefaultMaterialGroup"
+						remaps = 
+						[
+							{
+								from = "01.eye.023.vmat"
+								to = "models/cutieguys_detective_man/01_eye_023.vmat"
+							},
+							{
+								from = "hat2.001.vmat"
+								to = "models/cutieguys_detective_man/hat2_001.vmat"
+							},
+							{
+								from = "material.001.vmat"
+								to = "models/cutieguys_detective_man/material_001.vmat"
+							},
+							{
+								from = "material.249.vmat"
+								to = "models/cutieguys_detective_man/material_249.vmat"
+							},
+							{
+								from = "material.250.vmat"
+								to = "models/cutieguys_detective_man/material_250.vmat"
+							},
+							{
+								from = "material.251.vmat"
+								to = "models/cutieguys_detective_man/material_251.vmat"
+							},
+							{
+								from = "material.252.vmat"
+								to = "models/cutieguys_detective_man/material_252.vmat"
+							},
+							{
+								from = "material.253.vmat"
+								to = "models/cutieguys_detective_man/material_253.vmat"
+							},
+							{
+								from = "material.254.vmat"
+								to = "models/cutieguys_detective_man/material_254.vmat"
+							},
+							{
+								from = "material.255.vmat"
+								to = "models/cutieguys_detective_man/material_255.vmat"
+							},
+							{
+								from = "material.256.vmat"
+								to = "models/cutieguys_detective_man/material_256.vmat"
+							},
+							{
+								from = "material_8.001.vmat"
+								to = "models/cutieguys_detective_man/material_8_001.vmat"
+							},
+							{
+								from = "shirt.001.vmat"
+								to = "models/cutieguys_detective_man/shirt_001.vmat"
+							},
+						]
+						use_global_default = false
+						global_default_material = ""
+					},
+				]
+			},
+			{
+				_class = "RenderMeshList"
+				children = 
+				[
+					{
+						_class = "RenderMeshFile"
+						filename = "models/cutieguys_detective_man/cutieguys_detective_man.fbx"
+						import_translation = [ 0.0, 0.0, 0.0 ]
+						import_rotation = [ 0.0, 0.0, 0.0 ]
+						import_scale = 1.0
+						align_origin_x_type = "None"
+						align_origin_y_type = "None"
+						align_origin_z_type = "None"
+						parent_bone = ""
+						import_filter = 
+						{
+							exclude_by_default = false
+							exception_list = [  ]
+						}
+					},
+				]
+			},
+			{
+				_class = "PhysicsShapeList"
+				children = 
+				[
+					{
+						_class = "PhysicsMeshFile"
+						parent_bone = ""
+						surface_prop = "default"
+						collision_tags = "solid"
+						recenter_on_parent_bone = false
+						offset_origin = [ 0.0, 0.0, 0.0 ]
+						offset_angles = [ 0.0, 0.0, 0.0 ]
+						align_origin_x_type = "None"
+						align_origin_y_type = "None"
+						align_origin_z_type = "None"
+						filename = "models/cutieguys_detective_man/cutieguys_detective_man.fbx"
+						import_scale = 1.0
+						maxMeshVertices = 0
+						qemError = 0.0
+						import_filter = 
+						{
+							exclude_by_default = false
+							exception_list = [  ]
+						}
+					},
+				]
+			},
+			{
+				_class = "AnimationList"
+				children = 
+				[
+					{
+						_class = "AnimFile"
+						name = "idle"
+						activity_name = ""
+						activity_weight = 1
+						weight_list_name = ""
+						fade_in_time = 0.2
+						fade_out_time = 0.2
+						looping = true
+						delta = false
+						worldSpace = false
+						hidden = false
+						anim_markup_ordered = false
+						disable_compression = false
+						disable_interpolation = false
+						enable_scale = false
+						source_filename = "models/cutieguys_detective_man/idle.fbx"
+						start_frame = -1
+						end_frame = -1
+						framerate = -1.0
+						take = 0
+						reverse = false
+					},
+					{
+						_class = "AnimFile"
+						name = "jogging_with_box"
+						activity_name = ""
+						activity_weight = 1
+						weight_list_name = ""
+						fade_in_time = 0.2
+						fade_out_time = 0.2
+						looping = true
+						delta = false
+						worldSpace = false
+						hidden = false
+						anim_markup_ordered = false
+						disable_compression = false
+						disable_interpolation = false
+						enable_scale = false
+						source_filename = "models/cutieguys_detective_man/jogging_with_box.fbx"
+						start_frame = -1
+						end_frame = -1
+						framerate = -1.0
+						take = 0
+						reverse = false
+					},
+				]
+				default_root_bone_name = ""
+			},
+		]
+		model_archetype = ""
+		primary_associated_entity = ""
+		anim_graph_name = "animgraphs/cutieguys_detective_man.vanmgrph"
+		base_model_name = ""
+	}
+}

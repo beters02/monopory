@@ -3,23 +3,23 @@ using Sandbox;
 
 public sealed class PlayerState : Component
 {
-	[Property, Sync] public long OwnerId {get; set;}
+	[Sync] public long OwnerId {get; set;}
 
-	[Property, Sync] public int SpaceIndex { get; set; } = 0;
-	[Property, Sync] public int Money { get; set; } = 1500;
-	[Property, Sync] public bool IsInJail { get; set; }
-	[Property, Sync] public int JailTurnsRemaining { get; set; }
-	[Property, Sync] public int ConsecutiveDoubles { get; set; }
-	[Property, Sync] public bool SkipsNextTurn { get; set; }
-	[Property, Sync] public bool IsBankrupt { get; set; }
-	[Property, Sync] public bool IsReady { get; set; }
-	[Property, Sync] public bool IsDisconnected { get; set; }
-	[Property, Sync] public float AbandonEndsAt { get; set; }
-	[Property, Sync] public int TurnTimeoutCount { get; set; }
+	[Sync] public int SpaceIndex { get; set; } = 0;
+	[Sync] public int Money { get; set; } = 1500;
+	[Sync] public bool IsInJail { get; set; }
+	[Sync] public int JailTurnsRemaining { get; set; }
+	[Sync] public int ConsecutiveDoubles { get; set; }
+	[Sync] public bool SkipsNextTurn { get; set; }
+	[Sync] public bool IsBankrupt { get; set; }
+	[Sync] public bool IsReady { get; set; }
+	[Sync] public bool IsDisconnected { get; set; }
+	[Sync] public float AbandonEndsAt { get; set; }
+	[Sync] public int TurnTimeoutCount { get; set; }
 
-	[Property, Sync] public string PlayerName { get; set; } = "Player";
-	[Property, Sync] public int ColorSlot { get; set; } = -1;
-	[Property, Sync] public string SelectedPieceId { get; set; } = PieceCatalog.DefaultPieceId;
+	[Sync] public string PlayerName { get; set; } = "Player";
+	[Sync] public int ColorSlot { get; set; } = -1;
+	[Sync] public string SelectedPieceId { get; set; } = PieceCatalog.DefaultPieceId;
 
 	public bool IsOwner => OwnerId == Connection.Local.SteamId;
 

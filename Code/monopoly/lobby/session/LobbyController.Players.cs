@@ -8,7 +8,10 @@ public sealed partial class LobbyController
 		if ( !Networking.IsHost )
 			return false;
 
-		if ( ownerId == 0 || !HasConnection( ownerId ) || IsMarkedDisconnected( ownerId ) )
+		if ( ownerId == 0 || IsMarkedDisconnected( ownerId ) )
+			return false;
+
+		if ( !GetKnownOwnerIds().Contains( ownerId ) )
 			return false;
 
 		var normalizedPieceId = PieceCatalog.GetByIdOrDefault( pieceId ).Id;

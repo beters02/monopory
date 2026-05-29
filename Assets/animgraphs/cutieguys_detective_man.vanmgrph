@@ -9,6 +9,27 @@
 			{
 				key = 
 				{
+					m_id = 230349898
+				}
+				value = 
+				{
+					_class = "CSequenceAnimNode"
+					m_sName = "Unnamed"
+					m_vecPosition = [ -528.0, -48.0 ]
+					m_nNodeID = 
+					{
+						m_id = 230349898
+					}
+					m_sNote = ""
+					m_tagSpans = [  ]
+					m_sequenceName = "idle"
+					m_playbackSpeed = 1.0
+					m_bLoop = true
+				}
+			},
+			{
+				key = 
+				{
 					m_id = 657039596
 				}
 				value = 
@@ -37,20 +58,20 @@
 			{
 				key = 
 				{
-					m_id = 828512429
+					m_id = 791068575
 				}
 				value = 
 				{
 					_class = "CSequenceAnimNode"
 					m_sName = "Unnamed"
-					m_vecPosition = [ -512.0, -48.0 ]
+					m_vecPosition = [ -512.0, 64.0 ]
 					m_nNodeID = 
 					{
-						m_id = 828512429
+						m_id = 791068575
 					}
 					m_sNote = ""
 					m_tagSpans = [  ]
-					m_sequenceName = "idle"
+					m_sequenceName = "jogging_with_box"
 					m_playbackSpeed = 1.0
 					m_bLoop = true
 				}
@@ -82,27 +103,6 @@
 						}
 					}
 					m_IkChains = [  ]
-				}
-			},
-			{
-				key = 
-				{
-					m_id = 1493654768
-				}
-				value = 
-				{
-					_class = "CSequenceAnimNode"
-					m_sName = "Unnamed"
-					m_vecPosition = [ -496.0, 32.0 ]
-					m_nNodeID = 
-					{
-						m_id = 1493654768
-					}
-					m_sNote = ""
-					m_tagSpans = [  ]
-					m_sequenceName = "jogging"
-					m_playbackSpeed = 1.0
-					m_bLoop = true
 				}
 			},
 			{
@@ -223,7 +223,7 @@
 							{
 								m_nodeID = 
 								{
-									m_id = 828512429
+									m_id = 230349898
 								}
 								m_outputID = 
 								{
@@ -342,7 +342,7 @@
 							{
 								m_nodeID = 
 								{
-									m_id = 1493654768
+									m_id = 791068575
 								}
 								m_outputID = 
 								{
@@ -553,7 +553,7 @@
 	}
 	m_previewModels = 
 	[
-		"models/cutieguys_officer_woman/cutieguys_officer_woman.vmdl",
+		"models/cutieguys_detective_man/cutieguys_detective_man.vmdl",
 	]
 	m_boneMergeModels = [  ]
 	m_cameraSettings = 

@@ -160,12 +160,12 @@
 					<div class="lobby-action-row lobby-action-row-top">
 						<GameButton Variant="@ReadyButtonClasses" OnClick="@ToggleReady">@ReadyButtonLabel</GameButton>
 						<GameButton Variant="@StartButtonClasses" CanClick="@CanClickStartGame" OnClick="@StartGame" BlockedPopupTitle="Cannot start game" BlockedPopupMessage="@StartBlockedMessage">Start Game</GameButton>
-						<GameButton Variant="@ConfigButtonClasses" CanClick="@CanOpenConfig" OnClick="@OpenConfigMenu" BlockedPopupTitle="Host only" BlockedPopupMessage="Only the host can change lobby game settings.">Game Config</GameButton>
 						<GameButton Variant="flow-secondary-button flow-utility-button" OnClick="@CustomizePiece">Customize</GameButton>
 					</div>
 					<div class="lobby-action-row lobby-action-row-bottom">
 						<GameButton Variant="flow-secondary-button flow-back-button" OnClick="@BackToMenu">Back</GameButton>
 						<GameButton Variant="flow-secondary-button flow-utility-button" OnClick="@InviteFriends">Invite</GameButton>
+						<GameButton Variant="@ConfigButtonClasses" CanClick="@CanOpenConfig" OnClick="@OpenConfigMenu" BlockedPopupTitle="Host only" BlockedPopupMessage="Only the host can change lobby game settings.">Match Settings</GameButton>
 					</div>
 				</div>
 			}

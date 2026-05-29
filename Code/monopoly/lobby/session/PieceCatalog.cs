@@ -7,6 +7,7 @@ public sealed class PieceDefinition
 	public string Label { get; init; } = "";
 	public string Description { get; init; } = "";
 	public string ModelPath { get; init; } = "";
+	public string AnimgraphPath { get; init; } = "";
 	public Vector3 LocalVisualScale { get; init; } = Vector3.One;
 	public Vector3 LocalVisualOffset { get; init; } = Vector3.Zero;
 	public float HeightOffset { get; init; } = 4f;
@@ -14,31 +15,38 @@ public sealed class PieceDefinition
 
 public static class PieceCatalog
 {
-	public const string DefaultPieceId = "cat";
+	public const string DefaultPieceId = "officer_woman";
 
-	public static IReadOnlyList<PieceDefinition> All { get; } = new List<PieceDefinition>
+	public static IReadOnlyList<PieceDefinition> All => BuildDefinitions();
+
+	private static IReadOnlyList<PieceDefinition> BuildDefinitions()
 	{
-		new()
+		return new List<PieceDefinition>
 		{
-			Id = "cat",
-			Label = "Cat",
-			Description = "Classic cat token.",
-			ModelPath = "models/cat.vmdl",
-			LocalVisualScale = new Vector3( 0.1f, 0.1f, 0.1f ),
-			LocalVisualOffset = new Vector3( 0f, 0f, -1.3f ),
-			HeightOffset = 4.8f
-		},
-		new()
-		{
-			Id = "officer",
-			Label = "Officer",
-			Description = "Stylish officer character token.",
-			ModelPath = "models/cutieguys_officer_woman/cutieguys_officer_woman.vmdl",
-			LocalVisualScale = new Vector3( 20f, 20f, 20f ),
-			LocalVisualOffset = new Vector3( 0f, 0f, -1.3f ),
-			HeightOffset = -0.58f
-		}
-	};
+			new()
+			{
+				Id = "officer_woman",
+				Label = "Officer (Woman)",
+				Description = "Stylish officer character token.",
+				ModelPath = "models/cutieguys_officer_woman/cutieguys_officer_woman.vmdl",
+				AnimgraphPath = "animgraphs/cutieguys_officer_woman.vanmgrph",
+				LocalVisualScale = new Vector3( 20f, 20f, 20f ),
+				LocalVisualOffset = new Vector3( 0f, 0f, -1.3f ),
+				HeightOffset = 1.25f
+			},
+			new()
+			{
+				Id = "detective_man",
+				Label = "Detective (Man)",
+				Description = "Stylish detective character token.",
+				ModelPath = "models/cutieguys_detective_man/cutieguys_detective_man.vmdl",
+				AnimgraphPath = "animgraphs/cutieguys_detective_man.vanmgrph",
+				LocalVisualScale = new Vector3( 0.2f, 0.2f, 0.2f ),
+				LocalVisualOffset = new Vector3( 0f, 0f, -1.3f ),
+				HeightOffset = 1.25f
+			},
+		};
+	}
 
 	public static PieceDefinition GetByIdOrDefault( string id )
 	{
