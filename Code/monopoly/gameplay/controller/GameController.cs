@@ -9,7 +9,8 @@ public enum GamePhase
 	ResolvingSpace,
 	WaitingForBuyDecision,
 	Auctioning,
-	TurnEnded
+	TurnEnded,
+	Error
 }
 
 public enum MatchLifecycleState

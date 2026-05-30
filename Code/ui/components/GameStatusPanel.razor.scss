@@ -5,7 +5,22 @@
 
 .hud-card {
 	top: 32px;
-    	left: 32px;
+    left: 32px;
+}
+
+.hud-panel.hud-card{
+    //width: 200px;
+}
+
+.hud-card.actions {
+	left: 365px;
+	width: 200px;
+}
+
+.hud-card.actions.camera {
+	left: 32px;
+	top: 265px;
+	width: 375px;
 }
 
 .camera-mode-buttons {

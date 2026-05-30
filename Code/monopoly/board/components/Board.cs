@@ -55,8 +55,7 @@ public sealed class Board : Component
 	{
 		instance = this;
 
-		var debugConvarParsed = bool.TryParse(ConsoleSystem.GetValue( "debug" ), out bool debugConvar);
-		if (debugConvarParsed && debugConvar)
+		if (MonopolyApp.IsDebugEnabled)
 			DebugEnabled = true;
 
 		lastProcBoardWorldScale = ProceduralBoardWorldScale;

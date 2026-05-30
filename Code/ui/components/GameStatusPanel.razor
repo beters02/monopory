@@ -8,24 +8,17 @@
 <root>
 	<Sandbox.ui.components.HudPanel.HudPanel Variant="hud-card">
 		<ChildContent>
-			<HudPanelTitle>#game.name</HudPanelTitle>
-			<HudPanelSubtitle>Local</HudPanelSubtitle>
-			<HudPanelBody>Money: $@LocalPlayerMoney</HudPanelBody>
-			<HudPanelEmptyLine></HudPanelEmptyLine>
-			<HudPanelEmptyLine></HudPanelEmptyLine>
-			<HudPanelSubtitle>Camera</HudPanelSubtitle>
-			<div class="camera-mode-buttons">
-				<GameButton Variant="@GetCameraModeButtonClasses( BoardCameraMode.Default )" OnClick="@(() => SetCameraMode( BoardCameraMode.Default ))">Default</GameButton>
-				<GameButton Variant="@GetCameraModeButtonClasses( BoardCameraMode.Board )" OnClick="@(() => SetCameraMode( BoardCameraMode.Board ))">Board</GameButton>
-				<GameButton Variant="@GetCameraModeButtonClasses( BoardCameraMode.FreeCam )" OnClick="@(() => SetCameraMode( BoardCameraMode.FreeCam ))">Free Cam</GameButton>
-			</div>
-			<HudPanelEmptyLine></HudPanelEmptyLine>
-			<HudPanelEmptyLine></HudPanelEmptyLine>
 			<HudPanelSubtitle>Game</HudPanelSubtitle>
 			<HudPanelBody>Time Left: @CurrentTurnTimeText</HudPanelBody>
 			<HudPanelBody>Current Player: @CurrentPlayerName</HudPanelBody>
 			<HudPanelBody>Last Roll: @GameRef.LastDieA + @GameRef.LastDieB</HudPanelBody>
-			<HudPanelBody>Phase: @GameRef.Phase</HudPanelBody>
+			<HudPanelBody>Phase: @GameRef.ParseCurrentGamePhaseWithCurrentPlayer()</HudPanelBody>		
+		</ChildContent>
+	</Sandbox.ui.components.HudPanel.HudPanel>
+
+	<Sandbox.ui.components.HudPanel.HudPanel Variant="hud-card actions">
+		<ChildContent>
+			<HudPanelSubtitle>Actions</HudPanelSubtitle>
 			@if ( IsCurrentPlayerInJail )
 			{
 				<HudPanelBody>Jail Turns: @CurrentPlayer.JailTurnsRemaining</HudPanelBody>
@@ -46,6 +39,17 @@
 			{
 				<GameButton Variant="@EndTurnButtonClasses" CanClick="@CanEndTurn" OnClick="@EndTurn" BlockedPopupTitle="Cannot end turn yet" BlockedPopupMessage="@GetEndTurnBlockedMessage()">End Turn</GameButton>
 			}
+		</ChildContent>
+	</Sandbox.ui.components.HudPanel.HudPanel>
+
+	<Sandbox.ui.components.HudPanel.HudPanel Variant="hud-card actions camera">
+		<ChildContent>
+			<HudPanelSubtitle>Camera</HudPanelSubtitle>
+			<div class="camera-mode-buttons">
+				<GameButton Variant="@GetCameraModeButtonClasses( BoardCameraMode.Default )" OnClick="@(() => SetCameraMode( BoardCameraMode.Default ))">Default</GameButton>
+				<GameButton Variant="@GetCameraModeButtonClasses( BoardCameraMode.Board )" OnClick="@(() => SetCameraMode( BoardCameraMode.Board ))">Board</GameButton>
+				<GameButton Variant="@GetCameraModeButtonClasses( BoardCameraMode.FreeCam )" OnClick="@(() => SetCameraMode( BoardCameraMode.FreeCam ))">Free Cam</GameButton>
+			</div>
 		</ChildContent>
 	</Sandbox.ui.components.HudPanel.HudPanel>
 </root>
