@@ -1,5 +1,6 @@
 @using Sandbox;
 @using Sandbox.UI;
+@using Sandbox.ui.components;
 @using Sandbox.ui.components.buttons
 @using System;
 @inherits Panel
@@ -20,14 +21,53 @@
 							<div class="trade-money-pill">$@SenderMoney</div>
 							<GameButton OnClick="@(() => AdjustSenderMoney( 50 ))">+</GameButton>
 						</div>
-						<div class="trade-property-picker">
-							@foreach ( var propertyIndex in LocalOwnedPropertyIndexes )
-							{
-								var property = GameRef.Board.GetSpaceDef( propertyIndex );
-								<GameButton Variant="@GetComposerPropertyClasses( propertyIndex, true )" OnClick="@(() => ToggleSenderProperty( propertyIndex ))">
-									@property?.DisplayName
-								</GameButton>
-							}
+						<div class="trade-property-sections">
+							<div class="trade-property-section trade-giving-section">
+								<div class="trade-property-section-title">Giving</div>
+								<div class="trade-property-picker" @ref="SenderGivingScrollPanel">
+									@if ( GetGivingPropertyIndexes( true ).Count == 0 )
+									{
+										<div class="trade-property-empty">No properties selected</div>
+									}
+									else
+									{
+										@foreach ( var propertyIndex in GetGivingPropertyIndexes( true ) )
+										{
+											var property = GameRef.Board.GetSpaceDef( propertyIndex );
+											<GameButton Variant="@GetComposerPropertyClasses( propertyIndex, true )" OnClick="@(() => ToggleSenderProperty( propertyIndex ))">
+												<ChildContent>
+													<div class="trade-property-selected-mark">+</div>
+													<div class="trade-property-chip-label">@property?.DisplayName</div>
+												</ChildContent>
+											</GameButton>
+										}
+									}
+								</div>
+								<MonoScrollbar Target="@SenderGivingScrollPanel" Variant="trade-property-scrollbar"></MonoScrollbar>
+							</div>
+							<div class="trade-property-section trade-has-section">
+								<div class="trade-property-section-title">Has</div>
+								<div class="trade-property-picker" @ref="SenderHasScrollPanel">
+									@if ( GetHasPropertyIndexes( true ).Count == 0 )
+									{
+										<div class="trade-property-empty">No properties available</div>
+									}
+									else
+									{
+										@foreach ( var propertyIndex in GetHasPropertyIndexes( true ) )
+										{
+											var property = GameRef.Board.GetSpaceDef( propertyIndex );
+											<GameButton Variant="@GetComposerPropertyClasses( propertyIndex, true )" OnClick="@(() => ToggleSenderProperty( propertyIndex ))">
+												<ChildContent>
+													<div class="trade-property-selected-mark">+</div>
+													<div class="trade-property-chip-label">@property?.DisplayName</div>
+												</ChildContent>
+											</GameButton>
+										}
+									}
+								</div>
+								<MonoScrollbar Target="@SenderHasScrollPanel" Variant="trade-property-scrollbar"></MonoScrollbar>
+							</div>
 						</div>
 					</div>
 
@@ -54,14 +94,53 @@
 							<div class="trade-money-pill">$@ReceiverMoney</div>
 							<GameButton OnClick="@(() => AdjustReceiverMoney( 50 ))">+</GameButton>
 						</div>
-						<div class="trade-property-picker">
-							@foreach ( var propertyIndex in ReceiverOwnedPropertyIndexes )
-							{
-								var property = GameRef.Board.GetSpaceDef( propertyIndex );
-								<GameButton Variant="@GetComposerPropertyClasses( propertyIndex, false )" OnClick="@(() => ToggleReceiverProperty( propertyIndex ))">
-									@property?.DisplayName
-								</GameButton>
-							}
+						<div class="trade-property-sections">
+							<div class="trade-property-section trade-giving-section">
+								<div class="trade-property-section-title">Giving</div>
+								<div class="trade-property-picker" @ref="ReceiverGivingScrollPanel">
+									@if ( GetGivingPropertyIndexes( false ).Count == 0 )
+									{
+										<div class="trade-property-empty">No properties selected</div>
+									}
+									else
+									{
+										@foreach ( var propertyIndex in GetGivingPropertyIndexes( false ) )
+										{
+											var property = GameRef.Board.GetSpaceDef( propertyIndex );
+											<GameButton Variant="@GetComposerPropertyClasses( propertyIndex, false )" OnClick="@(() => ToggleReceiverProperty( propertyIndex ))">
+												<ChildContent>
+													<div class="trade-property-selected-mark">+</div>
+													<div class="trade-property-chip-label">@property?.DisplayName</div>
+												</ChildContent>
+											</GameButton>
+										}
+									}
+								</div>
+								<MonoScrollbar Target="@ReceiverGivingScrollPanel" Variant="trade-property-scrollbar"></MonoScrollbar>
+							</div>
+							<div class="trade-property-section trade-has-section">
+								<div class="trade-property-section-title">Has</div>
+								<div class="trade-property-picker" @ref="ReceiverHasScrollPanel">
+									@if ( GetHasPropertyIndexes( false ).Count == 0 )
+									{
+										<div class="trade-property-empty">No properties available</div>
+									}
+									else
+									{
+										@foreach ( var propertyIndex in GetHasPropertyIndexes( false ) )
+										{
+											var property = GameRef.Board.GetSpaceDef( propertyIndex );
+											<GameButton Variant="@GetComposerPropertyClasses( propertyIndex, false )" OnClick="@(() => ToggleReceiverProperty( propertyIndex ))">
+												<ChildContent>
+													<div class="trade-property-selected-mark">+</div>
+													<div class="trade-property-chip-label">@property?.DisplayName</div>
+												</ChildContent>
+											</GameButton>
+										}
+									}
+								</div>
+								<MonoScrollbar Target="@ReceiverHasScrollPanel" Variant="trade-property-scrollbar"></MonoScrollbar>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -89,6 +168,10 @@
 	[Parameter] public Action<int> OnToggleReceiverProperty { get; set; }
 	[Parameter] public Action OnSend { get; set; }
 
+	private Panel SenderGivingScrollPanel = null!;
+	private Panel SenderHasScrollPanel = null!;
+	private Panel ReceiverGivingScrollPanel = null!;
+	private Panel ReceiverHasScrollPanel = null!;
 	private int LocalReceiverPlayerIndex = -1;
 
 	private int EffectiveReceiverPlayerIndex =>
@@ -123,6 +206,20 @@
 	private void ToggleSenderProperty( int propertyIndex ) => OnToggleSenderProperty?.Invoke( propertyIndex );
 	private void ToggleReceiverProperty( int propertyIndex ) => OnToggleReceiverProperty?.Invoke( propertyIndex );
 	private void Send() => OnSend?.Invoke();
+
+	private List<int> GetGivingPropertyIndexes( bool senderSide )
+	{
+		var ownedIndexes = senderSide ? LocalOwnedPropertyIndexes : ReceiverOwnedPropertyIndexes;
+		var selectedIndexes = senderSide ? SenderPropertyIndexes : ReceiverPropertyIndexes;
+		return ownedIndexes.Where( selectedIndexes.Contains ).ToList();
+	}
+
+	private List<int> GetHasPropertyIndexes( bool senderSide )
+	{
+		var ownedIndexes = senderSide ? LocalOwnedPropertyIndexes : ReceiverOwnedPropertyIndexes;
+		var selectedIndexes = senderSide ? SenderPropertyIndexes : ReceiverPropertyIndexes;
+		return ownedIndexes.Where( index => !selectedIndexes.Contains( index ) ).ToList();
+	}
 
 	private string GetComposerPropertyClasses( int propertyIndex, bool senderSide )
 	{

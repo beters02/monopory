@@ -1,6 +1,7 @@
 @import "../GameTheme.scss";
 @import "buttons/GameButton.razor.scss";
 @import "buttons/CloseButton.razor.scss";
+@import "MonoScrollbar.razor.scss";
 
 
 .trade-composer-backdrop {
@@ -21,8 +22,9 @@
 .trade-composer-modal {
 	position: relative;
 
-	width: 680px;
-	min-height: 330px;
+	width: 720px;
+	height: 620px;
+	max-height: 86%;
 	padding: $monopoly-panel-padding;
 
 	background-color: $monopoly-board;
@@ -40,8 +42,9 @@
 
 .trade-composer-modal .trade-modal-close {
 	position: absolute;
-	top: 12px;
-	right: 12px;
+	top: 10px;
+	right: 10px;
+	z-index: 10;
 }
 
 .trade-composer-modal .trade-modal-title {
@@ -53,23 +56,34 @@
 }
 
 .trade-composer-modal .trade-editor {
+	flex: 1;
+	min-height: 0;
+
 	display: flex;
-	gap: 22px;
+	gap: 18px;
+	align-items: stretch;
 }
 
 .trade-composer-modal .trade-side {
 	flex: 1;
 	min-width: 0;
+	min-height: 0;
+	padding: 12px;
 
 	display: flex;
 	flex-direction: column;
-	gap: 12px;
+	gap: 10px;
+
+	background-color: $monopoly-board-surface;
+	border: 2px solid $monopoly-board-surface-line;
+	border-radius: $monopoly-radius-control;
 }
 
 .trade-composer-modal .trade-player-name {
-	text-align: center;
-	font-size: 17px;
+	text-align: left;
+	font-size: $monopoly-font-panel-title;
 	font-weight: 900;
+	line-height: 22px;
 	white-space: nowrap;
 	text-overflow: ellipsis;
 	overflow: visible;
@@ -84,7 +98,7 @@
 
 .trade-composer-modal .trade-target-empty {
 	width: 100%;
-	height: 32px;
+	height: $monopoly-control-height-small;
 	align-items: center;
 	justify-content: center;
 
@@ -93,15 +107,15 @@
 	border-radius: $monopoly-radius-board;
 	color: $monopoly-card-ink-soft;
 
-	font-size: 13px;
-	font-weight: 800;
+	font-size: $monopoly-font-small;
+	font-weight: 900;
 	text-transform: uppercase;
 }
 
 .trade-composer-modal .trade-target {
 	width: 100%;
 	min-width: 0;
-	height: 32px;
+	height: $monopoly-control-height-small;
 	margin: 0;
 	padding: 0 8px;
 	cursor: pointer;
@@ -110,13 +124,13 @@
 	background-color: $monopoly-card-ink-surface;
 	color: $monopoly-ink;
 	border: 2px solid $monopoly-card-ink-line;
-	border-radius: $monopoly-radius-board;
+	border-radius: $monopoly-radius-control;
 
 	flex-direction: row;
 	align-items: center;
 	justify-content: center;
 
-	font-size: 20px;
+	font-size: $monopoly-font-button;
 	font-weight: 900;
 	text-align: center;
 	white-space: nowrap;
@@ -169,7 +183,7 @@
 .trade-composer-modal .trade-money-row {
 	display: flex;
 	align-items: center;
-	justify-content: center;
+	justify-content: flex-start;
 	gap: 8px;
 }
 
@@ -185,12 +199,12 @@
 
 	background-color: $monopoly-ink;
 	color: $monopoly-board;
-	border-radius: $monopoly-radius-board;
+	border-radius: $monopoly-radius-control;
 }
 
 .trade-composer-modal .trade-money-pill {
-	min-width: 82px;
-	height: 34px;
+	min-width: 88px;
+	height: $monopoly-control-height-small;
 	padding: 0 12px;
 
 	align-items: center;
@@ -198,7 +212,7 @@
 
 	background-color: $monopoly-gold;
 	border: 2px solid $monopoly-ink;
-	border-radius: $monopoly-radius-board;
+	border-radius: $monopoly-radius-control;
 	color: $monopoly-ink;
 
 	font-size: 16px;
@@ -206,54 +220,194 @@
 }
 
 .trade-composer-modal .trade-swap-column {
-	width: 54px;
-	min-height: 190px;
+	width: 48px;
+	min-height: 0;
 
 	align-items: center;
 	justify-content: center;
 
 	background-color: $monopoly-ink;
-	border-radius: 24px;
+	border-radius: $monopoly-radius-panel;
 	color: $monopoly-board;
 
-	font-size: 18px;
+	font-size: $monopoly-font-panel-title;
 	font-weight: 900;
 }
 
 .trade-composer-modal .trade-property-picker {
-	min-height: 96px;
+	min-height: 42px;
 
 	display: flex;
 	flex-wrap: wrap;
 	align-content: flex-start;
+	gap: 8px;
+}
+
+.trade-composer-modal .trade-property-sections {
+	flex: 1;
+	min-height: 0;
+
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.trade-composer-modal .trade-property-section {
+	position: relative;
+	display: flex;
+	flex-direction: column;
 	gap: 6px;
+	min-height: 0;
+}
+
+.trade-composer-modal .trade-property-section-title {
+	font-size: $monopoly-font-small;
+	font-weight: 900;
+	line-height: 14px;
+	text-transform: uppercase;
+	letter-spacing: 0.6px;
+	color: $monopoly-card-ink-soft;
+}
+
+.trade-composer-modal .trade-giving-section {
+	min-height: 84px;
+	max-height: 158px;
+	padding: 8px;
+	flex-shrink: 0;
+
+	background-color: $monopoly-success-soft;
+	border: 2px solid $monopoly-card-ink-line;
+	border-radius: $monopoly-radius-control;
+}
+
+.trade-composer-modal .trade-has-section {
+	flex: 1;
+	min-height: 0;
+	padding: 8px;
+
+	background-color: $monopoly-card-ink-surface;
+	border: 2px solid $monopoly-board-surface-line;
+	border-radius: $monopoly-radius-control;
+}
+
+.trade-composer-modal .trade-giving-section .trade-property-picker,
+.trade-composer-modal .trade-has-section .trade-property-picker {
+	overflow-x: hidden;
+	overflow-y: scroll;
+	padding-right: 18px;
+}
+
+.trade-composer-modal .trade-has-section .trade-property-picker {
+	flex: 1;
+	min-height: 0;
+}
+
+.trade-composer-modal .trade-property-scrollbar {
+	top: 28px;
+	right: 8px;
+	bottom: 8px;
+}
+
+.trade-composer-modal .trade-property-empty {
+	width: 100%;
+	min-height: $monopoly-control-height-small;
+	padding: 0 10px;
+
+	align-items: center;
+	justify-content: center;
+
+	color: $monopoly-card-ink-soft;
+	font-size: $monopoly-font-small;
+	font-weight: 900;
+	text-align: center;
+	text-transform: uppercase;
 }
 
 .trade-composer-modal .trade-property-chip {
-	min-height: 30px;
+	position: relative;
+	min-height: $monopoly-control-height-small;
 	margin: 0;
-	padding: 5px 8px;
+	padding: 0 9px 0 30px;
 
-	border: 2px solid $monopoly-card-ink-line;
-	border-radius: $monopoly-radius-board;
+	border: 2px solid $monopoly-property-border;
+	border-radius: $monopoly-radius-control;
 
 	color: $monopoly-ink;
-	font-size: 12px;
-	font-weight: 800;
-	text-align: center;
-}
-
-.trade-composer-modal .trade-property-chip {
-	max-width: 132px;
-	color: $monopoly-text;
+	font-size: $monopoly-font-small;
+	font-weight: 900;
+	text-align: left;
 	white-space: nowrap;
 	text-overflow: ellipsis;
 	overflow: hidden;
+	opacity: 0.72;
+	filter: saturate(0.72);
+	align-items: center;
+	justify-content: flex-start;
+	box-shadow: none;
 }
 
 .trade-composer-modal .trade-property-chip.selected {
 	border-color: $monopoly-ink;
+	opacity: 1;
+	filter: saturate(1.08);
+	box-shadow: 0 0 0 2px $monopoly-gold-soft, $monopoly-control-shadow;
+	transform: translateY(-1px);
+}
+
+.trade-composer-modal .trade-giving-section .trade-property-chip {
+	opacity: 1;
+	filter: saturate(1.08);
+}
+
+.trade-composer-modal .trade-has-section .trade-property-chip {
+	opacity: 0.9;
+	filter: saturate(0.9);
+}
+
+.trade-composer-modal .trade-property-chip:hover {
+	opacity: 0.92;
+	filter: saturate(0.95);
 	box-shadow: 0 0 0 2px $monopoly-card-ink-line;
+}
+
+.trade-composer-modal .trade-property-chip.selected:hover {
+	opacity: 1;
+	filter: saturate(1.08);
+	box-shadow: 0 0 0 2px $monopoly-gold-soft, $monopoly-control-shadow;
+}
+
+.trade-composer-modal .trade-property-selected-mark {
+	position: absolute;
+	left: 7px;
+	top: 7px;
+	width: 18px;
+	height: 18px;
+
+	align-items: center;
+	justify-content: center;
+
+	background-color: $monopoly-board;
+	border: 2px solid $monopoly-ink;
+	border-radius: 9px;
+	color: $monopoly-ink;
+
+	font-size: 11px;
+	font-weight: 900;
+	line-height: 14px;
+	opacity: 0;
+}
+
+.trade-composer-modal .trade-property-chip.selected .trade-property-selected-mark {
+	opacity: 1;
+}
+
+.trade-composer-modal .trade-property-chip-label {
+	width: 100%;
+	min-width: 0;
+	text-align: left;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
 }
 
 .trade-composer-modal .trade-property-chip.color-brown { background-color: $property-brown; }
@@ -271,7 +425,7 @@
 .trade-composer-modal .trade-send-button {
 	align-self: center;
 	min-width: 0;
-	width: 104px;
+	width: 140px;
 	height: $monopoly-control-height;
 	margin: 0;
 	padding: 0 10px;

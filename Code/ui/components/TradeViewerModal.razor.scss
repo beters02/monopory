@@ -66,16 +66,22 @@
 .trade-summary-side {
 	flex: 1;
 	min-width: 0;
+	padding: 12px;
 
 	display: flex;
 	flex-direction: column;
-	gap: 12px;
+	gap: 10px;
+
+	background-color: $monopoly-board-surface;
+	border: 2px solid $monopoly-board-surface-line;
+	border-radius: $monopoly-radius-control;
 }
 
 .trade-player-name {
-	text-align: center;
-	font-size: 17px;
+	text-align: left;
+	font-size: $monopoly-font-panel-title;
 	font-weight: 900;
+	line-height: 22px;
 	white-space: nowrap;
 	text-overflow: ellipsis;
 	overflow: hidden;
@@ -172,21 +178,21 @@
 }
 
 .trade-summary-side .trade-property-chip {
-	min-height: 30px;
+	min-height: $monopoly-control-height-small;
 	margin: 0;
-	padding: 5px 8px;
+	padding: 0 10px;
 
-	border: 2px solid $monopoly-card-ink-line;
-	border-radius: $monopoly-radius-board;
+	border: 2px solid $monopoly-property-border;
+	border-radius: $monopoly-radius-control;
 
 	color: $monopoly-ink;
-	font-size: 12px;
-	font-weight: 800;
-	text-align: center;
+	font-size: $monopoly-font-small;
+	font-weight: 900;
+	text-align: left;
+	align-items: center;
 }
 
 .trade-summary-side .trade-property-chip {
-	max-width: 132px;
 	color: $monopoly-text;
 	white-space: nowrap;
 	text-overflow: ellipsis;
