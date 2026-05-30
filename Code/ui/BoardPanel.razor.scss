@@ -6,8 +6,8 @@
 	position: absolute;
 	left: 0;
 	top: 0;
-	background: #1399d6;
-	border: 8px solid #1399d6;
+	background: $monopoly-board-outline;
+	border: 8px solid $monopoly-board-outline;
 	font-family: $monopoly-font-family;
 	color: $monopoly-ink;
 	pointer-events: none;
@@ -19,7 +19,7 @@
 
 .board-center {
 	position: absolute;
-	background: #9d9d9d;
+	background: $monopoly-board-center;
 	border: 6px solid $monopoly-ink;
 }
 
@@ -226,7 +226,7 @@
 
 .type-chance .space-icon {
 	font-size: 58px;
-	color: #111111;
+	color: $monopoly-board-icon;
 }
 
 .type-chance .space-icon-image {
@@ -306,7 +306,7 @@
 
 .type-communitychest .space-icon {
 	font-size: 32px;
-	color: #296c9e;
+	color: $monopoly-chest-icon;
 }
 
 .type-tax .space-icon {
@@ -315,7 +315,7 @@
 
 .type-utility .space-icon {
 	font-size: 28px;
-	color: #111111;
+	color: $monopoly-board-icon;
 }
 
 .corner-icon {
@@ -329,7 +329,7 @@
 
 .type-go .corner-icon {
 	font-size: 55px;
-	color: #c51e24;
+	color: $monopoly-go-icon;
 }
 
 .type-jail .corner-icon {
@@ -340,7 +340,7 @@
 	width: 65px;
 	height: 65px;
 	border-radius: 29px;
-	background-color: #e8df6a;
+	background-color: $monopoly-free-parking;
 	border: 4px solid $monopoly-ink;
 	align-items: center;
 	justify-content: center;
@@ -348,7 +348,7 @@
 
 .type-gotojail .corner-icon {
 	font-size: 42px;
-	color: #1f4f8f;
+	color: $monopoly-go-to-jail;
 }
 
 .corner-title {
@@ -373,7 +373,7 @@
 	text-align: center;
 	white-space: nowrap;
 	overflow: visible;
-	color: #0f4d1a;
+	color: $monopoly-free-parking-bank;
 	z-index: 4;
 }
 
@@ -385,7 +385,10 @@
 	margin-top: 2px;
 	font-size: 28px;
 	font-weight: 900;
-	color: #1ec5af;
+	color: $monopoly-go-arrow;
 	text-align: center;
 	justify-content: center;
 }
+
+
+

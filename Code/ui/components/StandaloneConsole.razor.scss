@@ -1,3 +1,5 @@
+@import "../GameTheme.scss";
+
 StandaloneConsole {
 	position: absolute;
 	top: 0;
@@ -27,11 +29,11 @@ StandaloneConsole {
 		right: 0;
 		height: 46%;
 		min-height: 320px;
-		background-color: rgba( 9, 10, 12, 0.94 );
-		border-bottom: 1px solid rgba( 255, 255, 255, 0.16 );
-		box-shadow: 0 16px 44px rgba( 0, 0, 0, 0.42 );
+		background-color: $monopoly-panel-strong;
+		border-bottom: 1px solid $monopoly-panel-line;
+		box-shadow: $monopoly-panel-shadow-strong;
 		font-family: Consolas, "Courier New", monospace;
-		color: #d7dde7;
+		color: $monopoly-text;
 		display: flex;
 		flex-direction: column;
 	}
@@ -71,22 +73,22 @@ StandaloneConsole {
 		gap: 8px;
 
 		&.cmd .standalone-console-message {
-			color: #9fd0ff;
+			color: $monopoly-board-outline;
 		}
 
 		&.wrn .standalone-console-message {
-			color: #ffd071;
+			color: $monopoly-gold-hover;
 		}
 
 		&.err .standalone-console-message {
-			color: #ff7676;
+			color: $monopoly-danger-hover;
 		}
 	}
 
 	.standalone-console-time {
 		width: 64px;
 		flex-shrink: 0;
-		color: rgba( 215, 221, 231, 0.48 );
+		color: $monopoly-text-soft;
 	}
 
 	.standalone-console-message {
@@ -97,8 +99,8 @@ StandaloneConsole {
 	.standalone-console-toolbar {
 		height: 36px;
 		padding: 4px 6px;
-		border-top: 1px solid rgba( 255, 255, 255, 0.12 );
-		background-color: rgba( 0, 0, 0, 0.34 );
+		border-top: 1px solid $monopoly-panel-line-soft;
+		background-color: $monopoly-disabled-surface;
 		display: flex;
 		flex-direction: row;
 		align-items: center;
@@ -109,9 +111,9 @@ StandaloneConsole {
 	.standalone-console-filter {
 		height: 28px;
 		border-radius: 2px;
-		background-color: rgba( 255, 255, 255, 0.08 );
-		border: 1px solid rgba( 255, 255, 255, 0.13 );
-		color: #f2f5f8;
+		background-color: $monopoly-surface-soft;
+		border: 1px solid $monopoly-panel-line-soft;
+		color: $monopoly-text;
 		font-size: 13px;
 		padding: 5px 8px;
 	}
@@ -129,9 +131,9 @@ StandaloneConsole {
 		height: 28px;
 		min-width: 36px;
 		border-radius: 2px;
-		border: 1px solid rgba( 255, 255, 255, 0.12 );
-		background-color: rgba( 255, 255, 255, 0.06 );
-		color: rgba( 242, 245, 248, 0.82 );
+		border: 1px solid $monopoly-panel-line-soft;
+		background-color: $monopoly-surface-soft;
+		color: $monopoly-text-muted;
 		font-size: 12px;
 		font-weight: 700;
 		padding: 0 9px;
@@ -139,20 +141,20 @@ StandaloneConsole {
 		justify-content: center;
 
 		&:hover {
-			background-color: rgba( 255, 255, 255, 0.12 );
+			background-color: $monopoly-surface-hover;
 		}
 
 		&.active.msg,
 		&.active {
-			color: #f2f5f8;
+			color: $monopoly-text;
 		}
 
 		&.wrn.active {
-			color: #ffd071;
+			color: $monopoly-gold-hover;
 		}
 
 		&.err.active {
-			color: #ff7676;
+			color: $monopoly-danger-hover;
 		}
 	}
 
@@ -161,3 +163,6 @@ StandaloneConsole {
 		text-transform: uppercase;
 	}
 }
+
+
+

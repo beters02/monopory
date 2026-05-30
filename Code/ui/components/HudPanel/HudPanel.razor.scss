@@ -1,14 +1,17 @@
+@import "../../GameTheme.scss";
+
 .hud-panel {
     position: absolute;
     
     width: 320px;
     padding: 20px;
 
-    background-color: rgba(10, 10, 10, 0.85);
-    border-radius: 16px;
+    background-color: $monopoly-panel;
+    border: 1px solid $monopoly-panel-line;
+    border-radius: $monopoly-radius-panel;
 
-    color: white;
-    font-family: Poppins;
+    color: $monopoly-text;
+    font-family: $monopoly-font-family;
 
     flex-direction: column;
     gap: 8px;
@@ -36,3 +39,6 @@
 .hud-panel-empty-line {
     min-height: 8px;
 }
+
+
+

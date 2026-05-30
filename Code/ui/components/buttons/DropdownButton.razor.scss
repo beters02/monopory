@@ -84,7 +84,7 @@
 	background-color: $monopoly-board;
 	border: 3px solid $monopoly-ink;
 	border-radius: $monopoly-radius-board;
-	box-shadow: 0 12px 30px rgba(0, 0, 0, 0.34);
+	box-shadow: 0 12px 30px $monopoly-disabled-surface;
 
 	display: flex;
 	flex-direction: column;
@@ -100,7 +100,7 @@
 	margin: 0;
 	padding: 6px 8px;
 
-	background-color: rgba(5, 5, 5, 0.08);
+	background-color: $monopoly-card-ink-surface;
 	border: 0;
 	border-radius: $monopoly-radius-board;
 	color: $monopoly-ink;
@@ -144,10 +144,13 @@
 }
 
 .dropdown-item:hover {
-	background-color: rgba(5, 5, 5, 0.14);
+	background-color: $monopoly-card-ink-surface-hover;
 }
 
 .dropdown-item.selected {
 	background-color: $monopoly-gold;
 	color: $monopoly-ink;
 }
+
+
+

@@ -20,7 +20,7 @@
 	left: -4096px;
 	right: -4096px;
 	bottom: -4096px;
-	background-color: rgba(0, 0, 0, 0);
+	background-color: $monopoly-transparent;
 	pointer-events: all;
 	z-index: 1;
 }
@@ -38,10 +38,10 @@
 	min-height: 12px;
 	padding: 0;
 	margin: 0;
-	border: 1px solid rgba(255, 255, 255, 0.24);
+	border: 1px solid $monopoly-panel-line;
 	border-radius: 2px;
-	background-color: rgba(255, 255, 255, 0.08);
-	color: rgba(255, 255, 255, 0.72);
+	background-color: $monopoly-surface-soft;
+	color: $monopoly-text-muted;
 	font-size: 7px;
 	font-weight: 900;
 	line-height: 9px;
@@ -50,16 +50,16 @@
 }
 
 .mono-scrollbar-button:hover {
-	background-color: rgba(255, 255, 255, 0.16);
-	color: rgba(255, 255, 255, 0.96);
+	background-color: $monopoly-surface-strong;
+	color: $monopoly-text;
 }
 
 .mono-scrollbar-track {
 	position: relative;
 	flex: 1;
 	min-height: 0;
-	background-color: rgba(255, 255, 255, 0.06);
-	border: 1px solid rgba(255, 255, 255, 0.12);
+	background-color: $monopoly-surface-soft;
+	border: 1px solid $monopoly-surface-hover;
 	border-radius: 2px;
 	pointer-events: all;
 	z-index: 2;
@@ -74,8 +74,11 @@
 	margin: 0;
 	border: 0;
 	border-radius: 2px;
-	background-color: rgba(217, 180, 95, 0.9);
-	box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.3);
+	background-color: $monopoly-gold;
+	box-shadow: $monopoly-inset-shadow;
 	cursor: ns-resize;
 	pointer-events: all;
 }
+
+
+

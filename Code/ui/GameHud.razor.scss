@@ -43,7 +43,7 @@ GameHud {
 		bottom: 0;
 		z-index: 70;
 
-		background-color: rgba(8, 17, 15, 0.74);
+		background-color: $monopoly-screen-tint;
 
 		display: flex;
 		align-items: center;
@@ -60,7 +60,7 @@ GameHud {
 		background-color: $monopoly-board;
 		border: 4px solid $monopoly-ink;
 		border-radius: $monopoly-radius-board;
-		box-shadow: 0 20px 70px rgba(0, 0, 0, 0.42);
+		box-shadow: 0 20px 70px $monopoly-disabled-surface;
 
 		display: flex;
 		align-items: center;
@@ -73,7 +73,7 @@ GameHud {
 	.host-recovery-spinner {
 		width: 62px;
 		height: 62px;
-		border: 7px solid rgba(18, 31, 29, 0.16);
+		border: 7px solid $monopoly-card-ink-surface-hover;
 		border-top-color: $monopoly-gold;
 		border-right-color: $monopoly-danger;
 		border-radius: 50%;
@@ -104,3 +104,6 @@ GameHud {
 		opacity: 0.72;
 	}
 }
+
+
+

@@ -58,7 +58,7 @@
 	text-align: center;
 	font-size: 18px;
 	font-weight: 800;
-	color: rgba(255, 255, 255, 0.82);
+	color: $monopoly-text-muted;
 }
 
 
@@ -68,7 +68,7 @@
 	align-items: center;
 	min-height: 52px;
 
-	color: rgba(255, 255, 255, 0.52);
+	color: $monopoly-text-soft;
 	font-size: 15px;
 	font-weight: 700;
 }
@@ -96,7 +96,7 @@
 	cursor: pointer;
 	pointer-events: all;
 
-	background-color: rgba(255, 255, 255, 0.02);
+	background-color: $monopoly-surface;
 	border: 0;
 	border-radius: 4px;
 	color: $monopoly-text;
@@ -111,7 +111,7 @@
 }
 
 .trade-row-main:hover {
-	background-color: rgba(255, 255, 255, 0.1);
+	background-color: $monopoly-surface-hover;
 }
 
 .trade-party {
@@ -136,7 +136,7 @@
 
 .trade-arrow {
 	flex-shrink: 0;
-	color: rgba(255, 255, 255, 0.6);
+	color: $monopoly-text-muted;
 	font-size: 11px;
 	font-weight: 900;
 }
@@ -150,20 +150,20 @@
 	align-items: center;
 	justify-content: center;
 
-	background-color: rgba(255, 255, 255, 0.15);
-	border: 1px solid rgba(255, 255, 255, 0.5);
+	background-color: $monopoly-surface-strong;
+	border: 1px solid $monopoly-selected-ring-soft;
 	border-radius: 2px;
 }
 
 .trade-view-status.viewing {
-	background-color: rgba(255, 255, 255, 0.28);
-	border-color: rgba(255, 255, 255, 0.75);
+	background-color: $monopoly-surface-selected;
+	border-color: $monopoly-selected-ring;
 }
 
 .trade-eye-outline {
 	width: 8px;
 	height: 5px;
-	border: 1px solid rgba(255, 255, 255, 0.55);
+	border: 1px solid $monopoly-selected-ring-soft;
 	border-radius: 50%;
 
 	align-items: center;
@@ -173,16 +173,16 @@
 .trade-eye-pupil {
 	width: 2px;
 	height: 2px;
-	background-color: rgba(255, 255, 255, 0.7);
+	background-color: $monopoly-text-muted;
 	border-radius: 50%;
 }
 
 .trade-view-status.viewing .trade-eye-outline {
-	border-color: rgba(255, 255, 255, 0.85);
+	border-color: $monopoly-selected-ring;
 }
 
 .trade-view-status.viewing .trade-eye-pupil {
-	background-color: rgba(255, 255, 255, 0.95);
+	background-color: $monopoly-text;
 }
 
 .trade-eye-slash {
@@ -190,7 +190,7 @@
 	width: 11px;
 	height: 1px;
 
-	background-color: rgba(255, 255, 255, 0.7);
+	background-color: $monopoly-text-muted;
 	transform: rotate(-35deg);
 }
 
@@ -227,19 +227,22 @@
 }
 
 .monopoly-button.trade-icon-button.accept {
-	background-color: rgba(255, 255, 255, 0.02);
+	background-color: $monopoly-surface;
 }
 
 .monopoly-button.trade-icon-button.negotiate {
 	width: 52px;
-	background-color: rgba(255, 255, 255, 0.02);
+	background-color: $monopoly-surface;
 	color: $monopoly-text;
 }
 
 .monopoly-button.trade-icon-button.deny {
-	background-color: rgba(255, 255, 255, 0.02);
+	background-color: $monopoly-surface;
 }
 
 .monopoly-button.trade-icon-button:hover {
-	background-color: rgba(255, 255, 255, 0.1);
+	background-color: $monopoly-surface-hover;
 }
+
+
+

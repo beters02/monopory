@@ -35,7 +35,7 @@
 	bottom: 0;
 	left: 0;
 	z-index: 90;
-	background-color: rgba( 8, 12, 22, 0.45 );
+	background-color: $monopoly-popup-scrim;
 	backdrop-filter: blur( 6px );
 
 	display: flex;
@@ -79,7 +79,7 @@
 	border: 3px solid $monopoly-ink;
 	border-left-width: 10px;
 	border-radius: $monopoly-radius-board;
-	box-shadow: 0 8px 30px rgba(0, 0, 0, 0.34);
+	box-shadow: 0 8px 30px $monopoly-disabled-surface;
 
 	color: $monopoly-ink;
 	font-family: $monopoly-font-family;
@@ -182,3 +182,6 @@
 .popup-confirmation-actions .monopoly-button.popup-confirm-accept:hover {
 	background-color: $monopoly-gold-hover;
 }
+
+
+

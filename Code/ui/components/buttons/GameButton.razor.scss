@@ -22,7 +22,7 @@
 .monopoly-button.selected {
     background-color: $monopoly-gold;
     color: $monopoly-ink;
-    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.55);
+    box-shadow: 0 0 0 2px $monopoly-selected-ring-soft;
 }
 
 .monopoly-button.selected:hover {
@@ -45,7 +45,7 @@
     margin: 0;
     padding: 8px 10px;
 
-    background-color: rgba(255, 255, 255, 0.04);
+    background-color: $monopoly-surface;
     border: 0;
     border-radius: 0;
     color: $monopoly-text;
@@ -58,7 +58,7 @@
 }
 
 .monopoly-button.property-player-button:hover {
-    background-color: rgba(255, 255, 255, 0.12);
+    background-color: $monopoly-surface-hover;
 }
 
 .monopoly-button.property-square {
@@ -67,7 +67,7 @@
     margin: 0;
     padding: 0;
 
-    border: 2px solid rgba(0, 0, 0, 0.72);
+    border: 2px solid $monopoly-property-border;
     border-radius: 2px;
 
     align-items: center;
@@ -77,12 +77,12 @@
 
 .monopoly-button.property-square:hover {
     opacity: 0.85;
-    border-color: white;
+    border-color: $monopoly-text;
 }
 
 .monopoly-button.property-square.owned-by-panel-player {
     opacity: 1;
-    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.52);
+    box-shadow: 0 0 0 2px $monopoly-text-soft;
 }
 
 .monopoly-button.property-square.owned-by-other-player {
@@ -95,18 +95,18 @@
 
 .monopoly-button.property-square.pending-purchase {
     border-color: $monopoly-gold-soft;
-    box-shadow: 0 0 0 2px rgba(255, 217, 106, 0.7);
+    box-shadow: 0 0 0 2px $monopoly-pending-ring;
     opacity: 1;
 }
 
 .monopoly-button.property-square.mortgaged {
     filter: saturate(0.32) brightness(0.72);
-    background-color: rgba(0, 0, 0, 0.42);
+    background-color: $monopoly-disabled-surface;
 }
 
 .monopoly-button.property-square.selected {
-    border-color: white;
-    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.78);
+    border-color: $monopoly-text;
+    box-shadow: 0 0 0 3px $monopoly-text-muted;
     opacity: 1;
 }
 
@@ -121,3 +121,6 @@
 .monopoly-button.property-square.color-railroad { background-color: $property-railroad; }
 .monopoly-button.property-square.color-utility { background-color: $property-utility; }
 .monopoly-button.property-square.color-none { background-color: $property-none; }
+
+
+

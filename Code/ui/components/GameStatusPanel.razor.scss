@@ -63,21 +63,21 @@
 	text-align: left;
 	//justify-content: ;
 	align-items: center;
-	background-color: rgba(255, 255, 255, 0.08);
+	background-color: $monopoly-surface-soft;
 	color: $monopoly-text;
 	border-radius: 4px;
 }
 
 .camera-mode-buttons .monopoly-button.camera-mode-button:hover {
-	background-color: rgba(255, 255, 255, 0.16);
+	background-color: $monopoly-surface-strong;
 }
 
 .camera-mode-buttons .monopoly-button.camera-mode-button.selected {
 	background-color: $monopoly-gold;
 	color: $monopoly-ink;
 	box-shadow:
-		0 0 0 2px rgba(255, 255, 255, 0.55),
-		0 10px 24px rgba(0, 0, 0, 0.22);
+		0 0 0 2px $monopoly-selected-ring-soft,
+		0 10px 24px $monopoly-disabled-surface;
 }
 
 .jail-action-buttons {
@@ -96,3 +96,6 @@
 	text-align: center;
 	justify-content: center;
 }
+
+
+

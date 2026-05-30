@@ -18,7 +18,7 @@
 	align-items: center;
 	justify-content: center;
 
-	background-color: rgba(0, 0, 0, 0.01);
+	background-color: $monopoly-transparent;
 	color: $monopoly-card-ink;
 	border: 0;
 
@@ -117,14 +117,14 @@
 }
 
 .space-card-board .space-buttons .monopoly-button.disabled {
-	background-color: rgba(0, 0, 0, 0.34);
-	border-color: rgba(0, 0, 0, 0.34);
-	color: rgba(209, 232, 223, 0.58);
+	background-color: $monopoly-disabled-surface;
+	border-color: $monopoly-disabled-surface;
+	color: $monopoly-disabled-text;
 	cursor: default;
 }
 
 .space-card-board .space-buttons .monopoly-button.disabled:hover {
-	background-color: rgba(0, 0, 0, 0.34);
+	background-color: $monopoly-disabled-surface;
 }
 
 .selected-space-card-panel {
@@ -189,7 +189,7 @@
 	background-color: $monopoly-panel-strong;
 	border: 2px solid $monopoly-gold;
 	border-radius: $monopoly-radius-board;
-	box-shadow: 0 8px 22px rgba(0, 0, 0, 0.28);
+	box-shadow: $monopoly-panel-shadow-soft;
 
 	display: flex;
 	flex-direction: column;
@@ -255,3 +255,6 @@
 .selected-space-actions .space-buttons .monopoly-button.disabled:hover {
 	background-color: $monopoly-blocked-action-hover;
 }
+
+
+

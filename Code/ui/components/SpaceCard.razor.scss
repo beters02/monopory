@@ -8,7 +8,7 @@
 
 	background-color: $monopoly-board;
 	border-radius: $monopoly-radius-board;
-	box-shadow: 0 14px 38px rgba(0, 0, 0, 0.45);
+	box-shadow: $monopoly-card-shadow;
 
 	color: $monopoly-ink;
 	font-family: $monopoly-font-family;
@@ -311,7 +311,7 @@
 	min-height: 68px;
 	padding: 10px 16px;
 
-	background-color: rgba(0, 0, 0, 0.14);
+	background-color: $monopoly-dark-surface;
 	border-top: 3px solid $monopoly-ink;
 
 	display: flex;
@@ -359,10 +359,10 @@
 
 	height: 52px;
 
-	background-color: rgba(18, 31, 29, 0.14);
-	border-top: 4px solid rgba(18, 31, 29, 0.62);
-	border-bottom: 4px solid rgba(18, 31, 29, 0.62);
-	color: rgba(18, 31, 29, 0.74);
+	background-color: $monopoly-card-ink-surface-hover;
+	border-top: 4px solid $monopoly-card-ink-soft;
+	border-bottom: 4px solid $monopoly-card-ink-soft;
+	color: $monopoly-card-ink-soft;
 
 	align-items: center;
 	justify-content: center;
@@ -418,7 +418,7 @@
 	font-size: 178px;
 	font-weight: 900;
 	line-height: 178px;
-	text-shadow: 6px 6px 0 rgba(18, 31, 29, 0.16);
+	text-shadow: 6px 6px 0 $monopoly-card-ink-surface-hover;
 }
 
 .monopoly-chest-art {
@@ -645,3 +645,6 @@
 	width: 292px;
 	min-height: 360px;
 }
+
+
+
