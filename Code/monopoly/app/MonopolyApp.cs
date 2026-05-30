@@ -1,12 +1,18 @@
 public class MonopolyApp : Component
 {
     public static bool IsStandalone = false;
+    public static bool IsDebugEnabled = false;
 
 	protected override void OnAwake()
 	{
 #if STANDALONE
         IsStandalone = true;
 #endif
+
+        var debugConvarParsed = bool.TryParse(ConsoleSystem.GetValue( "debug" ), out bool debugConvar);
+		if (debugConvarParsed && debugConvar)
+			IsDebugEnabled = true;
+
         Log.Info($"IsStandalone: {IsStandalone}");
 	}
 
