@@ -6,14 +6,17 @@
 
 <root class="@GetRootClasses()">
 	<div class="chat-overlay-panel">
-		<div class="chat-overlay-messages monopory-scroll-y" @ref="MessagesPanel">
-			@foreach ( var entry in ChatEntries )
-			{
-				<div class="chat-overlay-line">
-					<span class="chat-overlay-sender">@entry.Sender:</span>
-					<span class="chat-overlay-message">@entry.Message</span>
-				</div>
-			}
+		<div class="chat-overlay-messages-shell">
+			<div class="chat-overlay-messages monopory-scroll-y" @ref="MessagesPanel">
+				@foreach ( var entry in ChatEntries )
+				{
+					<div class="chat-overlay-line">
+						<span class="chat-overlay-sender">@entry.Sender:</span>
+						<span class="chat-overlay-message">@entry.Message</span>
+					</div>
+				}
+			</div>
+			<MonoScrollbar Target="@MessagesPanel"></MonoScrollbar>
 		</div>
 
 		<div class="chat-overlay-input-row" onclick="@HandleInputRowClick">

@@ -71,13 +71,7 @@
 							</div>
 						}
 					</div>
-					<div class="property-manager-scrollbar" hidden="@(!HasOverflowForScrollbar)">
-						<button class="property-scroll-button up" onclick="@ScrollUp">▲</button>
-						<div class="property-scroll-track">
-							<div class="property-scroll-thumb" style="@PropertyScrollbarThumbStyle"></div>
-						</div>
-						<button class="property-scroll-button down" onclick="@ScrollDown">▼</button>
-					</div>
+					<MonoScrollbar Target="@PropertyManagerContentPanel"></MonoScrollbar>
 				</div>
 			</ChildContent>
 		</Sandbox.ui.components.HudPanel.HudPanel>
@@ -89,10 +83,6 @@
 	[Parameter] public GameController GameRef { get; set; }
 	private Panel PropertyManagerContentPanel = null!;
 	private int InitialTurnOrderStartIndex = -1;
-	private float PropertyScrollViewportHeight;
-	private float PropertyScrollContentHeight;
-	private float PropertyScrollOffsetY;
-	private bool HasOverflowForScrollbar;
 
 	private List<PlayerState> PropertyHudPlayers
 	{
@@ -310,73 +300,6 @@
 		return hash.ToHashCode();
 	}
 
-	public override void Tick()
-	{
-		base.Tick();
-		SyncPropertyScrollbarMetrics();
-	}
-
-	private void SyncPropertyScrollbarMetrics()
-	{
-		if ( PropertyManagerContentPanel is null )
-			return;
-
-		var nextViewportHeight = Math.Max( 1f, PropertyManagerContentPanel.Box.RectInner.Height );
-		var nextContentHeight = Math.Max( 0f, PropertyManagerContentPanel.ScrollSize.y );
-		var nextOffsetY = PropertyManagerContentPanel.ScrollOffset.y;
-		var nextHasOverflow = nextContentHeight > nextViewportHeight + 1f;
-
-		PropertyScrollViewportHeight = nextViewportHeight;
-		PropertyScrollContentHeight = nextContentHeight;
-		PropertyScrollOffsetY = nextOffsetY;
-		HasOverflowForScrollbar = nextHasOverflow;
-
-		// Keep thumb in lockstep with live scroll including inertial/bounce motion.
-		StateHasChanged();
-	}
-
-	private void ScrollUp()
-	{
-		ScrollPropertyManagerBy( -56f );
-	}
-
-	private void ScrollDown()
-	{
-		ScrollPropertyManagerBy( 56f );
-	}
-
-	private void ScrollPropertyManagerBy( float delta )
-	{
-		if ( PropertyManagerContentPanel is null )
-			return;
-
-		var maxOffset = GetPropertyScrollMaxOffset();
-		var nextY = Math.Clamp( PropertyManagerContentPanel.ScrollOffset.y + delta, 0f, maxOffset );
-		PropertyManagerContentPanel.ScrollOffset = new Vector2( 0f, nextY );
-		SyncPropertyScrollbarMetrics();
-		StateHasChanged();
-	}
-
-	private float GetPropertyScrollMaxOffset()
-	{
-		return Math.Max( 0f, PropertyScrollContentHeight );
-	}
-
-	private string PropertyScrollbarThumbStyle
-	{
-		get
-		{
-			if ( !HasOverflowForScrollbar )
-				return "height: 100%; top: 0%;";
-
-			var maxOffset = Math.Max( 1f, GetPropertyScrollMaxOffset() );
-			var visibleRatio = Math.Clamp( PropertyScrollViewportHeight / Math.Max( 1f, PropertyScrollViewportHeight + maxOffset ), 0.12f, 1f );
-			var trackTravelRatio = Math.Clamp( PropertyScrollOffsetY / maxOffset, 0f, 1f );
-			var top = (1f - visibleRatio) * trackTravelRatio * 100f;
-			return $"height: {visibleRatio * 100f:0.###}%; top: {top:0.###}%;";
-		}
-	}
-
 	private sealed class PropertyManagerSection
 	{
 		public string Title { get; init; } = "";
@@ -384,3 +307,4 @@
 		public List<SpaceDef> Properties { get; init; } = new();
 	}
 }
+

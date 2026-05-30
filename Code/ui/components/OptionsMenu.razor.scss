@@ -37,6 +37,7 @@
 .options-panel {
 	width: 760px;
 	max-width: 88%;
+	height: 86%;
 	max-height: 86%;
 	padding: 24px;
 
@@ -51,7 +52,25 @@
 	display: flex;
 	flex-direction: column;
 	gap: 14px;
-	overflow: scroll;
+	overflow: hidden;
+}
+
+.options-scroll-shell {
+	flex: 1;
+	min-height: 0;
+	position: relative;
+}
+
+.options-scroll-panel {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 14px;
+	padding-right: 18px;
 }
 
 .options-category-strip,

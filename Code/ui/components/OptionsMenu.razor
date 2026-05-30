@@ -9,7 +9,7 @@
 	@if ( IsOpen )
 	{
 		<div class="options-screen">
-			<div class="options-panel monopory-scroll-both">
+			<div class="options-panel">
 				<div class="options-header">
 					<div>
 						<div class="options-kicker">Settings</div>
@@ -18,67 +18,72 @@
 					<GameButton Variant="options-close-button" Title="Close" OnClick="@Close">X</GameButton>
 				</div>
 
-				@if ( !SettingsAvailable )
-				{
-					<div class="options-unavailable">Video settings are only available when s&box exposes render settings for this session.</div>
-				}
+				<div class="options-scroll-shell">
+					<div class="options-scroll-panel monopory-scroll-both" @ref="OptionsScrollPanel">
+						@if ( !SettingsAvailable )
+						{
+							<div class="options-unavailable">Video settings are only available when s&box exposes render settings for this session.</div>
+						}
 
-				<div class="options-category-strip">
-					@foreach ( var category in AppSettingsSchema.Categories )
-					{
-						<GameButton Variant="@GetCategoryButtonClasses( category )" OnClick="@(() => SelectCategory( category.Key ))">
-							@category.Label
-						</GameButton>
-					}
-				</div>
-
-				<div class="options-category-copy">@ActiveCategory?.Description</div>
-
-				@if ( HasActiveSections )
-				{
-					@foreach ( var sectionName in ActiveSections )
-					{
-						<div class="options-section">
-							<div class="options-section-title">@sectionName</div>
-
-							@foreach ( var option in GetOptionsForSection( sectionName ) )
+						<div class="options-category-strip">
+							@foreach ( var category in AppSettingsSchema.Categories )
 							{
-								<div class="options-row">
-									<div class="options-text">
-										<div class="options-label">@option.Label</div>
-										<div class="options-value">@GetOptionStatusText( option )</div>
-									</div>
-									<div class="options-control">
-										@if ( option.Kind == AppSettingOptionKind.Bool )
-										{
-											<GameButton Variant="@GetToggleButtonClasses( GetBoolValue( option ) )" CanClick="@IsOptionAvailable( option )" OnClick="@(() => ToggleBoolOption( option ))" BlockedPopupTitle="Unavailable" BlockedPopupMessage="@UnavailableMessage">
-												@(GetBoolValue( option ) ? "On" : "Off")
-											</GameButton>
-										}
-										else if ( option.Kind == AppSettingOptionKind.Enum )
-										{
-											<DropdownButton
-												Value="@GetEnumValue( option )"
-												Items="@option.EnumNames"
-												CanClick="@IsOptionAvailable( option )"
-												OnSelected="@((string value) => SetEnumValue( option, value ))"
-												BlockedPopupTitle="Unavailable"
-												BlockedPopupMessage="@UnavailableMessage">
-											</DropdownButton>
-										}
-									</div>
-								</div>
+								<GameButton Variant="@GetCategoryButtonClasses( category )" OnClick="@(() => SelectCategory( category.Key ))">
+									@category.Label
+								</GameButton>
 							}
 						</div>
-					}
-				}
-				else
-				{
-					<div class="options-empty-state">
-						<div class="options-empty-title">@ActiveCategory?.Label</div>
-						<div class="options-empty-copy">No settings are wired into this section yet. Add new keys in `AppSettingsSchema` and they will render here automatically.</div>
+
+						<div class="options-category-copy">@ActiveCategory?.Description</div>
+
+						@if ( HasActiveSections )
+						{
+							@foreach ( var sectionName in ActiveSections )
+							{
+								<div class="options-section">
+									<div class="options-section-title">@sectionName</div>
+
+									@foreach ( var option in GetOptionsForSection( sectionName ) )
+									{
+										<div class="options-row">
+											<div class="options-text">
+												<div class="options-label">@option.Label</div>
+												<div class="options-value">@GetOptionStatusText( option )</div>
+											</div>
+											<div class="options-control">
+												@if ( option.Kind == AppSettingOptionKind.Bool )
+												{
+													<GameButton Variant="@GetToggleButtonClasses( GetBoolValue( option ) )" CanClick="@IsOptionAvailable( option )" OnClick="@(() => ToggleBoolOption( option ))" BlockedPopupTitle="Unavailable" BlockedPopupMessage="@UnavailableMessage">
+														@(GetBoolValue( option ) ? "On" : "Off")
+													</GameButton>
+												}
+												else if ( option.Kind == AppSettingOptionKind.Enum )
+												{
+													<DropdownButton
+														Value="@GetEnumValue( option )"
+														Items="@option.EnumNames"
+														CanClick="@IsOptionAvailable( option )"
+														OnSelected="@((string value) => SetEnumValue( option, value ))"
+														BlockedPopupTitle="Unavailable"
+														BlockedPopupMessage="@UnavailableMessage">
+													</DropdownButton>
+												}
+											</div>
+										</div>
+									}
+								</div>
+							}
+						}
+						else
+						{
+							<div class="options-empty-state">
+								<div class="options-empty-title">@ActiveCategory?.Label</div>
+								<div class="options-empty-copy">No settings are wired into this section yet. Add new keys in `AppSettingsSchema` and they will render here automatically.</div>
+							</div>
+						}
 					</div>
-				}
+					<MonoScrollbar Target="@OptionsScrollPanel"></MonoScrollbar>
+				</div>
 
 				<div class="options-footer">
 					<GameButton Variant="options-apply-button" CanClick="@SettingsAvailable" OnClick="@ApplyOptions" BlockedPopupTitle="Unavailable" BlockedPopupMessage="@UnavailableMessage">Apply</GameButton>
@@ -92,6 +97,7 @@
 {
 	[Parameter] public bool IsOpen { get; set; }
 	[Parameter] public Action OnClose { get; set; }
+	private Panel OptionsScrollPanel = null!;
 	private int revision;
 	private string activeCategoryKey = AppSettingsSchema.Categories.FirstOrDefault()?.Key ?? "";
 

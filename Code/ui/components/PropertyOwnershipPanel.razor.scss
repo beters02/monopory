@@ -140,56 +140,6 @@
 	padding-right: 2px;
 }
 
-.property-manager-scrollbar {
-	width: 12px;
-	flex-shrink: 0;
-	display: flex;
-	flex-direction: column;
-	align-items: stretch;
-	gap: 4px;
-}
-
-.property-scroll-button {
-	width: 12px;
-	height: 12px;
-	min-width: 12px;
-	min-height: 12px;
-	padding: 0;
-	margin: 0;
-	border: 1px solid rgba(255, 255, 255, 0.24);
-	border-radius: 2px;
-	background-color: rgba(255, 255, 255, 0.08);
-	color: rgba(255, 255, 255, 0.72);
-	font-size: 7px;
-	font-weight: 900;
-	line-height: 9px;
-	text-align: center;
-}
-
-.property-scroll-button:hover {
-	background-color: rgba(255, 255, 255, 0.16);
-	color: rgba(255, 255, 255, 0.96);
-}
-
-.property-scroll-track {
-	position: relative;
-	flex: 1;
-	min-height: 0;
-	background-color: rgba(255, 255, 255, 0.06);
-	border: 1px solid rgba(255, 255, 255, 0.12);
-	border-radius: 2px;
-}
-
-.property-scroll-thumb {
-	position: absolute;
-	left: 1px;
-	right: 1px;
-	min-height: 16px;
-	border-radius: 2px;
-	background-color: rgba(217, 180, 95, 0.9);
-	box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.3);
-}
-
 .property-manager-section {
 	background-color: rgba(255, 255, 255, 0.03);
 	border: 1px solid rgba(255, 255, 255, 0.08);

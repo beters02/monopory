@@ -1,0 +1,222 @@
+@using Sandbox;
+@using Sandbox.UI;
+@using System;
+@inherits Panel
+
+<root class="@RootClasses" onmouseup="@EndInteractions" onmouseleave="@HandleRootMouseLeave">
+	@if ( IsInteracting )
+	{
+		<div class="mono-scrollbar-capture" onmouseup="@EndInteractions"></div>
+	}
+	<button class="mono-scrollbar-button up" onclick="@ScrollUp" onmousedown="@StartHoldUp" onmouseup="@StopHold" onmouseleave="@StopHold">^</button>
+	<div class="mono-scrollbar-track" @ref="TrackPanel" onmousedown="@HandleTrackMouseDown">
+		<button class="mono-scrollbar-thumb" style="@ThumbStyle" onmousedown="@BeginThumbDrag"></button>
+	</div>
+	<button class="mono-scrollbar-button down" onclick="@ScrollDown" onmousedown="@StartHoldDown" onmouseup="@StopHold" onmouseleave="@StopHold">v</button>
+</root>
+
+@code
+{
+	[Parameter] public Panel Target { get; set; }
+	[Parameter] public float Step { get; set; } = 56f;
+	[Parameter] public string Variant { get; set; } = "";
+
+	private Panel TrackPanel = null!;
+	private float ViewportHeight;
+	private float MaxOffsetY;
+	private float OffsetY;
+	private bool HasOverflow;
+	private bool Dragging;
+	private float DragMouseOffsetInsideThumb;
+	private bool HoldUp;
+	private bool HoldDown;
+	private float NextHoldTickAt;
+	private bool IsInteracting => Dragging || HoldUp || HoldDown;
+
+	private string RootClasses
+	{
+		get
+		{
+			var classes = "mono-scrollbar";
+			if ( !string.IsNullOrWhiteSpace( Variant ) )
+				classes += $" {Variant}";
+			classes += HasOverflow ? " visible" : " hidden";
+			return classes;
+		}
+	}
+
+	public override void Tick()
+	{
+		base.Tick();
+		SyncMetrics();
+		UpdateHold();
+		UpdateDrag();
+	}
+
+	private void SyncMetrics()
+	{
+		if ( Target is null )
+		{
+			ViewportHeight = 1f;
+			MaxOffsetY = 0f;
+			OffsetY = 0f;
+			HasOverflow = false;
+			StateHasChanged();
+			return;
+		}
+
+		ViewportHeight = Math.Max( 1f, Target.Box.RectInner.Height );
+		MaxOffsetY = Math.Max( 0f, Target.ScrollSize.y );
+		OffsetY = Target.ScrollOffset.y;
+		HasOverflow = MaxOffsetY > 0.5f;
+		StateHasChanged();
+	}
+
+	private void ScrollUp()
+	{
+		ScrollBy( -Step );
+	}
+
+	private void ScrollDown()
+	{
+		ScrollBy( Step );
+	}
+
+	private void StartHoldUp()
+	{
+		HoldUp = true;
+		HoldDown = false;
+		NextHoldTickAt = Time.Now + 0.28f;
+		SetMouseCapture( true );
+	}
+
+	private void StartHoldDown()
+	{
+		HoldDown = true;
+		HoldUp = false;
+		NextHoldTickAt = Time.Now + 0.28f;
+		SetMouseCapture( true );
+	}
+
+	private void StopHold()
+	{
+		HoldUp = false;
+		HoldDown = false;
+		if ( !Dragging )
+			SetMouseCapture( false );
+	}
+
+	private void UpdateHold()
+	{
+		if ( !(HoldUp || HoldDown) )
+			return;
+
+		if ( Time.Now < NextHoldTickAt )
+			return;
+
+		ScrollBy( HoldUp ? -Step : Step );
+		NextHoldTickAt = Time.Now + 0.06f;
+	}
+
+	private void HandleTrackMouseDown()
+	{
+		if ( !HasOverflow || TrackPanel is null )
+			return;
+
+		var trackTop = TrackPanel.Box.RectInner.Top;
+		var yInTrack = Mouse.Position.y - trackTop;
+		var trackHeight = Math.Max( 1f, TrackPanel.Box.RectInner.Height );
+		var thumbHeight = Math.Max( 16f, trackHeight * VisibleRatio );
+		var halfThumb = thumbHeight * 0.5f;
+		var thumbTravel = Math.Max( 1f, trackHeight - thumbHeight );
+		var thumbTop = Math.Clamp( yInTrack - halfThumb, 0f, thumbTravel );
+		var ratio = thumbTop / thumbTravel;
+		SetOffset( ratio * MaxOffsetY );
+		DragMouseOffsetInsideThumb = halfThumb;
+		Dragging = true;
+		SetMouseCapture( true );
+	}
+
+	private void BeginThumbDrag()
+	{
+		if ( !HasOverflow || TrackPanel is null )
+			return;
+
+		var trackTop = TrackPanel.Box.RectInner.Top;
+		var yInTrack = Mouse.Position.y - trackTop;
+		var trackHeight = Math.Max( 1f, TrackPanel.Box.RectInner.Height );
+		var thumbHeight = Math.Max( 16f, trackHeight * VisibleRatio );
+		var thumbTravel = Math.Max( 1f, trackHeight - thumbHeight );
+		var ratio = Math.Clamp( OffsetY / Math.Max( 1f, MaxOffsetY ), 0f, 1f );
+		var thumbTop = ratio * thumbTravel;
+		DragMouseOffsetInsideThumb = Math.Clamp( yInTrack - thumbTop, 0f, thumbHeight );
+		Dragging = true;
+		SetMouseCapture( true );
+	}
+
+	private void UpdateDrag()
+	{
+		if ( !Dragging )
+			return;
+
+		if ( !HasOverflow || TrackPanel is null )
+		{
+			EndInteractions();
+			return;
+		}
+
+		var trackTop = TrackPanel.Box.RectInner.Top;
+		var trackHeight = Math.Max( 1f, TrackPanel.Box.RectInner.Height );
+		var thumbHeight = Math.Max( 16f, trackHeight * VisibleRatio );
+		var thumbTravel = Math.Max( 1f, trackHeight - thumbHeight );
+		var yInTrack = Mouse.Position.y - trackTop;
+		var thumbTop = Math.Clamp( yInTrack - DragMouseOffsetInsideThumb, 0f, thumbTravel );
+		var ratio = thumbTop / thumbTravel;
+		SetOffset( ratio * MaxOffsetY );
+	}
+
+	private void EndInteractions()
+	{
+		Dragging = false;
+		HoldUp = false;
+		HoldDown = false;
+		SetMouseCapture( false );
+	}
+
+	private void HandleRootMouseLeave()
+	{
+		if ( !Dragging )
+			StopHold();
+	}
+
+	private void ScrollBy( float delta )
+	{
+		SetOffset( OffsetY + delta );
+	}
+
+	private void SetOffset( float value )
+	{
+		if ( Target is null )
+			return;
+
+		var nextY = Math.Clamp( value, 0f, Math.Max( 0f, MaxOffsetY ) );
+		Target.ScrollOffset = new Vector2( 0f, nextY );
+		OffsetY = nextY;
+		StateHasChanged();
+	}
+
+	private float VisibleRatio => Math.Clamp( ViewportHeight / Math.Max( 1f, ViewportHeight + MaxOffsetY ), 0.12f, 1f );
+
+	private string ThumbStyle
+	{
+		get
+		{
+			if ( !HasOverflow )
+				return "height: 100%; top: 0%;";
+
+			var travelRatio = Math.Clamp( OffsetY / Math.Max( 1f, MaxOffsetY ), 0f, 1f );
+			var top = (1f - VisibleRatio) * travelRatio * 100f;
+			return $"height: {VisibleRatio * 100f:0.###}%; top: {top:0.###}%;";
+		}
+	}
+}

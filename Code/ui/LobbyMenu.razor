@@ -1,4 +1,5 @@
 @using Sandbox;
+@using Sandbox.UI;
 @using Sandbox.ui.components;
 @using Sandbox.ui.components.buttons;
 @using System;
@@ -22,8 +23,9 @@
 							<GameButton Variant="match-config-close-button" Title="Close" OnClick="@CloseConfigMenu">X</GameButton>
 						</div>
 
-						<div class="match-config-scroll monopory-scroll-y">
-							<div class="match-config-copy">@ConfigMenuCopy</div>
+						<div class="match-config-scroll-shell">
+							<div class="match-config-scroll monopory-scroll-y" @ref="MatchConfigScrollPanel">
+								<div class="match-config-copy">@ConfigMenuCopy</div>
 
 							@foreach ( var group in ConfigGroups )
 							{
@@ -82,6 +84,8 @@
 									</div>
 								</div>
 							}
+							</div>
+							<MonoScrollbar Target="@MatchConfigScrollPanel"></MonoScrollbar>
 						</div>
 
 						<div class="match-config-footer">
@@ -108,17 +112,20 @@
 							<GameButton Variant="match-config-close-button" Title="Close" OnClick="@CloseCustomizeMenu">X</GameButton>
 						</div>
 						<div class="piece-customize-copy">Pick your piece. New pieces can be added to <code>PieceCatalog.All</code> and this list will update automatically.</div>
-						<div class="piece-customize-grid monopory-scroll-both">
-							@foreach ( var piece in AvailablePieces )
-							{
-								<div class="@GetPieceCardClasses( piece )">
-									<div class="piece-customize-card-title">@piece.Label</div>
-									<div class="piece-customize-card-copy">@piece.Description</div>
-									<GameButton Variant="@GetPieceSelectButtonClasses( piece )" OnClick="@(() => SelectPiece( piece.Id ))">
-										@(IsSelectedPiece( piece ) ? "Selected" : "Select")
-									</GameButton>
-								</div>
-							}
+						<div class="piece-customize-scroll-shell">
+							<div class="piece-customize-grid monopory-scroll-both" @ref="PieceCustomizeScrollPanel">
+								@foreach ( var piece in AvailablePieces )
+								{
+									<div class="@GetPieceCardClasses( piece )">
+										<div class="piece-customize-card-title">@piece.Label</div>
+										<div class="piece-customize-card-copy">@piece.Description</div>
+										<GameButton Variant="@GetPieceSelectButtonClasses( piece )" OnClick="@(() => SelectPiece( piece.Id ))">
+											@(IsSelectedPiece( piece ) ? "Selected" : "Select")
+										</GameButton>
+									</div>
+								}
+							</div>
+							<MonoScrollbar Target="@PieceCustomizeScrollPanel"></MonoScrollbar>
 						</div>
 						<div class="piece-customize-footer">
 							<GameButton Variant="match-config-secondary-button" OnClick="@CloseCustomizeMenu">Done</GameButton>
@@ -185,6 +192,8 @@
 	private bool IsOptionsMenuOpen;
 	private bool IsConfigMenuOpen;
 	private bool IsCustomizeMenuOpen;
+	private Panel MatchConfigScrollPanel = null!;
+	private Panel PieceCustomizeScrollPanel = null!;
 	private bool CanOpenConfig => Lobby is not null;
 	private bool CanEditConfig => Lobby?.IsLocalEffectiveHost == true;
 	private IReadOnlyList<PieceDefinition> AvailablePieces => PieceCatalog.All;

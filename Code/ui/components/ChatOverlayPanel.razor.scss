@@ -44,6 +44,21 @@
 	pointer-events: all;
 }
 
+.chat-overlay-messages-shell {
+	position: relative;
+	height: 140px;
+}
+
+.chat-overlay-messages-shell .chat-overlay-messages {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	padding-right: 18px;
+}
+
+
 .chat-overlay-line {
 	display: flex;
 	flex-direction: row;

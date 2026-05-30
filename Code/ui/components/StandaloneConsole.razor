@@ -9,14 +9,17 @@
 	@if ( IsOpen )
 	{
 		<div class="standalone-console-window">
-			<div class="standalone-console-output monopory-scroll-both" @ref="OutputPanel">
-				@foreach ( var entry in FilteredEntries )
-				{
-					<div class="standalone-console-line @entry.Kind">
-						<span class="standalone-console-time">@entry.TimeText</span>
-						<span class="standalone-console-message">@entry.Message</span>
-					</div>
-				}
+			<div class="standalone-console-output-shell">
+				<div class="standalone-console-output monopory-scroll-both" @ref="OutputPanel">
+					@foreach ( var entry in FilteredEntries )
+					{
+						<div class="standalone-console-line @entry.Kind">
+							<span class="standalone-console-time">@entry.TimeText</span>
+							<span class="standalone-console-message">@entry.Message</span>
+						</div>
+					}
+				</div>
+				<MonoScrollbar Target="@OutputPanel"></MonoScrollbar>
 			</div>
 
 			<div class="standalone-console-toolbar">
