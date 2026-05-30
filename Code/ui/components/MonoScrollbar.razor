@@ -87,7 +87,7 @@
 		HoldUp = true;
 		HoldDown = false;
 		NextHoldTickAt = Time.Now + 0.28f;
-		SetMouseCapture( true );
+		Mouse.Visibility = MouseVisibility.Visible;
 	}
 
 	private void StartHoldDown()
@@ -95,15 +95,13 @@
 		HoldDown = true;
 		HoldUp = false;
 		NextHoldTickAt = Time.Now + 0.28f;
-		SetMouseCapture( true );
+		Mouse.Visibility = MouseVisibility.Visible;
 	}
 
 	private void StopHold()
 	{
 		HoldUp = false;
 		HoldDown = false;
-		if ( !Dragging )
-			SetMouseCapture( false );
 	}
 
 	private void UpdateHold()
@@ -134,7 +132,7 @@
 		SetOffset( ratio * MaxOffsetY );
 		DragMouseOffsetInsideThumb = halfThumb;
 		Dragging = true;
-		SetMouseCapture( true );
+		Mouse.Visibility = MouseVisibility.Visible;
 	}
 
 	private void BeginThumbDrag()
@@ -151,7 +149,7 @@
 		var thumbTop = ratio * thumbTravel;
 		DragMouseOffsetInsideThumb = Math.Clamp( yInTrack - thumbTop, 0f, thumbHeight );
 		Dragging = true;
-		SetMouseCapture( true );
+		Mouse.Visibility = MouseVisibility.Visible;
 	}
 
 	private void UpdateDrag()
@@ -180,7 +178,6 @@
 		Dragging = false;
 		HoldUp = false;
 		HoldDown = false;
-		SetMouseCapture( false );
 	}
 
 	private void HandleRootMouseLeave()
