@@ -25,7 +25,7 @@
 	top: 32px;
 	//height: 300px;
 	width: 300px;
-	gap: 2px;
+	gap: 8px;
 	//padding-bottom: px;
 }
 
@@ -40,32 +40,37 @@
 
 .monopoly-button.action-buttons {
 	align-items: center;
-	padding: 4px 9px;
-	margin: 1 0 1 0;
-	border-radius: 4px;
+	justify-content: center;
+	min-height: $monopoly-control-height-small;
+	padding: 0 10px;
+	margin: 0;
+	border-radius: $monopoly-radius-control;
+	font-size: $monopoly-font-button;
+	text-transform: uppercase;
 }
 
 .camera-mode-buttons {
 	display: flex;
 	flex-direction: column;
-	gap: 8px;
-	margin-top: 10px;
-	margin-bottom: -10px;
+	gap: 6px;
+	margin-top: 4px;
+	margin-bottom: 0;
 }
 
 .camera-mode-buttons .monopoly-button.camera-mode-button {
 	flex: 1;
 	min-width: 0;
-	max-height: 30px;
-	margin-top: -3;
-	padding: 10px 5px;
-	font-size: 13px;
-	text-align: left;
-	//justify-content: ;
+	min-height: $monopoly-control-height-small;
+	max-height: $monopoly-control-height-small;
+	margin-top: 0;
+	padding: 0 10px;
+	font-size: $monopoly-font-button;
+	text-align: center;
+	justify-content: center;
 	align-items: center;
 	background-color: $monopoly-surface-soft;
 	color: $monopoly-text;
-	border-radius: 4px;
+	border-radius: $monopoly-radius-control;
 }
 
 .camera-mode-buttons .monopoly-button.camera-mode-button:hover {
@@ -92,7 +97,7 @@
 	min-width: 0;
 	margin-top: 0;
 	padding: 8px 9px;
-	font-size: 13px;
+	font-size: $monopoly-font-button;
 	text-align: center;
 	justify-content: center;
 }

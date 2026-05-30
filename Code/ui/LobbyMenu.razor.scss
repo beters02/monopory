@@ -2,6 +2,7 @@
 @import "GameTheme.scss";
 @import "components/buttons/GameButton.razor.scss";
 @import "components/buttons/DropdownButton.razor.scss";
+@import "components/buttons/CloseButton.razor.scss";
 
 .lobby-panel .flow-actions {
 	flex-direction: column;
@@ -57,7 +58,7 @@
 	max-width: 92%;
 	height: 88%;
 	max-height: 88%;
-	padding: 24px;
+	padding: $monopoly-panel-padding;
 	background-color: $monopoly-board;
 	border: 4px solid $monopoly-ink;
 	border-radius: $monopoly-radius-board;
@@ -66,7 +67,7 @@
 	font-family: $monopoly-font-family;
 	display: flex;
 	flex-direction: column;
-	gap: 14px;
+	gap: $monopoly-panel-gap;
 	overflow: hidden;
 }
 
@@ -78,13 +79,13 @@
 }
 
 .piece-customize-title {
-	font-size: 34px;
+	font-size: $monopoly-font-title;
 	font-weight: 900;
-	line-height: 36px;
+	line-height: $monopoly-font-title-line;
 }
 
 .piece-customize-copy {
-	font-size: 13px;
+	font-size: $monopoly-font-kicker;
 	font-weight: 800;
 	line-height: 18px;
 	opacity: 0.78;
@@ -186,7 +187,7 @@
 	max-width: 92%;
 	height: 88%;
 	max-height: 88%;
-	padding: 24px;
+	padding: $monopoly-panel-padding;
 
 	background-color: $monopoly-board;
 	border: 4px solid $monopoly-ink;
@@ -199,7 +200,7 @@
 	display: flex;
 	flex-direction: column;
 	align-items: stretch;
-	gap: 14px;
+	gap: $monopoly-panel-gap;
 	overflow: hidden;
 }
 
@@ -259,20 +260,20 @@
 
 .match-config-kicker {
 	color: $monopoly-danger;
-	font-size: 15px;
+	font-size: $monopoly-font-kicker;
 	font-weight: 900;
 	text-transform: uppercase;
 }
 
 .match-config-title {
-	font-size: 34px;
+	font-size: $monopoly-font-title;
 	font-weight: 900;
-	line-height: 36px;
+	line-height: $monopoly-font-title-line;
 }
 
 .match-config-copy,
 .match-config-value {
-	font-size: 13px;
+	font-size: $monopoly-font-kicker;
 	font-weight: 800;
 	line-height: 18px;
 	opacity: 0.72;
@@ -314,19 +315,18 @@
 .match-config-step-button,
 .match-config-save-button,
 .match-config-secondary-button {
-	height: 42px;
+	height: $monopoly-control-height;
 	min-width: 96px;
 	margin-top: 0;
 	padding: 0 14px;
 
-	border-radius: $monopoly-radius-board;
-	font-size: 13px;
+	border-radius: $monopoly-radius-control;
+	font-size: $monopoly-font-button;
 	font-weight: 900;
 	text-transform: uppercase;
 	justify-content: center;
 }
 
-.match-config-close-button,
 .match-config-toggle-button,
 .match-config-step-button,
 .match-config-secondary-button {
@@ -336,9 +336,7 @@
 }
 
 .match-config-close-button {
-	width: 44px;
-	min-width: 44px;
-	padding: 0;
+	flex-shrink: 0;
 }
 
 .match-config-toggle-button.selected {
@@ -346,7 +344,6 @@
 	color: $monopoly-ink;
 }
 
-.match-config-close-button:hover,
 .match-config-toggle-button:hover,
 .match-config-step-button:hover,
 .match-config-secondary-button:hover {
@@ -413,7 +410,7 @@
 	justify-content: flex-start;
 
 	color: $monopoly-ink;
-	font-size: 18px;
+	font-size: $monopoly-font-panel-title;
 	font-weight: 900;
 	line-height: 24px;
 	text-transform: uppercase;
@@ -428,7 +425,7 @@
 	min-height: 30px;
 
 	color: $monopoly-ink;
-	font-size: 18px;
+	font-size: $monopoly-font-panel-title;
 	font-weight: 900;
 	line-height: 24px;
 	opacity: 1;
@@ -488,7 +485,7 @@
 	justify-content: flex-start;
 
 	color: $monopoly-ink;
-	font-size: 18px;
+	font-size: $monopoly-font-panel-title;
 	font-weight: 900;
 	line-height: 24px;
 	opacity: 1;
@@ -504,7 +501,7 @@
 	min-height: 30px;
 
 	color: $monopoly-ink;
-	font-size: 18px;
+	font-size: $monopoly-font-panel-title;
 	font-weight: 900;
 	line-height: 24px;
 	opacity: 1;
@@ -517,7 +514,7 @@
 
 .match-config-value {
 	max-width: 420px;
-	font-size: 13px;
+	font-size: $monopoly-font-kicker;
 	font-weight: 1000;
 	line-height: 18px;
 	min-height: 36px;

@@ -81,7 +81,7 @@ LobbyMenu {
 	.flow-panel {
 		width: 520px;
 		max-width: 86%;
-		padding: 28px;
+		padding: $monopoly-panel-padding;
 
 		background-color: $monopoly-board;
 		border: 4px solid $monopoly-ink;
@@ -93,7 +93,7 @@ LobbyMenu {
 
 		display: flex;
 		flex-direction: column;
-		gap: 14px;
+		gap: $monopoly-panel-gap;
 	}
 
 	.menu-panel {
@@ -106,21 +106,21 @@ LobbyMenu {
 
 	.flow-kicker {
 		color: $monopoly-danger;
-		font-size: 16px;
+		font-size: $monopoly-font-kicker;
 		font-weight: 900;
 		text-transform: uppercase;
 	}
 
 	.flow-title {
-		font-size: 46px;
+		font-size: $monopoly-font-title;
 		font-weight: 900;
-		line-height: 48px;
+		line-height: $monopoly-font-title-line;
 	}
 
 	.flow-copy {
-		font-size: 17px;
+		font-size: $monopoly-font-button-large;
 		font-weight: 700;
-		line-height: 23px;
+		line-height: 21px;
 		opacity: 0.78;
 	}
 
@@ -134,10 +134,10 @@ LobbyMenu {
 	.flow-actions .monopoly-button {
 		margin-top: 0;
 		min-width: 150px;
-		height: 48px;
+		height: $monopoly-control-height;
 
 		border: 3px solid $monopoly-ink;
-		border-radius: $monopoly-radius-board;
+		border-radius: $monopoly-radius-control;
 		text-transform: uppercase;
 	}
 

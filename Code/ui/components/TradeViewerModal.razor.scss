@@ -23,7 +23,7 @@
 
 	width: 680px;
 	min-height: 330px;
-	padding: 20px 26px;
+	padding: $monopoly-panel-padding;
 
 	background-color: $monopoly-board;
 	border: 4px solid $monopoly-ink;
@@ -35,7 +35,7 @@
 
 	display: flex;
 	flex-direction: column;
-	gap: 18px;
+	gap: $monopoly-panel-gap;
 }
 
 .trade-view-modal {
@@ -44,28 +44,16 @@
 
 .trade-modal-close {
 	position: absolute;
-	top: -18px;
-	right: 18px;
-
-	width: 42px;
-	height: 42px;
-	margin: 0;
-	padding: 0;
-
-	align-items: center;
-	justify-content: center;
-
-	background-color: $monopoly-ink;
-	border-radius: 21px;
-	color: $monopoly-board;
-	font-size: 16px;
+	top: 12px;
+	right: 12px;
 }
 
 .trade-modal-title {
 	text-align: center;
 	color: $monopoly-ink;
-	font-size: 18px;
+	font-size: $monopoly-font-panel-title;
 	font-weight: 800;
+	padding: 0 48px;
 }
 
 .trade-editor,
@@ -129,7 +117,8 @@
 
 .trade-money-row .monopoly-button {
 	width: 34px;
-	height: 30px;
+	height: $monopoly-control-height-small;
+	min-height: $monopoly-control-height-small;
 	margin: 0;
 	padding: 0;
 
@@ -222,16 +211,17 @@
 	align-self: center;
 	min-width: 0;
 	width: 104px;
-	height: 42px;
+	height: $monopoly-control-height;
 	margin: 0;
 	padding: 0 10px;
 
-	font-size: 17px;
+	font-size: $monopoly-font-button;
 	font-weight: 900;
-	text-align: left;
+	text-align: center;
 	align-items: center;
-	justify-content: flex-start;
-	border-radius: $monopoly-radius-board;
+	justify-content: center;
+	border-radius: $monopoly-radius-control;
+	text-transform: uppercase;
 }
 
 .trade-send-button {
@@ -268,7 +258,7 @@
 	width: 100%;
 	color: $monopoly-ink;
 	font-weight: 900;
-	text-align: left;
+	text-align: center;
 	white-space: nowrap;
 	text-overflow: clip;
 	overflow: hidden;

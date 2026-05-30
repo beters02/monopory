@@ -3,8 +3,8 @@
 .hud-panel {
     position: absolute;
     
-    width: 320px;
-    padding: 20px;
+    width: 300px;
+    padding: 18px;
 
     background-color: $monopoly-panel;
     border: 1px solid $monopoly-panel-line;
@@ -20,20 +20,23 @@
 }
 
 .hud-panel-title {
-    font-size: 28px;
+    font-size: 22px;
     font-weight: 900;
-    margin-bottom: 8px;
+    line-height: 26px;
+    margin-bottom: 6px;
 }
 
 .hud-panel-sub-title {
-    font-size: 24px;
+    font-size: 20px;
     font-weight: 900;
+    line-height: 24px;
     //margin-bottom: 8px;
 }
 
 .hud-panel-body {
-    font-size: 18px;
-    font-weight: 600;
+    font-size: $monopoly-font-body;
+    font-weight: 800;
+    line-height: $monopoly-font-body-line;
 }
 
 .hud-panel-empty-line {

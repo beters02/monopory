@@ -34,8 +34,13 @@
 	{
 		<div class="session-screen escape-menu-screen">
 			<div class="session-panel escape-menu-panel">
-				<div class="session-kicker">Menu</div>
-				<div class="session-title">Game Menu</div>
+				<div class="session-header">
+					<div>
+						<div class="session-kicker">Menu</div>
+						<div class="session-title">Game Menu</div>
+					</div>
+					<CloseButton Variant="session-close-button" Title="Close" OnClick="@CloseMenu"></CloseButton>
+				</div>
 				<div class="session-actions escape-menu-actions">
 					<GameButton Variant="session-secondary-button" OnClick="@OpenOptions">Options</GameButton>
 					<GameButton Variant="session-secondary-button" OnClick="@LeaveLobby">Leave Lobby</GameButton>
@@ -73,6 +78,7 @@
 	[Parameter] public bool IsOptionsMenuOpen { get; set; }
 	[Parameter] public Action OnResumeGame { get; set; }
 	[Parameter] public Action OnOpenOptions { get; set; }
+	[Parameter] public Action OnCloseMenu { get; set; }
 	[Parameter] public Action OnCloseOptions { get; set; }
 	[Parameter] public Action OnReturnToLobby { get; set; }
 	[Parameter] public Action OnLeaveLobby { get; set; }
@@ -85,6 +91,7 @@
 
 	private void ResumeGame() => OnResumeGame?.Invoke();
 	private void OpenOptions() => OnOpenOptions?.Invoke();
+	private void CloseMenu() => OnCloseMenu?.Invoke();
 	private void CloseOptions() => OnCloseOptions?.Invoke();
 	private void ReturnToLobby() => OnReturnToLobby?.Invoke();
 	private void LeaveLobby() => OnLeaveLobby?.Invoke();

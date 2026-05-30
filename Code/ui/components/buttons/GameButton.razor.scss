@@ -1,18 +1,31 @@
 @import "../../GameTheme.scss";
 
 .monopoly-button {
-    margin-top: 10px;
-    padding: 10px 14px;
+    min-height: $monopoly-control-height;
+    margin-top: 8px;
+    padding: 0 $monopoly-control-padding-x;
 
     background-color: $monopoly-gold;
     color: $monopoly-ink;
+    border: 2px solid transparent;
 
     border-radius: $monopoly-radius-control;
-    font-weight: 800;
-    font-size: 16px;
+    font-family: $monopoly-font-family;
+    font-weight: 900;
+    font-size: $monopoly-font-button;
+    line-height: 16px;
+    text-align: center;
+
+    align-items: center;
+    justify-content: center;
 
     cursor: pointer;
     pointer-events: all;
+}
+
+.monopoly-button .label {
+    width: 100%;
+    text-align: center;
 }
 
 .monopoly-button:hover {
@@ -33,6 +46,7 @@
     background-color: $monopoly-blocked-action;
     color: $monopoly-text;
     cursor: not-allowed;
+    opacity: 0.86;
 }
 
 .monopoly-button.blocked-action-button:hover {

@@ -33,6 +33,7 @@
 			IsOptionsMenuOpen="@IsOptionsMenuOpen"
 			OnResumeGame="@ResumeGame"
 			OnOpenOptions="@OpenOptionsMenu"
+			OnCloseMenu="@CloseEscapeMenu"
 			OnCloseOptions="@CloseOptionsMenu"
 			OnReturnToLobby="@ReturnToLobby"
 			OnLeaveLobby="@LeaveLobby"
@@ -153,6 +154,11 @@
 	private void CloseOptionsMenu()
 	{
 		IsOptionsMenuOpen = false;
+	}
+
+	private void CloseEscapeMenu()
+	{
+		IsEscapeMenuOpen = false;
 	}
 
 	private void ResumeGame()

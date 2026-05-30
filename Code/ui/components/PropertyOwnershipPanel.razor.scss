@@ -26,11 +26,11 @@
 	bottom: 32px;
 	z-index: 8;
 	height: 400px;
-	width: 240px;
-	padding: 10px;
+	width: 250px;
+	padding: 12px;
 	background-color: $monopoly-panel-strong;
 	border: 2px solid $monopoly-gold;
-	border-radius: $monopoly-radius-board;
+	border-radius: $monopoly-radius-control;
 	color: $monopoly-text;
 	display: flex;
 	flex-direction: column;
@@ -54,7 +54,7 @@
 
 	background-color: $monopoly-panel-strong;
 	border: 2px solid $monopoly-panel-line;
-	border-radius: $monopoly-radius-board;
+	border-radius: $monopoly-radius-control;
 	align-self: flex-end;
 
 	color: $monopoly-text;
@@ -113,7 +113,7 @@
 }
 
 .property-manager-title {
-	font-size: 14px;
+	font-size: $monopoly-font-kicker;
 	font-weight: 900;
 	text-transform: uppercase;
 	letter-spacing: 0.7px;
@@ -143,7 +143,7 @@
 .property-manager-section {
 	background-color: $monopoly-surface;
 	border: 1px solid $monopoly-surface-soft;
-	border-radius: 4px;
+	border-radius: $monopoly-radius-control;
 	padding: 8px;
 	display: flex;
 	flex-direction: column;
@@ -174,14 +174,14 @@
 
 .monopoly-button.property-manager-item {
 	width: 100%;
-	min-height: 16px;
+	min-height: 22px;
 	margin: 0;
-	padding: 1px 4px;
-	border-radius: 4px;
+	padding: 2px 6px;
+	border-radius: 6px;
 	border: 0;
 	background-color: $monopoly-surface;
 	color: $monopoly-text;
-	font-size: 12px;
+	font-size: $monopoly-font-small;
 	display: flex;
 	align-items: center;
 	gap: 6px;

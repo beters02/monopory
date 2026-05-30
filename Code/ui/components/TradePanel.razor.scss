@@ -5,18 +5,16 @@
 
 .trade-create-button {
 	width: 116px;
-	height: 38px;
-	padding: 6px 5px;
-	align-items: flex-start;
-	flex-direction: column;
-	//margin: 0;
-	//padding: 0 12px;
+	height: $monopoly-control-height-small;
+	min-height: $monopoly-control-height-small;
+	padding: 0 12px;
+	align-items: center;
+	justify-content: center;
 
 	background-color: $monopoly-gold;
 	color: $monopoly-ink;
-	border-radius: $monopoly-radius-board;
-
-	//font-size: 15px;
+	border-radius: $monopoly-radius-control;
+	text-transform: uppercase;
 }
 
 .trade-create-button:hover {
@@ -32,11 +30,11 @@
 
 	width: 400px;
 	min-height: 126px;
-	padding: 12px;
+	padding: 14px;
 
 	background-color: $monopoly-panel-strong;
 	border: 2px solid $monopoly-gold;
-	border-radius: $monopoly-radius-board;
+	border-radius: $monopoly-radius-control;
 	color: $monopoly-text;
 	font-family: $monopoly-font-family;
 
@@ -55,9 +53,9 @@
 
 .trade-panel-title {
 	flex: 1;
-	text-align: center;
-	font-size: 18px;
-	font-weight: 800;
+	text-align: left;
+	font-size: $monopoly-font-panel-title;
+	font-weight: 900;
 	color: $monopoly-text-muted;
 }
 
@@ -69,7 +67,7 @@
 	min-height: 52px;
 
 	color: $monopoly-text-soft;
-	font-size: 15px;
+	font-size: $monopoly-font-body;
 	font-weight: 700;
 }
 
