@@ -6,7 +6,7 @@
 
 <root class="@GetRootClasses()">
 	<div class="chat-overlay-panel">
-		<div class="chat-overlay-messages" @ref="MessagesPanel">
+		<div class="chat-overlay-messages monopory-scroll-y" @ref="MessagesPanel">
 			@foreach ( var entry in ChatEntries )
 			{
 				<div class="chat-overlay-line">

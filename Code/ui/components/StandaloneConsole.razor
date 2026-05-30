@@ -9,7 +9,7 @@
 	@if ( IsOpen )
 	{
 		<div class="standalone-console-window">
-			<div class="standalone-console-output" @ref="OutputPanel">
+			<div class="standalone-console-output monopory-scroll-both" @ref="OutputPanel">
 				@foreach ( var entry in FilteredEntries )
 				{
 					<div class="standalone-console-line @entry.Kind">

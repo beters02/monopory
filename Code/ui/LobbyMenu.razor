@@ -22,7 +22,7 @@
 							<GameButton Variant="match-config-close-button" Title="Close" OnClick="@CloseConfigMenu">X</GameButton>
 						</div>
 
-						<div class="match-config-scroll">
+						<div class="match-config-scroll monopory-scroll-y">
 							<div class="match-config-copy">@ConfigMenuCopy</div>
 
 							@foreach ( var group in ConfigGroups )
@@ -108,7 +108,7 @@
 							<GameButton Variant="match-config-close-button" Title="Close" OnClick="@CloseCustomizeMenu">X</GameButton>
 						</div>
 						<div class="piece-customize-copy">Pick your piece. New pieces can be added to <code>PieceCatalog.All</code> and this list will update automatically.</div>
-						<div class="piece-customize-grid">
+						<div class="piece-customize-grid monopory-scroll-both">
 							@foreach ( var piece in AvailablePieces )
 							{
 								<div class="@GetPieceCardClasses( piece )">

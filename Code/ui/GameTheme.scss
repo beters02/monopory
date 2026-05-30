@@ -41,3 +41,16 @@ $property-utility: #37d6c6;
 $property-none: #8a8a8a;
 
 $monopoly-sound-error: "sounds/effects/uipack-retro6.mp3";
+
+.monopory-scroll-y,
+.monopory-scroll-both {
+}
+
+.monopory-scroll-y {
+	overflow-x: hidden;
+	overflow-y: scroll;
+}
+
+.monopory-scroll-both {
+	overflow: scroll;
+}

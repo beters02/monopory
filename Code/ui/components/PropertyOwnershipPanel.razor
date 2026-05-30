@@ -36,39 +36,48 @@
 		<Sandbox.ui.components.HudPanel.HudPanel Variant="property-manager-hud">
 			<ChildContent>
 				<div class="property-manager-title">Property Manager</div>
-				<div class="property-manager-content">
-					@foreach ( var ownershipGroup in PropertyManagerSections )
-					{
-						<div class="property-manager-section">
-							<div class="property-manager-section-title">@ownershipGroup.Title</div>
-							@if ( ownershipGroup.Properties.Count == 0 )
-							{
-								<div class="property-manager-empty">None</div>
-							}
-							else
-							{
-								<div class="property-manager-grid">
-									@foreach ( var property in ownershipGroup.Properties )
-									{
-										<GameButton
-											Variant="property-manager-item"
-											Title="@property.DisplayName"
-											OnClick="@(() => SelectPropertySpace( property.Index ))">
-											<ChildContent>
-												<div class="@GetPropertySquareClasses( property, ownershipGroup.PlayerIndex )">
-													@if ( GameRef.IsMortgaged( property.Index ) )
-													{
-														<div class="property-mortgage-marker">M</div>
-													}
-												</div>
-												<div class="property-manager-name">@property.DisplayName</div>
-											</ChildContent>
-										</GameButton>
-									}
-								</div>
-							}
+				<div class="property-manager-scroll-shell">
+					<div class="property-manager-content monopory-scroll-y" @ref="PropertyManagerContentPanel">
+						@foreach ( var ownershipGroup in PropertyManagerSections )
+						{
+							<div class="property-manager-section">
+								<div class="property-manager-section-title">@ownershipGroup.Title</div>
+								@if ( ownershipGroup.Properties.Count == 0 )
+								{
+									<div class="property-manager-empty">None</div>
+								}
+								else
+								{
+									<div class="property-manager-grid">
+										@foreach ( var property in ownershipGroup.Properties )
+										{
+											<GameButton
+												Variant="property-manager-item"
+												Title="@property.DisplayName"
+												OnClick="@(() => SelectPropertySpace( property.Index ))">
+												<ChildContent>
+													<div class="@GetPropertySquareClasses( property, ownershipGroup.PlayerIndex )">
+														@if ( GameRef.IsMortgaged( property.Index ) )
+														{
+															<div class="property-mortgage-marker">M</div>
+														}
+													</div>
+													<div class="property-manager-name">@property.DisplayName</div>
+												</ChildContent>
+											</GameButton>
+										}
+									</div>
+								}
+							</div>
+						}
+					</div>
+					<div class="property-manager-scrollbar" hidden="@(!HasOverflowForScrollbar)">
+						<button class="property-scroll-button up" onclick="@ScrollUp">▲</button>
+						<div class="property-scroll-track">
+							<div class="property-scroll-thumb" style="@PropertyScrollbarThumbStyle"></div>
 						</div>
-					}
+						<button class="property-scroll-button down" onclick="@ScrollDown">▼</button>
+					</div>
 				</div>
 			</ChildContent>
 		</Sandbox.ui.components.HudPanel.HudPanel>
@@ -78,7 +87,12 @@
 @code
 {
 	[Parameter] public GameController GameRef { get; set; }
+	private Panel PropertyManagerContentPanel = null!;
 	private int InitialTurnOrderStartIndex = -1;
+	private float PropertyScrollViewportHeight;
+	private float PropertyScrollContentHeight;
+	private float PropertyScrollOffsetY;
+	private bool HasOverflowForScrollbar;
 
 	private List<PlayerState> PropertyHudPlayers
 	{
@@ -294,6 +308,73 @@
 		}
 
 		return hash.ToHashCode();
+	}
+
+	public override void Tick()
+	{
+		base.Tick();
+		SyncPropertyScrollbarMetrics();
+	}
+
+	private void SyncPropertyScrollbarMetrics()
+	{
+		if ( PropertyManagerContentPanel is null )
+			return;
+
+		var nextViewportHeight = Math.Max( 1f, PropertyManagerContentPanel.Box.RectInner.Height );
+		var nextContentHeight = Math.Max( 0f, PropertyManagerContentPanel.ScrollSize.y );
+		var nextOffsetY = PropertyManagerContentPanel.ScrollOffset.y;
+		var nextHasOverflow = nextContentHeight > nextViewportHeight + 1f;
+
+		PropertyScrollViewportHeight = nextViewportHeight;
+		PropertyScrollContentHeight = nextContentHeight;
+		PropertyScrollOffsetY = nextOffsetY;
+		HasOverflowForScrollbar = nextHasOverflow;
+
+		// Keep thumb in lockstep with live scroll including inertial/bounce motion.
+		StateHasChanged();
+	}
+
+	private void ScrollUp()
+	{
+		ScrollPropertyManagerBy( -56f );
+	}
+
+	private void ScrollDown()
+	{
+		ScrollPropertyManagerBy( 56f );
+	}
+
+	private void ScrollPropertyManagerBy( float delta )
+	{
+		if ( PropertyManagerContentPanel is null )
+			return;
+
+		var maxOffset = GetPropertyScrollMaxOffset();
+		var nextY = Math.Clamp( PropertyManagerContentPanel.ScrollOffset.y + delta, 0f, maxOffset );
+		PropertyManagerContentPanel.ScrollOffset = new Vector2( 0f, nextY );
+		SyncPropertyScrollbarMetrics();
+		StateHasChanged();
+	}
+
+	private float GetPropertyScrollMaxOffset()
+	{
+		return Math.Max( 0f, PropertyScrollContentHeight );
+	}
+
+	private string PropertyScrollbarThumbStyle
+	{
+		get
+		{
+			if ( !HasOverflowForScrollbar )
+				return "height: 100%; top: 0%;";
+
+			var maxOffset = Math.Max( 1f, GetPropertyScrollMaxOffset() );
+			var visibleRatio = Math.Clamp( PropertyScrollViewportHeight / Math.Max( 1f, PropertyScrollViewportHeight + maxOffset ), 0.12f, 1f );
+			var trackTravelRatio = Math.Clamp( PropertyScrollOffsetY / maxOffset, 0f, 1f );
+			var top = (1f - visibleRatio) * trackTravelRatio * 100f;
+			return $"height: {visibleRatio * 100f:0.###}%; top: {top:0.###}%;";
+		}
 	}
 
 	private sealed class PropertyManagerSection
