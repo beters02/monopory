@@ -31,6 +31,11 @@ public static class GameAssets
 		public static readonly GameImage Chance = new ( "textures/Chance.png" );
 	}
 
+	public static class Icons
+	{
+		public static readonly GameIcon CameraWhiteFixedSvg = new ( "textures/icons/camera_white_fixed.svg" );
+	}
+
 	public static class Materials
 	{
 		public static readonly GameMaterial House = new ( "materials/pieces/house.vmat" );
