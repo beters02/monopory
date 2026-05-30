@@ -16,6 +16,17 @@
 		</ChildContent>
 	</Sandbox.ui.components.HudPanel.HudPanel>
 
+	<Sandbox.ui.components.HudPanel.HudPanel Variant="hud-card actions camera">
+		<ChildContent>
+			<HudPanelSubtitle>Camera</HudPanelSubtitle>
+			<div class="camera-mode-buttons">
+				<GameButton Variant="@GetCameraModeButtonClasses( BoardCameraMode.Default )" OnClick="@(() => SetCameraMode( BoardCameraMode.Default ))">Default</GameButton>
+				<GameButton Variant="@GetCameraModeButtonClasses( BoardCameraMode.Board )" OnClick="@(() => SetCameraMode( BoardCameraMode.Board ))">Board</GameButton>
+				<GameButton Variant="@GetCameraModeButtonClasses( BoardCameraMode.FreeCam )" OnClick="@(() => SetCameraMode( BoardCameraMode.FreeCam ))">Free Cam</GameButton>
+			</div>
+		</ChildContent>
+	</Sandbox.ui.components.HudPanel.HudPanel>
+
 	<Sandbox.ui.components.HudPanel.HudPanel Variant="hud-card actions">
 		<ChildContent>
 			<HudPanelSubtitle>Actions</HudPanelSubtitle>
@@ -33,23 +44,12 @@
 			}
 			else if ( CanActOnCurrentTurn )
 			{
-				<GameButton OnHoldComplete="@RollDice" HoldMaxSeconds="@RollHoldMaxSeconds">Roll Dice</GameButton>
+				<GameButton Variant="action-buttons" OnHoldComplete="@RollDice" HoldMaxSeconds="@RollHoldMaxSeconds">Roll Dice</GameButton>
 			}
 			@if ( GameRef.MatchState == MatchLifecycleState.InGame && CurrentPlayer == LocalPlayer )
 			{
 				<GameButton Variant="@EndTurnButtonClasses" CanClick="@CanEndTurn" OnClick="@EndTurn" BlockedPopupTitle="Cannot end turn yet" BlockedPopupMessage="@GetEndTurnBlockedMessage()">End Turn</GameButton>
 			}
-		</ChildContent>
-	</Sandbox.ui.components.HudPanel.HudPanel>
-
-	<Sandbox.ui.components.HudPanel.HudPanel Variant="hud-card actions camera">
-		<ChildContent>
-			<HudPanelSubtitle>Camera</HudPanelSubtitle>
-			<div class="camera-mode-buttons">
-				<GameButton Variant="@GetCameraModeButtonClasses( BoardCameraMode.Default )" OnClick="@(() => SetCameraMode( BoardCameraMode.Default ))">Default</GameButton>
-				<GameButton Variant="@GetCameraModeButtonClasses( BoardCameraMode.Board )" OnClick="@(() => SetCameraMode( BoardCameraMode.Board ))">Board</GameButton>
-				<GameButton Variant="@GetCameraModeButtonClasses( BoardCameraMode.FreeCam )" OnClick="@(() => SetCameraMode( BoardCameraMode.FreeCam ))">Free Cam</GameButton>
-			</div>
 		</ChildContent>
 	</Sandbox.ui.components.HudPanel.HudPanel>
 </root>
@@ -77,7 +77,7 @@
 			: $"{CurrentTurnRemainingSeconds / 60:00}:{CurrentTurnRemainingSeconds % 60:00}";
 
 	private string EndTurnButtonClasses =>
-		CanEndTurn ? "" : "blocked-action-button";
+		CanEndTurn ? "action-buttons" : "action-buttons blocked-action-button";
 
 	private bool CanActOnCurrentTurn =>
 		GameRef?.MatchState == MatchLifecycleState.InGame &&
