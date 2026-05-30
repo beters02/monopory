@@ -4,54 +4,68 @@
 
 
 .hud-card {
-	top: 32px;
-    left: 32px;
-	height: 230px;
+	//top: 32px;
+    //left: 32px;
+	//bottom: 32px;
+	//left: 50%;
+	//top: 50%;
+	transform: translateX(-50%);
+	//height: 230px;
 }
 
 .hud-panel.hud-card {
-	width: 350px;
+	width: 400px;
+	//left: 57%;
+	//height: 150px;
 }
 
 .hud-card.actions {
-	left: 32px;
-	top: 265px;
-	height: 150px;
-	width: 173px;
+	position: absolute;
+	left: 182px;
+	top: 32px;
+	//height: 300px;
+	width: 300px;
 	gap: 2px;
-	padding-bottom: -5px;
+	//padding-bottom: px;
 }
 
-.hud-card.actions.camera {
-	left: 209px;
-	width: 173px;
+.hud-card.camera {
+	position: absolute;
+	//left: 750;
+	bottom: 32px;
+	left: 500px;
+	height: 150px;
+	width: 180px;
 }
 
 .monopoly-button.action-buttons {
 	align-items: center;
 	padding: 4px 9px;
 	margin: 1 0 1 0;
+	border-radius: 4px;
 }
 
 .camera-mode-buttons {
 	display: flex;
 	flex-direction: column;
-	gap: 6px;
-	margin-top: 8px;
+	gap: 8px;
+	margin-top: 10px;
+	margin-bottom: -10px;
 }
 
 .camera-mode-buttons .monopoly-button.camera-mode-button {
 	flex: 1;
 	min-width: 0;
+	max-height: 30px;
 	margin-top: -3;
 	padding: 10px 5px;
 	font-size: 13px;
-	text-align: center;
-	justify-content: center;
+	text-align: left;
+	//justify-content: ;
 	align-items: center;
 	background-color: rgba(255, 255, 255, 0.08);
 	color: $monopoly-text;
-	border-radius: 3px;
+	border-radius: 4px;
 }
 
 .camera-mode-buttons .monopoly-button.camera-mode-button:hover {

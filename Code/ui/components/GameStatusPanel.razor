@@ -6,35 +6,38 @@
 @inherits Panel
 
 <root>
-	<Sandbox.ui.components.HudPanel.HudPanel Variant="hud-card">
-		<ChildContent>
-			<HudPanelSubtitle>Game</HudPanelSubtitle>
-			<HudPanelBody>Time Left: @CurrentTurnTimeText</HudPanelBody>
-			<HudPanelBody>Current Player: @CurrentPlayerName</HudPanelBody>
-			<HudPanelBody>Last Roll: @GameRef.LastDieA + @GameRef.LastDieB</HudPanelBody>
-			<HudPanelBody>Phase: @GameRef.ParseCurrentGamePhaseWithCurrentPlayer()</HudPanelBody>		
-		</ChildContent>
-	</Sandbox.ui.components.HudPanel.HudPanel>
+	@if ( gamePanelEnabled )
+	{
+		<Sandbox.ui.components.HudPanel.HudPanel Variant="hud-card">
+			<ChildContent>
+				<HudPanelSubtitle>Game</HudPanelSubtitle>
+				<HudPanelBody>Time Left: @CurrentTurnTimeText</HudPanelBody>
+				<HudPanelBody>Current Player: @CurrentPlayerName</HudPanelBody>
+				<HudPanelBody>Last Roll: @GameRef.LastDieA + @GameRef.LastDieB</HudPanelBody>
+				<HudPanelBody>Phase: @GameRef.ParseCurrentGamePhaseWithCurrentPlayer()</HudPanelBody>		
+			</ChildContent>
+		</Sandbox.ui.components.HudPanel.HudPanel>
+	}
 
-	<Sandbox.ui.components.HudPanel.HudPanel Variant="hud-card actions camera">
+	
+
+	<Sandbox.ui.components.HudPanel.HudPanel Variant="hud-card actions">
 		<ChildContent>
+
 			<HudPanelSubtitle>Camera</HudPanelSubtitle>
 			<div class="camera-mode-buttons">
 				<GameButton Variant="@GetCameraModeButtonClasses( BoardCameraMode.Default )" OnClick="@(() => SetCameraMode( BoardCameraMode.Default ))">Default</GameButton>
 				<GameButton Variant="@GetCameraModeButtonClasses( BoardCameraMode.Board )" OnClick="@(() => SetCameraMode( BoardCameraMode.Board ))">Board</GameButton>
 				<GameButton Variant="@GetCameraModeButtonClasses( BoardCameraMode.FreeCam )" OnClick="@(() => SetCameraMode( BoardCameraMode.FreeCam ))">Free Cam</GameButton>
 			</div>
-		</ChildContent>
-	</Sandbox.ui.components.HudPanel.HudPanel>
-
-	<Sandbox.ui.components.HudPanel.HudPanel Variant="hud-card actions">
-		<ChildContent>
+			<HudPanelEmptyLine></HudPanelEmptyLine>
+			<HudPanelEmptyLine></HudPanelEmptyLine>
+			<HudPanelEmptyLine></HudPanelEmptyLine>
 			<HudPanelSubtitle>Actions</HudPanelSubtitle>
 			@if ( IsCurrentPlayerInJail )
 			{
 				<HudPanelBody>Jail Turns: @CurrentPlayer.JailTurnsRemaining</HudPanelBody>
 			}
-
 			@if ( CanActOnCurrentTurn && IsCurrentPlayerInJail )
 			{
 				<div class="jail-action-buttons">
@@ -50,6 +53,7 @@
 			{
 				<GameButton Variant="@EndTurnButtonClasses" CanClick="@CanEndTurn" OnClick="@EndTurn" BlockedPopupTitle="Cannot end turn yet" BlockedPopupMessage="@GetEndTurnBlockedMessage()">End Turn</GameButton>
 			}
+
 		</ChildContent>
 	</Sandbox.ui.components.HudPanel.HudPanel>
 </root>
@@ -65,6 +69,7 @@
 	private SpaceDef PendingDef => GameRef?.Board?.GetSpaceDef( GameRef.PendingPurchaseSpaceIndex );
 	private string PendingPropertyName => PendingDef?.DisplayName ?? "Unknown Property";
 	private const float RollHoldMaxSeconds = 1.25f;
+	private bool gamePanelEnabled = false;
 
 	private int CurrentTurnRemainingSeconds =>
 		GameRef is null || GameRef.CurrentTurnEndsAt <= 0f
