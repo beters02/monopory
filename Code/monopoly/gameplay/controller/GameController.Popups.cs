@@ -25,10 +25,7 @@ public sealed partial class GameController : Component
 
 	public void SendPopupToAll( string title, string message, PopupKind kind = PopupKind.Info, bool canDismiss = true, float lifetime = 5f, bool soundEnabled = true )
 	{
-		if ( !Networking.IsHost )
-			return;
-
-		SendSystemChatMessage( FormatNotificationForChat( title, message ) );
+		SendTableChatMessage( title, message );
 	}
 
 	public void SendGlobalPopupToAll( string title, string message, PopupKind kind = PopupKind.Info, bool canDismiss = true, float lifetime = 5f, bool soundEnabled = true )
@@ -84,6 +81,14 @@ public sealed partial class GameController : Component
 		ShowPopupLocal( nextPopupId++, title, message, kind, canDismiss, lifetime, soundEnabled );
 	}
 
+	public void SendTableChatMessage( string title, string message )
+	{
+		if ( !Networking.IsHost )
+			return;
+
+		SendSystemChatMessage( FormatNotificationForChat( title, message ) );
+	}
+
 	[Rpc.Broadcast]
 	private void ShowPopup( int popupId, string title, string message, PopupKind kind, bool canDismiss, float lifetime, bool soundEnabled )
 	{
@@ -113,9 +118,13 @@ public sealed partial class GameController : Component
 	// Custom Game Popups
 	public void ShowPropertyBoughtPopup( PlayerState player, SpaceDef def )
 	{
+		if ( player is null || def is null )
+			return;
+
 		var title = "Property purchased";
 		var message = $"{player.PlayerName} has purchased {def.DisplayName} for {def.Price}!";
-		SendGlobalPopupToAll( title, message, PopupKind.Success );
+		SendPopupToPlayer( player, title, $"You purchased {def.DisplayName} for {def.Price}.", PopupKind.Success, true, 4f );
+		SendTableChatMessage( title, message );
 	}
 
 	private void ShowMoneyReceivedPopup( PlayerState player, int amount, string source )
@@ -250,8 +259,7 @@ public sealed partial class GameController : Component
 		var message = $"{payer.PlayerName} paid ${amount} to {receiver.PlayerName}.";
 
 		SendPopupToPlayer( payer, title, message, PopupKind.Danger, true, 4f );
-		SendPopupToPlayer( receiver, title, message, PopupKind.Success, true, 4f );
-		SendSystemChatMessage( FormatNotificationForChat( title, message ) );
+		SendTableChatMessage( title, message );
 	}
 
 	private void ShowForcedPaymentToBankPopup( PlayerState payer, int amount )
@@ -263,7 +271,7 @@ public sealed partial class GameController : Component
 		var message = $"{payer.PlayerName} paid ${amount} to the bank.";
 
 		SendPopupToPlayer( payer, title, message, PopupKind.Danger, true, 4f );
-		SendSystemChatMessage( FormatNotificationForChat( title, message ) );
+		SendTableChatMessage( title, message );
 	}
 
 	private void ShowForcedPaymentToEachPlayerPopup( PlayerState payer, int amountPerPlayer )
@@ -275,11 +283,7 @@ public sealed partial class GameController : Component
 		var message = $"{payer.PlayerName} paid ${amountPerPlayer} to every other player.";
 
 		SendPopupToPlayer( payer, title, message, PopupKind.Danger, true, 4f );
-
-		foreach ( var player in Players.Where( player => player is not null && player.IsAssigned && !player.IsBankrupt && player != payer ) )
-			SendPopupToPlayer( player, title, message, PopupKind.Success, true, 4f );
-
-		SendSystemChatMessage( FormatNotificationForChat( title, message ) );
+		SendTableChatMessage( title, message );
 	}
 
 	private HashSet<string> CaptureOwnedSetKeys( params int[] playerIndexes )
@@ -331,20 +335,18 @@ public sealed partial class GameController : Component
 
 				var title = "Property set owned";
 				var message = $"{player.PlayerName} now owns {GetOwnedSetDisplayName( setKey )}.";
-				SendGlobalPopupToAll( title, message, PopupKind.Success, true, 5f );
+				SendPopupToPlayer( player, title, $"You now own {GetOwnedSetDisplayName( setKey )}.", PopupKind.Success, true, 5f );
+				SendTableChatMessage( title, message );
 			}
 		}
 	}
 
 	private static string FormatNotificationForChat( string title, string message )
 	{
-		if ( string.IsNullOrWhiteSpace( title ) )
-			return message ?? "";
-
 		if ( string.IsNullOrWhiteSpace( message ) )
 			return title;
 
-		return $"{title}: {message}";
+		return message;
 	}
 
 	private static string GetOwnedSetDisplayName( string setKey )

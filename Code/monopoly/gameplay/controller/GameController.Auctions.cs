@@ -52,7 +52,7 @@ public sealed partial class GameController : Component
 		AuctionEndsAt = Time.Now + 15f;
 		Phase = GamePhase.Auctioning;
 
-		SendPopupToAll( "Auction started", $"{def.DisplayName} is up for auction.", PopupKind.Info, true, 4f );
+		SendGlobalPopupToAll( "Auction started", $"{def.DisplayName} is up for auction.", PopupKind.Info, true, 4f );
 		Log.Info( $"Auction started for {def.DisplayName}." );
 	}
 
@@ -70,14 +70,15 @@ public sealed partial class GameController : Component
 			{
 				var ownedSetsBeforePurchase = CaptureOwnedSetKeys( AuctionHighBidderIndex );
 				PropertyOwners[def.Index] = AuctionHighBidderIndex;
-				SendPopupToAll( "Auction won", $"{winner.PlayerName} won {def.DisplayName} for ${AuctionCurrentBid}.", PopupKind.Success, true, 5f );
+				SendPopupToPlayer( winner, "Auction won", $"You won {def.DisplayName} for ${AuctionCurrentBid}.", PopupKind.Success, true, 5f );
+				SendTableChatMessage( "Auction won", $"{winner.PlayerName} won {def.DisplayName} for ${AuctionCurrentBid}." );
 				ShowNewlyOwnedSetPopups( ownedSetsBeforePurchase, AuctionHighBidderIndex );
 				Log.Info( $"{winner.PlayerName} won {def.DisplayName} for ${AuctionCurrentBid}." );
 			}
 		}
 		else if ( def is not null )
 		{
-			SendPopupToAll( "Auction ended", $"{def.DisplayName} received no bids.", PopupKind.Warning, true, 5f );
+			SendTableChatMessage( "Auction ended", $"{def.DisplayName} received no bids." );
 			Log.Info( $"Auction for {def.DisplayName} ended with no bids." );
 		}
 

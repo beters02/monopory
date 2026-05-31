@@ -23,8 +23,10 @@ public static class GameAssets
 		Sounds.Error.Preload();
 		Sounds.DiceImpact.Preload();
 		Sounds.TokenStep.Preload();
-		Sounds.Popup.Success.Preload();
+		Sounds.Success.Preload();
 		Sounds.PianoBingBingBing.Preload();
+		Sounds.TradeNegotiated.Preload();
+		Sounds.TradeReceived.Preload();
 	}
 
 	public static class Images
@@ -56,11 +58,14 @@ public static class GameAssets
 		public static readonly GameSound DiceImpact = new( "sounds/effects/dice-impact.sound" );
 		public static readonly GameSound TokenStep = new( "sounds/effects/footstep/footstep-piece.sound" );
 		public static readonly GameSound PianoBingBingBing = new ( "sounds/effects/uipack-modern16.mp3" );
+		public static readonly GameSound TradeReceived = new ( "sounds/effects/uipack-retro8.mp3" );
+		public static readonly GameSound TradeNegotiated = new ( "sounds/effects/uipack-retro9.mp3" );
+		public static readonly GameSound Success = new( "sounds/effects/ui-success.sound" );
 		
 		public static class Popup
 		{
 			public static readonly GameSound Info = Unassigned;
-			public static readonly GameSound Success = new( "sounds/effects/ui-success.sound" );
+			public static readonly GameSound Success = Sounds.Success;
 			public static readonly GameSound Warning = Sounds.Warning;
 			public static readonly GameSound Danger = Error;
 

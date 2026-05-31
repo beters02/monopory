@@ -57,7 +57,7 @@ public sealed partial class GameController : Component
 		BeginTurnForCurrentPlayer();
 		StartTurnTimer();
 
-		SendPopupToAll( "Game started", "The first turn is live.", PopupKind.Success, true, 4f );
+		SendGlobalPopupToAll( "Game started", "The first turn is live.", PopupKind.Success, true, 4f );
 		return true;
 	}
 
@@ -83,7 +83,7 @@ public sealed partial class GameController : Component
 		CurrentTurnEndsAt = 0f;
 		AuctionEndsAt = 0f;
 		MatchState = MatchLifecycleState.Paused;
-		SendPopupToAll( "Paused", "The host paused the game.", PopupKind.Info, true, 4f );
+		SendGlobalPopupToAll( "Paused", "The host paused the game.", PopupKind.Info, true, 4f );
 		return true;
 	}
 
@@ -101,7 +101,7 @@ public sealed partial class GameController : Component
 		pausedTurnRemainingSeconds = 0f;
 		pausedAuctionRemainingSeconds = 0f;
 		MatchState = MatchLifecycleState.InGame;
-		SendPopupToAll( "Resumed", "Back to the board.", PopupKind.Success, true, 3f );
+		SendGlobalPopupToAll( "Resumed", "Back to the board.", PopupKind.Success, true, 3f );
 		return true;
 	}
 
@@ -152,7 +152,7 @@ public sealed partial class GameController : Component
 		if ( Networking.IsHost && Connection.All.Count <= 1 )
 			NetworkSession.ClearRejoinWindow();
 
-		SendPopupToAll(
+		SendGlobalPopupToAll(
 			"Game ended",
 			"The game hit a fatal rules error and was ended by the host. Returning everyone to lobby in 3 seconds.",
 			PopupKind.Danger,

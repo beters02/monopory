@@ -99,10 +99,9 @@ public sealed class CommandWatcher : Component
 		if ( wasFirstRun )
 			return;
 
-		GameController.Instance?.SendPopupToAll(
+		GameController.Instance?.SendTableChatMessage(
 			"Server cheats changed",
-			$"sv_cheats is now {(newValue ? "enabled" : "disabled")}.",
-			newValue ? PopupKind.Warning : PopupKind.Info
+			$"sv_cheats is now {(newValue ? "enabled" : "disabled")}."
 		);
 	}
 }

@@ -10,10 +10,10 @@ public sealed partial class GameController : Component
 	public bool ShowTradeDeniedPopup = true;
 	public bool ShowTradeNegotiationReceivedPopup = true;
 	public int MaxPendingSentTradesPerPlayer = 3;
-	public GameSound TradeReceivedSound = GameAssets.Sounds.Unassigned;
-	public GameSound TradeAcceptedSound = GameAssets.Sounds.Unassigned;
-	public GameSound TradeDeniedSound = GameAssets.Sounds.Unassigned;
-	public GameSound TradeNegotiationReceivedSound = GameAssets.Sounds.Unassigned;
+	public GameSound TradeReceivedSound = GameAssets.Sounds.TradeReceived; // retro 8
+	public GameSound TradeAcceptedSound = GameAssets.Sounds.Success; // success
+	public GameSound TradeDeniedSound = GameAssets.Sounds.Warning; // error
+	public GameSound TradeNegotiationReceivedSound = GameAssets.Sounds.TradeNegotiated; // retro 9
 
 	[Rpc.Host]
 	public void RequestCreateTrade( int receiverPlayerIndex, int senderMoney, int receiverMoney, string senderPropertyIndexes, string receiverPropertyIndexes, string senderCardIds = "", string receiverCardIds = "", bool isNegotiation = false )

@@ -59,7 +59,7 @@ public sealed partial class GameController
 
 		Log.Warning( $"Became network host after {previousHost?.DisplayName ?? "previous host"} left. Recovering game state." );
 		IsRecoveringHostState = true;
-		SendPopupToAll( "Host changed", "Recovering game state after the host left.", PopupKind.Warning, true, 4f );
+		SendGlobalPopupToAll( "Host changed", "Recovering game state after the host left.", PopupKind.Warning, true, 4f );
 		RecoverGameplayState( true );
 	}
 

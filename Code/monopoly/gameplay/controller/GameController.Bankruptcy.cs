@@ -115,7 +115,7 @@ public sealed partial class GameController : Component
 			NetworkSession.ClearRejoinWindow();
 
 		var winnerName = Winner?.PlayerName ?? "No one";
-		SendPopupToAll( "Game over", $"{winnerName} won the game.", PopupKind.Success, true, 8f );
+		SendGlobalPopupToAll( "Game over", $"{winnerName} won the game.", PopupKind.Success, true, 8f );
 		Log.Info( $"Game over. Winner: {winnerName}." );
 	}
 }

@@ -220,10 +220,18 @@ public sealed partial class GameController : Component
 		foreach ( var def in propertiesToBuy )
 		{
 			PropertyOwners[def.Index] = playerIndex;
-			ShowPropertyBoughtPopup( player, def );
 			Log.Info( $"{player.PlayerName} bought {def.DisplayName} for ${def.Price}." );
 		}
 
+		SendPopupToPlayer(
+			player,
+			"Properties purchased",
+			$"You purchased {propertiesToBuy.Count} properties for ${totalPrice}.",
+			PopupKind.Success,
+			true,
+			4f
+		);
+		SendTableChatMessage( "Properties purchased", $"{player.PlayerName} bought {propertiesToBuy.Count} properties for ${totalPrice}." );
 		ShowNewlyOwnedSetPopups( ownedSetsBeforePurchase, playerIndex );
 
 		message = $"{player.PlayerName} bought {propertiesToBuy.Count} properties for ${totalPrice}.";

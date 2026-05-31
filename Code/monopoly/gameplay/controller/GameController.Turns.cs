@@ -71,14 +71,14 @@ public sealed partial class GameController : Component
 		if ( skippedPlayer.TurnTimeoutCount >= 2 )
 		{
 			Log.Info( $"{skippedPlayer.PlayerName}'s turn timed out twice and they were removed for AFK." );
-			SendPopupToAll( "Player removed", $"{skippedPlayer.PlayerName} timed out twice and was removed for AFK.", PopupKind.Warning, true, 5f );
+			SendTableChatMessage( "Player removed", $"{skippedPlayer.PlayerName} timed out twice and was removed for AFK." );
 			RemovePlayerForAfkTimeout( skippedPlayer );
 			AdvanceTurn();
 			return;
 		}
 
 		Log.Info( $"{skippedPlayer.PlayerName}'s turn timed out and was skipped. Timeout strike {skippedPlayer.TurnTimeoutCount}/2." );
-		SendPopupToAll( "Turn skipped", $"{skippedPlayer.PlayerName}'s turn timed out. One more timeout will remove them.", PopupKind.Warning, true, 4f );
+		SendTableChatMessage( "Turn skipped", $"{skippedPlayer.PlayerName}'s turn timed out. One more timeout will remove them." );
 
 		AdvanceTurn();
 	}
@@ -156,7 +156,7 @@ public sealed partial class GameController : Component
 		}
 
 		ReleasePlayerFromJail( CurrentPlayer );
-		SendPopupToAll( "Jail fine paid", $"{CurrentPlayer.PlayerName} paid ${JailFineAmount} to leave Jail.", PopupKind.Info, true, 4f );
+		SendTableChatMessage( "Jail fine paid", $"{CurrentPlayer.PlayerName} paid ${JailFineAmount} to leave Jail." );
 		await RollCurrentPlayerAsync( -1, true, RollExecutionKind.JailRelease );
 	}
 
@@ -239,7 +239,7 @@ public sealed partial class GameController : Component
 			}
 
 			ReleasePlayerFromJail( CurrentPlayer );
-			SendPopupToAll( "Jail fine paid", $"{CurrentPlayer.PlayerName} paid ${JailFineAmount} after three failed Jail rolls.", PopupKind.Info, true, 4f );
+			SendTableChatMessage( "Jail fine paid", $"{CurrentPlayer.PlayerName} paid ${JailFineAmount} after three failed Jail rolls." );
 			ClearPendingRollState();
 			await MoveCurrentPlayerAfterRoll( total, RollExecutionKind.JailRelease );
 			return;
@@ -403,13 +403,15 @@ public sealed partial class GameController : Component
 			CurrentPlayer.ConsecutiveDoubles = CurrentTurnConsecutiveDoubles;
 			if ( CurrentTurnConsecutiveDoubles >= 3 )
 			{
-				SendPopupToAll(
+				SendPopupToPlayer(
+					CurrentPlayer,
 					"Three doubles",
-					$"{CurrentPlayer.PlayerName} rolled doubles three times in a row and was sent to Jail.",
+					"You rolled doubles three times in a row and were sent to Jail.",
 					PopupKind.Danger,
 					true,
 					5f
 				);
+				SendTableChatMessage( "Three doubles", $"{CurrentPlayer.PlayerName} rolled doubles three times in a row and was sent to Jail." );
 				SendPlayerToJail( CurrentPlayer );
 				CurrentTurnConsecutiveDoubles = 0;
 				CurrentTurnDoublesPlayerIndex = -1;
@@ -420,13 +422,15 @@ public sealed partial class GameController : Component
 			}
 
 			CurrentTurnGetsExtraRoll = true;
-			SendPopupToAll(
+			SendPopupToPlayer(
+				CurrentPlayer,
 				"Doubles rolled",
-				$"{CurrentPlayer.PlayerName} rolled doubles and gets another turn.",
+				"You rolled doubles and get another turn.",
 				PopupKind.Success,
 				true,
 				4f
 			);
+			SendTableChatMessage( "Doubles rolled", $"{CurrentPlayer.PlayerName} rolled doubles and gets another turn." );
 			return false;
 		}
 
@@ -626,7 +630,8 @@ public sealed partial class GameController : Component
 		}
 
 		ReleasePlayerFromJail( player );
-		SendPopupToAll( "Get Out of Jail Free", $"{player.PlayerName} used a Get Out of Jail Free card.", PopupKind.Info, true, 4f );
+		SendPopupToPlayer( player, "Get Out of Jail Free", "You used a Get Out of Jail Free card.", PopupKind.Info, true, 4f );
+		SendTableChatMessage( "Get Out of Jail Free", $"{player.PlayerName} used a Get Out of Jail Free card." );
 		return true;
 	}
 

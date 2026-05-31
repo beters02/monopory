@@ -26,7 +26,8 @@ public sealed partial class GameController : Component
 		PropertyImprovements[spaceIndex] = count + 1;
 
 		var spaceName = Board.GetSpaceDef( spaceIndex )?.DisplayName ?? "property";
-		SendGlobalPopupToAll( "Improvement purchased", $"{player.PlayerName} built on {spaceName} for ${cost}.", PopupKind.Success, true, 4f );
+		SendPopupToPlayer( player, "Improvement purchased", $"You built on {spaceName} for ${cost}.", PopupKind.Success, true, 4f );
+		SendTableChatMessage( "Improvement purchased", $"{player.PlayerName} built on {spaceName} for ${cost}." );
 		Log.Info( $"{player.PlayerName} built on {spaceName} for ${cost}." );
 	}
 
@@ -54,7 +55,8 @@ public sealed partial class GameController : Component
 		TrySettlePendingForcedPaymentForPlayer( playerIndex );
 
 		var soldSpaceName = Board.GetSpaceDef( spaceIndex )?.DisplayName ?? "property";
-		SendGlobalPopupToAll( "Improvement sold", $"{player.PlayerName} sold an improvement on {soldSpaceName} for ${refund}.", PopupKind.Warning, true, 4f );
+		SendPopupToPlayer( player, "Improvement sold", $"You sold an improvement on {soldSpaceName} for ${refund}.", PopupKind.Warning, true, 4f );
+		SendTableChatMessage( "Improvement sold", $"{player.PlayerName} sold an improvement on {soldSpaceName} for ${refund}." );
 		Log.Info( $"{player.PlayerName} sold an improvement on {soldSpaceName} for ${refund}." );
 	}
 
@@ -77,7 +79,8 @@ public sealed partial class GameController : Component
 		TrySettlePendingForcedPaymentForPlayer( playerIndex );
 
 		var mortgagedSpaceName = Board.GetSpaceDef( spaceIndex )?.DisplayName ?? "property";
-		SendGlobalPopupToAll( "Property sold", $"{player.PlayerName} mortgaged {mortgagedSpaceName} for ${value}.", PopupKind.Warning, true, 4f );
+		SendPopupToPlayer( player, "Property sold", $"You mortgaged {mortgagedSpaceName} for ${value}.", PopupKind.Warning, true, 4f );
+		SendTableChatMessage( "Property sold", $"{player.PlayerName} mortgaged {mortgagedSpaceName} for ${value}." );
 		Log.Info( $"{player.PlayerName} mortgaged {mortgagedSpaceName} for ${value}." );
 	}
 
@@ -100,7 +103,8 @@ public sealed partial class GameController : Component
 		MortgagedProperties.Remove( spaceIndex );
 
 		var unmortgagedSpaceName = Board.GetSpaceDef( spaceIndex )?.DisplayName ?? "property";
-		SendGlobalPopupToAll( "Property purchased", $"{player.PlayerName} unmortgaged {unmortgagedSpaceName} for ${cost}.", PopupKind.Success, true, 4f );
+		SendPopupToPlayer( player, "Property purchased", $"You unmortgaged {unmortgagedSpaceName} for ${cost}.", PopupKind.Success, true, 4f );
+		SendTableChatMessage( "Property purchased", $"{player.PlayerName} unmortgaged {unmortgagedSpaceName} for ${cost}." );
 		Log.Info( $"{player.PlayerName} unmortgaged {unmortgagedSpaceName} for ${cost}." );
 	}
 }

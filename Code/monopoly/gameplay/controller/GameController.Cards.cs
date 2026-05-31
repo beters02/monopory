@@ -27,9 +27,28 @@ public sealed partial class GameController : Component
 
 		string cardDisplayText = GetCardDisplayText( card );
 		ShowCardForPlayerWhoLanded( player, cardDisplayText );
-		SendGlobalPopupToAll( card.Title, card.Description, PopupKind.Info, true, 6f );
+		SendCardDrawPopupToOtherPlayers( player, card );
 		Log.Info( $"{player.PlayerName} drew {deck}: {card.Title}." );
 		ApplyCard( player, card );
+	}
+
+	private void SendCardDrawPopupToOtherPlayers( PlayerState drawingPlayer, CardDef card )
+	{
+		var drawingPlayerIndex = GetPlayerIndex( drawingPlayer );
+		if ( drawingPlayerIndex < 0 || card is null )
+			return;
+
+		foreach ( var playerIndex in GetAssignedPlayerIndexes().Where( index => index != drawingPlayerIndex ) )
+		{
+			SendPopupToPlayer(
+				playerIndex,
+				card.Title,
+				card.Description,
+				PopupKind.Info,
+				true,
+				6f
+			);
+		}
 	}
 
 	private static string GetCardDisplayText( CardDef card )
