@@ -31,10 +31,8 @@ public sealed class PlayerToken : Component
 	private GameObject markerObject;
 	private HighlightOutline markerHighlight;
 	private bool walkingAnim;
-	private bool turningAnim;
 	private bool hasAppliedWalkingAnim;
 	private bool requestedWalking;
-	private Vector3 lastXDirection = new(0, 1, 0);
 	private bool isGrabbed;
 	private bool isThrowing;
 	private Vector3 grabOffset;
@@ -43,6 +41,7 @@ public sealed class PlayerToken : Component
 	private bool isReplicatedPhysics;
 	private string activeReplicatedPhysicsKey;
 	private string completedReplicatedPhysicsKey;
+
 
 	protected override void OnStart()
 	{
@@ -62,6 +61,7 @@ public sealed class PlayerToken : Component
 
 		if ( Board is null || PlayerState is null )
 			return;
+			
 
 		var target = GetSpaceTargetPosition();
 		var targetRot = GetRotation( PlayerState.SpaceIndex );

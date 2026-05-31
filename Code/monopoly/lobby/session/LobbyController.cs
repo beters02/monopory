@@ -4,12 +4,12 @@ using System;
 public sealed partial class LobbyController : Component
 {
 	public MatchConfig Config;
-	[Property, Sync] public string HostedConfigSnapshot { get; set; } = "";
-	[Property, Sync] public NetDictionary<string, bool> ReadyPlayers { get; set; } = new();
-	[Property, Sync] public NetDictionary<string, string> KnownPlayerNames { get; set; } = new();
-	[Property, Sync] public NetDictionary<string, float> DisconnectedPlayers { get; set; } = new();
-	[Property, Sync] public NetDictionary<string, string> SelectedPieces { get; set; } = new();
-	[Property, Sync] public long PreferredHostOwnerId { get; set; }
+	[Sync] public string HostedConfigSnapshot { get; set; } = "";
+	[Sync] public NetDictionary<string, bool> ReadyPlayers { get; set; } = new();
+	[Sync] public NetDictionary<string, string> KnownPlayerNames { get; set; } = new();
+	[Sync] public NetDictionary<string, float> DisconnectedPlayers { get; set; } = new();
+	[Sync] public NetDictionary<string, string> SelectedPieces { get; set; } = new();
+	[Sync] public long PreferredHostOwnerId { get; set; }
 	private string lastAppliedHostedConfigSnapshot = "";
 
 	public int MinPlayers => Math.Max( Config?.MinPlayers ?? 1, 1 );

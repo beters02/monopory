@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using System;
 using System.Text.RegularExpressions;
+using System.Text.Json.Serialization;
 using Sandbox;
 
 public enum GamePhase
@@ -44,7 +45,7 @@ public sealed partial class GameController : Component, Component.INetworkListen
 		ChanceOrCommunityChest
 	}
 
-	public List<PlayerState> Players { get; set; } = new();
+	[JsonIgnore] public List<PlayerState> Players { get; set; } = new();
 	public MatchConfig Config { get; set; } = new();
 	[Property] public GameObject TokenPrefab { get; set; }
 	[Property] public MonopolyTheme Theme { get; set; }
@@ -141,6 +142,7 @@ public sealed partial class GameController : Component, Component.INetworkListen
 		instance = this;
 		GameAssets.PrewarmUiAssets();
 		SteamInviteBridge.Register( Scene );
+		//RemoveSerializedRuntimeChildren();
 		RefreshReplicatedPlayerSlots();
 
 		if ( Theme is null )

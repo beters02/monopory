@@ -134,6 +134,28 @@ public sealed partial class GameController : Component
 			EnsurePlayerStateObject( i );
 	}
 
+	private void RemoveSerializedRuntimeChildren()
+	{
+		var removedCount = 0;
+		foreach ( var child in GameObject.Children.ToArray() )
+		{
+			if ( child is null || !child.IsValid() )
+				continue;
+
+			if ( !child.Name.StartsWith( "PlayerState_", StringComparison.OrdinalIgnoreCase ) )
+				continue;
+
+			if ( child.Components.Get<PlayerState>() is null )
+				continue;
+
+			child.Destroy();
+			removedCount++;
+		}
+
+		if ( removedCount > 0 )
+			Log.Warning( $"Removed {removedCount} serialized PlayerState child object(s). Runtime player slots must be spawned by the host, not saved in the scene." );
+	}
+
 	private PlayerState CreatePlayerStateObject( int slotNumber )
 	{
 		var playerObject = new GameObject( true, $"PlayerState_{slotNumber:00}" );
