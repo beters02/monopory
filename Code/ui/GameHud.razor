@@ -25,43 +25,51 @@
 		}
 		else
 		{
-		<PopupStack Popups="@Popups" OnDismiss="@DismissPopup" OnConfirmDecision="@HandleConfirmationDecision"></PopupStack>
+			<div class="@BuildTranslucentHideableHudClass()">
+				<PopupStack Popups="@Popups" OnDismiss="@DismissPopup" OnConfirmDecision="@HandleConfirmationDecision"></PopupStack>
+			</div>
 
-		<SessionOverlay
-			GameRef="@GameRef"
-			IsEscapeMenuOpen="@IsEscapeMenuOpen"
-			IsOptionsMenuOpen="@IsOptionsMenuOpen"
-			OnResumeGame="@ResumeGame"
-			OnOpenOptions="@OpenOptionsMenu"
-			OnCloseMenu="@CloseEscapeMenu"
-			OnCloseOptions="@CloseOptionsMenu"
-			OnReturnToLobby="@ReturnToLobby"
-			OnLeaveLobby="@LeaveLobby"
-			OnExitGame="@ExitGame">
-		</SessionOverlay>
+			<SessionOverlay
+				GameRef="@GameRef"
+				IsEscapeMenuOpen="@IsEscapeMenuOpen"
+				IsOptionsMenuOpen="@IsOptionsMenuOpen"
+				OnResumeGame="@ResumeGame"
+				OnOpenOptions="@OpenOptionsMenu"
+				OnCloseMenu="@CloseEscapeMenu"
+				OnCloseOptions="@CloseOptionsMenu"
+				OnReturnToLobby="@ReturnToLobby"
+				OnLeaveLobby="@LeaveLobby"
+				OnExitGame="@ExitGame">
+			</SessionOverlay>
 
-		@if ( GameRef.IsRecoveringHostState )
-		{
-			<div class="host-recovery-screen">
-				<div class="host-recovery-card">
-					<div class="host-recovery-spinner"></div>
-					<div class="host-recovery-copy">
-						<div class="host-recovery-kicker">Host recovery</div>
-						<div class="host-recovery-title">Rebuilding the table state</div>
-						<div class="host-recovery-body">Hold tight while the new host finishes the interrupted action.</div>
+			@if ( GameRef.IsRecoveringHostState )
+			{
+				<div class="host-recovery-screen">
+					<div class="host-recovery-card">
+						<div class="host-recovery-spinner"></div>
+						<div class="host-recovery-copy">
+							<div class="host-recovery-kicker">Host recovery</div>
+							<div class="host-recovery-title">Rebuilding the table state</div>
+							<div class="host-recovery-body">Hold tight while the new host finishes the interrupted action.</div>
+						</div>
 					</div>
 				</div>
-			</div>
-		}
+			}
 
-		@if ( GameRef.MatchState != MatchLifecycleState.GameOver )
-		{
-			<GameStatusPanel GameRef="@GameRef"></GameStatusPanel>
-			<PropertyOwnershipPanel GameRef="@GameRef"></PropertyOwnershipPanel>
-			<TradePanel GameRef="@GameRef"></TradePanel>
-			<AuctionModal GameRef="@GameRef"></AuctionModal>
-			<SelectedSpacePanel GameRef="@GameRef"></SelectedSpacePanel>
-		}
+			@if ( GameRef.MatchState != MatchLifecycleState.GameOver )
+			{
+				<div class="@BuildHideableHudClass()">
+					<GameStatusPanel GameRef="@GameRef"></GameStatusPanel>
+					<AuctionModal GameRef="@GameRef"></AuctionModal>
+				</div>
+				
+				<div class="@BuildTranslucentHideableHudClass()">
+					<PropertyOwnershipPanel GameRef="@GameRef"></PropertyOwnershipPanel>
+					<TradePanel GameRef="@GameRef"></TradePanel>
+				</div>
+				
+				<SelectedSpacePanel GameRef="@GameRef"></SelectedSpacePanel>
+			}
 		}
 	}
 </root>
@@ -73,10 +81,26 @@
 	private bool IsEscapeMenuOpen;
 	private bool IsOptionsMenuOpen;
 
+	private bool IsHudVisible() => GameRef.IsGameHudVisible();
+
 	private List<GamePopup> Popups =>
 		(GameRef?.Popups ?? Enumerable.Empty<GamePopup>())
 			.Concat( LocalPopups.Popups )
 			.ToList();
+
+	private string BuildHideableHudClass()
+	{
+		return GameRef.IsGameHudVisible()
+			? "hideable-hud-panels"
+			: "hideable-hud-panels invisible";
+	}
+
+	private string BuildTranslucentHideableHudClass()
+	{
+		return GameRef.IsGameHudVisible()
+			? "translucent-hideable-hud-panels"
+			: "translucent-hideable-hud-panels invisible";
+	}
 
 	protected override void OnUpdate()
 	{
@@ -281,6 +305,7 @@
 		hash.Add( GameRef?.IsRecoveringHostState ?? false );
 		hash.Add( IsEscapeMenuOpen );
 		hash.Add( IsOptionsMenuOpen );
+		hash.Add( IsHudVisible() );
 		hash.Add( AppSettings.SettingsAvailable );
 		hash.Add( AppSettings.GetFullscreenMode() );
 		hash.Add( AppSettings.GetVSyncEnabled() );

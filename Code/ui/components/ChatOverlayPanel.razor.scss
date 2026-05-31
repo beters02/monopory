@@ -20,6 +20,10 @@
 	opacity: 1;
 }
 
+.chat-overlay-root.visible.game-hud-invisible {
+	opacity: $monopoly-roll-dice-translucent-panel-opacity;
+}
+
 .chat-overlay-panel {
 	width: 38%;
 	max-width: 420px;

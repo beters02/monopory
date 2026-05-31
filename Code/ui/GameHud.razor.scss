@@ -25,14 +25,36 @@ GameHud {
 
 	pointer-events: none;
 
-	.monopoly-hud {
+	.hideable-hud-panels {
 		position: absolute;
 		top: 0;
 		left: 0;
 		right: 0;
 		bottom: 0;
 
-		pointer-events: none;
+		opacity: 1;
+		transition: opacity 0.2s ease;
+
+		&.invisible {
+			opacity: $monopoly-roll-dice-invisible-panel-opacity;
+			pointer-events: none;
+		}
+	}
+
+	.translucent-hideable-hud-panels {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+
+		opacity: 1;
+		transition: opacity 0.2s ease;
+
+		&.invisible {
+			opacity: $monopoly-roll-dice-translucent-panel-opacity;
+			pointer-events: none;
+		}
 	}
 
 	.host-recovery-screen {

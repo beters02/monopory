@@ -192,9 +192,24 @@
 		return IsComposing || (Time.Now - LastInteractionAt) <= HideAfterSeconds;
 	}
 
+	private bool IsGameHudVisible() => GameRef.IsGameHudVisible();
+
 	private string GetRootClasses()
 	{
-		return IsVisible() ? "chat-overlay-root visible" : "chat-overlay-root hidden";
+
+		var str = "chat-overlay-root";
+		if (IsVisible())
+		{
+			str += " visible";
+			if ( !GameRef.IsGameHudVisible() )
+				str += " game-hud-invisible";
+				
+		} else
+		{
+			str += " hidden";
+		}
+
+		return str;
 	}
 
 	protected override int BuildHash()
@@ -203,6 +218,7 @@
 		hash.Add( IsComposing );
 		hash.Add( IsVisible() );
 		hash.Add( ChatEntries.Count );
+		hash.Add( IsGameHudVisible() );
 
 		foreach ( var entry in ChatEntries )
 		{

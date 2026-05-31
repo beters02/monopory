@@ -19,11 +19,8 @@
 		</Sandbox.ui.components.HudPanel.HudPanel>
 	}
 
-	
-
 	<Sandbox.ui.components.HudPanel.HudPanel Variant="hud-card actions">
 		<ChildContent>
-
 			<HudPanelSubtitle>Camera</HudPanelSubtitle>
 			<div class="camera-mode-buttons">
 				<GameButton Variant="@GetCameraModeButtonClasses( BoardCameraMode.Default )" OnClick="@(() => SetCameraMode( BoardCameraMode.Default ))">Default</GameButton>
@@ -32,28 +29,35 @@
 			</div>
 			<HudPanelEmptyLine></HudPanelEmptyLine>
 			<HudPanelEmptyLine></HudPanelEmptyLine>
-			<HudPanelEmptyLine></HudPanelEmptyLine>
 			<HudPanelSubtitle>Actions</HudPanelSubtitle>
+
+			@if ( GameRef.MatchState == MatchLifecycleState.InGame )
+			{
+				<HudPanelBody>@CurrentPlayer.PlayerName's turn (@CurrentTurnTimeText) </HudPanelBody>
+			}
+
 			@if ( IsCurrentPlayerInJail )
 			{
 				<HudPanelBody>Jail Turns: @CurrentPlayer.JailTurnsRemaining</HudPanelBody>
 			}
-			@if ( CanActOnCurrentTurn && IsCurrentPlayerInJail )
+
+			@if ( CanActOnCurrentTurn )
 			{
-				<div class="jail-action-buttons">
-					<GameButton OnClick="@PayToLeaveJail">Pay $50</GameButton>
-					<GameButton OnHoldComplete="@RollForJailRelease" HoldMaxSeconds="@RollHoldMaxSeconds">Try Doubles</GameButton>
-				</div>
+				@if ( IsCurrentPlayerInJail )
+				{
+					<div class="jail-action-buttons">
+						<GameButton OnClick="@PayToLeaveJail">Pay $50</GameButton>
+						<GameButton OnHoldComplete="@RollForJailRelease" HoldMaxSeconds="@RollHoldMaxSeconds">Try Doubles</GameButton>
+					</div>
+				} else {
+					<GameButton Variant="action-buttons" OnHoldComplete="@RollDice" HoldMaxSeconds="@RollHoldMaxSeconds">Roll Dice</GameButton>
+				}
 			}
-			else if ( CanActOnCurrentTurn )
-			{
-				<GameButton Variant="action-buttons" OnHoldComplete="@RollDice" HoldMaxSeconds="@RollHoldMaxSeconds">Roll Dice</GameButton>
-			}
+
 			@if ( GameRef.MatchState == MatchLifecycleState.InGame && CurrentPlayer == LocalPlayer )
 			{
 				<GameButton Variant="@EndTurnButtonClasses" CanClick="@CanEndTurn" OnClick="@EndTurn" BlockedPopupTitle="Cannot end turn yet" BlockedPopupMessage="@GetEndTurnBlockedMessage()">End Turn</GameButton>
 			}
-
 		</ChildContent>
 	</Sandbox.ui.components.HudPanel.HudPanel>
 </root>

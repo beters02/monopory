@@ -65,9 +65,11 @@ public sealed partial class GameController : Component
 
 		try
 		{
+			SetHudIsVisibleAll(false);
 			ThrowPhysicalDice( originA, originB, rotationA, rotationB, velocityA, velocityB, spinA, spinB );
-
-			return await WaitForPhysicalDiceResultAsync();
+			var task = await WaitForPhysicalDiceResultAsync();
+			SetHudIsVisibleAll(true);
+			return task;
 		}
 		finally
 		{
