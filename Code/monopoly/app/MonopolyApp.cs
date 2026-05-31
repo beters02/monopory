@@ -2,6 +2,7 @@ public class MonopolyApp : Component
 {
     public static bool IsStandalone = false;
     public static bool IsDebugEnabled = false;
+    public static bool GameLaunchedWithDebugConvar = false;
 
 	protected override void OnAwake()
 	{
@@ -12,6 +13,7 @@ public class MonopolyApp : Component
 #endif
 
         var debugConvarParsed = bool.TryParse(ConsoleSystem.GetValue( "debug" ), out bool debugConvar);
+        GameLaunchedWithDebugConvar = debugConvar;
 		if (debugConvarParsed && debugConvar)
 			IsDebugEnabled = true;
 

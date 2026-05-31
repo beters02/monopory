@@ -53,13 +53,13 @@ public static class GameAssets
 		public static readonly GameSound ClickAndClose = new ( "sounds/effects/click-and-close.sound" );
 		public static readonly GameSound CardFlip = new ( "sounds/effects/card-deal.sound" );
 		public static readonly GameSound Unassigned = new( "" );
-		public static readonly GameSound Warning = new( "sounds/effects/uipack-retro12.mp3" );
+		public static readonly GameSound Warning = new( "sounds/effects/uipack-retro12.sound" );
 		public static readonly GameSound Error = new( "sounds/effects/ui-error.sound" );
 		public static readonly GameSound DiceImpact = new( "sounds/effects/dice-impact.sound" );
 		public static readonly GameSound TokenStep = new( "sounds/effects/footstep/footstep-piece.sound" );
-		public static readonly GameSound PianoBingBingBing = new ( "sounds/effects/uipack-modern16.mp3" );
-		public static readonly GameSound TradeReceived = new ( "sounds/effects/uipack-retro8.mp3" );
-		public static readonly GameSound TradeNegotiated = new ( "sounds/effects/uipack-retro9.mp3" );
+		public static readonly GameSound PianoBingBingBing = new ( "sounds/effects/uipack-modern16.sound" );
+		public static readonly GameSound TradeReceived = new ( "sounds/effects/uipack-retro8.sound" );
+		public static readonly GameSound TradeNegotiated = new ( "sounds/effects/uipack-retro9.sound" );
 		public static readonly GameSound Success = new( "sounds/effects/ui-success.sound" );
 		
 		public static class Popup

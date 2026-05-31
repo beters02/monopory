@@ -1,17 +1,17 @@
 {
   "UI": false,
-  "Volume": "0.5",
+  "Volume": "0.440000057",
   "Pitch": "1",
   "Decibels": 70,
   "SelectionMode": "Random",
   "Sounds": [
     "sounds/effects/uipack-african4.vsnd"
   ],
-  "Occlusion": true,
-  "AirAbsorption": true,
-  "Transmission": true,
+  "Occlusion": false,
+  "AirAbsorption": false,
+  "Transmission": false,
   "OcclusionRadius": 64,
-  "DistanceAttenuation": true,
+  "DistanceAttenuation": false,
   "Distance": 15000,
   "Falloff": [
     {
@@ -44,8 +44,8 @@
     }
   ],
   "DefaultMixer": {
-    "Name": "unknown",
-    "Id": "00000000-0000-0000-0000-000000000000"
+    "Name": "ui",
+    "Id": "a9db0c84-d27b-4d54-95ff-7be22bc558f3"
   },
   "__references": [],
   "__version": 1

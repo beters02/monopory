@@ -62,7 +62,7 @@ public sealed class Board : Component
 		lastProcRefPanelSize = ProceduralReferencePanelSize;
 
 #if STANDALONE
-		if (DebugEnabled && !debugConvar)
+		if (DebugEnabled && !MonopolyApp.GameLaunchedWithDebugConvar)
 		{
 			DebugEnabled = false;
 			Log.Warning("Game was published with Board DebugEnabled!");
