@@ -15,16 +15,15 @@
 						<div class="options-kicker">Settings</div>
 						<div class="options-title">Options</div>
 					</div>
+					@if ( ShouldShowSettingsUnavailableWarning )
+					{
+						<div class="options-header-warning">Video settings are only available when s&box exposes render settings for this session.</div>
+					}
 					<CloseButton Variant="options-close-button" Title="Close" OnClick="@Close"></CloseButton>
 				</div>
 
 				<div class="options-scroll-shell">
-					<div class="options-scroll-panel monopory-scroll-both" @ref="OptionsScrollPanel">
-						@if ( !SettingsAvailable )
-						{
-							<div class="options-unavailable">Video settings are only available when s&box exposes render settings for this session.</div>
-						}
-
+					<div class="options-scroll-panel monopory-scroll-y" @ref="OptionsScrollPanel">
 						<div class="options-category-strip">
 							@foreach ( var category in AppSettingsSchema.Categories )
 							{
@@ -68,6 +67,19 @@
 														BlockedPopupMessage="@UnavailableMessage">
 													</DropdownButton>
 												}
+												else if ( option.Kind == AppSettingOptionKind.Int )
+												{
+													<SliderControl
+														class="options-slider"
+														Value="@GetIntValue( option )"
+														OnValueChanged="@((float value) => SetIntValue( option, value ))"
+														Min="@option.IntMin"
+														Max="@option.IntMax"
+														Step="@option.IntStep"
+														ShowTextEntry="@true"
+														NumberFormat="0">
+													</SliderControl>
+												}
 											</div>
 										</div>
 									}
@@ -78,7 +90,7 @@
 						{
 							<div class="options-empty-state">
 								<div class="options-empty-title">@ActiveCategory?.Label</div>
-								<div class="options-empty-copy">No settings are wired into this section yet. Add new keys in `AppSettingsSchema` and they will render here automatically.</div>
+								<div class="options-empty-copy">No settings are wired into this section yet.</div>
 							</div>
 						}
 					</div>
@@ -86,7 +98,7 @@
 				</div>
 
 				<div class="options-footer">
-					<GameButton Variant="options-apply-button" CanClick="@SettingsAvailable" OnClick="@ApplyOptions" BlockedPopupTitle="Unavailable" BlockedPopupMessage="@UnavailableMessage">Apply</GameButton>
+					<GameButton Variant="options-apply-button" OnClick="@ApplyOptions">Apply</GameButton>
 				</div>
 			</div>
 		</div>
@@ -103,6 +115,7 @@
 
 	private string RootClasses => IsOpen ? "options-menu-root open" : "options-menu-root";
 	private bool SettingsAvailable => AppSettings.SettingsAvailable;
+	private bool ShouldShowSettingsUnavailableWarning => !SettingsAvailable && IsRenderSettingsCategory( ActiveCategory?.Key );
 	private string UnavailableMessage => "s&box is not exposing render settings here. Try standalone mode if this is the editor.";
 	private AppSettingCategory ActiveCategory => AppSettingsSchema.Categories.FirstOrDefault(
 		category => string.Equals( category.Key, activeCategoryKey, StringComparison.Ordinal )
@@ -129,6 +142,11 @@
 	private IEnumerable<AppSettingOption> GetOptionsForSection( string section )
 	{
 		return AppSettingsSchema.GetOptionsForSection( ActiveCategory?.Key ?? "", section );
+	}
+
+	private static bool IsRenderSettingsCategory( string categoryKey )
+	{
+		return string.Equals( categoryKey, "video", StringComparison.Ordinal );
 	}
 
 	private bool IsCategorySelected( AppSettingCategory category )
@@ -166,6 +184,16 @@
 	private void SetEnumValue( AppSettingOption option, string rawValue )
 	{
 		ApplySetting( option?.SetEnumValue?.Invoke( rawValue ) == true );
+	}
+
+	private static int GetIntValue( AppSettingOption option )
+	{
+		return option?.GetIntValue?.Invoke() ?? 0;
+	}
+
+	private void SetIntValue( AppSettingOption option, float rawValue )
+	{
+		ApplySetting( option?.SetIntValue?.Invoke( (int)MathF.Round( rawValue ) ) == true );
 	}
 
 	private string GetOptionStatusText( AppSettingOption option )
@@ -213,7 +241,12 @@
 			hash.Add( option.Key );
 			hash.Add( option.IsVisible() );
 			hash.Add( option.IsAvailable() );
-			hash.Add( option.Kind == AppSettingOptionKind.Bool ? GetBoolValue( option ).ToString() : GetEnumValue( option ) );
+			hash.Add( option.Kind switch
+			{
+				AppSettingOptionKind.Bool => GetBoolValue( option ).ToString(),
+				AppSettingOptionKind.Int => GetIntValue( option ).ToString(),
+				_ => GetEnumValue( option )
+			} );
 		}
 
 		return hash.ToHashCode();

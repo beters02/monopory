@@ -1,5 +1,7 @@
 using System;
 using System.Xml;
+using Sandbox;
+using Sandbox.Audio;
 using Sandbox.Engine.Settings;
 
 public enum FullscreenMode
@@ -49,6 +51,8 @@ public class AppSettings : Component
 
 	public static void Apply()
 	{
+		ApplyAudio();
+
 		if (Settings is null)
 			return;
 
@@ -93,6 +97,7 @@ public class AppSettings : Component
 	public static bool GetMotionBlurEnabled() => Data.MotionBlurScale == 0f ? false : true;
 	public static Fsr3UpscalerQuality GetFsr3Quality() => Data.Fsr3Quality;
 	public static UpscalerMode GetUpscaler() => Data.UpscalerMode; 
+	public static int GetVolume() => Math.Clamp( Data.Volume, 0, 100 );
 
 	public static string GetFullscreenModeString(FullscreenMode mode)
 	{
@@ -152,21 +157,25 @@ public class AppSettings : Component
 
 	public static bool TrySetVolume( int volume )
 	{
-		if ( Settings is null )
-			return false;
-
 		volume = Math.Clamp(volume, 0, 100);
 		Data.Volume = volume;
+		ApplyAudio();
 		return true;
 	}
 	
 	public static bool TryApply()
 	{
-		if ( Settings is null )
-			return false;
-
 		Save();
 		Apply();
 		return true;
+	}
+
+	private static void ApplyAudio()
+	{
+		var volume = Math.Clamp( Data.Volume, 0, 100 ) / 100f;
+		ConsoleSystem.SetValue( "volume", volume );
+
+		if ( Mixer.Master is not null )
+			Mixer.Master.Volume = volume;
 	}
 }

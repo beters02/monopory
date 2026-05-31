@@ -226,15 +226,15 @@ public sealed partial class GameController : Component
 			{
 				Log.Info( $"{CurrentPlayer.PlayerName} stayed in Jail after their third failed doubles attempt." );
 				ClearPendingRollState();
-				Phase = GamePhase.TurnEnded;
+				AdvanceTurnImmediately();
 				return;
 			}
 
 			if ( !PayBank( CurrentPlayer, JailFineAmount ) )
 			{
 				ClearPendingRollState();
-				Phase = GamePhase.TurnEnded;
 				SendPopupToPlayer( CurrentPlayer, "Jail fine", $"Raise ${JailFineAmount} to leave Jail.", PopupKind.Warning );
+				AdvanceTurnImmediately();
 				return;
 			}
 
@@ -246,7 +246,7 @@ public sealed partial class GameController : Component
 		}
 
 		ClearPendingRollState();
-		Phase = GamePhase.TurnEnded;
+		AdvanceTurnImmediately();
 	}
 
 	private async Task RollCurrentPlayerAsync( int amount, bool suppressDoublesExtraTurn, RollExecutionKind executionKind, float throwStrength = 0.5f, (int DieA, int DieB)? specifiedDice = null )

@@ -6,7 +6,8 @@ using System.Linq;
 public enum AppSettingOptionKind
 {
 	Bool,
-	Enum
+	Enum,
+	Int
 }
 
 public sealed class AppSettingCategory
@@ -34,6 +35,10 @@ public sealed class AppSettingOption
 	public Func<string> GetEnumValue { get; init; } = () => "";
 	public Func<string, bool> SetEnumValue { get; init; } = _ => false;
 	public Func<int> GetIntValue { get; init; } = () => 0;
+	public Func<int, bool> SetIntValue { get; init; } = _ => false;
+	public int IntMin { get; init; }
+	public int IntMax { get; init; } = 100;
+	public int IntStep { get; init; } = 1;
 }
 
 public static class AppSettingsSchema
@@ -67,10 +72,9 @@ public static class AppSettingsSchema
 	{
 		return new List<AppSettingCategory>
 		{
-			new() { Key = "general", Label = "General", Description = "Core display and comfort settings.", Order = 0 },
+			new() { Key = "general", Label = "General", Description = "Gameplay-facing preferences and comfort settings.", Order = 0 },
 			new() { Key = "video", Label = "Video", Description = "Rendering and upscaling settings.", Order = 10 },
 			new() { Key = "audio", Label = "Audio", Description = "Sound and mix settings.", Order = 20 },
-			new() { Key = "game", Label = "Game", Description = "Gameplay-facing preferences.", Order = 30 }
 		};
 	}
 
@@ -80,7 +84,7 @@ public static class AppSettingsSchema
 		{
 			EnumOption<FullscreenMode>(
 				key: "display.fullscreen",
-				category: "general",
+				category: "video",
 				section: "Display",
 				label: "Fullscreen",
 				description: "Choose windowed, exclusive fullscreen, or borderless presentation.",
@@ -90,7 +94,7 @@ public static class AppSettingsSchema
 			),
 			BoolOption(
 				key: "display.vsync",
-				category: "general",
+				category: "video",
 				section: "Display",
 				label: "VSync",
 				description: "Synchronizes frames to your display refresh rate.",
@@ -100,7 +104,7 @@ public static class AppSettingsSchema
 			),
 			BoolOption(
 				key: "display.motion_blur",
-				category: "general",
+				category: "video",
 				section: "Display",
 				label: "Motion Blur",
 				description: "Controls camera and post-process motion blur.",
@@ -128,6 +132,20 @@ public static class AppSettingsSchema
 				getter: AppSettings.GetFsr3Quality,
 				setter: AppSettings.TrySetFsr3Quality,
 				isVisible: () => AppSettings.GetUpscaler().ToString().Equals( "FSR3", StringComparison.OrdinalIgnoreCase )
+			),
+			IntOption(
+				key: "audio.master_volume",
+				category: "audio",
+				section: "Mixer",
+				label: "Master Volume",
+				description: "Adjusts the master audio mix.",
+				order: 20,
+				min: 0,
+				max: 100,
+				step: 1,
+				getter: AppSettings.GetVolume,
+				setter: AppSettings.TrySetVolume,
+				isAvailable: () => true
 			),
 			
 		}
@@ -195,16 +213,20 @@ public static class AppSettingsSchema
 		};
 	}
 
-	/*private static AppSettingOption IntOption(
+	private static AppSettingOption IntOption(
 		string key,
 		string category,
 		string section,
 		string label,
 		string description,
 		int order,
+		int min,
+		int max,
+		int step,
 		Func<int> getter,
 		Func<int, bool> setter,
-		Func<bool> isVisible = null )
+		Func<bool> isVisible = null,
+		Func<bool> isAvailable = null )
 	{
 		return new AppSettingOption
 		{
@@ -214,10 +236,14 @@ public static class AppSettingsSchema
 			Label = label,
 			Description = description,
 			Order = order,
-			Kind = AppSettingOptionKind.Bool,
+			Kind = AppSettingOptionKind.Int,
 			IsVisible = isVisible ?? (() => true),
+			IsAvailable = isAvailable ?? (() => AppSettings.SettingsAvailable),
+			IntMin = min,
+			IntMax = max,
+			IntStep = step,
 			GetIntValue = getter,
-			SetIntValue = rawValue => setter(rawValue)
+			SetIntValue = rawValue => setter( rawValue )
 		};
-	}*/
+	}
 }
