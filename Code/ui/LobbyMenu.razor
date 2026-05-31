@@ -176,6 +176,7 @@
 				</div>
 			}
 		</div>
+		<DropdownOverlayLayer></DropdownOverlayLayer>
 	</div>
 </root>
 
@@ -404,6 +405,7 @@
 
 	private void CloseConfigMenu()
 	{
+		DropdownOverlayState.Close();
 		IsConfigMenuOpen = false;
 	}
 

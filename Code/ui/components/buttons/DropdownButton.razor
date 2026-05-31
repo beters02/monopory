@@ -3,7 +3,7 @@
 @using System;
 @inherits Panel
 
-<root class="@RootClasses">
+<root class="@RootClasses" style="@RootStyle">
 	<GameButton
 		Variant="@ButtonClasses"
 		Title="@Title"
@@ -19,20 +19,6 @@
 			<span class="dropdown-caret">v</span>
 		</ChildContent>
 	</GameButton>
-
-	@if ( IsOpen )
-	{
-		<div class="dropdown-menu" @ref="MenuPanel">
-			@foreach ( var item in Items )
-			{
-				<GameButton Variant="@GetItemClasses( item )" OnClick="@(() => SelectItem( item ))" SoundEnabled="@SoundEnabled">
-					<ChildContent>
-						<span class="dropdown-item-label">@FormatItem( item )</span>
-					</ChildContent>
-				</GameButton>
-			}
-		</div>
-	}
 </root>
 
 @code
@@ -51,13 +37,14 @@
 	[Parameter] public Panel ScrollTarget { get; set; }
 	[Parameter] public Action<string> OnSelected { get; set; }
 
-	private bool IsOpen;
-	private Panel MenuPanel = null!;
-	private int ScrollMeasureFramesRemaining;
-	private int SmoothScrollFramesRemaining;
-	private float SmoothScrollTargetY;
+	private static int NextInstanceId;
 
+	private readonly int InstanceId = ++NextInstanceId;
+	private int SeenOverlayVersion;
+
+	private bool IsOpen => DropdownOverlayState.ActiveId == InstanceId;
 	private string RootClasses => IsOpen ? "dropdown-button open" : "dropdown-button";
+	private string RootStyle => "";
 	private string ButtonClasses => string.IsNullOrWhiteSpace( Variant )
 		? "dropdown-toggle"
 		: $"dropdown-toggle {Variant}";
@@ -71,77 +58,29 @@
 		if ( !CanClick )
 			return;
 
-		IsOpen = !IsOpen;
 		if ( IsOpen )
 		{
-			ScrollMeasureFramesRemaining = 3;
-			SmoothScrollFramesRemaining = 0;
+			DropdownOverlayState.Close( InstanceId );
+			return;
 		}
-	}
 
-	private void SelectItem( string item )
-	{
-		IsOpen = false;
-		ScrollMeasureFramesRemaining = 0;
-		SmoothScrollFramesRemaining = 0;
-		OnSelected?.Invoke( item );
+		SeenOverlayVersion = DropdownOverlayState.Version;
+		DropdownOverlayState.Open( InstanceId, Box.Rect, Items, Value, SoundEnabled, ScrollTarget, OnSelected );
+		StateHasChanged();
 	}
 
 	public override void Tick()
 	{
 		base.Tick();
 
-		if ( !IsOpen )
-			return;
+		if ( IsOpen )
+			DropdownOverlayState.UpdateAnchor( InstanceId, Box.Rect );
 
-		if ( ScrollMeasureFramesRemaining > 0 )
+		if ( SeenOverlayVersion != DropdownOverlayState.Version )
 		{
-			ScrollMeasureFramesRemaining--;
-			MeasureScrollTarget();
+			SeenOverlayVersion = DropdownOverlayState.Version;
+			StateHasChanged();
 		}
-
-		UpdateSmoothScroll();
-	}
-
-	private void MeasureScrollTarget()
-	{
-		if ( ScrollTarget is null || MenuPanel is null )
-			return;
-
-		var viewport = ScrollTarget.Box.RectInner;
-		var menu = MenuPanel.Box.Rect;
-		var overflow = menu.Bottom - viewport.Bottom + 10f;
-		if ( overflow <= 0f )
-			return;
-
-		var maxOffset = Math.Max( 0f, ScrollTarget.ScrollSize.y );
-		SmoothScrollTargetY = Math.Clamp( ScrollTarget.ScrollOffset.y + overflow, 0f, maxOffset );
-		SmoothScrollFramesRemaining = 10;
-	}
-
-	private void UpdateSmoothScroll()
-	{
-		if ( SmoothScrollFramesRemaining <= 0 || ScrollTarget is null )
-			return;
-
-		var currentY = ScrollTarget.ScrollOffset.y;
-		var delta = SmoothScrollTargetY - currentY;
-		if ( MathF.Abs( delta ) <= 0.5f || SmoothScrollFramesRemaining == 1 )
-		{
-			ScrollTarget.ScrollOffset = new Vector2( 0f, SmoothScrollTargetY );
-			SmoothScrollFramesRemaining = 0;
-			return;
-		}
-
-		ScrollTarget.ScrollOffset = new Vector2( 0f, currentY + delta * 0.28f );
-		SmoothScrollFramesRemaining--;
-	}
-
-	private string GetItemClasses( string item )
-	{
-		return string.Equals( item, Value, StringComparison.OrdinalIgnoreCase )
-			? "dropdown-item selected"
-			: "dropdown-item";
 	}
 
 	private static string FormatItem( string item )
@@ -163,9 +102,12 @@
 	{
 		var hash = new HashCode();
 		hash.Add( IsOpen );
+		hash.Add( DropdownOverlayState.ActiveId );
+		hash.Add( DropdownOverlayState.Version );
 		hash.Add( Value ?? "" );
 		hash.Add( Placeholder ?? "" );
 		hash.Add( CanClick );
+		hash.Add( RootStyle );
 
 		foreach ( var item in Items )
 			hash.Add( item ?? "" );

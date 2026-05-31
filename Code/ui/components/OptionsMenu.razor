@@ -102,6 +102,7 @@
 					<GameButton Variant="options-apply-button" OnClick="@ApplyOptions">Apply</GameButton>
 				</div>
 			</div>
+			<DropdownOverlayLayer></DropdownOverlayLayer>
 		</div>
 	}
 </root>
@@ -212,6 +213,7 @@
 
 	private void Close()
 	{
+		DropdownOverlayState.Close();
 		OnClose?.Invoke();
 	}
 
