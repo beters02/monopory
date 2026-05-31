@@ -663,6 +663,10 @@ public sealed partial class GameController : Component
 
 		var player = CurrentPlayer;
 		if ( player is not null )
+		{
 			player.ConsecutiveDoubles = 0;
+			PlaySoundToConnection(GetConnectionForPlayer(player), GameAssets.Sounds.PianoBingBingBing);
+		}
+			
 	}
 }

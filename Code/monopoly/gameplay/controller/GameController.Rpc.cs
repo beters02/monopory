@@ -193,4 +193,27 @@ public sealed partial class GameController : Component
 	{
 		NetworkSession.LeaveCurrentLobbyWithRejoinWindow( Scene, lobbyId, connectTarget, rejoinExpiresAt );
 	}
+
+	private void PlaySoundToConnection( Connection connection, GameSound sound, float delaySec = 0f )
+	{
+		if ( !Networking.IsHost || connection is null )
+			return;
+
+		using ( Rpc.FilterInclude( connection ) )
+		{
+			if ( delaySec != 0f )
+			{
+				_ = PlayDelayedSound( sound, delaySec );
+				return;
+			}
+
+			sound.Play();
+		}
+	}
+
+	private async Task PlayDelayedSound( GameSound sound, float delaySec )
+	{
+		await Task.DelaySeconds(delaySec);
+		sound.Play();
+	}
 }

@@ -24,6 +24,7 @@ public static class GameAssets
 		Sounds.DiceImpact.Preload();
 		Sounds.TokenStep.Preload();
 		Sounds.Popup.Success.Preload();
+		Sounds.PianoBingBingBing.Preload();
 	}
 
 	public static class Images
@@ -54,6 +55,7 @@ public static class GameAssets
 		public static readonly GameSound Error = new( "sounds/effects/ui-error.sound" );
 		public static readonly GameSound DiceImpact = new( "sounds/effects/dice-impact.sound" );
 		public static readonly GameSound TokenStep = new( "sounds/effects/footstep/footstep-piece.sound" );
+		public static readonly GameSound PianoBingBingBing = new ( "sounds/effects/uipack-modern16.mp3" );
 		
 		public static class Popup
 		{
