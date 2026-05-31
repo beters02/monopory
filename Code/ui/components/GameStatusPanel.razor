@@ -61,13 +61,27 @@
 		</ChildContent>
 	</Sandbox.ui.components.HudPanel.HudPanel>
 
-	@if ( GameRef.MatchState == MatchLifecycleState.InGame && CurrentPlayer == LocalPlayer && CanActOnCurrentTurn && !IsCurrentPlayerInJail )
+	@if ( GameRef.MatchState == MatchLifecycleState.InGame && CurrentPlayer == LocalPlayer )
 	{
-		<Sandbox.ui.components.HudPanel.HudPanel Variant="status-roll-button-panel">
+
+		<Sandbox.ui.components.HudPanel.HudPanel Variant="@GetRollButtonPanelClass()">
 			<ChildContent>
-				<GameButton Variant="status-roll-button" OnHoldComplete="@RollDice" HoldMaxSeconds="@RollHoldMaxSeconds">Roll Dice</GameButton>
+				<GameButton Variant="@GetRollDiceButtonClass()" OnHoldComplete="@RollDice" HoldMaxSeconds="@RollHoldMaxSeconds">Roll Dice</GameButton>
 			</ChildContent>
 		</Sandbox.ui.components.HudPanel.HudPanel>
+
+		<Sandbox.ui.components.HudPanel.HudPanel Variant="@GetEndTurnButtonPanelClass()">
+			<ChildContent>
+				<GameButton Variant="@GetEndTurnButtonClass()" OnClick="@EndTurn">End Turn</GameButton>
+			</ChildContent>
+		</Sandbox.ui.components.HudPanel.HudPanel>		
+
+		<Sandbox.ui.components.HudPanel.HudPanel Variant="@GetJailButtonPanelClass()">
+			<ChildContent>
+				<GameButton Variant="@GetJailButtonClass()" OnClick="@PayToLeaveJail">Pay $50</GameButton>
+				<GameButton Variant="@GetJailButtonClass()" OnHoldComplete="@RollForJailRelease" HoldMaxSeconds="@RollHoldMaxSeconds">Try Doubles</GameButton>
+			</ChildContent>
+		</Sandbox.ui.components.HudPanel.HudPanel>		
 	}
 </root>
 
@@ -122,6 +136,64 @@
 		return CurrentCameraMode == mode
 			? "camera-mode-button selected"
 			: "camera-mode-button";
+	}
+
+	private string GetRollButtonPanelClass()
+	{
+		var str = "status-roll-button-panel";
+		if ( !CanActOnCurrentTurn || IsCurrentPlayerInJail )
+			str += " hidden";
+
+		return str;
+	}
+
+	private string GetEndTurnButtonPanelClass()
+	{
+		var str = "status-roll-button-panel";
+		if ( !CanEndTurn )
+			str += " hidden";
+
+		return str;
+	}
+
+	private string GetRollDiceButtonClass()
+	{
+		var str = "status-roll-button";
+		if ( !CanActOnCurrentTurn || IsCurrentPlayerInJail )
+			str += " hidden";
+
+		return str;
+	}
+
+	private string GetEndTurnButtonClass()
+	{
+		var str = "status-roll-button";
+		if ( !CanEndTurn )
+			str += " hidden";
+
+		return str;
+	}
+
+	private string GetJailButtonClass()
+	{
+		var str = "status-roll-button";
+		if ( !CanActOnCurrentTurn || !IsCurrentPlayerInJail )
+			str += " hidden";
+
+		str += " jail";
+
+		return str;
+	}
+
+	private string GetJailButtonPanelClass()
+	{
+		var str = "status-roll-button-panel";
+		if ( !CanActOnCurrentTurn || !IsCurrentPlayerInJail )
+			str += " hidden";
+
+		str += " jail";
+
+		return str;
 	}
 
 	private void RollDice( float throwStrength )
@@ -179,6 +251,7 @@
 		hash.Add( CurrentPlayer?.IsInJail ?? false );
 		hash.Add( CurrentPlayer?.JailTurnsRemaining ?? 0 );
 		hash.Add( CurrentCameraMode );
+		hash.Add( CanEndTurn );
 		return hash.ToHashCode();
 	}
 }

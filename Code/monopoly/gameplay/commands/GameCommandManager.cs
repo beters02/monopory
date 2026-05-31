@@ -101,6 +101,30 @@ public sealed class GameCommandManager : Component
 		return CommandResult.Success();
 	}
 
+	public static CommandResult SendToJail( Connection caller, string playerName = "self" )
+	{
+		var game = GameController.Instance;
+		if ( game is null )
+			return CommandResult.Fail( "No active game." );
+
+		var player = game.ResolvePlayerReference( playerName, caller );
+		if ( player is null )
+			return CommandResult.Fail( $"Could not find player \"{playerName}\"." );
+
+		if ( game.CurrentPlayer != player )
+			return CommandResult.Fail( "It is not that player's turn." );
+
+		if ( !CanUseCheatCommand( caller ) )
+			return CommandResult.Fail( "sv_cheats must be enabled to force rolls or roll for another player." );
+
+		if ( Networking.IsHost )
+			game.SendPlayerToJail( player );
+		else
+			game.RequestSendPlayerToJail( player );
+
+		return CommandResult.Success();
+	}
+
 	public static CommandResult ChangeMoney( Connection caller, int amount, string playerName = "self" )
 	{
 		if ( !CanUseCheatCommand( caller ) )

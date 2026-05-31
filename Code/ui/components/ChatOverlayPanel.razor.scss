@@ -25,9 +25,9 @@
 }
 
 .chat-overlay-panel {
-	width: 38%;
+	width: 32%;
 	max-width: 420px;
-	min-width: 320px;
+	min-width: 0;
 	display: flex;
 	flex-direction: column;
 	gap: 8px;

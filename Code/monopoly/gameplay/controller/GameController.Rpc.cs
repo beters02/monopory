@@ -155,6 +155,12 @@ public sealed partial class GameController : Component
 		PublishTokenPhysicsState( playerIndex, position, velocity );
 	}
 
+	[Rpc.Host]
+	public void RequestSendPlayerToJail( PlayerState player )
+	{
+		SendPlayerToJail( player );
+	}
+
 	private void RemovePlayerForAfkTimeout( PlayerState player )
 	{
 		if ( !Networking.IsHost || player is null || !player.IsAssigned )

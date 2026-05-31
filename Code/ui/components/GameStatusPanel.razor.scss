@@ -103,25 +103,59 @@
 }
 
 .hud-panel.status-roll-button-panel {
-	width: 400px;
-	height: 120px;
+	width: 350px;
+	height: 70px;
 	top: 73%;
 	left: 50%;
 	transform: translate(-50%, -50%);
 	display: flex;
 	flex-direction: column;
-	gap: 6px;
-	margin-top: 4px;
+	gap: 0px;
+	margin-top: 0px;
 	margin-bottom: 0;
+	opacity: 1;
+	justify-content: center;
+
+	transition: opacity 0.2s ease, width 0.32s ease, height 0.24s ease;
+
+	&.hidden {
+		opacity: 0;
+		width: 0px;
+		height: 0px;
+	}
 }
 
 .monopoly-button.status-roll-button {
 	flex: 1;
-	min-width: 0;
+	border: 12px;
+	min-width: 0px;
+	min-height: 32px;
 	margin-top: 0;
 	text-transform: uppercase;
 	font-size: $monopoly-font-button-extra-large;
-	padding: 8px 9px;
+	padding: 10px 10px;
+	line-height: 16px;
 	text-align: center;
 	justify-content: center;
+	align-self: center;
+	opacity: 1;
+
+	transition: opacity 0.2s linear 0.4s;
+
+	&.hidden {
+		opacity: 0;
+	}
+}
+
+.monopoly-button.status-roll-button.jail {
+	height: 40px;
+	min-height: 40px;
+	padding: 0 10px;
+	white-space: nowrap;
+}
+
+.hud-panel.status-roll-button-panel.jail {
+	width: 440px;
+	flex-direction: row;
+	gap: 12px;
 }

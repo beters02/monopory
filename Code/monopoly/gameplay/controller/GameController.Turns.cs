@@ -520,7 +520,7 @@ public sealed partial class GameController : Component
 		PendingLandingResolved = false;
 	}
 
-	private void SendPlayerToJail( PlayerState player )
+	public void SendPlayerToJail( PlayerState player )
 	{
 		player.SpaceIndex = 10;
 		player.IsInJail = true;

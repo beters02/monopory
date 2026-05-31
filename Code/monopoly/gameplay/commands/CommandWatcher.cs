@@ -46,6 +46,12 @@ public sealed class CommandWatcher : Component
 		LogCommandResult( "change_vacation_cash", GameCommandManager.ChangeVacationCash( connection, amount ) );
 	}
 
+	[ConCmd( "jail_player" )]
+	private static void JailPlayer( Connection connection, string playerName = "self" )
+	{
+		LogCommandResult( "jail_player", GameCommandManager.SendToJail( connection, playerName ) );
+	}
+
 	[ConVar( "debug" )]
 	public static bool Debug { get; set; } = false;
 
