@@ -32,8 +32,6 @@ public sealed class MusicController : Component
 	{
 		base.OnDestroy();
 
-		Log.Info("Destroyedf");
-
 		if (SoundHandle != null)
 		{
 			SoundHandle.Stop();

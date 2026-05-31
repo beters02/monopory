@@ -59,7 +59,11 @@ public sealed partial class GameController : Component
 	// Turns
 	private int MaxTurnReminders { get; set; } = 3;
 	private int SecondsBetweenTurnReminders { get; set; }
-	public int MaxVisiblePopups { get; set; } = 5;
+
+	// Popups
+	public int MaxVisiblePopups { get; set; } = 3;
+
+	// Tokens
 	public bool RestrictPieceThrowToCurrentTurn { get; set; } = true;
 
 }
