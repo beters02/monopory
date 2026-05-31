@@ -5,6 +5,8 @@ public class MonopolyApp : Component
 
 	protected override void OnAwake()
 	{
+		LocalPopups.Clear();
+
 #if STANDALONE
         IsStandalone = true;
 #endif

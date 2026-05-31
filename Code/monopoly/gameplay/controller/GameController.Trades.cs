@@ -5,9 +5,18 @@ using Sandbox;
 
 public sealed partial class GameController : Component
 {
+	public bool ShowTradeReceivedPopup = true;
+	public bool ShowTradeAcceptedPopup = true;
+	public bool ShowTradeDeniedPopup = true;
+	public bool ShowTradeNegotiationReceivedPopup = true;
+	public int MaxPendingSentTradesPerPlayer = 3;
+	public GameSound TradeReceivedSound = GameAssets.Sounds.Unassigned;
+	public GameSound TradeAcceptedSound = GameAssets.Sounds.Unassigned;
+	public GameSound TradeDeniedSound = GameAssets.Sounds.Unassigned;
+	public GameSound TradeNegotiationReceivedSound = GameAssets.Sounds.Unassigned;
 
 	[Rpc.Host]
-	public void RequestCreateTrade( int receiverPlayerIndex, int senderMoney, int receiverMoney, string senderPropertyIndexes, string receiverPropertyIndexes, string senderCardIds = "", string receiverCardIds = "" )
+	public void RequestCreateTrade( int receiverPlayerIndex, int senderMoney, int receiverMoney, string senderPropertyIndexes, string receiverPropertyIndexes, string senderCardIds = "", string receiverCardIds = "", bool isNegotiation = false )
 	{
 		if ( !CanAcceptGameplayInput() )
 			return;
@@ -15,6 +24,19 @@ public sealed partial class GameController : Component
 		var senderPlayerIndex = GetPlayerIndexForCaller( Rpc.Caller );
 		if ( senderPlayerIndex < 0 )
 			return;
+
+		if ( MaxPendingSentTradesPerPlayer > 0 && CountPendingSentTrades( senderPlayerIndex ) >= MaxPendingSentTradesPerPlayer )
+		{
+			SendPopupToPlayer(
+				senderPlayerIndex,
+				"Trade limit reached",
+				$"You can only have {MaxPendingSentTradesPerPlayer} sent trade request(s) pending.",
+				PopupKind.Warning,
+				true,
+				4f
+			);
+			return;
+		}
 
 		var request = new TradeRequest
 		{
@@ -34,6 +56,10 @@ public sealed partial class GameController : Component
 
 		PendingTrades[request.Id] = request.Serialize();
 		TradeViewers.Remove( request.Id );
+		if ( isNegotiation )
+			ShowTradeNegotiationReceivedNotification( request );
+		else
+			ShowTradeReceivedNotification( request );
 		Log.Info( $"{Players[senderPlayerIndex].PlayerName} offered a trade to {Players[receiverPlayerIndex].PlayerName}." );
 	}
 
@@ -81,15 +107,15 @@ public sealed partial class GameController : Component
 		PendingTrades.Remove( tradeId );
 		TradeViewers.Remove( tradeId );
 		RemoveInvalidTrades();
-		ShowTradeAcceptedPopup( sender, receiver );
-		ShowTradeAcceptedPopup( receiver, sender );
+		ShowTradeAcceptedNotification( sender, receiver );
+		ShowTradeAcceptedNotification( receiver, sender );
 		ShowNewlyOwnedSetPopups( ownedSetsBeforeTrade, trade.SenderPlayerIndex, trade.ReceiverPlayerIndex );
 
 		Log.Info( $"{receiver.PlayerName} accepted a trade from {sender.PlayerName}." );
 	}
 
 	[Rpc.Host]
-	public void RequestDenyTrade( int tradeId )
+	public void RequestDenyTrade( int tradeId, bool suppressNotification = false )
 	{
 		if ( !CanAcceptGameplayInput() )
 			return;
@@ -101,6 +127,8 @@ public sealed partial class GameController : Component
 		if ( callerIndex != trade.ReceiverPlayerIndex && callerIndex != trade.SenderPlayerIndex )
 			return;
 
+		if ( !suppressNotification )
+			ShowTradeDeniedNotification( trade, callerIndex );
 		PendingTrades.Remove( tradeId );
 		TradeViewers.Remove( tradeId );
 	}
@@ -214,6 +242,11 @@ public sealed partial class GameController : Component
 				TradeViewers.Remove( trade.Id );
 			}
 		}
+	}
+
+	private int CountPendingSentTrades( int playerIndex )
+	{
+		return GetTrades().Count( trade => trade.SenderPlayerIndex == playerIndex );
 	}
 
 	private List<int> GetTradeViewerIndexes( int tradeId )

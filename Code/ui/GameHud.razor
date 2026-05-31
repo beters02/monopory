@@ -25,10 +25,6 @@
 		}
 		else
 		{
-			<div class="@BuildTranslucentHideableHudClass()">
-				<PopupStack Popups="@Popups" OnDismiss="@DismissPopup" OnConfirmDecision="@HandleConfirmationDecision"></PopupStack>
-			</div>
-
 			<SessionOverlay
 				GameRef="@GameRef"
 				IsEscapeMenuOpen="@IsEscapeMenuOpen"
@@ -38,9 +34,13 @@
 				OnCloseMenu="@CloseEscapeMenu"
 				OnCloseOptions="@CloseOptionsMenu"
 				OnReturnToLobby="@ReturnToLobby"
-				OnLeaveLobby="@LeaveLobby"
-				OnExitGame="@ExitGame">
+				OnLeaveLobby="@ConfirmLeaveLobby"
+				OnExitGame="@ConfirmExitGame">
 			</SessionOverlay>
+
+			<div class="popup-hud-layer">
+				<PopupStack Popups="@Popups" OnDismiss="@DismissPopup" OnConfirmDecision="@HandleConfirmationDecision"></PopupStack>
+			</div>
 
 			@if ( GameRef.IsRecoveringHostState )
 			{
@@ -100,6 +100,13 @@
 		return GameRef.IsGameHudVisible()
 			? "translucent-hideable-hud-panels"
 			: "translucent-hideable-hud-panels invisible";
+	}
+
+	protected override void OnStart()
+	{
+		base.OnStart();
+
+		LocalPopups.Clear();
 	}
 
 	protected override void OnUpdate()
@@ -213,6 +220,18 @@
 		GameRef.TryReturnToLobby();
 	}
 
+	private void ConfirmLeaveLobby()
+	{
+		LocalPopups.ShowConfirmation(
+			"Leave lobby?",
+			"You will leave the current match lobby.",
+			LeaveLobby,
+			null,
+			"Leave",
+			"Cancel"
+		);
+	}
+
 	private void LeaveLobby()
 	{
 		IsEscapeMenuOpen = false;
@@ -261,6 +280,18 @@
 		IsEscapeMenuOpen = false;
 		IsOptionsMenuOpen = false;
 		NetworkSession.ForceDisconnectToMenu( Scene );
+	}
+
+	private void ConfirmExitGame()
+	{
+		LocalPopups.ShowConfirmation(
+			"Exit game?",
+			"The game will close.",
+			ExitGame,
+			null,
+			"Exit",
+			"Cancel"
+		);
 	}
 
 	private void ExitGame()

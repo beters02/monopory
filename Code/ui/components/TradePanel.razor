@@ -243,8 +243,19 @@
 		if ( GameRef is null || ComposerReceiverPlayerIndex < 0 )
 			return;
 
-		if ( NegotiatedTradeId >= 0 )
-			GameRef.RequestDenyTrade( NegotiatedTradeId );
+		var isNegotiation = NegotiatedTradeId >= 0;
+		if ( GameRef.MaxPendingSentTradesPerPlayer > 0 && GameRef.GetTrades().Count( trade => trade.SenderPlayerIndex == GameRef.LocalPlayerIndex ) >= GameRef.MaxPendingSentTradesPerPlayer )
+		{
+			LocalPopups.Show(
+				"Trade limit reached",
+				$"You can only have {GameRef.MaxPendingSentTradesPerPlayer} sent trade request(s) pending.",
+				PopupKind.Warning
+			);
+			return;
+		}
+
+		if ( isNegotiation )
+			GameRef.RequestDenyTrade( NegotiatedTradeId, true );
 
 		GameRef.RequestCreateTrade(
 			ComposerReceiverPlayerIndex,
@@ -253,7 +264,8 @@
 			ToCsv( ComposerSenderPropertyIndexes ),
 			ToCsv( ComposerReceiverPropertyIndexes ),
 			ToCsv( ComposerSenderCardIds ),
-			ToCsv( ComposerReceiverCardIds )
+			ToCsv( ComposerReceiverCardIds ),
+			isNegotiation
 		);
 
 		ComposerSenderMoney = 0;

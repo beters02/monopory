@@ -20,6 +20,15 @@ public static class LocalPopups
 
 	public static bool HasBlockingPopup => popups.Any( popup => popup.IsBlocking );
 
+	public static void Clear()
+	{
+		popups.Clear();
+		expiresAt.Clear();
+		confirmActions.Clear();
+		cancelActions.Clear();
+		nextPopupId = 1;
+	}
+
 	public static void Show( string title, string message, PopupKind kind = PopupKind.Warning, bool canDismiss = true, float lifetime = 3f, bool soundEnabled = true )
 	{
 		Update();

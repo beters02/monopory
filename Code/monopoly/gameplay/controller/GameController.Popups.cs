@@ -130,19 +130,115 @@ public sealed partial class GameController : Component
 		SendPopupToPlayer( player, "Money received", message, PopupKind.Success, true, 4f );
 	}
 
-	private void ShowTradeAcceptedPopup( PlayerState player, PlayerState otherPlayer )
+	private void ShowTradeReceivedNotification( TradeRequest trade )
+	{
+		if ( trade is null )
+			return;
+
+		var sender = Players.ElementAtOrDefault( trade.SenderPlayerIndex );
+		var receiver = Players.ElementAtOrDefault( trade.ReceiverPlayerIndex );
+		if ( sender is null || receiver is null )
+			return;
+
+		if ( ShowTradeReceivedPopup )
+		{
+			SendPopupToPlayer(
+				receiver,
+				"Trade received",
+				$"{sender.PlayerName} sent you a trade.",
+				PopupKind.Info,
+				true,
+				4f,
+				!TradeReceivedSound.IsAssigned
+			);
+		}
+
+		PlayTradeNotificationSound( receiver, TradeReceivedSound );
+	}
+
+	private void ShowTradeAcceptedNotification( PlayerState player, PlayerState otherPlayer )
 	{
 		if ( player is null || otherPlayer is null )
 			return;
 
-		SendPopupToPlayer(
-			player,
-			"Trade accepted",
-			$"Your trade with {otherPlayer.PlayerName} was accepted.",
-			PopupKind.Success,
-			true,
-			4f
-		);
+		if ( ShowTradeAcceptedPopup )
+		{
+			SendPopupToPlayer(
+				player,
+				"Trade accepted",
+				$"Your trade with {otherPlayer.PlayerName} was accepted.",
+				PopupKind.Success,
+				true,
+				4f,
+				!TradeAcceptedSound.IsAssigned
+			);
+		}
+
+		PlayTradeNotificationSound( player, TradeAcceptedSound );
+	}
+
+	private void ShowTradeDeniedNotification( TradeRequest trade, int deniedByPlayerIndex )
+	{
+		if ( trade is null )
+			return;
+
+		var sender = Players.ElementAtOrDefault( trade.SenderPlayerIndex );
+		var receiver = Players.ElementAtOrDefault( trade.ReceiverPlayerIndex );
+		var deniedBy = Players.ElementAtOrDefault( deniedByPlayerIndex );
+		if ( sender is null || receiver is null || deniedBy is null )
+			return;
+
+		var notifyPlayer = deniedByPlayerIndex == trade.SenderPlayerIndex ? receiver : sender;
+		var otherPlayerName = deniedBy.PlayerName;
+
+		if ( ShowTradeDeniedPopup )
+		{
+			SendPopupToPlayer(
+				notifyPlayer,
+				"Trade denied",
+				$"{otherPlayerName} denied your trade.",
+				PopupKind.Danger,
+				true,
+				4f,
+				!TradeDeniedSound.IsAssigned
+			);
+		}
+
+		PlayTradeNotificationSound( notifyPlayer, TradeDeniedSound );
+	}
+
+	private void ShowTradeNegotiationReceivedNotification( TradeRequest trade )
+	{
+		if ( trade is null )
+			return;
+
+		var sender = Players.ElementAtOrDefault( trade.SenderPlayerIndex );
+		var receiver = Players.ElementAtOrDefault( trade.ReceiverPlayerIndex );
+		if ( sender is null || receiver is null )
+			return;
+
+		if ( ShowTradeNegotiationReceivedPopup )
+		{
+			SendPopupToPlayer(
+				receiver,
+				"Negotiation received",
+				$"{sender.PlayerName} sent you a counteroffer.",
+				PopupKind.Info,
+				true,
+				4f,
+				!TradeNegotiationReceivedSound.IsAssigned
+			);
+		}
+
+		PlayTradeNotificationSound( receiver, TradeNegotiationReceivedSound );
+	}
+
+	private void PlayTradeNotificationSound( PlayerState player, GameSound sound )
+	{
+		if ( player is null || !sound.IsAssigned )
+			return;
+
+		PlaySoundToConnection( GetConnectionForPlayer( player ), sound );
 	}
 
 	private void ShowForcedPaymentPopupToPlayers( PlayerState payer, PlayerState receiver, int amount )

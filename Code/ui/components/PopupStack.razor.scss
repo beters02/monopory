@@ -47,7 +47,7 @@
 }
 
 .popup-confirmation-stack {
-	width: 520px;
+	width: 480px;
 	max-width: 92%;
 
 	display: flex;
@@ -92,9 +92,33 @@
 }
 
 .game-popup.confirmation {
-	min-height: 120px;
-	padding: 16px 18px;
+	width: 100%;
+	min-height: 148px;
+	padding: 22px 24px 20px 24px;
 	border-left-color: $monopoly-gold;
+	box-shadow: $monopoly-panel-shadow;
+
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	justify-content: space-between;
+	gap: 18px;
+}
+
+.game-popup.confirmation .popup-content {
+	gap: 6px;
+}
+
+.game-popup.confirmation .popup-title {
+	font-size: 20px;
+	line-height: 24px;
+}
+
+.game-popup.confirmation .popup-message {
+	font-size: 14px;
+	line-height: 20px;
+	font-weight: 700;
+	opacity: 0.72;
 }
 
 .game-popup.info {
@@ -152,17 +176,24 @@
 .popup-confirmation-actions {
 	display: flex;
 	justify-content: flex-end;
-	gap: 8px;
-	margin-top: 8px;
+	gap: 12px;
+	margin-top: 0;
+
+	pointer-events: all;
 }
 
 .popup-confirmation-actions .monopoly-button {
-	height: 40px;
+	flex: 1;
+	height: 44px;
 	min-width: 120px;
-	padding: 8px 14px;
-	border-radius: $monopoly-radius-board;
+	margin-top: 0;
+	padding: 0 16px;
+	border: 2px solid transparent;
+	border-radius: $monopoly-radius-control;
 	font-size: 14px;
-	font-weight: 800;
+	font-weight: 900;
+	box-shadow: $monopoly-control-shadow;
+	text-transform: uppercase;
 }
 
 .popup-confirmation-actions .monopoly-button.popup-confirm-cancel {
