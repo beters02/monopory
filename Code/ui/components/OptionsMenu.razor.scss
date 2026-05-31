@@ -195,6 +195,7 @@
 }
 
 .options-control {
+	position: relative;
 	width: 320px;
 	min-width: 220px;
 	flex-shrink: 1;
@@ -265,7 +266,6 @@
 	box-shadow: $monopoly-panel-shadow-soft;
 }
 
-.options-panel .monopoly-button.dropdown-item,
 .options-panel .dropdown-item {
 	position: relative;
 	z-index: 1002;
@@ -280,25 +280,20 @@
 	color: $monopoly-text;
 }
 
-.options-panel .monopoly-button.dropdown-item:hover,
 .options-panel .dropdown-item:hover {
 	background-color: $monopoly-surface-hover;
 }
 
-.options-panel .monopoly-button.dropdown-item.selected,
 .options-panel .dropdown-item.selected {
 	background-color: $monopoly-gold;
 	color: $monopoly-ink;
 	box-shadow: none;
 }
 
-.options-panel .monopoly-button.dropdown-item.selected:hover,
 .options-panel .dropdown-item.selected:hover {
 	background-color: $monopoly-gold-hover;
 }
 
-.options-panel .monopoly-button.dropdown-item.selected .dropdown-item-label,
-.options-panel .monopoly-button.dropdown-item.selected .dropdown-item-label .label,
 .options-panel .dropdown-item.selected .dropdown-item-label,
 .options-panel .dropdown-item.selected .dropdown-item-label .label {
 	color: $monopoly-ink;

@@ -500,9 +500,10 @@
 }
 
 .match-config-control {
+	position: relative;
 	width: 320px;
 	min-width: 220px;
-	height: 42px;
+	min-height: 42px;
 
 	display: flex;
 	justify-content: flex-end;
@@ -583,7 +584,6 @@
 }
 
 .match-config-panel .dropdown-menu {
-	top: 50px;
 	padding: 4px;
 	background-color: rgba(12, 22, 30, 0.98);
 	border: 1px solid $monopoly-gold-glow;
@@ -593,7 +593,6 @@
 	overflow: hidden;
 }
 
-.match-config-panel .monopoly-button.dropdown-item,
 .match-config-panel .dropdown-item {
 	position: relative;
 	z-index: 1002;
@@ -612,25 +611,20 @@
 	color: $monopoly-text;
 }
 
-.match-config-panel .monopoly-button.dropdown-item:hover,
 .match-config-panel .dropdown-item:hover {
 	background-color: $monopoly-surface-strong;
 }
 
-.match-config-panel .monopoly-button.dropdown-item.selected,
 .match-config-panel .dropdown-item.selected {
 	background-color: $monopoly-gold;
 	color: $monopoly-ink;
 	box-shadow: none;
 }
 
-.match-config-panel .monopoly-button.dropdown-item.selected:hover,
 .match-config-panel .dropdown-item.selected:hover {
 	background-color: $monopoly-gold-hover;
 }
 
-.match-config-panel .monopoly-button.dropdown-item.selected .dropdown-item-label,
-.match-config-panel .monopoly-button.dropdown-item.selected .dropdown-item-label .label,
 .match-config-panel .dropdown-item.selected .dropdown-item-label,
 .match-config-panel .dropdown-item.selected .dropdown-item-label .label {
 	color: $monopoly-ink;

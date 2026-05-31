@@ -19,6 +19,20 @@
 			<span class="dropdown-caret">v</span>
 		</ChildContent>
 	</GameButton>
+
+	@if ( IsOpen )
+	{
+		<div class="dropdown-menu" @ref="MenuPanel">
+			@foreach ( var item in Items )
+			{
+				<GameButton Variant="@GetItemClasses( item )" OnClick="@(() => SelectItem( item ))" SoundEnabled="@SoundEnabled">
+					<ChildContent>
+						<span class="dropdown-item-label">@FormatItem( item )</span>
+					</ChildContent>
+				</GameButton>
+			}
+		</div>
+	}
 </root>
 
 @code
@@ -38,11 +52,18 @@
 	[Parameter] public Action<string> OnSelected { get; set; }
 
 	private static int NextInstanceId;
+	private static int ActiveInstanceId;
+	private static int OpenVersion;
 
 	private readonly int InstanceId = ++NextInstanceId;
-	private int SeenOverlayVersion;
+	private Panel MenuPanel = null!;
+	private int SeenOpenVersion;
+	private float CloseAfterMouseLeaveAt;
+	private int ScrollMeasureFramesRemaining;
+	private int SmoothScrollFramesRemaining;
+	private float SmoothScrollTargetY;
 
-	private bool IsOpen => DropdownOverlayState.ActiveId == InstanceId;
+	private bool IsOpen => ActiveInstanceId == InstanceId;
 	private string RootClasses => IsOpen ? "dropdown-button open" : "dropdown-button";
 	private string RootStyle => "";
 	private string ButtonClasses => string.IsNullOrWhiteSpace( Variant )
@@ -60,13 +81,29 @@
 
 		if ( IsOpen )
 		{
-			DropdownOverlayState.Close( InstanceId );
+			CloseOpenDropdown( InstanceId );
 			return;
 		}
 
-		SeenOverlayVersion = DropdownOverlayState.Version;
-		DropdownOverlayState.Open( InstanceId, Box.Rect, Items, Value, SoundEnabled, ScrollTarget, OnSelected );
+		ActiveInstanceId = InstanceId;
+		OpenVersion++;
+		SeenOpenVersion = OpenVersion;
+		CloseAfterMouseLeaveAt = 0f;
+		ScrollMeasureFramesRemaining = 3;
+		SmoothScrollFramesRemaining = 0;
 		StateHasChanged();
+	}
+
+	public static void CloseOpenDropdown( int id = 0 )
+	{
+		if ( id != 0 && ActiveInstanceId != id )
+			return;
+
+		if ( ActiveInstanceId == 0 )
+			return;
+
+		ActiveInstanceId = 0;
+		OpenVersion++;
 	}
 
 	public override void Tick()
@@ -74,13 +111,100 @@
 		base.Tick();
 
 		if ( IsOpen )
-			DropdownOverlayState.UpdateAnchor( InstanceId, Box.Rect );
-
-		if ( SeenOverlayVersion != DropdownOverlayState.Version )
 		{
-			SeenOverlayVersion = DropdownOverlayState.Version;
+			UpdateHoverClose();
+			MeasureScrollTarget();
+			UpdateSmoothScroll();
+		}
+
+		if ( SeenOpenVersion != OpenVersion )
+		{
+			SeenOpenVersion = OpenVersion;
 			StateHasChanged();
 		}
+	}
+
+	private void SelectItem( string item )
+	{
+		CloseOpenDropdown( InstanceId );
+		OnSelected?.Invoke( item );
+		StateHasChanged();
+	}
+
+	private void UpdateHoverClose()
+	{
+		if ( IsMouseInsideOpenDropdown() )
+		{
+			CloseAfterMouseLeaveAt = 0f;
+			return;
+		}
+
+		if ( CloseAfterMouseLeaveAt <= 0f )
+			CloseAfterMouseLeaveAt = Time.Now + 0.35f;
+
+		if ( Time.Now >= CloseAfterMouseLeaveAt )
+			CloseOpenDropdown( InstanceId );
+	}
+
+	private void MeasureScrollTarget()
+	{
+		if ( ScrollMeasureFramesRemaining <= 0 )
+			return;
+
+		ScrollMeasureFramesRemaining--;
+
+		if ( ScrollTarget is null || MenuPanel is null )
+			return;
+
+		var viewport = ScrollTarget.Box.RectInner;
+		var menu = MenuPanel.Box.Rect;
+		var overflow = menu.Bottom - viewport.Bottom + 10f;
+		if ( overflow <= 0f )
+			return;
+
+		var maxOffset = Math.Max( 0f, ScrollTarget.ScrollSize.y );
+		SmoothScrollTargetY = Math.Clamp( ScrollTarget.ScrollOffset.y + overflow, 0f, maxOffset );
+		SmoothScrollFramesRemaining = 10;
+	}
+
+	private void UpdateSmoothScroll()
+	{
+		if ( SmoothScrollFramesRemaining <= 0 || ScrollTarget is null )
+			return;
+
+		var currentY = ScrollTarget.ScrollOffset.y;
+		var delta = SmoothScrollTargetY - currentY;
+		if ( MathF.Abs( delta ) <= 0.5f || SmoothScrollFramesRemaining == 1 )
+		{
+			ScrollTarget.ScrollOffset = new Vector2( 0f, SmoothScrollTargetY );
+			SmoothScrollFramesRemaining = 0;
+			return;
+		}
+
+		ScrollTarget.ScrollOffset = new Vector2( 0f, currentY + delta * 0.28f );
+		SmoothScrollFramesRemaining--;
+	}
+
+	private bool IsMouseInsideOpenDropdown()
+	{
+		var position = Mouse.Position;
+		return IsPointInside( Box.Rect, position )
+			|| (MenuPanel is not null && IsPointInside( MenuPanel.Box.Rect, position ));
+	}
+
+	private static bool IsPointInside( Rect rect, Vector2 point )
+	{
+		return point.x >= rect.Left
+			&& point.x <= rect.Right
+			&& point.y >= rect.Top
+			&& point.y <= rect.Bottom;
+	}
+
+	private string GetItemClasses( string item )
+	{
+		return string.Equals( item, Value, StringComparison.OrdinalIgnoreCase )
+			? "dropdown-item selected"
+			: "dropdown-item";
 	}
 
 	private static string FormatItem( string item )
@@ -102,8 +226,8 @@
 	{
 		var hash = new HashCode();
 		hash.Add( IsOpen );
-		hash.Add( DropdownOverlayState.ActiveId );
-		hash.Add( DropdownOverlayState.Version );
+		hash.Add( ActiveInstanceId );
+		hash.Add( OpenVersion );
 		hash.Add( Value ?? "" );
 		hash.Add( Placeholder ?? "" );
 		hash.Add( CanClick );
