@@ -250,6 +250,8 @@ public sealed partial class GameController : Component
 		player.SpaceIndex = 0;
 		player.IsInJail = false;
 		player.JailTurnsRemaining = 0;
+		player.ChanceGetOutOfJailFreeCards = 0;
+		player.CommunityChestGetOutOfJailFreeCards = 0;
 		player.ConsecutiveDoubles = 0;
 		player.SkipsNextTurn = false;
 		player.IsBankrupt = false;
@@ -285,6 +287,7 @@ public sealed partial class GameController : Component
 		LocalSelectedDrawnCardText = "";
 		ClearMovementRecoveryState();
 		ClearPendingForcedPayment();
+		ResetCardDrawPiles();
 		PropertyOwners.Clear();
 		PropertyImprovements.Clear();
 		MortgagedProperties.Clear();

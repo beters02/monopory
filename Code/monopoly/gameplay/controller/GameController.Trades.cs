@@ -7,7 +7,7 @@ public sealed partial class GameController : Component
 {
 
 	[Rpc.Host]
-	public void RequestCreateTrade( int receiverPlayerIndex, int senderMoney, int receiverMoney, string senderPropertyIndexes, string receiverPropertyIndexes )
+	public void RequestCreateTrade( int receiverPlayerIndex, int senderMoney, int receiverMoney, string senderPropertyIndexes, string receiverPropertyIndexes, string senderCardIds = "", string receiverCardIds = "" )
 	{
 		if ( !CanAcceptGameplayInput() )
 			return;
@@ -24,7 +24,9 @@ public sealed partial class GameController : Component
 			SenderMoney = Math.Max( senderMoney, 0 ),
 			ReceiverMoney = Math.Max( receiverMoney, 0 ),
 			SenderPropertyIndexes = ParseSpaceIndexList( senderPropertyIndexes ),
-			ReceiverPropertyIndexes = ParseSpaceIndexList( receiverPropertyIndexes )
+			ReceiverPropertyIndexes = ParseSpaceIndexList( receiverPropertyIndexes ),
+			SenderCardIds = ParseTradableCardIdList( senderCardIds ),
+			ReceiverCardIds = ParseTradableCardIdList( receiverCardIds )
 		};
 
 		if ( request.IsEmpty || !IsTradeValid( request ) )
@@ -69,6 +71,12 @@ public sealed partial class GameController : Component
 
 		foreach ( var spaceIndex in trade.ReceiverPropertyIndexes )
 			PropertyOwners[spaceIndex] = trade.SenderPlayerIndex;
+
+		foreach ( var cardId in trade.SenderCardIds )
+			TransferTradableCard( trade.SenderPlayerIndex, trade.ReceiverPlayerIndex, cardId );
+
+		foreach ( var cardId in trade.ReceiverCardIds )
+			TransferTradableCard( trade.ReceiverPlayerIndex, trade.SenderPlayerIndex, cardId );
 
 		PendingTrades.Remove( tradeId );
 		TradeViewers.Remove( tradeId );
@@ -181,6 +189,18 @@ public sealed partial class GameController : Component
 				return false;
 		}
 
+		foreach ( var cardId in trade.SenderCardIds )
+		{
+			if ( !PlayerOwnsTradableCard( trade.SenderPlayerIndex, cardId ) )
+				return false;
+		}
+
+		foreach ( var cardId in trade.ReceiverCardIds )
+		{
+			if ( !PlayerOwnsTradableCard( trade.ReceiverPlayerIndex, cardId ) )
+				return false;
+		}
+
 		return true;
 	}
 
@@ -219,6 +239,19 @@ public sealed partial class GameController : Component
 			.Where( index => index >= 0 )
 			.Distinct()
 			.OrderBy( index => index )
+			.ToList();
+	}
+
+	private static List<string> ParseTradableCardIdList( string value )
+	{
+		if ( string.IsNullOrWhiteSpace( value ) )
+			return new();
+
+		return value.Split( ',', StringSplitOptions.RemoveEmptyEntries )
+			.Select( part => part.Trim() )
+			.Where( cardId => cardId is TradableCardIds.ChanceGetOutOfJailFree or TradableCardIds.CommunityChestGetOutOfJailFree )
+			.Distinct()
+			.OrderBy( cardId => cardId )
 			.ToList();
 	}
 }

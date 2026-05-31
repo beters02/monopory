@@ -7,6 +7,7 @@ public sealed partial class GameController : Component
 {
 	private const int JailFineAmount = 50;
 	private const int JailTurnCount = 3;
+	private const float TurnSoundDelay = 0.5f;
 
 	private void UpdateTurnTimer()
 	{
@@ -128,6 +129,12 @@ public sealed partial class GameController : Component
 
 		if ( Phase != GamePhase.WaitingToRoll || !CurrentPlayer.IsInJail )
 			return;
+
+		if ( TryUseGetOutOfJailFreeCard( CurrentPlayer ) )
+		{
+			await RollCurrentPlayerAsync( -1, true, RollExecutionKind.JailRelease );
+			return;
+		}
 
 		if ( !PayBank( CurrentPlayer, JailFineAmount ) )
 		{
@@ -544,6 +551,46 @@ public sealed partial class GameController : Component
 		CurrentTurnGetsExtraRoll = false;
 	}
 
+	private bool TryUseGetOutOfJailFreeCard( PlayerState player )
+	{
+		if ( player is null )
+			return false;
+
+		if ( player.ChanceGetOutOfJailFreeCards > 0 )
+		{
+			player.ChanceGetOutOfJailFreeCards--;
+			ReturnGetOutOfJailFreeCardToDeck( CardDeck.Chance );
+		}
+		else if ( player.CommunityChestGetOutOfJailFreeCards > 0 )
+		{
+			player.CommunityChestGetOutOfJailFreeCards--;
+			ReturnGetOutOfJailFreeCardToDeck( CardDeck.CommunityChest );
+		}
+		else
+		{
+			return false;
+		}
+
+		ReleasePlayerFromJail( player );
+		SendPopupToAll( "Get Out of Jail Free", $"{player.PlayerName} used a Get Out of Jail Free card.", PopupKind.Info, true, 4f );
+		return true;
+	}
+
+	private void ReturnGetOutOfJailFreeCardToDeck( CardDeck deck )
+	{
+		var card = (deck == CardDeck.Chance ? Board?.ChanceCards : Board?.CommunityChestCards)?
+			.FirstOrDefault( card => card?.Action == CardAction.GetOutOfJailFree );
+
+		if ( card is null )
+			return;
+
+		var drawPile = deck == CardDeck.Chance
+			? chanceDrawPile
+			: communityChestDrawPile;
+
+		drawPile.Add( card );
+	}
+
 	private void BeginResolvedAction()
 	{
 		Phase = GamePhase.ResolvingSpace;
@@ -569,6 +616,7 @@ public sealed partial class GameController : Component
 		if ( CurrentTurnGetsExtraRoll )
 		{
 			CurrentTurnGetsExtraRoll = false;
+			PlayTurnSound( CurrentPlayer );
 			StartTurnTimer();
 			return;
 		}
@@ -582,6 +630,11 @@ public sealed partial class GameController : Component
 		CurrentTurnConsecutiveDoubles = 0;
 		CurrentTurnDoublesPlayerIndex = -1;
 		AdvanceTurn();
+	}
+
+	private void PlayTurnSound( PlayerState player )
+	{
+		PlaySoundToConnection( GetConnectionForPlayer( player ), GameAssets.Sounds.PianoBingBingBing, TurnSoundDelay );
 	}
 
 	[Button( "End Turn" )]
@@ -665,7 +718,7 @@ public sealed partial class GameController : Component
 		if ( player is not null )
 		{
 			player.ConsecutiveDoubles = 0;
-			PlaySoundToConnection(GetConnectionForPlayer(player), GameAssets.Sounds.PianoBingBingBing);
+			PlayTurnSound(player);
 		}
 			
 	}

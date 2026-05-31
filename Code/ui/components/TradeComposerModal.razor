@@ -25,7 +25,7 @@
 							<div class="trade-property-section trade-giving-section">
 								<div class="trade-property-section-title">Giving</div>
 								<div class="trade-property-picker" @ref="SenderGivingScrollPanel">
-									@if ( GetGivingPropertyIndexes( true ).Count == 0 )
+									@if ( GetGivingPropertyIndexes( true ).Count == 0 && GetGivingCardIds( true ).Count == 0 )
 									{
 										<div class="trade-property-empty">No properties selected</div>
 									}
@@ -41,6 +41,15 @@
 												</ChildContent>
 											</GameButton>
 										}
+										@foreach ( var cardId in GetGivingCardIds( true ) )
+										{
+											<GameButton Variant="@GetComposerCardClasses( cardId, true )" OnClick="@(() => ToggleSenderCard( cardId ))">
+												<ChildContent>
+													<div class="trade-property-selected-mark">+</div>
+													<div class="trade-property-chip-label">@GameRef.GetTradableCardName( cardId )</div>
+												</ChildContent>
+											</GameButton>
+										}
 									}
 								</div>
 								<MonoScrollbar Target="@SenderGivingScrollPanel" Variant="trade-property-scrollbar"></MonoScrollbar>
@@ -48,7 +57,7 @@
 							<div class="trade-property-section trade-has-section">
 								<div class="trade-property-section-title">Has</div>
 								<div class="trade-property-picker" @ref="SenderHasScrollPanel">
-									@if ( GetHasPropertyIndexes( true ).Count == 0 )
+									@if ( GetHasPropertyIndexes( true ).Count == 0 && GetHasCardIds( true ).Count == 0 )
 									{
 										<div class="trade-property-empty">No properties available</div>
 									}
@@ -61,6 +70,15 @@
 												<ChildContent>
 													<div class="trade-property-selected-mark">+</div>
 													<div class="trade-property-chip-label">@property?.DisplayName</div>
+												</ChildContent>
+											</GameButton>
+										}
+										@foreach ( var cardId in GetHasCardIds( true ) )
+										{
+											<GameButton Variant="@GetComposerCardClasses( cardId, true )" OnClick="@(() => ToggleSenderCard( cardId ))">
+												<ChildContent>
+													<div class="trade-property-selected-mark">+</div>
+													<div class="trade-property-chip-label">@GameRef.GetTradableCardName( cardId )</div>
 												</ChildContent>
 											</GameButton>
 										}
@@ -98,7 +116,7 @@
 							<div class="trade-property-section trade-giving-section">
 								<div class="trade-property-section-title">Giving</div>
 								<div class="trade-property-picker" @ref="ReceiverGivingScrollPanel">
-									@if ( GetGivingPropertyIndexes( false ).Count == 0 )
+									@if ( GetGivingPropertyIndexes( false ).Count == 0 && GetGivingCardIds( false ).Count == 0 )
 									{
 										<div class="trade-property-empty">No properties selected</div>
 									}
@@ -114,6 +132,15 @@
 												</ChildContent>
 											</GameButton>
 										}
+										@foreach ( var cardId in GetGivingCardIds( false ) )
+										{
+											<GameButton Variant="@GetComposerCardClasses( cardId, false )" OnClick="@(() => ToggleReceiverCard( cardId ))">
+												<ChildContent>
+													<div class="trade-property-selected-mark">+</div>
+													<div class="trade-property-chip-label">@GameRef.GetTradableCardName( cardId )</div>
+												</ChildContent>
+											</GameButton>
+										}
 									}
 								</div>
 								<MonoScrollbar Target="@ReceiverGivingScrollPanel" Variant="trade-property-scrollbar"></MonoScrollbar>
@@ -121,7 +148,7 @@
 							<div class="trade-property-section trade-has-section">
 								<div class="trade-property-section-title">Has</div>
 								<div class="trade-property-picker" @ref="ReceiverHasScrollPanel">
-									@if ( GetHasPropertyIndexes( false ).Count == 0 )
+									@if ( GetHasPropertyIndexes( false ).Count == 0 && GetHasCardIds( false ).Count == 0 )
 									{
 										<div class="trade-property-empty">No properties available</div>
 									}
@@ -134,6 +161,15 @@
 												<ChildContent>
 													<div class="trade-property-selected-mark">+</div>
 													<div class="trade-property-chip-label">@property?.DisplayName</div>
+												</ChildContent>
+											</GameButton>
+										}
+										@foreach ( var cardId in GetHasCardIds( false ) )
+										{
+											<GameButton Variant="@GetComposerCardClasses( cardId, false )" OnClick="@(() => ToggleReceiverCard( cardId ))">
+												<ChildContent>
+													<div class="trade-property-selected-mark">+</div>
+													<div class="trade-property-chip-label">@GameRef.GetTradableCardName( cardId )</div>
 												</ChildContent>
 											</GameButton>
 										}
@@ -160,12 +196,16 @@
 	[Parameter] public int ReceiverMoney { get; set; }
 	[Parameter] public HashSet<int> SenderPropertyIndexes { get; set; } = new();
 	[Parameter] public HashSet<int> ReceiverPropertyIndexes { get; set; } = new();
+	[Parameter] public HashSet<string> SenderCardIds { get; set; } = new();
+	[Parameter] public HashSet<string> ReceiverCardIds { get; set; } = new();
 	[Parameter] public Action OnClose { get; set; }
 	[Parameter] public Action<int> OnSelectReceiver { get; set; }
 	[Parameter] public Action<int> OnAdjustSenderMoney { get; set; }
 	[Parameter] public Action<int> OnAdjustReceiverMoney { get; set; }
 	[Parameter] public Action<int> OnToggleSenderProperty { get; set; }
 	[Parameter] public Action<int> OnToggleReceiverProperty { get; set; }
+	[Parameter] public Action<string> OnToggleSenderCard { get; set; }
+	[Parameter] public Action<string> OnToggleReceiverCard { get; set; }
 	[Parameter] public Action OnSend { get; set; }
 
 	private Panel SenderGivingScrollPanel = null!;
@@ -190,6 +230,12 @@
 	private List<int> ReceiverOwnedPropertyIndexes =>
 		GameRef is null || EffectiveReceiverPlayerIndex < 0 ? new() : GameRef.GetOwnedPropertyIndexes( EffectiveReceiverPlayerIndex );
 
+	private List<string> LocalOwnedCardIds =>
+		GameRef is null ? new() : GameRef.GetOwnedTradableCardIds( GameRef.LocalPlayerIndex );
+
+	private List<string> ReceiverOwnedCardIds =>
+		GameRef is null || EffectiveReceiverPlayerIndex < 0 ? new() : GameRef.GetOwnedTradableCardIds( EffectiveReceiverPlayerIndex );
+
 	private void Close()
 	{
 		LocalReceiverPlayerIndex = -1;
@@ -205,6 +251,8 @@
 	private void AdjustReceiverMoney( int amount ) => OnAdjustReceiverMoney?.Invoke( amount );
 	private void ToggleSenderProperty( int propertyIndex ) => OnToggleSenderProperty?.Invoke( propertyIndex );
 	private void ToggleReceiverProperty( int propertyIndex ) => OnToggleReceiverProperty?.Invoke( propertyIndex );
+	private void ToggleSenderCard( string cardId ) => OnToggleSenderCard?.Invoke( cardId );
+	private void ToggleReceiverCard( string cardId ) => OnToggleReceiverCard?.Invoke( cardId );
 	private void Send() => OnSend?.Invoke();
 
 	private List<int> GetGivingPropertyIndexes( bool senderSide )
@@ -221,6 +269,20 @@
 		return ownedIndexes.Where( index => !selectedIndexes.Contains( index ) ).ToList();
 	}
 
+	private List<string> GetGivingCardIds( bool senderSide )
+	{
+		var ownedCardIds = senderSide ? LocalOwnedCardIds : ReceiverOwnedCardIds;
+		var selectedCardIds = senderSide ? SenderCardIds : ReceiverCardIds;
+		return ownedCardIds.Where( selectedCardIds.Contains ).ToList();
+	}
+
+	private List<string> GetHasCardIds( bool senderSide )
+	{
+		var ownedCardIds = senderSide ? LocalOwnedCardIds : ReceiverOwnedCardIds;
+		var selectedCardIds = senderSide ? SenderCardIds : ReceiverCardIds;
+		return ownedCardIds.Where( cardId => !selectedCardIds.Contains( cardId ) ).ToList();
+	}
+
 	private string GetComposerPropertyClasses( int propertyIndex, bool senderSide )
 	{
 		var selected = senderSide
@@ -230,6 +292,20 @@
 		var def = GameRef?.Board?.GetSpaceDef( propertyIndex );
 		var colorGroup = HudUi.GetPropertyColorClass( def );
 		var classes = $"trade-property-chip color-{colorGroup}";
+
+		if ( selected )
+			classes += " selected";
+
+		return classes;
+	}
+
+	private string GetComposerCardClasses( string cardId, bool senderSide )
+	{
+		var selected = senderSide
+			? SenderCardIds.Contains( cardId )
+			: ReceiverCardIds.Contains( cardId );
+
+		var classes = "trade-property-chip color-jail-free";
 
 		if ( selected )
 			classes += " selected";
@@ -272,6 +348,12 @@
 
 		foreach ( var index in ReceiverPropertyIndexes.OrderBy( x => x ) )
 			hash.Add( index );
+
+		foreach ( var cardId in SenderCardIds.OrderBy( x => x ) )
+			hash.Add( cardId );
+
+		foreach ( var cardId in ReceiverCardIds.OrderBy( x => x ) )
+			hash.Add( cardId );
 
 		return hash.ToHashCode();
 	}

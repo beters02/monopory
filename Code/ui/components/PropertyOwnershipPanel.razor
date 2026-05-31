@@ -42,7 +42,7 @@
 						{
 							<div class="property-manager-section">
 								<div class="property-manager-section-title">@ownershipGroup.Title</div>
-								@if ( ownershipGroup.Properties.Count == 0 )
+								@if ( ownershipGroup.Properties.Count == 0 && ownershipGroup.CardIds.Count == 0 )
 								{
 									<div class="property-manager-empty">None</div>
 								}
@@ -63,6 +63,17 @@
 														}
 													</div>
 													<div class="property-manager-name">@property.DisplayName</div>
+												</ChildContent>
+											</GameButton>
+										}
+										@foreach ( var cardId in ownershipGroup.CardIds )
+										{
+											<GameButton
+												Variant="property-manager-item jail-free-card"
+												Title="@GameRef.GetTradableCardName( cardId )">
+												<ChildContent>
+													<div class="property-square jail-free-square">JF</div>
+													<div class="property-manager-name">@GameRef.GetTradableCardName( cardId )</div>
 												</ChildContent>
 											</GameButton>
 										}
@@ -180,7 +191,8 @@
 			PlayerIndex = playerIndex,
 			Properties = OrderedPropertySpaces
 				.Where( property => (GameRef?.GetOwnerIndexForSpace( property.Index ) ?? -1) == playerIndex )
-				.ToList()
+				.ToList(),
+			CardIds = GameRef?.GetOwnedTradableCardIds( playerIndex ) ?? new()
 		};
 	}
 
@@ -292,6 +304,8 @@
 			{
 				hash.Add( player.OwnerId );
 				hash.Add( player.ColorSlot );
+				hash.Add( player.ChanceGetOutOfJailFreeCards );
+				hash.Add( player.CommunityChestGetOutOfJailFreeCards );
 				hash.Add( player.IsDisconnected );
 				hash.Add( player.AbandonEndsAt > 0f ? MathF.Ceiling( Math.Max( 0f, player.AbandonEndsAt - Time.Now ) ) : 0f );
 			}
@@ -305,6 +319,7 @@
 		public string Title { get; init; } = "";
 		public int PlayerIndex { get; init; } = -1;
 		public List<SpaceDef> Properties { get; init; } = new();
+		public List<string> CardIds { get; init; } = new();
 	}
 }
 

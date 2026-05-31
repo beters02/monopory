@@ -9,6 +9,8 @@ public sealed class PlayerState : Component
 	[Sync] public int Money { get; set; } = 1500;
 	[Sync] public bool IsInJail { get; set; }
 	[Sync] public int JailTurnsRemaining { get; set; }
+	[Sync] public int ChanceGetOutOfJailFreeCards { get; set; }
+	[Sync] public int CommunityChestGetOutOfJailFreeCards { get; set; }
 	[Sync] public int ConsecutiveDoubles { get; set; }
 	[Sync] public bool SkipsNextTurn { get; set; }
 	[Sync] public bool IsBankrupt { get; set; }

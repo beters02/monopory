@@ -45,6 +45,8 @@ public static class HudUi
 			hash.Add( player?.PlayerName ?? "" );
 			hash.Add( player?.Money ?? 0 );
 			hash.Add( player?.SpaceIndex ?? 0 );
+			hash.Add( player?.ChanceGetOutOfJailFreeCards ?? 0 );
+			hash.Add( player?.CommunityChestGetOutOfJailFreeCards ?? 0 );
 			hash.Add( player?.IsAssigned ?? false );
 			hash.Add( player?.IsBankrupt ?? false );
 			hash.Add( player?.IsReady ?? false );

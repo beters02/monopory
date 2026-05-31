@@ -6,6 +6,8 @@ using Sandbox.UI;
 
 public sealed partial class GameController : Component
 {
+	private readonly List<CardDef> chanceDrawPile = new();
+	private readonly List<CardDef> communityChestDrawPile = new();
 
 	public class GambleResult
 	{
@@ -46,14 +48,143 @@ public sealed partial class GameController : Component
 
 	private CardDef DrawCard( CardDeck deck )
 	{
+		var drawPile = deck == CardDeck.Chance
+			? chanceDrawPile
+			: communityChestDrawPile;
+
+		if ( drawPile.Count == 0 )
+			ReshuffleCardDrawPile( deck );
+
+		if ( drawPile.Count == 0 )
+			return null;
+
+		var card = drawPile[0];
+		drawPile.RemoveAt( 0 );
+		return card;
+	}
+
+	private void ResetCardDrawPiles()
+	{
+		chanceDrawPile.Clear();
+		communityChestDrawPile.Clear();
+	}
+
+	private void ReshuffleCardDrawPile( CardDeck deck )
+	{
 		var cards = deck == CardDeck.Chance
 			? Board?.ChanceCards
 			: Board?.CommunityChestCards;
 
 		if ( cards is null || cards.Count == 0 )
-			return null;
+			return;
 
-		return cards[Game.Random.Int( 0, cards.Count - 1 )];
+		var drawPile = deck == CardDeck.Chance
+			? chanceDrawPile
+			: communityChestDrawPile;
+
+		drawPile.Clear();
+		foreach ( var card in cards )
+		{
+			if ( card is null )
+				continue;
+
+			var weight = Math.Max( card.Weight, 1 );
+			if ( IsHeldOutOfDeck( card ) )
+				weight = Math.Max( weight - 1, 0 );
+
+			for ( var i = 0; i < weight; i++ )
+				drawPile.Add( card );
+		}
+
+		for ( var i = drawPile.Count - 1; i > 0; i-- )
+		{
+			var swapIndex = Game.Random.Int( 0, i );
+			(drawPile[i], drawPile[swapIndex]) = (drawPile[swapIndex], drawPile[i]);
+		}
+	}
+
+	private bool IsHeldOutOfDeck( CardDef card )
+	{
+		if ( card?.Action != CardAction.GetOutOfJailFree )
+			return false;
+
+		return card.Deck == CardDeck.Chance
+			? Players.Any( player => player?.ChanceGetOutOfJailFreeCards > 0 )
+			: Players.Any( player => player?.CommunityChestGetOutOfJailFreeCards > 0 );
+	}
+
+	public List<string> GetOwnedTradableCardIds( int playerIndex )
+	{
+		var player = Players.ElementAtOrDefault( playerIndex );
+		if ( player is null )
+			return new();
+
+		var cardIds = new List<string>();
+
+		if ( player.ChanceGetOutOfJailFreeCards > 0 )
+			cardIds.Add( TradableCardIds.ChanceGetOutOfJailFree );
+
+		if ( player.CommunityChestGetOutOfJailFreeCards > 0 )
+			cardIds.Add( TradableCardIds.CommunityChestGetOutOfJailFree );
+
+		return cardIds;
+	}
+
+	public bool PlayerOwnsTradableCard( int playerIndex, string cardId )
+	{
+		return GetOwnedTradableCardIds( playerIndex ).Contains( cardId );
+	}
+
+	public string GetTradableCardName( string cardId )
+	{
+		return cardId switch
+		{
+			TradableCardIds.ChanceGetOutOfJailFree => "Get Out of Jail Free (Chance)",
+			TradableCardIds.CommunityChestGetOutOfJailFree => "Get Out of Jail Free (Chest)",
+			_ => "Card"
+		};
+	}
+
+	private bool TransferTradableCard( int fromPlayerIndex, int toPlayerIndex, string cardId )
+	{
+		var from = Players.ElementAtOrDefault( fromPlayerIndex );
+		var to = Players.ElementAtOrDefault( toPlayerIndex );
+		if ( from is null || to is null )
+			return false;
+
+		switch ( cardId )
+		{
+			case TradableCardIds.ChanceGetOutOfJailFree when from.ChanceGetOutOfJailFreeCards > 0:
+				from.ChanceGetOutOfJailFreeCards--;
+				to.ChanceGetOutOfJailFreeCards++;
+				return true;
+
+			case TradableCardIds.CommunityChestGetOutOfJailFree when from.CommunityChestGetOutOfJailFreeCards > 0:
+				from.CommunityChestGetOutOfJailFreeCards--;
+				to.CommunityChestGetOutOfJailFreeCards++;
+				return true;
+
+			default:
+				return false;
+		}
+	}
+
+	private void ReturnHeldTradableCardsToDeck( PlayerState player )
+	{
+		if ( player is null )
+			return;
+
+		while ( player.ChanceGetOutOfJailFreeCards > 0 )
+		{
+			player.ChanceGetOutOfJailFreeCards--;
+			ReturnGetOutOfJailFreeCardToDeck( CardDeck.Chance );
+		}
+
+		while ( player.CommunityChestGetOutOfJailFreeCards > 0 )
+		{
+			player.CommunityChestGetOutOfJailFreeCards--;
+			ReturnGetOutOfJailFreeCardToDeck( CardDeck.CommunityChest );
+		}
 	}
 
 	private void ApplyCard( PlayerState player, CardDef card )
@@ -80,6 +211,14 @@ public sealed partial class GameController : Component
 				MovePlayerToCardDestination( player, card.TargetSpaceIndex, card.CollectGo, card.ResolveDestination );
 				break;
 
+			case CardAction.MoveToNearestRailroad:
+				MovePlayerToCardDestination( player, GetNextSpaceIndexOfType( player.SpaceIndex, SpaceType.Railroad ), card.CollectGo, card.ResolveDestination );
+				break;
+
+			case CardAction.MoveToNearestUtility:
+				MovePlayerToCardDestination( player, GetNextSpaceIndexOfType( player.SpaceIndex, SpaceType.Utility ), card.CollectGo, card.ResolveDestination );
+				break;
+
 			case CardAction.MoveRelative:
 				MovePlayerByCardOffset( player, card.RelativeSpaces, card.CollectGo, card.ResolveDestination );
 				break;
@@ -87,6 +226,15 @@ public sealed partial class GameController : Component
 			case CardAction.GoToJail:
 				SendPlayerToJail( player );
 				MarkResolvedActionToAdvanceImmediately();
+				break;
+
+			case CardAction.GetOutOfJailFree:
+				if ( card.Deck == CardDeck.Chance )
+					player.ChanceGetOutOfJailFreeCards++;
+				else
+					player.CommunityChestGetOutOfJailFreeCards++;
+
+				Log.Info( $"{player.PlayerName} kept a Get Out of Jail Free card." );
 				break;
 
 			case CardAction.CollectFromEachPlayer:
@@ -105,6 +253,25 @@ public sealed partial class GameController : Component
 				PlayerGamble( player );
 				break;
 		}
+	}
+
+	private int GetNextSpaceIndexOfType( int startSpaceIndex, SpaceType type )
+	{
+		if ( Board?.SpaceDefs is null || Board.SpaceDefs.Count == 0 )
+			return -1;
+
+		var spaceCount = Board.SpaceDefs.Count;
+		startSpaceIndex = NormalizeSpaceIndex( startSpaceIndex );
+
+		for ( var offset = 1; offset <= spaceCount; offset++ )
+		{
+			var index = NormalizeSpaceIndex( startSpaceIndex + offset );
+			var def = Board.SpaceDefs.ElementAtOrDefault( index );
+			if ( def?.Type == type )
+				return index;
+		}
+
+		return -1;
 	}
 
 	private void MovePlayerToCardDestination( PlayerState player, int targetSpaceIndex, bool collectGo, bool resolveDestination )

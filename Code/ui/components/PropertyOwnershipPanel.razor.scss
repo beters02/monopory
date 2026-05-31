@@ -315,5 +315,19 @@
 	background-color: $property-none;
 }
 
+.property-square.jail-free-square {
+	width: 22px;
+	color: $monopoly-ink;
+	background-color: $monopoly-gold;
+	border-color: $monopoly-ink;
+	opacity: 1;
+	font-size: 8px;
+	font-weight: 900;
+}
+
+.monopoly-button.property-manager-item.jail-free-card {
+	background-color: $monopoly-card-ink-surface;
+}
+
 
 

@@ -40,6 +40,7 @@ public sealed partial class GameController : Component
 		player.Money = 0;
 		player.IsInJail = false;
 		player.JailTurnsRemaining = 0;
+		ReturnHeldTradableCardsToDeck( player );
 		player.ConsecutiveDoubles = 0;
 		player.SkipsNextTurn = false;
 

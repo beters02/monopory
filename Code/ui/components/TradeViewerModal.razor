@@ -20,6 +20,10 @@
 						{
 							<div class="@GetPropertyChipClasses( propertyIndex )">@GetPropertyName( propertyIndex )</div>
 						}
+						@foreach ( var cardId in Trade.SenderCardIds )
+						{
+							<div class="@GetCardChipClasses( cardId )">@GetCardName( cardId )</div>
+						}
 					</div>
 					<div class="trade-summary-side">
 						<div class="trade-player-name">@GetPlayerName( Trade.ReceiverPlayerIndex ) gives</div>
@@ -27,6 +31,10 @@
 						@foreach ( var propertyIndex in Trade.ReceiverPropertyIndexes )
 						{
 							<div class="@GetPropertyChipClasses( propertyIndex )">@GetPropertyName( propertyIndex )</div>
+						}
+						@foreach ( var cardId in Trade.ReceiverCardIds )
+						{
+							<div class="@GetCardChipClasses( cardId )">@GetCardName( cardId )</div>
 						}
 					</div>
 				</div>
@@ -72,6 +80,16 @@
 	{
 		var def = GameRef?.Board?.GetSpaceDef( propertyIndex );
 		return $"trade-property-chip color-{HudUi.GetPropertyColorClass( def )}";
+	}
+
+	private string GetCardName( string cardId )
+	{
+		return GameRef?.GetTradableCardName( cardId ) ?? "Card";
+	}
+
+	private string GetCardChipClasses( string cardId )
+	{
+		return "trade-property-chip color-jail-free";
 	}
 
 	protected override int BuildHash()
