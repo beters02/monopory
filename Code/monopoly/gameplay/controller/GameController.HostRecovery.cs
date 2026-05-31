@@ -3,9 +3,7 @@ using System.Threading.Tasks;
 
 public sealed partial class GameController
 {
-	private const float ResolvingSpaceRecoveryDelay = 2.5f;
-	private const float RecoveryRetryDelay = 1.0f;
-
+	
 	public bool IsEffectiveHostCaller( Connection caller )
 	{
 		if ( !Networking.IsHost )

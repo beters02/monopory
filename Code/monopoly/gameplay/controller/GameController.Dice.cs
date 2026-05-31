@@ -4,19 +4,6 @@ using Sandbox;
 
 public sealed partial class GameController : Component
 {
-	[Property, Group( "Physical Dice" )] public DiceComponent DieA { get; set; }
-	[Property, Group( "Physical Dice" )] public DiceComponent DieB { get; set; }
-	[Property, Group( "Physical Dice" )] public Vector3 DiceThrowCenter { get; set; } = Vector3.Zero;
-	[Property, Group( "Physical Dice" )] public float DiceThrowHeight { get; set; } = 110f;
-	[Property, Group( "Physical Dice" )] public float DiceSpawnSpacing { get; set; } = 12f;
-	[Property, Group( "Physical Dice" )] public float DiceMinDropSpeed { get; set; } = 260f;
-	[Property, Group( "Physical Dice" )] public float DiceMaxDropSpeed { get; set; } = 540f;
-	[Property, Group( "Physical Dice" )] public float DiceMinHorizontalSpeed { get; set; } = 35f;
-	[Property, Group( "Physical Dice" )] public float DiceMaxHorizontalSpeed { get; set; } = 95f;
-	[Property, Group( "Physical Dice" )] public float DiceMinSpinSpeed { get; set; } = 12f;
-	[Property, Group( "Physical Dice" )] public float DiceMaxSpinSpeed { get; set; } = 30f;
-	[Property, Group( "Physical Dice" )] public float DiceSettleTimeout { get; set; } = 5f;
-	[Property, Group( "Physical Dice" )] public bool UsePhysicalDice { get; set; } = true;
 
 	public bool TryGetPhysicalDice( out DiceComponent dieA, out DiceComponent dieB )
 	{

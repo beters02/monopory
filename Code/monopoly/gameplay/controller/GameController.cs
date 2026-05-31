@@ -93,6 +93,7 @@ public sealed partial class GameController : Component, Component.INetworkListen
 	[Sync] public int CurrentTurnConsecutiveDoubles { get; set; }
 	[Sync] public int CurrentTurnDoublesPlayerIndex { get; set; } = -1;
 	[Sync] public float CurrentTurnEndsAt { get; set; }
+	[Sync] public int CurrentTurnReminderSoundsPlayed { get; set; } = 0;
 	[Sync] public int PendingForcedPaymentPlayerIndex { get; set; } = -1;
 	[Sync] public int PendingForcedPaymentAmount { get; set; }
 	[Sync] public int PendingForcedPaymentReceiverIndex { get; set; } = -1;
@@ -136,6 +137,11 @@ public sealed partial class GameController : Component, Component.INetworkListen
 	public static GameController Instance => instance;
 	public IReadOnlyList<GamePopup> Popups => popups;
 
+	public int LocalSelectedSpaceIndex { get; set; } = -1;
+	public string LocalSelectedDrawnCardText { get; set; } = "";
+
+	public float LastTimeCurrentTurnReminderPlayed { get; set; } = 0f;
+
 
 	protected override void OnStart()
 	{
@@ -158,13 +164,16 @@ public sealed partial class GameController : Component, Component.INetworkListen
 		if ( bootstrap?.HasConfig == true )
 			Config = bootstrap.Config;
 
+		StartPrivateConfig();
 		EnsurePreferredHostOwnerId();
 		EnsurePlayerSlots();
 		ResetGameState( false );
 		MatchState = MatchLifecycleState.Lobby;
 		SyncLobbyConnections();
-
+		
 		TryStartBootstrappedGame();
+
+		Log.Info(MaxTurnReminders);
 	}
 
 	protected override void OnUpdate()
@@ -190,12 +199,6 @@ public sealed partial class GameController : Component, Component.INetworkListen
 		UpdateAuction();
 		UpdateTurnTimer();
 		CheckForGameOver();
-	}
-
-	[Rpc.Broadcast]
-	public void test()
-	{
-		
 	}
 
 	private void TryStartBootstrappedGame()

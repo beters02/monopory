@@ -5,15 +5,7 @@ using Sandbox;
 
 public sealed partial class GameController : Component
 {
-	public bool ShowSelectedSpaceCardOnGo { get; set; } = false;
-	public bool ShowSelectedSpaceCardOnTax { get; set; } = false;
-	public bool ShowSelectedSpaceCardOnJail { get; set; } = false;
-	public bool ShowSelectedSpaceCardOnGoToJail { get; set; } = false;
-	public bool ShowSelectedSpaceCardOnFreeParking { get; set; } = false;
-
-	public int LocalSelectedSpaceIndex { get; set; } = -1;
-	public string LocalSelectedDrawnCardText { get; set; } = "";
-
+	
 	public Logger landingLogger = new("GameLanding");
 
 	public SpaceDef SelectedSpace =>

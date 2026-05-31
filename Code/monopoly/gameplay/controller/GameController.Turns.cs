@@ -5,9 +5,6 @@ using Sandbox;
 
 public sealed partial class GameController : Component
 {
-	private const int JailFineAmount = 50;
-	private const int JailTurnCount = 3;
-	private const float TurnSoundDelay = 0.5f;
 
 	private void UpdateTurnTimer()
 	{
@@ -23,6 +20,16 @@ public sealed partial class GameController : Component
 		{
 			AdvanceTurn();
 			return;
+		}
+
+		if ( Phase == GamePhase.WaitingToRoll || Phase == GamePhase.TurnEnded )
+		{
+			if ( CurrentTurnReminderSoundsPlayed < MaxTurnReminders && Time.Now - LastTimeCurrentTurnReminderPlayed >= SecondsBetweenTurnReminders )
+			{
+				CurrentTurnReminderSoundsPlayed++;
+				LastTimeCurrentTurnReminderPlayed = Time.Now;
+				PlayTurnSound( CurrentPlayer );
+			}
 		}
 
 		if ( Phase == GamePhase.ResolvingSpace )
@@ -724,6 +731,9 @@ public sealed partial class GameController : Component
 
 		if ( Players.Count == 0 )
 			return;
+
+		CurrentTurnReminderSoundsPlayed = 0;
+		LastTimeCurrentTurnReminderPlayed = Time.Now;
 
 		for ( int i = 0; i < Players.Count; i++ )
 		{

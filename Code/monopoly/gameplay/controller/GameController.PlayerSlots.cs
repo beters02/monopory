@@ -278,6 +278,8 @@ public sealed partial class GameController : Component
 		CurrentTurnConsecutiveDoubles = 0;
 		CurrentTurnDoublesPlayerIndex = -1;
 		CurrentTurnEndsAt = 0f;
+		LastTimeCurrentTurnReminderPlayed = 0;
+		CurrentTurnReminderSoundsPlayed = 0;
 		IsRecoveringHostState = false;
 		WinnerPlayerIndex = -1;
 		GameStartedAt = 0f;

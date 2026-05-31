@@ -3,8 +3,6 @@ using Sandbox;
 
 public sealed partial class GameController
 {
-	private const int MaxChatMessages = 80;
-	private const int MaxChatMessageLength = 220;
 
 	[Rpc.Host]
 	public void RequestSendChatMessage( string rawMessage )

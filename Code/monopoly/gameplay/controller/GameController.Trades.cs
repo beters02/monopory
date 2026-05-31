@@ -5,15 +5,6 @@ using Sandbox;
 
 public sealed partial class GameController : Component
 {
-	public bool ShowTradeReceivedPopup = true;
-	public bool ShowTradeAcceptedPopup = true;
-	public bool ShowTradeDeniedPopup = true;
-	public bool ShowTradeNegotiationReceivedPopup = true;
-	public int MaxPendingSentTradesPerPlayer = 3;
-	public GameSound TradeReceivedSound = GameAssets.Sounds.TradeReceived; // retro 8
-	public GameSound TradeAcceptedSound = GameAssets.Sounds.Success; // success
-	public GameSound TradeDeniedSound = GameAssets.Sounds.Warning; // error
-	public GameSound TradeNegotiationReceivedSound = GameAssets.Sounds.TradeNegotiated; // retro 9
 
 	[Rpc.Host]
 	public void RequestCreateTrade( int receiverPlayerIndex, int senderMoney, int receiverMoney, string senderPropertyIndexes, string receiverPropertyIndexes, string senderCardIds = "", string receiverCardIds = "", bool isNegotiation = false )
