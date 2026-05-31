@@ -61,6 +61,7 @@
 													<DropdownButton
 														Value="@GetEnumValue( option )"
 														Items="@option.EnumNames"
+														ScrollTarget="@OptionsScrollPanel"
 														CanClick="@IsOptionAvailable( option )"
 														OnSelected="@((string value) => SetEnumValue( option, value ))"
 														BlockedPopupTitle="Unavailable"

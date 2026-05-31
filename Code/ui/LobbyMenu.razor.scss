@@ -59,11 +59,11 @@
 	height: 88%;
 	max-height: 88%;
 	padding: $monopoly-panel-padding;
-	background-color: $monopoly-board;
-	border: 4px solid $monopoly-ink;
-	border-radius: $monopoly-radius-board;
-	box-shadow: $monopoly-panel-shadow;
-	color: $monopoly-ink;
+	background-color: $monopoly-panel-strong;
+	border: 3px solid $monopoly-panel-line;
+	border-radius: $monopoly-radius-panel;
+	box-shadow: $monopoly-panel-shadow-strong;
+	color: $monopoly-text;
 	font-family: $monopoly-font-family;
 	display: flex;
 	flex-direction: column;
@@ -75,20 +75,55 @@
 	display: flex;
 	align-items: flex-start;
 	justify-content: space-between;
-	gap: 12px;
+	gap: 14px;
+	flex-shrink: 0;
+}
+
+.piece-customize-header-text {
+	flex: 1;
+	min-width: 0;
+
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 2px;
 }
 
 .piece-customize-title {
+	width: 100%;
+	min-width: 0;
+
+	color: $monopoly-text;
 	font-size: $monopoly-font-title;
 	font-weight: 900;
 	line-height: $monopoly-font-title-line;
+	text-align: left;
+	white-space: normal;
+	text-overflow: clip;
+	overflow: visible;
+}
+
+.piece-customize-title .label {
+	width: 100%;
+	min-width: 0;
+
+	color: $monopoly-text;
+	text-align: left;
+	white-space: normal;
+	text-overflow: clip;
+	overflow: visible;
 }
 
 .piece-customize-copy {
+	color: $monopoly-text-muted;
 	font-size: $monopoly-font-kicker;
 	font-weight: 800;
 	line-height: 18px;
-	opacity: 0.78;
+}
+
+.piece-customize-copy code {
+	color: $monopoly-gold-soft;
+	font-weight: 900;
 }
 
 .piece-customize-grid {
@@ -97,7 +132,8 @@
 	justify-content: space-between;
 	align-items: stretch;
 	gap: 10px;
-	overflow: scroll;
+	overflow-x: hidden;
+	overflow-y: scroll;
 }
 
 .piece-customize-scroll-shell {
@@ -121,9 +157,9 @@
 	max-width: 49%;
 	min-width: 49%;
 	padding: 12px;
-	background-color: $monopoly-board-surface;
-	border: 3px solid $monopoly-board-surface-line;
-	border-radius: $monopoly-radius-board;
+	background-color: $monopoly-surface-soft;
+	border: 1px solid $monopoly-panel-line;
+	border-radius: $monopoly-radius-control;
 	display: flex;
 	flex-direction: column;
 	gap: 8px;
@@ -131,19 +167,21 @@
 
 .piece-customize-card.selected {
 	border-color: $monopoly-gold;
+	box-shadow: 0 0 0 2px $monopoly-selected-ring-soft;
 }
 
 .piece-customize-card-title {
+	color: $monopoly-text;
 	font-size: 18px;
 	font-weight: 900;
 	line-height: 20px;
 }
 
 .piece-customize-card-copy {
+	color: $monopoly-text-muted;
 	font-size: 13px;
 	font-weight: 800;
 	line-height: 18px;
-	opacity: 0.74;
 	min-height: 36px;
 }
 
@@ -189,12 +227,12 @@
 	max-height: 88%;
 	padding: $monopoly-panel-padding;
 
-	background-color: $monopoly-board;
-	border: 4px solid $monopoly-ink;
-	border-radius: $monopoly-radius-board;
-	box-shadow: $monopoly-panel-shadow;
+	background-color: $monopoly-panel-strong;
+	border: 3px solid $monopoly-panel-line;
+	border-radius: $monopoly-radius-panel;
+	box-shadow: $monopoly-panel-shadow-strong;
 
-	color: $monopoly-ink;
+	color: $monopoly-text;
 	font-family: $monopoly-font-family;
 
 	display: flex;
@@ -214,7 +252,8 @@
 	align-items: stretch;
 	gap: 14px;
 
-	overflow: scroll;
+	overflow-x: hidden;
+	overflow-y: scroll;
 	padding-bottom: 4px;
 }
 
@@ -259,13 +298,14 @@
 }
 
 .match-config-kicker {
-	color: $monopoly-danger;
+	color: $monopoly-gold-soft;
 	font-size: $monopoly-font-kicker;
 	font-weight: 900;
 	text-transform: uppercase;
 }
 
 .match-config-title {
+	color: $monopoly-text;
 	font-size: $monopoly-font-title;
 	font-weight: 900;
 	line-height: $monopoly-font-title-line;
@@ -273,10 +313,10 @@
 
 .match-config-copy,
 .match-config-value {
+	color: $monopoly-text-muted;
 	font-size: $monopoly-font-kicker;
 	font-weight: 800;
 	line-height: 18px;
-	opacity: 0.72;
 }
 
 .match-config-kicker,
@@ -330,9 +370,9 @@
 .match-config-toggle-button,
 .match-config-step-button,
 .match-config-secondary-button {
-	background-color: $monopoly-ink;
-	border: 3px solid $monopoly-ink;
-	color: $monopoly-board;
+	background-color: $monopoly-surface-medium;
+	border: 1px solid $monopoly-panel-line;
+	color: $monopoly-text;
 }
 
 .match-config-close-button {
@@ -347,7 +387,7 @@
 .match-config-toggle-button:hover,
 .match-config-step-button:hover,
 .match-config-secondary-button:hover {
-	background-color: $monopoly-ink-hover;
+	background-color: $monopoly-surface-strong;
 }
 
 .match-config-toggle-button.selected:hover {
@@ -357,7 +397,7 @@
 .match-config-save-button {
 	min-width: 132px;
 	background-color: $monopoly-gold;
-	border: 3px solid $monopoly-gold;
+	border: 1px solid $monopoly-gold;
 	color: $monopoly-ink;
 }
 
@@ -373,15 +413,15 @@
 .match-config-panel .monopoly-button.blocked-action-button.match-config-toggle-button:hover,
 .match-config-panel .monopoly-button.blocked-action-button.match-config-step-button:hover,
 .match-config-panel .monopoly-button.blocked-action-button.match-config-secondary-button:hover {
-	background-color: $monopoly-ink-hover;
+	background-color: $monopoly-blocked-action-hover;
 }
 
 .match-config-section {
 	padding: 14px;
 
-	background-color: $monopoly-board-surface;
-	border: 3px solid $monopoly-board-surface-line;
-	border-radius: $monopoly-radius-board;
+	background-color: $monopoly-surface-soft;
+	border: 1px solid $monopoly-panel-line;
+	border-radius: $monopoly-radius-control;
 
 	display: flex;
 	flex-direction: column;
@@ -409,7 +449,7 @@
 	align-items: center;
 	justify-content: flex-start;
 
-	color: $monopoly-ink;
+	color: $monopoly-gold-soft;
 	font-size: $monopoly-font-panel-title;
 	font-weight: 900;
 	line-height: 24px;
@@ -424,7 +464,7 @@
 	min-width: 0;
 	min-height: 30px;
 
-	color: $monopoly-ink;
+	color: $monopoly-gold-soft;
 	font-size: $monopoly-font-panel-title;
 	font-weight: 900;
 	line-height: 24px;
@@ -438,7 +478,6 @@
 
 .match-config-row {
 	min-height: 82px;
-	height: 82px;
 
 	display: flex;
 	align-items: center;
@@ -451,7 +490,6 @@
 	flex: 1;
 	min-width: 0;
 	max-width: 100%;
-	height: 64px;
 
 	display: flex;
 	flex-direction: column;
@@ -463,20 +501,18 @@
 
 .match-config-control {
 	width: 320px;
-	min-width: 320px;
+	min-width: 220px;
 	height: 42px;
 
 	display: flex;
 	justify-content: flex-end;
 	align-items: center;
-	flex-shrink: 0;
+	flex-shrink: 1;
 }
 
 .match-config-name {
 	width: 100%;
 	min-width: 0;
-	min-height: 34px;
-	height: 34px;
 	flex-shrink: 0;
 
 	display: flex;
@@ -484,7 +520,7 @@
 	align-items: center;
 	justify-content: flex-start;
 
-	color: $monopoly-ink;
+	color: $monopoly-text;
 	font-size: $monopoly-font-panel-title;
 	font-weight: 900;
 	line-height: 24px;
@@ -498,9 +534,8 @@
 .match-config-name .label {
 	width: 100%;
 	min-width: 0;
-	min-height: 30px;
 
-	color: $monopoly-ink;
+	color: $monopoly-text;
 	font-size: $monopoly-font-panel-title;
 	font-weight: 900;
 	line-height: 24px;
@@ -513,13 +548,11 @@
 }
 
 .match-config-value {
-	max-width: 420px;
+	max-width: 100%;
 	font-size: $monopoly-font-kicker;
-	font-weight: 1000;
+	font-weight: 800;
 	line-height: 18px;
-	min-height: 36px;
-	height: 36px;
-	flex-shrink: 0;
+	flex-shrink: 1;
 	overflow: visible;
 }
 
@@ -535,6 +568,57 @@
 	white-space: normal;
 	text-overflow: clip;
 	overflow: visible;
+}
+
+.match-config-panel .dropdown-toggle {
+	background-color: $monopoly-surface-medium;
+	border: 1px solid $monopoly-panel-line;
+	border-radius: $monopoly-radius-control;
+	color: $monopoly-text;
+}
+
+.match-config-panel .dropdown-toggle:hover {
+	background-color: $monopoly-surface-strong;
+}
+
+.match-config-panel .dropdown-menu {
+	top: 50px;
+	padding: 4px;
+	background-color: rgba(12, 22, 30, 0.98);
+	border: 1px solid $monopoly-gold-glow;
+	border-radius: $monopoly-radius-control;
+	box-shadow: $monopoly-panel-shadow-strong;
+	gap: 4px;
+	overflow: hidden;
+}
+
+.match-config-panel .dropdown-item {
+	min-height: 36px;
+	height: 36px;
+	padding: 0 10px;
+	background-color: $monopoly-surface-medium;
+	border-radius: $monopoly-radius-board;
+	color: $monopoly-text;
+	align-items: center;
+}
+
+.match-config-panel .dropdown-item-label,
+.match-config-panel .dropdown-item-label .label {
+	color: $monopoly-text;
+}
+
+.match-config-panel .dropdown-item:hover {
+	background-color: $monopoly-surface-strong;
+}
+
+.match-config-panel .dropdown-item.selected {
+	background-color: $monopoly-gold;
+	color: $monopoly-ink;
+}
+
+.match-config-panel .dropdown-item.selected .dropdown-item-label,
+.match-config-panel .dropdown-item.selected .dropdown-item-label .label {
+	color: $monopoly-ink;
 }
 
 .match-config-stepper {
@@ -559,10 +643,11 @@
 	width: 96px;
 	padding: 10px 12px;
 
-	background-color: $monopoly-card-ink-surface;
-	border: 3px solid $monopoly-card-ink-line;
-	border-radius: $monopoly-radius-board;
+	background-color: $monopoly-surface-medium;
+	border: 1px solid $monopoly-panel-line;
+	border-radius: $monopoly-radius-control;
 
+	color: $monopoly-text;
 	font-size: 16px;
 	font-weight: 900;
 	text-align: center;
@@ -579,10 +664,11 @@
 	min-height: 42px;
 	padding: 10px 12px;
 
-	background-color: $monopoly-card-ink-surface;
-	border: 3px solid $monopoly-card-ink-line;
-	border-radius: $monopoly-radius-board;
+	background-color: $monopoly-surface-medium;
+	border: 1px solid $monopoly-panel-line;
+	border-radius: $monopoly-radius-control;
 
+	color: $monopoly-text;
 	font-size: 14px;
 	font-weight: 900;
 	line-height: 18px;

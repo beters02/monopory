@@ -55,7 +55,7 @@
 												{
 													@if ( CanEditConfig )
 													{
-														<DropdownButton Value="@GetConfigEnumValue( option )" Items="@option.EnumNames" OnSelected="@((string value) => SetConfigEnumValue( option, value ))"></DropdownButton>
+														<DropdownButton Value="@GetConfigEnumValue( option )" Items="@option.EnumNames" ScrollTarget="@MatchConfigScrollPanel" OnSelected="@((string value) => SetConfigEnumValue( option, value ))"></DropdownButton>
 													}
 													else
 													{
@@ -111,9 +111,8 @@
 							</div>
 							<CloseButton Variant="match-config-close-button" Title="Close" OnClick="@CloseCustomizeMenu"></CloseButton>
 						</div>
-						<div class="piece-customize-copy">Pick your piece. New pieces can be added to <code>PieceCatalog.All</code> and this list will update automatically.</div>
 						<div class="piece-customize-scroll-shell">
-							<div class="piece-customize-grid monopory-scroll-both" @ref="PieceCustomizeScrollPanel">
+							<div class="piece-customize-grid monopory-scroll-y" @ref="PieceCustomizeScrollPanel">
 								@foreach ( var piece in AvailablePieces )
 								{
 									<div class="@GetPieceCardClasses( piece )">

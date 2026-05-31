@@ -6,10 +6,10 @@
 	min-width: 172px;
 
 	display: flex;
-	flex-direction: column;
-	gap: 6px;
+	flex-direction: row;
 
 	pointer-events: all;
+	overflow: visible;
 }
 
 .dropdown-toggle {
@@ -76,39 +76,45 @@
 }
 
 .dropdown-menu {
-	position: relative;
+	position: absolute;
+	top: 50px;
+	left: 0;
+	right: 0;
 	z-index: 120;
 
-	padding: 6px;
+	padding: 4px;
 
-	background-color: $monopoly-board;
-	border: 3px solid $monopoly-ink;
-	border-radius: $monopoly-radius-board;
-	box-shadow: 0 12px 30px $monopoly-disabled-surface;
+	background-color: $monopoly-ink;
+	border: 1px solid $monopoly-panel-line;
+	border-radius: $monopoly-radius-control;
+	box-shadow: $monopoly-panel-shadow-soft;
 
 	display: flex;
 	flex-direction: column;
 	gap: 4px;
 
 	pointer-events: all;
+	overflow: hidden;
 }
 
 .dropdown-item {
 	width: 100%;
 	min-width: 0;
-	height: 34px;
+	min-height: 36px;
+	height: 36px;
 	margin: 0;
-	padding: 6px 8px;
+	padding: 0 10px;
 
-	background-color: $monopoly-card-ink-surface;
+	background-color: $monopoly-surface-medium;
 	border: 0;
 	border-radius: $monopoly-radius-board;
-	color: $monopoly-ink;
+	color: $monopoly-text;
 
 	font-size: 12px;
 	font-weight: 900;
 	text-align: left;
 	text-transform: uppercase;
+	align-items: center;
 	justify-content: flex-start;
 	flex-direction: row;
 }
@@ -123,7 +129,7 @@
 	flex-direction: row;
 	align-items: center;
 
-	color: $monopoly-ink;
+	color: $monopoly-text;
 	text-align: left;
 	white-space: nowrap;
 	text-overflow: ellipsis;
@@ -136,7 +142,7 @@
 	flex-grow: 1;
 	flex-shrink: 1;
 
-	color: $monopoly-ink;
+	color: $monopoly-text;
 	text-align: left;
 	white-space: nowrap;
 	text-overflow: ellipsis;
@@ -144,7 +150,7 @@
 }
 
 .dropdown-item:hover {
-	background-color: $monopoly-card-ink-surface-hover;
+	background-color: $monopoly-surface-strong;
 }
 
 .dropdown-item.selected {
