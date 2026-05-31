@@ -111,7 +111,8 @@ public sealed partial class GameController : Component
 		if ( soundEnabled )
 			GameAssets.Sounds.Popup.ForKind( kind ).Play();
 
-		while ( popups.Count > 4 )
+		var maxVisiblePopups = Math.Max( 1, MaxVisiblePopups );
+		while ( popups.Count > maxVisiblePopups )
 			popups.RemoveAt( 0 );
 	}
 

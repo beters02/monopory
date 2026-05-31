@@ -576,7 +576,7 @@ public sealed partial class GameController : Component
 			return;
 		}
 
-		Phase = GamePhase.TurnEnded;
+		SetPostActionPhase();
 	}
 
 	private void ClearMovementRecoveryState()
@@ -696,6 +696,19 @@ public sealed partial class GameController : Component
 		CurrentTurnConsecutiveDoubles = 0;
 		CurrentTurnDoublesPlayerIndex = -1;
 		AdvanceTurn();
+	}
+
+	private void SetPostActionPhase()
+	{
+		if ( CurrentTurnGetsExtraRoll )
+		{
+			PlayTurnSound( CurrentPlayer );
+			Phase = GamePhase.WaitingToRoll;
+			StartTurnTimer();
+			return;
+		}
+
+		Phase = GamePhase.TurnEnded;
 	}
 
 	private void PlayTurnSound( PlayerState player )

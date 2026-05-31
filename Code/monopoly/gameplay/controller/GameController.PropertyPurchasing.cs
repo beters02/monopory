@@ -273,7 +273,7 @@ public sealed partial class GameController : Component
 		ShowPropertyBoughtPopup( player, def );
 
 		PendingPurchaseSpaceIndex = -1;
-		Phase = GamePhase.TurnEnded;
+		SetPostActionPhase();
 	}
 
 	[Button( "Skip Pending Property" )]
@@ -294,7 +294,7 @@ public sealed partial class GameController : Component
 		Log.Info( $"{CurrentPlayer?.PlayerName} skipped buying." );
 
 		PendingPurchaseSpaceIndex = -1;
-		Phase = GamePhase.TurnEnded;
+		SetPostActionPhase();
 	}
 
 	private void BuyUnownedPropertyForPlayer( PlayerState player, SpaceDef def, int ownerIndex )

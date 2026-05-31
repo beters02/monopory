@@ -92,6 +92,14 @@ public sealed class PlayerToken : Component
 		if ( !EnablePhysicsTestGrab )
 			return;
 
+		var game = GameController.Instance;
+		if ( PlayerState is not null && game is not null && !game.CanLocalPlayerThrowToken( PlayerState ) )
+		{
+			if ( isGrabbed || isThrowing )
+				StopPhysicsTestMotion();
+			return;
+		}
+
 		UpdateReplicatedPhysicsState();
 
 		if ( PlayerState?.IsOwner == true && Input.Pressed( "Attack2" ) )

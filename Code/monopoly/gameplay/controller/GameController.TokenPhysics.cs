@@ -59,10 +59,33 @@ public sealed partial class GameController : Component
 		if ( player is null || !player.IsAssigned || player.IsBankrupt )
 			return false;
 
+		if ( !CanPlayerThrowToken( playerIndex ) )
+			return false;
+
 		if ( Networking.IsHost && caller == Connection.Local )
 			return true;
 
 		return caller is not null && player.OwnerId == caller.SteamId;
+	}
+
+	public bool CanLocalPlayerThrowToken( PlayerState player )
+	{
+		var playerIndex = GetPlayerIndex( player );
+		return CanPlayerThrowToken( playerIndex );
+	}
+
+	private bool CanPlayerThrowToken( int playerIndex )
+	{
+		if ( playerIndex < 0 )
+			return false;
+
+		if ( !RestrictPieceThrowToCurrentTurn )
+			return true;
+
+		if ( MatchState != MatchLifecycleState.InGame )
+			return false;
+
+		return CurrentPlayerIndex == playerIndex;
 	}
 
 	private static Vector3 ClampTokenThrowVelocity( Vector3 velocity )

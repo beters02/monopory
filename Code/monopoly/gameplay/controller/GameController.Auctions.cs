@@ -41,7 +41,7 @@ public sealed partial class GameController : Component
 		if ( def is null || !IsPurchasableSpace( def ) || GetOwnerIndexForSpace( spaceIndex ) >= 0 )
 		{
 			PendingPurchaseSpaceIndex = -1;
-			Phase = GamePhase.TurnEnded;
+			SetPostActionPhase();
 			return;
 		}
 
@@ -83,7 +83,7 @@ public sealed partial class GameController : Component
 		}
 
 		ClearAuction();
-		Phase = GamePhase.TurnEnded;
+		SetPostActionPhase();
 	}
 
 	private void ClearAuction()
