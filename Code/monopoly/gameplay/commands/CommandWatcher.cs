@@ -34,6 +34,12 @@ public sealed class CommandWatcher : Component
 		LogCommandResult( "roll_dice", GameCommandManager.RollDice( connection, amount, JoinPlayerName( playerName, playerNameTail ) ) );
 	}
 
+	[ConCmd( "roll_two_dice" )]
+	private static void RollTwoDice( Connection connection, int dieA, int dieB, string playerName = "self", params string[] playerNameTail )
+	{
+		LogCommandResult( "roll_two_dice", GameCommandManager.RollTwoDice( connection, dieA, dieB, JoinPlayerName( playerName, playerNameTail ) ) );
+	}
+
 	[ConCmd( "change_money" )]
 	private static void ChangeMoney( Connection connection, int amount, string playerName = "self", params string[] playerNameTail )
 	{

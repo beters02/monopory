@@ -101,6 +101,33 @@ public sealed class GameCommandManager : Component
 		return CommandResult.Success();
 	}
 
+	public static CommandResult RollTwoDice( Connection caller, int dieA, int dieB, string playerName = "self" )
+	{
+		if ( dieA is < 1 or > 6 || dieB is < 1 or > 6 )
+			return CommandResult.Fail( "Dice values must be between 1 and 6." );
+
+		var game = GameController.Instance;
+		if ( game is null )
+			return CommandResult.Fail( "No active game." );
+
+		var player = game.ResolvePlayerReference( playerName, caller );
+		if ( player is null )
+			return CommandResult.Fail( $"Could not find player \"{playerName}\"." );
+
+		if ( game.CurrentPlayer != player )
+			return CommandResult.Fail( "It is not that player's turn." );
+
+		if ( !CanUseCheatCommand( caller ) )
+			return CommandResult.Fail( "sv_cheats must be enabled to force rolls or roll for another player." );
+
+		if ( Networking.IsHost )
+			_ = game.RollTwoDiceAsync( dieA, dieB );
+		else
+			game.RequestRollTwoDice( dieA, dieB );
+
+		return CommandResult.Success();
+	}
+
 	public static CommandResult SendToJail( Connection caller, string playerName = "self" )
 	{
 		var game = GameController.Instance;

@@ -86,6 +86,19 @@ public sealed partial class GameController : Component
 	[Button( "Roll Dice" )]
 	public async Task RollDiceAsync(int amount = -1, float throwStrength = 0.5f)
 	{
+		await RollDiceAsync( amount, null, throwStrength );
+	}
+
+	public async Task RollTwoDiceAsync( int dieA, int dieB )
+	{
+		if ( !IsValidDieValue( dieA ) || !IsValidDieValue( dieB ) )
+			return;
+
+		await RollDiceAsync( dieA + dieB, (dieA, dieB), 0.5f );
+	}
+
+	private async Task RollDiceAsync( int amount, (int DieA, int DieB)? specifiedDice, float throwStrength )
+	{
 		if ( !Networking.IsHost )
 			return;
 
@@ -106,14 +119,14 @@ public sealed partial class GameController : Component
 
 		if ( CurrentPlayer.IsInJail )
 		{
-			await TryRollForJailReleaseAsync( amount, throwStrength );
+			await TryRollForJailReleaseAsync( amount, throwStrength, specifiedDice );
 			return;
 		}
 
-		var executionKind = amount >= 0
+		var executionKind = amount >= 0 || specifiedDice.HasValue
 			? RollExecutionKind.ForcedAmount
 			: RollExecutionKind.Physical;
-		await RollCurrentPlayerAsync( amount, false, executionKind, throwStrength );
+		await RollCurrentPlayerAsync( amount, false, executionKind, throwStrength, specifiedDice );
 	}
 
 	public async Task PayToLeaveJailAsync()
@@ -147,7 +160,7 @@ public sealed partial class GameController : Component
 		await RollCurrentPlayerAsync( -1, true, RollExecutionKind.JailRelease );
 	}
 
-	public async Task TryRollForJailReleaseAsync( int amount = -1, float throwStrength = 0.5f )
+	public async Task TryRollForJailReleaseAsync( int amount = -1, float throwStrength = 0.5f, (int DieA, int DieB)? specifiedDice = null )
 	{
 		if ( !Networking.IsHost )
 			return;
@@ -167,7 +180,14 @@ public sealed partial class GameController : Component
 		int total;
 		bool rolledDoubles = false;
 
-		if ( amount != -1 )
+		if ( specifiedDice.HasValue )
+		{
+			LastDieA = specifiedDice.Value.DieA;
+			LastDieB = specifiedDice.Value.DieB;
+			total = LastDieA + LastDieB;
+			rolledDoubles = LastDieA == LastDieB;
+		}
+		else if ( amount != -1 )
 		{
 			total = amount;
 			LastDieA = 0;
@@ -186,6 +206,8 @@ public sealed partial class GameController : Component
 
 	private async Task CompletePendingJailRollAsync( int total, bool rolledDoubles )
 	{
+		ApplySnakeEyesBonus( CurrentPlayer );
+
 		if ( rolledDoubles )
 		{
 			ReleasePlayerFromJail( CurrentPlayer );
@@ -227,7 +249,7 @@ public sealed partial class GameController : Component
 		Phase = GamePhase.TurnEnded;
 	}
 
-	private async Task RollCurrentPlayerAsync( int amount, bool suppressDoublesExtraTurn, RollExecutionKind executionKind, float throwStrength = 0.5f )
+	private async Task RollCurrentPlayerAsync( int amount, bool suppressDoublesExtraTurn, RollExecutionKind executionKind, float throwStrength = 0.5f, (int DieA, int DieB)? specifiedDice = null )
 	{
 		BeginResolvedAction();
 		BeginPendingRoll( CurrentPlayerIndex, executionKind, suppressDoublesExtraTurn, false );
@@ -235,7 +257,14 @@ public sealed partial class GameController : Component
 		int total;
 		bool rolledDoubles = false;
 
-		if ( amount != -1 )
+		if ( specifiedDice.HasValue )
+		{
+			LastDieA = specifiedDice.Value.DieA;
+			LastDieB = specifiedDice.Value.DieB;
+			total = LastDieA + LastDieB;
+			rolledDoubles = LastDieA == LastDieB;
+		}
+		else if ( amount != -1 )
 		{
 			total = amount;
 			LastDieA = 0;
@@ -252,6 +281,29 @@ public sealed partial class GameController : Component
 		await CompletePendingNormalRollAsync( total, rolledDoubles );
 	}
 
+	private static bool IsValidDieValue( int value )
+	{
+		return value is >= 1 and <= 6;
+	}
+
+	private void ApplySnakeEyesBonus( PlayerState player )
+	{
+		if ( player is null || player.IsBankrupt )
+			return;
+
+		if ( LastDieA != 1 || LastDieB != 1 )
+			return;
+
+		var bonus = Math.Max( Config?.SnakeEyesBonusMoney ?? 0, 0 );
+		if ( bonus <= 0 )
+			return;
+
+		player.Money += bonus;
+		TrySettlePendingForcedPaymentForPlayer( GetPlayerIndex( player ) );
+		ShowMoneyReceivedPopup( player, bonus, "snake eyes" );
+		Log.Info( $"{player.PlayerName} collected ${bonus} for rolling snake eyes." );
+	}
+
 	private async Task CompletePendingNormalRollAsync( int total, bool rolledDoubles )
 	{
 		if ( PendingRollPlayerIndex >= 0 )
@@ -261,6 +313,8 @@ public sealed partial class GameController : Component
 		var executionKind = PendingRollExecutionKind >= 0
 			? (RollExecutionKind)PendingRollExecutionKind
 			: RollExecutionKind.Physical;
+
+		ApplySnakeEyesBonus( CurrentPlayer );
 
 		if ( !suppressDoublesExtraTurn && Config?.DoublesGoesAgain == true && ApplyDoublesRule( rolledDoubles ) )
 		{

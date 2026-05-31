@@ -73,6 +73,15 @@ public sealed partial class GameController : Component
 	}
 
 	[Rpc.Host]
+	public void RequestRollTwoDice( int dieA, int dieB )
+	{
+		if ( !CanCurrentPlayerAct( Rpc.Caller ) )
+			return;
+
+		_ = RollTwoDiceAsync( dieA, dieB );
+	}
+
+	[Rpc.Host]
 	public void RequestPayToLeaveJail()
 	{
 		if ( !CanCurrentPlayerAct( Rpc.Caller ) )
