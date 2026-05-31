@@ -399,13 +399,16 @@
 		IsConfigMenuOpen = true;
 		IsOptionsMenuOpen = false;
 		IsCustomizeMenuOpen = false;
-		EnsureEditableConfigCurrent();
+		EnsureEditableConfigCurrent( true );
 	}
 
 	private void CloseConfigMenu()
 	{
 		DropdownButton.CloseOpenDropdown();
 		IsConfigMenuOpen = false;
+		EditableConfig = null;
+		LoadedConfigSnapshot = "";
+		configRevision++;
 	}
 
 	private IEnumerable<MatchConfigOption> GetConfigOptionsForGroup( string group )
@@ -423,13 +426,13 @@
 		return MatchConfigSchema.FormatValue( option, MatchConfigSchema.GetOptionValue( option, EditableConfig ) );
 	}
 
-	private void EnsureEditableConfigCurrent()
+	private void EnsureEditableConfigCurrent( bool forceReload = false )
 	{
 		if ( Lobby is null )
 			return;
 
 		var latestSnapshot = Lobby.HostedConfigSnapshot ?? "";
-		if ( EditableConfig is not null && string.Equals( latestSnapshot, LoadedConfigSnapshot, StringComparison.Ordinal ) )
+		if ( !forceReload && EditableConfig is not null && string.Equals( latestSnapshot, LoadedConfigSnapshot, StringComparison.Ordinal ) )
 			return;
 
 		EditableConfig = Lobby.GetEditableConfig();

@@ -97,10 +97,21 @@
 	align-items: flex-start;
 	justify-content: space-between;
 	gap: 14px;
+	flex-shrink: 0;
+}
+
+.options-header-text {
+	flex: 1;
+	min-width: 0;
+
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 2px;
 }
 
 .options-header-warning {
-	flex: 1;
+	flex: 0 1 430px;
 	min-width: 0;
 	max-width: 430px;
 	margin-top: 2px;
@@ -117,16 +128,43 @@
 }
 
 .options-kicker {
+	width: 100%;
+	min-width: 0;
+
 	color: $monopoly-gold-soft;
 	font-size: $monopoly-font-kicker;
 	font-weight: 900;
 	text-transform: uppercase;
+	text-align: left;
+	white-space: normal;
+	text-overflow: clip;
+	overflow: visible;
 }
 
 .options-title {
+	width: 100%;
+	min-width: 0;
+
+	color: $monopoly-text;
 	font-size: $monopoly-font-title;
 	font-weight: 900;
 	line-height: $monopoly-font-title-line;
+	text-align: left;
+	white-space: normal;
+	text-overflow: clip;
+	overflow: visible;
+}
+
+.options-kicker .label,
+.options-title .label,
+.options-category-copy .label {
+	width: 100%;
+	min-width: 0;
+
+	text-align: left;
+	white-space: normal;
+	text-overflow: clip;
+	overflow: visible;
 }
 
 .options-close-button {
