@@ -5,7 +5,7 @@
 @inherits Panel
 
 <root>
-	<OptionsMenu IsOpen="@IsOptionsMenuOpen" OnClose="@CloseOptions"></OptionsMenu>
+	<OptionsMenu IsOpen="@IsOptionsMenuOpen" OnClose="@CloseOptions" UseBlurBackdrop="@true"></OptionsMenu>
 
 	@if ( GameRef?.MatchState == MatchLifecycleState.GameOver )
 	{
@@ -30,7 +30,7 @@
 		</div>
 	}
 
-	@if ( IsEscapeMenuOpen )
+	@if ( IsEscapeMenuOpen && !IsOptionsMenuOpen )
 	{
 		<div class="session-screen escape-menu-screen">
 			<div class="session-panel escape-menu-panel">
@@ -42,6 +42,7 @@
 					<CloseButton Variant="session-close-button" Title="Close" OnClick="@CloseMenu"></CloseButton>
 				</div>
 				<div class="session-actions escape-menu-actions">
+					<GameButton Variant="session-primary-button" OnClick="@CloseMenu">Return To Game</GameButton>
 					<GameButton Variant="session-secondary-button" OnClick="@OpenOptions">Options</GameButton>
 					<GameButton Variant="session-secondary-button" OnClick="@LeaveLobby">Leave Lobby</GameButton>
 					<GameButton Variant="session-danger-button" OnClick="@ExitGame">Exit Game</GameButton>

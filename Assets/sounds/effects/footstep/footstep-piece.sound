@@ -14,11 +14,11 @@
     "sounds/effects/footstep/footstep-wood07.vsnd",
     "sounds/effects/footstep/footstep-wood08.vsnd"
   ],
-  "Occlusion": true,
+  "Occlusion": false,
   "AirAbsorption": true,
   "Transmission": true,
   "OcclusionRadius": 64,
-  "DistanceAttenuation": true,
+  "DistanceAttenuation": false,
   "Distance": 15000,
   "Falloff": [
     {

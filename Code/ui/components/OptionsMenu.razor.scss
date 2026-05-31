@@ -2,6 +2,7 @@
 @import "buttons/GameButton.razor.scss";
 @import "buttons/DropdownButton.razor.scss";
 @import "buttons/CloseButton.razor.scss";
+@import "ConfirmationDialog.razor.scss";
 
 .options-menu-root {
 	position: absolute;
@@ -26,7 +27,7 @@
 	bottom: 0;
 	z-index: 1;
 
-	background-color: $monopoly-screen-tint;
+	background-color: $monopoly-ink;
 
 	display: flex;
 	align-items: center;
@@ -35,9 +36,14 @@
 	pointer-events: all;
 }
 
+.options-screen.blur-backdrop {
+	background-color: $monopoly-modal-backdrop;
+	backdrop-filter: blur( 8px );
+}
+
 .options-panel {
-	width: 760px;
-	max-width: 88%;
+	width: 820px;
+	max-width: 92%;
 	height: 86%;
 	max-height: 86%;
 	padding: $monopoly-panel-padding;
@@ -74,15 +80,39 @@
 	padding-right: 18px;
 }
 
-.options-category-strip,
 .options-footer {
 	display: flex;
 	gap: 10px;
 }
 
-.options-category-strip {
-	flex-wrap: nowrap;
-	align-items: center;
+.options-category-section {
+	display: flex;
+	flex-direction: column;
+	gap: 14px;
+	flex-shrink: 0;
+}
+
+.options-category-heading {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 4px;
+	flex-shrink: 0;
+}
+
+.options-category-title {
+	width: 100%;
+	min-width: 0;
+
+	color: $monopoly-gold-soft;
+	font-size: $monopoly-font-panel-title;
+	font-weight: 900;
+	line-height: 24px;
+	text-transform: uppercase;
+	text-align: left;
+	white-space: normal;
+	text-overflow: clip;
+	overflow: visible;
 }
 
 .options-category-copy {
@@ -193,7 +223,9 @@
 
 	display: flex;
 	flex-direction: column;
+	align-items: stretch;
 	gap: 10px;
+	flex-shrink: 0;
 }
 
 .options-subsection {
@@ -203,10 +235,36 @@
 }
 
 .options-section-title {
+	width: 100%;
+	min-width: 0;
+	min-height: 34px;
+	height: 34px;
+	flex-shrink: 0;
+
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: flex-start;
+
 	color: $monopoly-gold-soft;
 	font-size: $monopoly-font-panel-title;
 	font-weight: 900;
+	line-height: 24px;
 	text-transform: uppercase;
+	white-space: normal;
+	text-overflow: clip;
+	overflow: visible;
+}
+
+.options-section-title .label,
+.options-category-title .label {
+	width: 100%;
+	min-width: 0;
+
+	text-align: left;
+	white-space: normal;
+	text-overflow: clip;
+	overflow: visible;
 }
 
 .options-section-title.small {
@@ -220,6 +278,8 @@
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
+	flex-wrap: nowrap;
+	flex-shrink: 0;
 	gap: 14px;
 }
 

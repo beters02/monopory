@@ -24,7 +24,7 @@ public sealed partial class GameController : Component
     }
 
     [Rpc.Broadcast]
-    private void PlayPlayerTokenStepForPlayer( int playerIndex )
+    private void PlayPlayerTokenStepForPlayer( int playerIndex, Vector3 playerPos )
     {
         if ( playerIndex < 0 || playerIndex >= Players.Count )
             return;

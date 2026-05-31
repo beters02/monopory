@@ -1,0 +1,120 @@
+@import "../GameTheme.scss";
+@import "buttons/GameButton.razor.scss";
+
+.confirmation-dialog-root {
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	z-index: 100;
+	pointer-events: none;
+}
+
+.confirmation-dialog-root.open {
+	pointer-events: all;
+}
+
+.confirmation-dialog-overlay {
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	z-index: 1;
+	padding: 20px;
+
+	background-color: $monopoly-popup-scrim;
+	backdrop-filter: blur( 6px );
+
+	display: flex;
+	align-items: center;
+	justify-content: center;
+
+	pointer-events: all;
+}
+
+.confirmation-dialog {
+	width: 480px;
+	max-width: 92%;
+	min-height: 148px;
+	padding: 22px 24px 20px 24px;
+
+	background-color: $monopoly-board;
+	border: 3px solid $monopoly-ink;
+	border-left-width: 10px;
+	border-left-color: $monopoly-gold;
+	border-radius: $monopoly-radius-board;
+	box-shadow: $monopoly-panel-shadow;
+
+	color: $monopoly-ink;
+	font-family: $monopoly-font-family;
+
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	justify-content: space-between;
+	gap: 18px;
+}
+
+.confirmation-dialog-content {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.confirmation-dialog-title {
+	color: $monopoly-ink;
+	font-size: 20px;
+	font-weight: 900;
+	line-height: 24px;
+}
+
+.confirmation-dialog-message {
+	color: $monopoly-ink;
+	font-size: 14px;
+	font-weight: 700;
+	line-height: 20px;
+	opacity: 0.72;
+}
+
+.confirmation-dialog-actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: 12px;
+}
+
+.confirmation-dialog-actions .monopoly-button {
+	flex: 1;
+	height: 44px;
+	min-width: 120px;
+	margin-top: 0;
+	padding: 0 16px;
+
+	border: 2px solid transparent;
+	border-radius: $monopoly-radius-control;
+	box-shadow: $monopoly-control-shadow;
+
+	font-size: 14px;
+	font-weight: 900;
+	text-transform: uppercase;
+	justify-content: center;
+}
+
+.confirmation-dialog-actions .confirmation-dialog-cancel {
+	background-color: $monopoly-blocked-action;
+	color: $monopoly-text;
+}
+
+.confirmation-dialog-actions .confirmation-dialog-cancel:hover {
+	background-color: $monopoly-blocked-action-hover;
+}
+
+.confirmation-dialog-actions .confirmation-dialog-confirm {
+	background-color: $monopoly-gold;
+	color: $monopoly-ink;
+}
+
+.confirmation-dialog-actions .confirmation-dialog-confirm:hover {
+	background-color: $monopoly-gold-hover;
+}

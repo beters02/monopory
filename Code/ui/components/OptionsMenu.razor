@@ -8,7 +8,7 @@
 <root class="@RootClasses">
 	@if ( IsOpen )
 	{
-		<div class="options-screen">
+		<div class="@OptionsScreenClasses">
 			<div class="options-panel">
 				<div class="options-header">
 					<div class="options-header-text">
@@ -24,74 +24,73 @@
 
 				<div class="options-scroll-shell">
 					<div class="options-scroll-panel monopory-scroll-y" @ref="OptionsScrollPanel">
-						<div class="options-category-strip">
-							@foreach ( var category in AppSettingsSchema.Categories )
-							{
-								<GameButton Variant="@GetCategoryButtonClasses( category )" OnClick="@(() => SelectCategory( category.Key ))">
-									@category.Label
-								</GameButton>
-							}
-						</div>
-
-						<div class="options-category-copy">@ActiveCategory?.Description</div>
-
-						@if ( HasActiveSections )
+						@foreach ( var category in AppSettingsSchema.Categories )
 						{
-							@foreach ( var sectionName in ActiveSections )
-							{
-								<div class="options-section">
-									<div class="options-section-title">@sectionName</div>
+							<div class="options-category-section">
+								<div class="options-category-heading">
+									<div class="options-category-title">@category.Label</div>
+									<div class="options-category-copy">@category.Description</div>
+								</div>
 
-									@foreach ( var option in GetOptionsForSection( sectionName ) )
+								@if ( HasSectionsForCategory( category ) )
+								{
+									@foreach ( var sectionName in GetSectionsForCategory( category ) )
 									{
-										<div class="options-row">
-											<div class="options-text">
-												<div class="options-label">@option.Label</div>
-												<div class="options-value">@GetOptionStatusText( option )</div>
-											</div>
-											<div class="options-control">
-												@if ( option.Kind == AppSettingOptionKind.Bool )
-												{
-													<GameButton Variant="@GetToggleButtonClasses( GetBoolValue( option ) )" CanClick="@IsOptionAvailable( option )" OnClick="@(() => ToggleBoolOption( option ))" BlockedPopupTitle="Unavailable" BlockedPopupMessage="@UnavailableMessage">
-														@(GetBoolValue( option ) ? "On" : "Off")
-													</GameButton>
-												}
-												else if ( option.Kind == AppSettingOptionKind.Enum )
-												{
-													<DropdownButton
-														Value="@GetEnumValue( option )"
-														Items="@option.EnumNames"
-														ScrollTarget="@OptionsScrollPanel"
-														CanClick="@IsOptionAvailable( option )"
-														OnSelected="@((string value) => SetEnumValue( option, value ))"
-														BlockedPopupTitle="Unavailable"
-														BlockedPopupMessage="@UnavailableMessage">
-													</DropdownButton>
-												}
-												else if ( option.Kind == AppSettingOptionKind.Int )
-												{
-													<SliderControl
-														class="options-slider"
-														Value="@GetIntValue( option )"
-														OnValueChanged="@((float value) => SetIntValue( option, value ))"
-														Min="@option.IntMin"
-														Max="@option.IntMax"
-														Step="@option.IntStep"
-														ShowTextEntry="@true"
-														NumberFormat="0">
-													</SliderControl>
-												}
-											</div>
+										<div class="options-section">
+											<div class="options-section-title">@sectionName</div>
+
+											@foreach ( var option in GetOptionsForSection( category.Key, sectionName ) )
+											{
+												<div class="options-row">
+													<div class="options-text">
+														<div class="options-label">@option.Label</div>
+														<div class="options-value">@GetOptionStatusText( option )</div>
+													</div>
+													<div class="options-control">
+														@if ( option.Kind == AppSettingOptionKind.Bool )
+														{
+															<GameButton Variant="@GetToggleButtonClasses( GetBoolValue( option ) )" CanClick="@IsOptionAvailable( option )" OnClick="@(() => ToggleBoolOption( option ))" BlockedPopupTitle="Unavailable" BlockedPopupMessage="@UnavailableMessage">
+																@(GetBoolValue( option ) ? "On" : "Off")
+															</GameButton>
+														}
+														else if ( option.Kind == AppSettingOptionKind.Enum )
+														{
+															<DropdownButton
+																Value="@GetEnumValue( option )"
+																Items="@option.EnumNames"
+																ScrollTarget="@OptionsScrollPanel"
+																CanClick="@IsOptionAvailable( option )"
+																OnSelected="@((string value) => SetEnumValue( option, value ))"
+																BlockedPopupTitle="Unavailable"
+																BlockedPopupMessage="@UnavailableMessage">
+															</DropdownButton>
+														}
+														else if ( option.Kind == AppSettingOptionKind.Int )
+														{
+															<SliderControl
+																class="options-slider"
+																Value="@GetIntValue( option )"
+																OnValueChanged="@((float value) => SetIntValue( option, value ))"
+																Min="@option.IntMin"
+																Max="@option.IntMax"
+																Step="@option.IntStep"
+																ShowTextEntry="@true"
+																NumberFormat="0">
+															</SliderControl>
+														}
+													</div>
+												</div>
+											}
 										</div>
 									}
-								</div>
-							}
-						}
-						else
-						{
-							<div class="options-empty-state">
-								<div class="options-empty-title">@ActiveCategory?.Label</div>
-								<div class="options-empty-copy">No settings are wired into this section yet.</div>
+								}
+								else
+								{
+									<div class="options-empty-state">
+										<div class="options-empty-title">@category.Label</div>
+										<div class="options-empty-copy">No settings are wired into this section yet.</div>
+									</div>
+								}
 							</div>
 						}
 					</div>
@@ -102,6 +101,15 @@
 					<GameButton Variant="options-apply-button" OnClick="@ApplyOptions">Apply</GameButton>
 				</div>
 			</div>
+			<ConfirmationDialog
+				IsOpen="@IsCloseConfirmationOpen"
+				Title="Unsaved settings"
+				Message="Are you sure you want to close without saving?"
+				ConfirmLabel="Yes"
+				CancelLabel="No"
+				OnConfirm="@ConfirmCloseWithoutSaving"
+				OnCancel="@CancelCloseWithoutSaving">
+			</ConfirmationDialog>
 		</div>
 	}
 </root>
@@ -110,56 +118,46 @@
 {
 	[Parameter] public bool IsOpen { get; set; }
 	[Parameter] public Action OnClose { get; set; }
+	[Parameter] public bool UseBlurBackdrop { get; set; }
 	private Panel OptionsScrollPanel = null!;
 	private int revision;
-	private string activeCategoryKey = AppSettingsSchema.Categories.FirstOrDefault()?.Key ?? "";
+	private bool wasOpen;
+	private bool isCloseConfirmationOpen;
+	private AppSettingsData openingSettingsSnapshot;
 
 	private string RootClasses => IsOpen ? "options-menu-root open" : "options-menu-root";
+	private string OptionsScreenClasses => UseBlurBackdrop ? "options-screen blur-backdrop" : "options-screen";
+	private bool IsCloseConfirmationOpen => IsOpen && isCloseConfirmationOpen;
+	private bool HasUnsavedChanges => openingSettingsSnapshot is not null && !AppSettings.Matches( openingSettingsSnapshot );
 	private bool SettingsAvailable => AppSettings.SettingsAvailable;
-	private bool ShouldShowSettingsUnavailableWarning => !SettingsAvailable && IsRenderSettingsCategory( ActiveCategory?.Key );
+	private bool ShouldShowSettingsUnavailableWarning => !SettingsAvailable;
 	private string UnavailableMessage => "s&box is not exposing render settings here. Try standalone mode if this is the editor.";
-	private AppSettingCategory ActiveCategory => AppSettingsSchema.Categories.FirstOrDefault(
-		category => string.Equals( category.Key, activeCategoryKey, StringComparison.Ordinal )
-	) ?? AppSettingsSchema.Categories.FirstOrDefault();
-	private IEnumerable<string> ActiveSections => AppSettingsSchema.GetSectionsForCategory( ActiveCategory?.Key ?? "" );
-	private bool HasActiveSections => ActiveSections.Any();
 
 	protected override void OnParametersSet()
 	{
 		base.OnParametersSet();
 
-		if ( string.IsNullOrWhiteSpace( activeCategoryKey ) )
-			activeCategoryKey = AppSettingsSchema.Categories.FirstOrDefault()?.Key ?? "";
+		if ( IsOpen && !wasOpen )
+			CaptureOpeningSettings();
+		else if ( !IsOpen && wasOpen )
+			isCloseConfirmationOpen = false;
+
+		wasOpen = IsOpen;
 	}
 
-	private void SelectCategory( string categoryKey )
+	private IEnumerable<string> GetSectionsForCategory( AppSettingCategory category )
 	{
-		if ( string.IsNullOrWhiteSpace( categoryKey ) )
-			return;
-
-		activeCategoryKey = categoryKey;
+		return AppSettingsSchema.GetSectionsForCategory( category?.Key ?? "" );
 	}
 
-	private IEnumerable<AppSettingOption> GetOptionsForSection( string section )
+	private bool HasSectionsForCategory( AppSettingCategory category )
 	{
-		return AppSettingsSchema.GetOptionsForSection( ActiveCategory?.Key ?? "", section );
+		return GetSectionsForCategory( category ).Any();
 	}
 
-	private static bool IsRenderSettingsCategory( string categoryKey )
+	private IEnumerable<AppSettingOption> GetOptionsForSection( string categoryKey, string section )
 	{
-		return string.Equals( categoryKey, "video", StringComparison.Ordinal );
-	}
-
-	private bool IsCategorySelected( AppSettingCategory category )
-	{
-		return string.Equals( activeCategoryKey, category?.Key, StringComparison.Ordinal );
-	}
-
-	private string GetCategoryButtonClasses( AppSettingCategory category )
-	{
-		return IsCategorySelected( category )
-			? "options-category-button selected"
-			: "options-category-button";
+		return AppSettingsSchema.GetOptionsForSection( categoryKey, section );
 	}
 
 	private static bool IsOptionAvailable( AppSettingOption option )
@@ -207,12 +205,50 @@
 
 	private void ApplyOptions()
 	{
-		ApplySetting( AppSettings.TryApply() );
+		if ( !AppSettings.TryApply() )
+			return;
+
+		openingSettingsSnapshot = AppSettings.Capture();
+		isCloseConfirmationOpen = false;
+		revision++;
+		StateHasChanged();
 	}
 
 	private void Close()
 	{
 		DropdownButton.CloseOpenDropdown();
+
+		if ( HasUnsavedChanges )
+		{
+			isCloseConfirmationOpen = true;
+			revision++;
+			StateHasChanged();
+			return;
+		}
+
+		CloseWithoutRestoring();
+	}
+
+	private void ConfirmCloseWithoutSaving()
+	{
+		if ( openingSettingsSnapshot is not null )
+			AppSettings.Restore( openingSettingsSnapshot );
+
+		isCloseConfirmationOpen = false;
+		revision++;
+		CloseWithoutRestoring();
+	}
+
+	private void CancelCloseWithoutSaving()
+	{
+		isCloseConfirmationOpen = false;
+		revision++;
+		StateHasChanged();
+	}
+
+	private void CloseWithoutRestoring()
+	{
+		isCloseConfirmationOpen = false;
 		OnClose?.Invoke();
 	}
 
@@ -221,8 +257,15 @@
 		if ( !applied )
 			return;
 
+		AppSettings.Apply();
 		revision++;
 		StateHasChanged();
+	}
+
+	private void CaptureOpeningSettings()
+	{
+		openingSettingsSnapshot = AppSettings.Capture();
+		isCloseConfirmationOpen = false;
 	}
 
 	private static string GetToggleButtonClasses( bool enabled )
@@ -236,7 +279,6 @@
 		hash.Add( IsOpen );
 		hash.Add( revision );
 		hash.Add( SettingsAvailable );
-		hash.Add( activeCategoryKey ?? "" );
 
 		foreach ( var option in AppSettingsSchema.Options )
 		{

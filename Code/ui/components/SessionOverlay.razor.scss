@@ -11,7 +11,8 @@
 	bottom: 0;
 	z-index: 35;
 
-	background-color: $monopoly-screen-tint;
+	background-color: $monopoly-modal-backdrop;
+	backdrop-filter: blur( 8px );
 
 	display: flex;
 	align-items: center;

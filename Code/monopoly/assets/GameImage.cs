@@ -1,4 +1,4 @@
-public sealed class GameImage : GameAssetImage<GameImage>
+public sealed class GameImage : GameImageBase<GameImage>
 {
 	public GameImage( string path ) : base( path ) { }
     

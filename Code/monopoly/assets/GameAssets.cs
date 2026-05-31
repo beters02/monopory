@@ -2,6 +2,11 @@ public static class GameAssets
 {
 	private static bool uiAssetsPrewarmed;
 
+	public static void PrewarmSongAssets()
+	{
+		Soundtracks.Nolan01.Preload();
+	}
+
 	public static void PrewarmUiAssets()
 	{
 		if ( uiAssetsPrewarmed )
@@ -82,4 +87,10 @@ public static class GameAssets
 			}
 		}
 	}
+
+	public static class Soundtracks
+	{
+		public static readonly GameSoundtrack Nolan01 = new ( "sounds/music/soundtrack1.sound" );
+	}
+
 }

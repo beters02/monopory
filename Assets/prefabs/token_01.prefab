@@ -20,6 +20,12 @@
         "__guid": "a692d01e-2baf-4bba-94b5-34ea4d36028c",
         "__enabled": true,
         "Flags": 0,
+        "CollisionImpulseScale": 0.85,
+        "CollisionRadius": 24,
+        "CollisionRestitution": 0.75,
+        "EnablePhysicsTestGrab": true,
+        "GrabPlanePadding": 6,
+        "GrabRadius": 36,
         "HeightOffset": 4.809978,
         "MoveSpeed": 15,
         "OnComponentDestroy": null,
@@ -28,7 +34,14 @@
         "OnComponentFixedUpdate": null,
         "OnComponentStart": null,
         "OnComponentUpdate": null,
-        "RotationSpeed": 10
+        "ReturnToSpaceAfterPhysics": true,
+        "RotationSpeed": 10,
+        "SharedSpaceOffsetDistance": 10,
+        "ThrowDamping": 4,
+        "ThrowSpeedScale": 1.1,
+        "ThrowStopSpeed": 8,
+        "WalkingParameterName": "Walking",
+        "XDirectionParameterName": "XDirection"
       }
     ],
     "Children": [
@@ -91,6 +104,38 @@
                 },
                 "RenderType": "On",
                 "Tint": "1,1,1,1"
+              }
+            ],
+            "Children": []
+          },
+          {
+            "__guid": "3dc62667-ec07-4a3b-8792-03902742c1a2",
+            "__version": 2,
+            "Flags": 0,
+            "Name": "Listener",
+            "Position": "0,0,0",
+            "Rotation": "0,0,0,1",
+            "Scale": "1,1,1",
+            "Tags": "",
+            "Enabled": true,
+            "NetworkMode": 2,
+            "NetworkFlags": 0,
+            "NetworkOrphaned": 0,
+            "NetworkTransmit": true,
+            "OwnerTransfer": 1,
+            "Components": [
+              {
+                "__type": "Sandbox.AudioListener",
+                "__guid": "23f4fac5-7c07-4f90-856d-8ad9208e02ad",
+                "__enabled": true,
+                "Flags": 0,
+                "OnComponentDestroy": null,
+                "OnComponentDisabled": null,
+                "OnComponentEnabled": null,
+                "OnComponentFixedUpdate": null,
+                "OnComponentStart": null,
+                "OnComponentUpdate": null,
+                "UseCameraDirection": false
               }
             ],
             "Children": []

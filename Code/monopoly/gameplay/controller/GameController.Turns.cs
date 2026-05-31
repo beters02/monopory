@@ -503,7 +503,7 @@ public sealed partial class GameController : Component
 			while ( ActiveMovementRemainingSteps > 0 )
 			{
 				player.SpaceIndex = NormalizeSpaceIndex( player.SpaceIndex + 1 );
-				PlayPlayerTokenStepForPlayer( ActiveMovementPlayerIndex );
+				PlayPlayerTokenStepForPlayer( ActiveMovementPlayerIndex, Board.GetSpacePosition(player.SpaceIndex) );
 
 				ActiveMovementRemainingSteps = Math.Max( ActiveMovementRemainingSteps - 1, 0 );
 				if ( player.SpaceIndex == 0 )

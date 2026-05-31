@@ -23,7 +23,6 @@
     "PerMapRanking": false,
     "LeaderboardType": "None",
     "CsProjName": "",
-    "StartupScene": "scenes/menu.scene",
     "Compiler": {
       "RootNamespace": "Sandbox",
       "DefineConstants": "SANDBOX",
@@ -48,6 +47,7 @@
       "VR": false,
       "Gamepad": false
     },
-    "SystemScene": "scenes/settings.scene"
+    "SystemScene": "scenes/additive.scene",
+    "StartupScene": "scenes/menu.scene"
   }
 }

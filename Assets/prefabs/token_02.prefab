@@ -36,6 +36,7 @@
         "OnComponentUpdate": null,
         "ReturnToSpaceAfterPhysics": true,
         "RotationSpeed": 10,
+        "SharedSpaceOffsetDistance": 10,
         "ThrowDamping": 4,
         "ThrowSpeedScale": 1.1,
         "ThrowStopSpeed": 8,
@@ -735,6 +736,38 @@
             ]
           }
         ]
+      },
+      {
+        "__guid": "b0ef3633-52c9-44cc-9291-d9872e26a4aa",
+        "__version": 2,
+        "Flags": 0,
+        "Name": "Listener",
+        "Position": "0,0,0",
+        "Rotation": "0,0,0,1",
+        "Scale": "1,1,1",
+        "Tags": "",
+        "Enabled": true,
+        "NetworkMode": 2,
+        "NetworkFlags": 0,
+        "NetworkOrphaned": 0,
+        "NetworkTransmit": true,
+        "OwnerTransfer": 1,
+        "Components": [
+          {
+            "__type": "Sandbox.AudioListener",
+            "__guid": "6876c8fc-a355-44ac-a341-ee2e208beb7a",
+            "__enabled": true,
+            "Flags": 0,
+            "OnComponentDestroy": null,
+            "OnComponentDisabled": null,
+            "OnComponentEnabled": null,
+            "OnComponentFixedUpdate": null,
+            "OnComponentStart": null,
+            "OnComponentUpdate": null,
+            "UseCameraDirection": false
+          }
+        ],
+        "Children": []
       }
     ],
     "__properties": {

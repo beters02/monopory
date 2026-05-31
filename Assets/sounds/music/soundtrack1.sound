@@ -1,11 +1,11 @@
 {
-  "UI": false,
-  "Volume": "0.440000534",
+  "UI": true,
+  "Volume": "0.750000238",
   "Pitch": "1",
   "Decibels": 70,
   "SelectionMode": "Random",
   "Sounds": [
-    "sounds/effects/uipack-retro6.vsnd"
+    "sounds/music/nolan_banger_01.vsnd"
   ],
   "Occlusion": false,
   "AirAbsorption": false,
@@ -44,8 +44,8 @@
     }
   ],
   "DefaultMixer": {
-    "Name": "ui",
-    "Id": "a9db0c84-d27b-4d54-95ff-7be22bc558f3"
+    "Name": "music",
+    "Id": "dd83a92f-74e3-4691-8e99-4d176a6c26c4"
   },
   "__references": [],
   "__version": 1

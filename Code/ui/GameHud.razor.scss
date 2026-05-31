@@ -57,6 +57,18 @@ GameHud {
 		}
 	}
 
+	.menu-hidden-by-menu {
+		opacity: 0;
+		transition: opacity 0.16s ease;
+		pointer-events: none;
+	}
+
+	.hideable-hud-panels.menu-hidden-by-menu,
+	.translucent-hideable-hud-panels.menu-hidden-by-menu {
+		opacity: 0;
+		pointer-events: none;
+	}
+
 	.popup-hud-layer {
 		position: absolute;
 		top: 0;

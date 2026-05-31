@@ -68,7 +68,10 @@
 					<TradePanel GameRef="@GameRef"></TradePanel>
 				</div>
 				
-				<SelectedSpacePanel GameRef="@GameRef"></SelectedSpacePanel>
+				@if ( !IsAnyMenuOpen )
+				{
+					<SelectedSpacePanel GameRef="@GameRef"></SelectedSpacePanel>
+				}
 			}
 		}
 	}
@@ -80,6 +83,7 @@
 
 	private bool IsEscapeMenuOpen;
 	private bool IsOptionsMenuOpen;
+	public static bool IsMenuBlockingHud { get; private set; }
 
 	private bool IsHudVisible() => GameRef.IsGameHudVisible();
 
@@ -90,17 +94,23 @@
 
 	private string BuildHideableHudClass()
 	{
-		return GameRef.IsGameHudVisible()
+		var classes = GameRef.IsGameHudVisible()
 			? "hideable-hud-panels"
 			: "hideable-hud-panels invisible";
+
+		return IsAnyMenuOpen ? $"{classes} menu-hidden-by-menu" : classes;
 	}
 
 	private string BuildTranslucentHideableHudClass()
 	{
-		return GameRef.IsGameHudVisible()
+		var classes = GameRef.IsGameHudVisible()
 			? "translucent-hideable-hud-panels"
 			: "translucent-hideable-hud-panels invisible";
+
+		return IsAnyMenuOpen ? $"{classes} menu-hidden-by-menu" : classes;
 	}
+
+	private bool IsAnyMenuOpen => IsEscapeMenuOpen || IsOptionsMenuOpen;
 
 	protected override void OnStart()
 	{
@@ -112,17 +122,20 @@
 	protected override void OnUpdate()
 	{
 		base.OnUpdate();
+		IsMenuBlockingHud = IsAnyMenuOpen;
 
 		if ( GameRef is null || GameRef.MatchState == MatchLifecycleState.GameOver )
 		{
 			IsEscapeMenuOpen = false;
 			IsOptionsMenuOpen = false;
+			IsMenuBlockingHud = false;
 			if ( GameRef is null )
 				return;
 		}
 
 		if ( NetworkSession.IsEditorSoftLeftLobby )
 		{
+			IsMenuBlockingHud = false;
 			Mouse.Visibility = MouseVisibility.Visible;
 			return;
 		}
@@ -131,6 +144,7 @@
 		{
 			IsEscapeMenuOpen = false;
 			IsOptionsMenuOpen = false;
+			IsMenuBlockingHud = false;
 			Mouse.Visibility = MouseVisibility.Visible;
 			return;
 		}
@@ -143,10 +157,12 @@
 			Mouse.Visibility = MouseVisibility.Visible;
 			IsEscapeMenuOpen = false;
 			IsOptionsMenuOpen = false;
+			IsMenuBlockingHud = false;
 			return;
 		}
 
 		HandleMenuOpen();
+		IsMenuBlockingHud = IsAnyMenuOpen;
 	}
 
 	private void HandleMenuOpen()

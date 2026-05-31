@@ -41,7 +41,7 @@
 @code
 {
 	[Property] public GameController GameRef { get; set; }
-	[Property] public float HideAfterSeconds { get; set; } = 8f;
+	public float HideAfterSeconds { get; set; } = 5f;
 	private readonly record struct ChatEntry( int Id, string Sender, string Message );
 	private readonly List<ChatEntry> ChatEntries = new();
 	private ConsoleCommandTextEntry ChatInput = null!;
@@ -66,7 +66,7 @@
 			ScrollToBottomFramesRemaining--;
 		}
 
-		if ( StandaloneConsole.IsConsoleOpen || NetworkSession.IsEditorSoftLeftLobby )
+		if ( StandaloneConsole.IsConsoleOpen || NetworkSession.IsEditorSoftLeftLobby || GameHud.IsMenuBlockingHud )
 		{
 			if ( IsComposing )
 				CancelCompose();
@@ -189,6 +189,9 @@
 
 	private bool IsVisible()
 	{
+		if ( GameHud.IsMenuBlockingHud )
+			return false;
+
 		return IsComposing || (Time.Now - LastInteractionAt) <= HideAfterSeconds;
 	}
 
@@ -217,6 +220,7 @@
 		var hash = new HashCode();
 		hash.Add( IsComposing );
 		hash.Add( IsVisible() );
+		hash.Add( GameHud.IsMenuBlockingHud );
 		hash.Add( ChatEntries.Count );
 		hash.Add( IsGameHudVisible() );
 

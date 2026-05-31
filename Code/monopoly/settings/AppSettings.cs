@@ -49,6 +49,49 @@ public class AppSettings : Component
 		FileSystem.Data.WriteJson( FileName, Data );
 	}
 
+	public static AppSettingsData Capture()
+	{
+		return Copy( Data );
+	}
+
+	public static void Restore( AppSettingsData snapshot, bool save = false )
+	{
+		Data = Copy( snapshot ?? new AppSettingsData() );
+
+		if ( save )
+			Save();
+
+		Apply();
+	}
+
+	public static bool Matches( AppSettingsData snapshot )
+	{
+		if ( snapshot is null )
+			return false;
+
+		return Data.FullscreenMode == snapshot.FullscreenMode
+			&& Data.VSync == snapshot.VSync
+			&& Data.UpscalerMode == snapshot.UpscalerMode
+			&& Data.Fsr3Quality == snapshot.Fsr3Quality
+			&& MathF.Abs( Data.MotionBlurScale - snapshot.MotionBlurScale ) < 0.001f
+			&& Data.Volume == snapshot.Volume;
+	}
+
+	private static AppSettingsData Copy( AppSettingsData source )
+	{
+		source ??= new AppSettingsData();
+
+		return new AppSettingsData
+		{
+			FullscreenMode = source.FullscreenMode,
+			VSync = source.VSync,
+			UpscalerMode = source.UpscalerMode,
+			Fsr3Quality = source.Fsr3Quality,
+			MotionBlurScale = source.MotionBlurScale,
+			Volume = source.Volume
+		};
+	}
+
 	public static void Apply()
 	{
 		ApplyAudio();

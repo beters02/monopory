@@ -1,9 +1,9 @@
 using System;
 using Sandbox;
 
-public abstract class GameAssetImage<TSelf> where TSelf : GameAssetImage<TSelf>
+public abstract class GameImageBase<TSelf> where TSelf : GameImageBase<TSelf>
 {
-	protected GameAssetImage( string path )
+	protected GameImageBase( string path )
 	{
 		Path = path ?? "";
 	}
