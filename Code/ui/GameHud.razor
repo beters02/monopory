@@ -58,12 +58,14 @@
 
 			@if ( GameRef.MatchState != MatchLifecycleState.GameOver )
 			{
-				<div class="@BuildHideableHudClass()">
+				<GambleScreen GameRef="@GameRef" IsMenuOpen="@IsAnyMenuOpen"></GambleScreen>
+
+				<div class="@HudUi.BuildHideableHudClass( GameRef )">
 					<GameStatusPanel GameRef="@GameRef"></GameStatusPanel>
 					<AuctionModal GameRef="@GameRef"></AuctionModal>
 				</div>
 				
-				<div class="@BuildTranslucentHideableHudClass()">
+				<div class="@HudUi.BuildTranslucentHideableHudClass( GameRef )">
 					<PropertyOwnershipPanel GameRef="@GameRef"></PropertyOwnershipPanel>
 					<TradePanel GameRef="@GameRef"></TradePanel>
 				</div>
@@ -81,6 +83,8 @@
 {
 	[Property] public GameController GameRef { get; set; }
 
+	public static GameHud Instance;
+
 	private bool IsEscapeMenuOpen;
 	private bool IsOptionsMenuOpen;
 	public static bool IsMenuBlockingHud { get; private set; }
@@ -92,29 +96,16 @@
 			.Concat( LocalPopups.Popups )
 			.ToList();
 
-	private string BuildHideableHudClass()
-	{
-		var classes = GameRef.IsGameHudVisible()
-			? "hideable-hud-panels"
-			: "hideable-hud-panels invisible";
+	
 
-		return IsAnyMenuOpen ? $"{classes} menu-hidden-by-menu" : classes;
-	}
-
-	private string BuildTranslucentHideableHudClass()
-	{
-		var classes = GameRef.IsGameHudVisible()
-			? "translucent-hideable-hud-panels"
-			: "translucent-hideable-hud-panels invisible";
-
-		return IsAnyMenuOpen ? $"{classes} menu-hidden-by-menu" : classes;
-	}
-
-	private bool IsAnyMenuOpen => IsEscapeMenuOpen || IsOptionsMenuOpen;
+	public static bool IsAnyMenuOpen => Instance.IsEscapeMenuOpen || Instance.IsOptionsMenuOpen;
+	private bool IsGambleScreenActive => GameRef?.IsGambleScreenActive == true;
 
 	protected override void OnStart()
 	{
 		base.OnStart();
+
+		Instance = this;
 
 		LocalPopups.Clear();
 	}
@@ -352,6 +343,7 @@
 		hash.Add( GameRef?.IsRecoveringHostState ?? false );
 		hash.Add( IsEscapeMenuOpen );
 		hash.Add( IsOptionsMenuOpen );
+		hash.Add( IsGambleScreenActive );
 		hash.Add( IsHudVisible() );
 		hash.Add( AppSettings.SettingsAvailable );
 		hash.Add( AppSettings.GetFullscreenMode() );

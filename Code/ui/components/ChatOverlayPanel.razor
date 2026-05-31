@@ -195,8 +195,6 @@
 		return IsComposing || (Time.Now - LastInteractionAt) <= HideAfterSeconds;
 	}
 
-	private bool IsGameHudVisible() => GameRef.IsGameHudVisible();
-
 	private string GetRootClasses()
 	{
 
@@ -206,7 +204,6 @@
 			str += " visible";
 			if ( !GameRef.IsGameHudVisible() )
 				str += " game-hud-invisible";
-				
 		} else
 		{
 			str += " hidden";
@@ -222,7 +219,7 @@
 		hash.Add( IsVisible() );
 		hash.Add( GameHud.IsMenuBlockingHud );
 		hash.Add( ChatEntries.Count );
-		hash.Add( IsGameHudVisible() );
+		hash.Add( GameRef.IsGameHudVisible() );
 
 		foreach ( var entry in ChatEntries )
 		{

@@ -1,0 +1,105 @@
+@using Sandbox;
+@using Sandbox.UI;
+@using System;
+@inherits Panel
+
+<root>
+	@if ( IsActive )
+	{
+		<div class="@GambleScreenClasses">
+			<div class="@GambleCardClasses">
+				<div class="gamble-kicker">Gamble Card</div>
+				<div class="gamble-title">@Title</div>
+				<div class="gamble-player">@PlayerName</div>
+				<div class="gamble-description">@Description</div>
+
+				<div class="@CoinClasses">
+					<div class="coin-face coin-win">WIN</div>
+					<div class="coin-face coin-lose">LOSE</div>
+				</div>
+
+				<div class="gamble-result">@StatusText</div>
+				<div class="gamble-progress-track">
+					<div class="gamble-progress-fill" style="@ProgressStyle"></div>
+				</div>
+			</div>
+		</div>
+	}
+</root>
+
+@code
+{
+	[Parameter] public GameController GameRef { get; set; }
+	[Parameter] public bool IsMenuOpen { get; set; }
+
+	private bool IsActive =>
+		GameRef?.IsGambleScreenActive == true;
+
+	private string Title =>
+		string.IsNullOrWhiteSpace( GameRef?.ActiveGambleTitle )
+			? "Coin Flip"
+			: GameRef.ActiveGambleTitle;
+
+	private string PlayerName =>
+		GameRef?.Players?.ElementAtOrDefault( GameRef.ActiveGamblePlayerIndex )?.PlayerName ?? "Player";
+
+	private string Description =>
+		string.IsNullOrWhiteSpace( GameRef?.ActiveGambleDescription )
+			? "The coin is in the air."
+			: GameRef.ActiveGambleDescription;
+
+	private bool IsResolved =>
+		GameRef?.ActiveGambleResolved == true;
+
+	private float RevealProgress
+	{
+		get
+		{
+			if ( GameRef is null || GameRef.ActiveGambleStartedAt <= 0f || GameRef.ActiveGambleRevealAt <= GameRef.ActiveGambleStartedAt )
+				return 0f;
+
+			return Math.Clamp( (Time.Now - GameRef.ActiveGambleStartedAt) / (GameRef.ActiveGambleRevealAt - GameRef.ActiveGambleStartedAt), 0f, 1f );
+		}
+	}
+
+	private string StatusText =>
+		IsResolved
+			? GameRef.ActiveGambleResultMessage
+			: $"Flipping in {Math.Max( 0, (int)MathF.Ceiling( (GameRef?.ActiveGambleRevealAt ?? 0f) - Time.Now ) )}...";
+
+	private string ProgressStyle =>
+		$"width: {RevealProgress * 100f:0}%;";
+
+	private string GambleCardClasses =>
+		IsResolved
+			? GameRef?.ActiveGambleWon == true ? "gamble-card resolved won" : "gamble-card resolved lost"
+			: "gamble-card";
+
+	private string GambleScreenClasses =>
+		IsMenuOpen ? "gamble-screen-backdrop hidden-by-menu" : "gamble-screen-backdrop";
+
+	private string CoinClasses
+	{
+		get 
+		{
+			return IsResolved
+				? GameRef?.ActiveGambleWon == true ? "gamble-coin result-win" : "gamble-coin result-lose"
+				: "gamble-coin flipping";
+		}
+	}
+		
+
+	protected override int BuildHash()
+	{
+		return HashCode.Combine(
+			GameRef?.ActiveGambleId ?? 0,
+			GameRef?.ActiveGamblePlayerIndex ?? -1,
+			GameRef?.ActiveGambleBetAmount ?? 0,
+			GameRef?.ActiveGambleResolved ?? false,
+			GameRef?.ActiveGambleWon ?? false,
+			GameRef?.ActiveGambleResultMessage ?? "",
+			IsMenuOpen,
+			MathF.Round( Time.Now * 20f )
+		);
+	}
+}

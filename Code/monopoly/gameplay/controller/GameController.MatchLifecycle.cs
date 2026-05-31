@@ -13,7 +13,7 @@ public sealed partial class GameController : Component
 
 	private bool CanAcceptGameplayInput()
 	{
-		return MatchState == MatchLifecycleState.InGame;
+		return MatchState == MatchLifecycleState.InGame && !IsGambleScreenActive;
 	}
 
 	public bool TryStartGame( bool requireReady = true )

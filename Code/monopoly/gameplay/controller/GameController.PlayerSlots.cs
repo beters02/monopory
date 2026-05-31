@@ -289,6 +289,7 @@ public sealed partial class GameController : Component
 		LocalSelectedDrawnCardText = "";
 		ClearMovementRecoveryState();
 		ClearPendingForcedPayment();
+		ClearGambleScreen();
 		ResetCardDrawPiles();
 		PropertyOwners.Clear();
 		PropertyImprovements.Clear();

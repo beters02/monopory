@@ -110,9 +110,25 @@ public sealed partial class GameController : Component, Component.INetworkListen
 	[Sync] public int PendingLandingSpaceIndex { get; set; } = -1;
 	[Sync] public int PendingLandingGoPassCount { get; set; }
 	[Sync] public bool PendingLandingResolved { get; set; }
+	[Sync] public int ActiveGambleId { get; set; }
+	[Sync] public int ActiveGamblePlayerIndex { get; set; } = -1;
+	[Sync] public int ActiveGambleType { get; set; }
+	[Sync] public string ActiveGambleTitle { get; set; } = "";
+	[Sync] public string ActiveGambleDescription { get; set; } = "";
+	[Sync] public int ActiveGambleBetAmount { get; set; }
+	[Sync] public float ActiveGambleStartedAt { get; set; }
+	[Sync] public float ActiveGambleRevealAt { get; set; }
+	[Sync] public bool ActiveGambleResolved { get; set; }
+	[Sync] public bool ActiveGambleWon { get; set; }
+	[Sync] public string ActiveGambleResultSide { get; set; } = "";
+	[Sync] public string ActiveGambleResultMessage { get; set; } = "";
+	[Sync] public float ActiveGambleEndsAt { get; set; }
 
 	public bool HasPendingForcedPayment =>
 		PendingForcedPaymentPlayerIndex >= 0 && PendingForcedPaymentAmount > 0;
+
+	public bool IsGambleScreenActive =>
+		ActiveGamblePlayerIndex >= 0 && ActiveGambleEndsAt > Time.Now;
 
 	public bool IsInGame => MatchState == MatchLifecycleState.InGame;
 	public bool IsPaused => MatchState == MatchLifecycleState.Paused;

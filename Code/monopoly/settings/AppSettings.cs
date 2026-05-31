@@ -116,8 +116,6 @@ public class AppSettings : Component
 		Settings.Fullscreen = Data.FullscreenMode != FullscreenMode.Windowed && Data.FullscreenMode != FullscreenMode.FullscreenBorderless;
 		Settings.Borderless = Data.FullscreenMode == FullscreenMode.FullscreenBorderless;
 
-		Log.Info(Data.FullscreenMode);
-
 		if (Data.FullscreenMode == FullscreenMode.Windowed && !(!fullscreen && !borderless))
 		{
 			Settings.ResolutionHeight = 720;

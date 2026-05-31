@@ -3,8 +3,14 @@ using Sandbox;
 
 public static class CardData
 {
+
+	public static bool gambleDebugEnabled = true;
+
 	public static List<CardDef> CreateChanceCards()
 	{
+		if (gambleDebugEnabled)
+			return GambleDebugChanceCards();
+
 		return new()
 		{
 			new() { Key = "chance_advance_go", Deck = CardDeck.Chance, Title = "Advance to GO", Description = "Collect $200.", Action = CardAction.MoveToSpace, TargetSpaceIndex = 0 },
@@ -28,6 +34,9 @@ public static class CardData
 
 	public static List<CardDef> CreateCommunityChestCards()
 	{
+		if (gambleDebugEnabled)
+			return GambleDebugChestCards();
+
 		return new()
 		{
 			new() { Key = "chest_advance_go", Deck = CardDeck.CommunityChest, Title = "Advance to GO", Description = "Collect $200.", Action = CardAction.MoveToSpace, TargetSpaceIndex = 0 },
@@ -45,7 +54,25 @@ public static class CardData
 			new() { Key = "chest_consultancy", Deck = CardDeck.CommunityChest, Title = "Consultancy fee", Description = "Collect $25.", Action = CardAction.CollectFromBank, Amount = 25 },
 			new() { Key = "chest_street_repairs", Deck = CardDeck.CommunityChest, Title = "Street repairs", Description = "Pay $40 per house and $115 per hotel.", Action = CardAction.PayPerImprovement, HouseAmount = 40, HotelAmount = 115 },
 			new() { Key = "chest_beauty_contest", Deck = CardDeck.CommunityChest, Title = "Beauty contest", Description = "Collect $10.", Action = CardAction.CollectFromBank, Amount = 10 },
-			new() { Key = "chest_inherit", Deck = CardDeck.CommunityChest, Title = "Inheritance", Description = "Collect $100.", Action = CardAction.CollectFromBank, Amount = 100 }
+			new() { Key = "chest_inherit", Deck = CardDeck.CommunityChest, Title = "Inheritance", Description = "Collect $100.", Action = CardAction.CollectFromBank, Amount = 100 },
+			new() { Key = "chance_gamble_coin_flip", Deck = CardDeck.CommunityChest, Title = "Gamble Card", Description = "You're forced to play in a coinflip for a random amount.", Action = CardAction.Gamble, Amount = 150 }
+		};
+	}
+
+	// 
+	public static List<CardDef> GambleDebugChanceCards()
+	{
+		return new()
+		{
+			new() { Key = "chance_gamble_coin_flip", Deck = CardDeck.Chance, Title = "Gamble Card", Description = "You're forced to play in a coinflip for a random amount.", Action = CardAction.Gamble, Amount = 150 }
+		};
+	}
+
+	public static List<CardDef> GambleDebugChestCards()
+	{
+		return new()
+		{
+			new() { Key = "chance_gamble_coin_flip", Deck = CardDeck.CommunityChest, Title = "Gamble Card", Description = "You're forced to play in a coinflip for a random amount.", Action = CardAction.Gamble, Amount = 150 }
 		};
 	}
 }

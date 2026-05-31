@@ -86,4 +86,22 @@ public static class HudUi
 
 		return hash.ToHashCode();
 	}
+
+	public static string BuildHideableHudClass( GameController GameRef )
+	{
+		var classes = GameRef.IsGameHudVisible()
+			? "hideable-hud-panels"
+			: "hideable-hud-panels invisible";
+
+		return ( GameHud.IsAnyMenuOpen || GameRef.IsGambleScreenActive ) ? $"{classes} menu-hidden-by-menu" : classes;
+	}
+
+	public static string BuildTranslucentHideableHudClass( GameController GameRef )
+	{
+		var classes = GameRef.IsGameHudVisible()
+			? "translucent-hideable-hud-panels"
+			: "translucent-hideable-hud-panels invisible";
+
+		return ( GameHud.IsAnyMenuOpen || GameRef.IsGambleScreenActive ) ? $"{classes} menu-hidden-by-menu" : classes;
+	}
 }

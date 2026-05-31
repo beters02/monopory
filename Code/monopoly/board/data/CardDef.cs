@@ -46,4 +46,5 @@ public sealed class CardDef
 	public bool ResolveDestination { get; set; } = true;
 	public int HouseAmount { get; set; }
 	public int HotelAmount { get; set; }
+	public GambleType GambleType { get; set; } = GambleType.CoinFlip;
 }

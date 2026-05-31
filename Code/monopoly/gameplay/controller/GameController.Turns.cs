@@ -35,6 +35,9 @@ public sealed partial class GameController : Component
 		if ( Phase == GamePhase.ResolvingSpace )
 			return;
 
+		if ( IsGambleScreenActive )
+			return;
+
 		if ( CurrentTurnEndsAt <= 0f )
 			StartTurnTimer();
 

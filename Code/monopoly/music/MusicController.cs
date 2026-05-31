@@ -42,12 +42,10 @@ public sealed class MusicController : Component
 
 	public static void StartSoundtrack(float time = -1f)
 	{
-		Log.Info("Starting soundtrack");
 
 		SoundHandle handle = Instance.SoundHandle;
 		if (handle != null)
 		{
-			Log.Info("handle is not null");
 			if (handle.IsPlaying)
 			{
 				return;
