@@ -242,6 +242,9 @@
 		hash.Add( GameRef?.Phase ?? 0 );
 		hash.Add( GameRef?.PendingPurchaseSpaceIndex ?? -1 );
 		hash.Add( GameRef?.CurrentPlayerIndex ?? -1 );
+		hash.Add( CurrentPlayer?.OwnerId ?? 0 );
+		hash.Add( CurrentPlayer?.PlayerName ?? "" );
+		hash.Add( LocalPlayer?.OwnerId ?? 0 );
 		hash.Add( GameRef?.LastDieA ?? 0 );
 		hash.Add( GameRef?.LastDieB ?? 0 );
 		hash.Add( LocalPlayerMoney );

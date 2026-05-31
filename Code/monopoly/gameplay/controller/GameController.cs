@@ -188,7 +188,11 @@ public sealed partial class GameController : Component, Component.INetworkListen
 		UpdateAuction();
 		UpdateTurnTimer();
 		CheckForGameOver();
+	}
 
+	[Rpc.Broadcast]
+	public void test()
+	{
 		
 	}
 

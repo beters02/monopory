@@ -14,6 +14,11 @@ public sealed partial class GameController : Component
 		return Players.FirstOrDefault( x => x.OwnerId == connection.SteamId );
 	}
 
+	private PlayerState GetPlayerForCaller( Connection caller )
+	{
+		return GetPlayerForConnection( caller ) ?? (Networking.IsHost && caller is null ? LocalPlayer : null);
+	}
+
 	private Connection GetConnectionForPlayer( PlayerState player )
 	{
 		return Connection.All.FirstOrDefault( c => c.SteamId == player.OwnerId );

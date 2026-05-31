@@ -196,7 +196,7 @@ public sealed partial class GameController : Component
 
 	private int GetPlayerIndexForCaller( Connection caller )
 	{
-		var player = GetPlayerForConnection( caller );
+		var player = GetPlayerForCaller( caller );
 		if ( player is null )
 			return -1;
 

@@ -11,19 +11,14 @@ public sealed partial class GameController : Component
 		if ( !CanAcceptGameplayInput() )
 			return false;
 
-		if ( caller == null )
-			return false;
-
 		var currentPlayer = CurrentPlayer;
 
 		if ( currentPlayer == null || currentPlayer.IsBankrupt )
 			return false;
 
-		// Host can always act during local testing
-		if ( Networking.IsHost && caller == Connection.Local )
-			return true;
+		var callerPlayer = GetPlayerForCaller( caller );
 
-		return currentPlayer.OwnerId == caller.SteamId;
+		return callerPlayer is not null && currentPlayer == callerPlayer;
 	}
 
 	[Rpc.Host]

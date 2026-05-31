@@ -7663,13 +7663,11 @@
                 "go": "469cf384-89f4-4353-99dd-4b89667eff1f",
                 "component_type": "Board"
               },
-              "ChatMessages": {
-                "1": "System\tGame started: The first turn is live."
-              },
+              "ChatMessages": {},
               "CurrentPlayerIndex": 0,
               "CurrentTurnConsecutiveDoubles": 0,
-              "CurrentTurnDoublesPlayerIndex": 0,
-              "CurrentTurnEndsAt": 184.13907,
+              "CurrentTurnDoublesPlayerIndex": -1,
+              "CurrentTurnEndsAt": 0,
               "CurrentTurnGetsExtraRoll": false,
               "DiceMaxDropSpeed": 540,
               "DiceMaxHorizontalSpeed": 95,
@@ -7684,14 +7682,14 @@
               "DieA": null,
               "DieB": null,
               "FreeParkingBank": 0,
-              "GameStartedAt": 4.139076,
+              "GameStartedAt": 0,
               "IsRecoveringHostState": false,
               "IsResolvingPhysicalDice": false,
               "LastDieA": 0,
               "LastDieB": 0,
-              "MatchState": "InGame",
+              "MatchState": "Lobby",
               "MortgagedProperties": {},
-              "NextChatMessageId": 2,
+              "NextChatMessageId": 1,
               "NextTradeId": 1,
               "OnComponentDestroy": null,
               "OnComponentDisabled": null,
@@ -7720,46 +7718,9 @@
               "PendingTrades": {},
               "Phase": "WaitingToRoll",
               "PhysicalDiceStartedAt": 0,
-              "Players": [
-                {
-                  "_type": "component",
-                  "component_id": "a8d58493-4ea8-488b-8d97-e1b34451ae55",
-                  "go": "07d39d75-d260-44d6-ab1d-f0f31ea1eb15",
-                  "component_type": "PlayerState"
-                },
-                {
-                  "_type": "component",
-                  "component_id": "121f6d6a-0e75-452b-ab4d-7e6cab3c6a03",
-                  "go": "b61a72f7-7879-4b04-829a-8b68af770ee3",
-                  "component_type": "PlayerState"
-                },
-                {
-                  "_type": "component",
-                  "component_id": "76b0f195-5515-4876-97de-be8112bba118",
-                  "go": "7ea3f249-7a3e-4faf-b692-dba52b0dbe51",
-                  "component_type": "PlayerState"
-                },
-                {
-                  "_type": "component",
-                  "component_id": "ce8d1550-b841-4ad2-be2a-64acfaf9e073",
-                  "go": "5d0218ae-4449-4faf-8f1d-a2dce40bcccd",
-                  "component_type": "PlayerState"
-                },
-                {
-                  "_type": "component",
-                  "component_id": "a98209a1-3b0e-410d-966e-fa143d443bf5",
-                  "go": "4e6f853c-bbd0-4f1b-83dc-7d257f13a32f",
-                  "component_type": "PlayerState"
-                },
-                {
-                  "_type": "component",
-                  "component_id": "a7551c58-cdd2-4374-b4db-b597c957a364",
-                  "go": "9ae5e74d-ab41-4db6-90f7-da04b13597a9",
-                  "component_type": "PlayerState"
-                }
-              ],
+              "Players": [],
               "PreferredHostDisconnected": false,
-              "PreferredHostOwnerId": 76561198067721070,
+              "PreferredHostOwnerId": 0,
               "PropertyImprovements": {},
               "PropertyOwners": {},
               "ShowSelectedSpaceCardOnFreeParking": false,
@@ -7767,7 +7728,7 @@
               "ShowSelectedSpaceCardOnGoToJail": false,
               "ShowSelectedSpaceCardOnJail": false,
               "ShowSelectedSpaceCardOnTax": false,
-              "StartingPlayerCount": 1,
+              "StartingPlayerCount": 0,
               "Theme": {
                 "_type": "component",
                 "component_id": "7ce15df1-8291-4aee-8a4c-66d33357e0b7",
@@ -7804,194 +7765,7 @@
               "Player8Color": "1,0.47843,0.71373,1"
             }
           ],
-          "Children": [
-            {
-              "__guid": "7ea3f249-7a3e-4faf-b692-dba52b0dbe51",
-              "__version": 2,
-              "Flags": 0,
-              "Name": "PlayerState_03",
-              "Position": "55.4257507,243.144379,-13.1749725",
-              "Rotation": "0,0,0,1",
-              "Scale": "1,1,1",
-              "Tags": "",
-              "Enabled": true,
-              "NetworkMode": 1,
-              "NetworkFlags": 0,
-              "NetworkOrphaned": 0,
-              "NetworkTransmit": true,
-              "OwnerTransfer": 1,
-              "Components": [
-                {
-                  "__type": "PlayerState",
-                  "__guid": "76b0f195-5515-4876-97de-be8112bba118",
-                  "__enabled": true,
-                  "Flags": 0,
-                  "OnComponentDestroy": null,
-                  "OnComponentDisabled": null,
-                  "OnComponentEnabled": null,
-                  "OnComponentFixedUpdate": null,
-                  "OnComponentStart": null,
-                  "OnComponentUpdate": null
-                }
-              ],
-              "Children": []
-            },
-            {
-              "__guid": "5d0218ae-4449-4faf-8f1d-a2dce40bcccd",
-              "__version": 2,
-              "Flags": 0,
-              "Name": "PlayerState_04",
-              "Position": "55.4257507,243.144379,-13.1749725",
-              "Rotation": "0,0,0,1",
-              "Scale": "1,1,1",
-              "Tags": "",
-              "Enabled": true,
-              "NetworkMode": 1,
-              "NetworkFlags": 0,
-              "NetworkOrphaned": 0,
-              "NetworkTransmit": true,
-              "OwnerTransfer": 1,
-              "Components": [
-                {
-                  "__type": "PlayerState",
-                  "__guid": "ce8d1550-b841-4ad2-be2a-64acfaf9e073",
-                  "__enabled": true,
-                  "Flags": 0,
-                  "OnComponentDestroy": null,
-                  "OnComponentDisabled": null,
-                  "OnComponentEnabled": null,
-                  "OnComponentFixedUpdate": null,
-                  "OnComponentStart": null,
-                  "OnComponentUpdate": null
-                }
-              ],
-              "Children": []
-            },
-            {
-              "__guid": "4e6f853c-bbd0-4f1b-83dc-7d257f13a32f",
-              "__version": 2,
-              "Flags": 0,
-              "Name": "PlayerState_05",
-              "Position": "55.4257507,243.144379,-13.1749725",
-              "Rotation": "0,0,0,1",
-              "Scale": "1,1,1",
-              "Tags": "",
-              "Enabled": true,
-              "NetworkMode": 1,
-              "NetworkFlags": 0,
-              "NetworkOrphaned": 0,
-              "NetworkTransmit": true,
-              "OwnerTransfer": 1,
-              "Components": [
-                {
-                  "__type": "PlayerState",
-                  "__guid": "a98209a1-3b0e-410d-966e-fa143d443bf5",
-                  "__enabled": true,
-                  "Flags": 0,
-                  "OnComponentDestroy": null,
-                  "OnComponentDisabled": null,
-                  "OnComponentEnabled": null,
-                  "OnComponentFixedUpdate": null,
-                  "OnComponentStart": null,
-                  "OnComponentUpdate": null
-                }
-              ],
-              "Children": []
-            },
-            {
-              "__guid": "9ae5e74d-ab41-4db6-90f7-da04b13597a9",
-              "__version": 2,
-              "Flags": 0,
-              "Name": "PlayerState_06",
-              "Position": "55.4257507,243.144379,-13.1749725",
-              "Rotation": "0,0,0,1",
-              "Scale": "1,1,1",
-              "Tags": "",
-              "Enabled": true,
-              "NetworkMode": 1,
-              "NetworkFlags": 0,
-              "NetworkOrphaned": 0,
-              "NetworkTransmit": true,
-              "OwnerTransfer": 1,
-              "Components": [
-                {
-                  "__type": "PlayerState",
-                  "__guid": "a7551c58-cdd2-4374-b4db-b597c957a364",
-                  "__enabled": true,
-                  "Flags": 0,
-                  "OnComponentDestroy": null,
-                  "OnComponentDisabled": null,
-                  "OnComponentEnabled": null,
-                  "OnComponentFixedUpdate": null,
-                  "OnComponentStart": null,
-                  "OnComponentUpdate": null
-                }
-              ],
-              "Children": []
-            },
-            {
-              "__guid": "07d39d75-d260-44d6-ab1d-f0f31ea1eb15",
-              "__version": 2,
-              "Flags": 0,
-              "Name": "PlayerState_01",
-              "Position": "55.4257507,243.144379,-13.1749725",
-              "Rotation": "0,0,0,1",
-              "Scale": "1,1,1",
-              "Tags": "",
-              "Enabled": true,
-              "NetworkMode": 1,
-              "NetworkFlags": 0,
-              "NetworkOrphaned": 0,
-              "NetworkTransmit": true,
-              "OwnerTransfer": 1,
-              "Components": [
-                {
-                  "__type": "PlayerState",
-                  "__guid": "a8d58493-4ea8-488b-8d97-e1b34451ae55",
-                  "__enabled": true,
-                  "Flags": 0,
-                  "OnComponentDestroy": null,
-                  "OnComponentDisabled": null,
-                  "OnComponentEnabled": null,
-                  "OnComponentFixedUpdate": null,
-                  "OnComponentStart": null,
-                  "OnComponentUpdate": null
-                }
-              ],
-              "Children": []
-            },
-            {
-              "__guid": "b61a72f7-7879-4b04-829a-8b68af770ee3",
-              "__version": 2,
-              "Flags": 0,
-              "Name": "PlayerState_02",
-              "Position": "55.4257507,243.144379,-13.1749725",
-              "Rotation": "0,0,0,1",
-              "Scale": "1,1,1",
-              "Tags": "",
-              "Enabled": true,
-              "NetworkMode": 1,
-              "NetworkFlags": 0,
-              "NetworkOrphaned": 0,
-              "NetworkTransmit": true,
-              "OwnerTransfer": 1,
-              "Components": [
-                {
-                  "__type": "PlayerState",
-                  "__guid": "121f6d6a-0e75-452b-ab4d-7e6cab3c6a03",
-                  "__enabled": true,
-                  "Flags": 0,
-                  "OnComponentDestroy": null,
-                  "OnComponentDisabled": null,
-                  "OnComponentEnabled": null,
-                  "OnComponentFixedUpdate": null,
-                  "OnComponentStart": null,
-                  "OnComponentUpdate": null
-                }
-              ],
-              "Children": []
-            }
-          ]
+          "Children": []
         }
       ]
     },
