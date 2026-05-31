@@ -60,6 +60,15 @@
 			}
 		</ChildContent>
 	</Sandbox.ui.components.HudPanel.HudPanel>
+
+	@if ( GameRef.MatchState == MatchLifecycleState.InGame && CurrentPlayer == LocalPlayer && CanActOnCurrentTurn && !IsCurrentPlayerInJail )
+	{
+		<Sandbox.ui.components.HudPanel.HudPanel Variant="status-roll-button-panel">
+			<ChildContent>
+				<GameButton Variant="status-roll-button" OnHoldComplete="@RollDice" HoldMaxSeconds="@RollHoldMaxSeconds">Roll Dice</GameButton>
+			</ChildContent>
+		</Sandbox.ui.components.HudPanel.HudPanel>
+	}
 </root>
 
 @code
