@@ -1,6 +1,7 @@
 @import "../../GameTheme.scss";
 
 .monopoly-button {
+    position: relative;
     min-height: $monopoly-control-height;
     margin-top: 8px;
     padding: 0 $monopoly-control-padding-x;
@@ -21,6 +22,46 @@
 
     cursor: pointer;
     pointer-events: all;
+    overflow: hidden;
+}
+
+.monopoly-button.hold-capture-active {
+    overflow: visible;
+}
+
+.button-hold-capture {
+    position: absolute;
+    background-color: $monopoly-transparent;
+    pointer-events: all;
+    z-index: 50;
+}
+
+.button-hold-capture.top {
+    left: -4096px;
+    right: -4096px;
+    bottom: 100%;
+    height: 4096px;
+}
+
+.button-hold-capture.bottom {
+    left: -4096px;
+    right: -4096px;
+    top: 100%;
+    height: 4096px;
+}
+
+.button-hold-capture.left {
+    right: 100%;
+    top: 0;
+    bottom: 0;
+    width: 4096px;
+}
+
+.button-hold-capture.right {
+    left: 100%;
+    top: 0;
+    bottom: 0;
+    width: 4096px;
 }
 
 .monopoly-button .label {

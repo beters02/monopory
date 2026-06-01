@@ -453,7 +453,7 @@ public sealed class Board : Component
 	{
 		EnsureGameControllerRef();
 
-		if ( !Input.Pressed( "attack1" ) )
+		if ( !Input.Pressed( "Attack1" ) )
 			return;
 
 		SceneTraceResult? initialTraceResult = GetSelectionMouseTraceResult();

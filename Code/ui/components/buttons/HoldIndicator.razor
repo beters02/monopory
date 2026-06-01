@@ -1,0 +1,37 @@
+@using Sandbox;
+@using Sandbox.UI;
+@using System;
+@inherits Panel
+
+<root class="@RootClasses">
+	<div class="hold-indicator-track"></div>
+	<div class="hold-indicator-fill" style="@FillStyle"></div>
+</root>
+
+@code
+{
+    [Parameter] public string Variant { get; set; } = "";
+    [Parameter] public GameButton ParentButton { get; set; }
+
+	private string RootClasses => string.IsNullOrWhiteSpace( Variant )
+		? "hold-indicator"
+		: $"hold-indicator {Variant}";
+
+	private float Progress => ParentButton?.HoldProgress ?? 0f;
+
+	private string FillStyle =>
+		$"width: {Progress * 100f:0}%; background-color: #45b883;";
+
+	protected override int BuildHash()
+	{
+		var hash = new HashCode();
+		hash.Add( Variant );
+		hash.Add( ParentButton?.IsHolding ?? false );
+		hash.Add( MathF.Round( Progress * 100f ) );
+
+		if ( ParentButton?.IsHolding == true )
+			hash.Add( MathF.Round( Time.Now * 60f ) );
+
+		return hash.ToHashCode();
+	}
+}

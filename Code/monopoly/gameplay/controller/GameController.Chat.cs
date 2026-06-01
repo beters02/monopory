@@ -31,17 +31,7 @@ public sealed partial class GameController
 		}
 
 		AppendChatMessage( senderName, message );
-		PlayChatMessageSound( Rpc.Caller.SteamId );
-		PlayMentionSounds( message, sender );
-	}
-
-	[Rpc.Broadcast]
-	private void PlayChatMessageSound( SteamId senderSteamId )
-	{
-		if ( senderSteamId == Connection.Local.SteamId )
-			GameAssets.Sounds.ChatSent.Play();
-		else
-			GameAssets.Sounds.ChatReceived.Play();
+		PlayChatMessageSounds( Rpc.Caller.SteamId, message );
 	}
 
 	private void AppendChatMessage( string senderName, string message )
@@ -69,15 +59,28 @@ public sealed partial class GameController
 		}
 	}
 
-	private void PlayMentionSounds( string message, PlayerState sender )
+	private void PlayChatMessageSounds( SteamId senderSteamId, string message )
 	{
-		var senderSteamId = sender?.OwnerId ?? 0;
-		foreach ( var mentionedPlayer in GetMentionedPlayers( message ) )
+		var mentionedSteamIds = GetMentionedPlayers( message )
+			.Select( player => (SteamId)player.OwnerId )
+			.ToHashSet();
+
+		foreach ( var connection in Connection.All )
 		{
-			if ( mentionedPlayer.OwnerId == senderSteamId )
+			if ( connection is null )
 				continue;
 
-			PlaySoundToConnection( GetConnectionForPlayer( mentionedPlayer ), GameAssets.Sounds.ChatMentioned );
+			if ( connection.SteamId == senderSteamId )
+			{
+				PlaySoundToConnection( connection, GameAssets.Sounds.ChatSent );
+				continue;
+			}
+
+			var sound = mentionedSteamIds.Contains( connection.SteamId )
+				? GameAssets.Sounds.ChatMentioned
+				: GameAssets.Sounds.ChatReceived;
+
+			PlaySoundToConnection( connection, sound );
 		}
 	}
 

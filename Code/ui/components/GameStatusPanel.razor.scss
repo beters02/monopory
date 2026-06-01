@@ -115,7 +115,7 @@
 	margin-bottom: 0;
 	opacity: 1;
 	justify-content: center;
-	overflow: hidden;
+	overflow: visible;
 	pointer-events: all;
 
 	transition: opacity 0.2s ease, width 0.32s ease, height 0.24s ease;
@@ -142,6 +142,7 @@
 	justify-content: center;
 	align-self: center;
 	opacity: 1;
+	overflow: visible;
 	animation: status-roll-button-fade-in 0.2s linear 0.4s both;
 
 	&.hidden {

@@ -3,7 +3,7 @@
 @using System;
 @inherits Button
 
-<root class="@RootClasses" title="@Title" onclick="@HandleClick" onmousedown="@HandlePressStart" onmouseup="@HandlePressEnd" onmouseleave="@HandlePressCancel">
+<root class="@RootClasses" title="@Title" onclick="@HandleClick" onmousedown="@HandlePressStart" onmouseup="@HandlePressEnd" onmouseover="@HandleMouseEnter" onmouseout="@HandleMouseLeave">
 	@ChildContent
 </root>
 
@@ -29,10 +29,36 @@
 
 	private bool isPressing;
 	private float pressStartedAt;
+	private bool isHovering = false;
 
-	protected string RootClasses => string.IsNullOrWhiteSpace( Variant )
-		? "monopoly-button"
-		: $"monopoly-button {Variant}";
+	public bool IsHolding => isPressing;
+
+	protected string RootClasses
+	{
+		get
+		{
+			var classes = string.IsNullOrWhiteSpace( Variant )
+				? "monopoly-button"
+				: $"monopoly-button {Variant}";
+
+			if ( isPressing && OnHoldComplete is not null )
+				classes += " hold-capture-active";
+
+			return classes;
+		}
+	}
+
+	public float HoldProgress
+	{
+		get
+		{
+			if ( !isPressing )
+				return 0f;
+
+			var heldSeconds = Math.Max( Time.Now - pressStartedAt, 0f );
+			return HoldMaxSeconds <= 0f ? 1f : Math.Clamp( heldSeconds / HoldMaxSeconds, 0f, 1f );
+		}
+	}
 
 	private bool ShouldPlayClickSound =>
 		SoundEnabled &&
@@ -48,6 +74,9 @@
 			return;
 
 		if ( LocalPopups.HasBlockingPopup && !IgnoreGlobalPopupBlock )
+			return;
+
+		if (!isHovering)
 			return;
 
 		ButtonPopEffects.Show( Mouse.Position );
@@ -72,7 +101,9 @@
 			return;
 
 		isPressing = true;
+		isHovering = true;
 		pressStartedAt = Time.Now;
+		StateHasChanged();
 	}
 
 	private void HandlePressEnd()
@@ -80,7 +111,13 @@
 		if ( OnHoldComplete is null || !isPressing )
 			return;
 
-		isPressing = false;
+		StopHolding();
+
+		Log.Info(isHovering);
+
+		if (!isHovering)
+			return;
+
 		var heldSeconds = Math.Max( Time.Now - pressStartedAt, 0f );
 		var strength = HoldMaxSeconds <= 0f ? 1f : Math.Clamp( heldSeconds / HoldMaxSeconds, 0f, 1f );
 
@@ -103,9 +140,44 @@
 		OnHoldComplete?.Invoke( strength );
 	}
 
-	private void HandlePressCancel()
+	private void HandleMouseEnter()
 	{
+		isHovering = true;	
+	}
+
+	private void HandleMouseLeave()
+	{
+		isHovering = false;
+		StopHolding();
+	}
+
+	private void CancelHold()
+	{
+		StopHolding();
+	}
+
+	private void StopHolding()
+	{
+		if ( !isPressing )
+			return;
+
 		isPressing = false;
+		StateHasChanged();
+	}
+
+	protected override int BuildHash()
+	{
+		var hash = new HashCode();
+		hash.Add( Variant );
+		hash.Add( Title );
+		hash.Add( CanClick );
+		hash.Add( Disabled );
+		hash.Add( isPressing );
+
+		if ( isPressing )
+			hash.Add( MathF.Round( Time.Now * 60f ) );
+
+		return hash.ToHashCode();
 	}
 
 	private bool HasVariantClass( string className )

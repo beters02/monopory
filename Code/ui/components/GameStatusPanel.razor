@@ -47,10 +47,20 @@
 				{
 					<div class="jail-action-buttons">
 						<GameButton OnClick="@PayToLeaveJail">Pay $50</GameButton>
-						<GameButton OnHoldComplete="@RollForJailRelease" HoldMaxSeconds="@RollHoldMaxSeconds">Try Doubles</GameButton>
+						<GameButton @ref="ActionJailRollButton" OnHoldComplete="@RollForJailRelease" HoldMaxSeconds="@RollHoldMaxSeconds">
+							<ChildContent>
+								Try Doubles
+								<HoldIndicator Variant="compact" ParentButton="@ActionJailRollButton"></HoldIndicator>
+							</ChildContent>
+						</GameButton>
 					</div>
 				} else {
-					<GameButton Variant="action-buttons" OnHoldComplete="@RollDice" HoldMaxSeconds="@RollHoldMaxSeconds">Roll Dice</GameButton>
+					<GameButton @ref="ActionRollButton" Variant="action-buttons" OnHoldComplete="@RollDice" HoldMaxSeconds="@RollHoldMaxSeconds">
+						<ChildContent>
+							Roll Dice
+							<HoldIndicator Variant="compact" ParentButton="@ActionRollButton"></HoldIndicator>
+						</ChildContent>
+					</GameButton>
 				}
 			}
 
@@ -66,7 +76,12 @@
 
 		<Sandbox.ui.components.HudPanel.HudPanel Variant="@GetRollButtonPanelClass()">
 			<ChildContent>
-				<GameButton Variant="@GetRollDiceButtonClass()" OnHoldComplete="@RollDice" HoldMaxSeconds="@RollHoldMaxSeconds">Roll Dice</GameButton>
+				<GameButton @ref="StatusRollButton" Variant="@GetRollDiceButtonClass()" OnHoldComplete="@RollDice" HoldMaxSeconds="@RollHoldMaxSeconds">
+					<ChildContent>
+						Roll Dice
+						<HoldIndicator Variant="status-roll" ParentButton="@StatusRollButton"></HoldIndicator>
+					</ChildContent>
+				</GameButton>
 			</ChildContent>
 		</Sandbox.ui.components.HudPanel.HudPanel>
 
@@ -79,7 +94,12 @@
 		<Sandbox.ui.components.HudPanel.HudPanel Variant="@GetJailButtonPanelClass()">
 			<ChildContent>
 				<GameButton Variant="@GetJailButtonClass()" OnClick="@PayToLeaveJail">Pay $50</GameButton>
-				<GameButton Variant="@GetJailButtonClass()" OnHoldComplete="@RollForJailRelease" HoldMaxSeconds="@RollHoldMaxSeconds">Try Doubles</GameButton>
+				<GameButton @ref="StatusJailRollButton" Variant="@GetJailButtonClass()" OnHoldComplete="@RollForJailRelease" HoldMaxSeconds="@RollHoldMaxSeconds">
+					<ChildContent>
+						Try Doubles
+						<HoldIndicator Variant="status-roll" ParentButton="@StatusJailRollButton"></HoldIndicator>
+					</ChildContent>
+				</GameButton>
 			</ChildContent>
 		</Sandbox.ui.components.HudPanel.HudPanel>		
 	}
@@ -87,16 +107,33 @@
 
 @code
 {
-	[Parameter] public GameController GameRef { get; set; }
+    [Parameter] public GameController GameRef { get; set; }
 
-	private PlayerState CurrentPlayer => GameRef?.CurrentPlayer;
-	private PlayerState LocalPlayer => GameRef?.LocalPlayer;
-	private string CurrentPlayerName => CurrentPlayer?.PlayerName ?? "None";
-	private int LocalPlayerMoney => LocalPlayer?.Money ?? 0;
-	private SpaceDef PendingDef => GameRef?.Board?.GetSpaceDef( GameRef.PendingPurchaseSpaceIndex );
-	private string PendingPropertyName => PendingDef?.DisplayName ?? "Unknown Property";
-	private const float RollHoldMaxSeconds = 1.25f;
-	private bool gamePanelEnabled = false;
+	private GameButton ActionRollButton = null!;
+	private GameButton ActionJailRollButton = null!;
+	private GameButton StatusRollButton = null!;
+	private GameButton StatusJailRollButton = null!;
+
+    private PlayerState CurrentPlayer => GameRef?.CurrentPlayer;
+    private PlayerState LocalPlayer => GameRef?.LocalPlayer;
+    private string CurrentPlayerName => CurrentPlayer?.PlayerName ?? "None";
+    private int LocalPlayerMoney => LocalPlayer?.Money ?? 0;
+    private SpaceDef PendingDef => GameRef?.Board?.GetSpaceDef( GameRef.PendingPurchaseSpaceIndex );
+    private string PendingPropertyName => PendingDef?.DisplayName ?? "Unknown Property";
+    private const float RollHoldMaxSeconds = 1.25f;
+    private bool gamePanelEnabled = false;
+	private bool didRefreshAfterRefs;
+
+	protected override void OnAfterTreeRender( bool firstTime )
+	{
+		base.OnAfterTreeRender( firstTime );
+
+		if ( didRefreshAfterRefs )
+			return;
+
+		didRefreshAfterRefs = true;
+		StateHasChanged();
+	}
 
 	private int CurrentTurnRemainingSeconds =>
 		GameRef is null || GameRef.CurrentTurnEndsAt <= 0f
