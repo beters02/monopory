@@ -1,0 +1,114 @@
+@using Sandbox;
+@using Sandbox.UI;
+@using Sandbox.ui.components;
+@using Sandbox.ui.components.buttons;
+@using System;
+@using System.Linq;
+@inherits Panel
+
+@if ( IsOpen && Config is not null )
+{
+	<div class="match-config-root match-config-readonly-root open">
+		<div class="match-config-screen">
+			<div class="match-config-panel">
+				<div class="match-config-header">
+					<div class="match-config-header-text">
+						<div class="match-config-kicker">Match</div>
+						<div class="match-config-title">Match Settings</div>
+					</div>
+					<CloseButton Variant="match-config-close-button" Title="Close" OnClick="@Close"></CloseButton>
+				</div>
+
+				<div class="match-config-scroll-shell">
+					<div class="match-config-scroll monopory-scroll-y" @ref="MatchConfigScrollPanel">
+						<div class="match-config-copy">Current match settings are read-only during a live game.</div>
+
+						@foreach ( var group in ConfigGroups )
+						{
+							<div class="match-config-section">
+								<div class="match-config-section-title">@group</div>
+								<div class="match-config-section-options">
+									@foreach ( var option in GetConfigOptionsForGroup( group ) )
+									{
+										<div class="match-config-row">
+											<div class="match-config-text">
+												<div class="match-config-name">@option.Label</div>
+												<div class="match-config-value">@option.Description</div>
+											</div>
+											<div class="match-config-control">
+												<div class="match-config-readonly-value">@GetConfigDisplayValue( option )</div>
+											</div>
+										</div>
+									}
+								</div>
+							</div>
+						}
+					</div>
+					<MonoScrollbar Target="@MatchConfigScrollPanel"></MonoScrollbar>
+				</div>
+			</div>
+		</div>
+	</div>
+}
+
+@code
+{
+	[Parameter] public bool IsOpen { get; set; }
+	[Parameter] public MatchConfig Config { get; set; }
+	[Parameter] public Action OnClose { get; set; }
+
+	private Panel MatchConfigScrollPanel = null!;
+	private IReadOnlyList<string> ConfigGroups => MatchConfigSchema.Options.Select( option => option.Group ).Distinct().ToList();
+
+	private void Close()
+	{
+		OnClose?.Invoke();
+	}
+
+	private IEnumerable<MatchConfigOption> GetConfigOptionsForGroup( string group )
+	{
+		return MatchConfigSchema.Options.Where( option => string.Equals( option.Group, group, StringComparison.Ordinal ) );
+	}
+
+	private string GetConfigDisplayValue( MatchConfigOption option )
+	{
+		var value = MatchConfigSchema.GetOptionValue( option, Config );
+
+		if ( option.Kind == MatchConfigOptionKind.Bool )
+			return (bool)(value ?? false) ? "On" : "Off";
+
+		if ( option.Kind == MatchConfigOptionKind.Enum )
+			return FormatEnumLabel( value?.ToString() ?? "" );
+
+		return MatchConfigSchema.FormatValue( option, value );
+	}
+
+	private static string FormatEnumLabel( string value )
+	{
+		if ( string.IsNullOrWhiteSpace( value ) )
+			return "";
+
+		var label = value.Replace( "_", " " );
+		for ( var i = label.Length - 1; i > 0; i-- )
+		{
+			if ( char.IsUpper( label[i] ) && !char.IsWhiteSpace( label[i - 1] ) )
+				label = label.Insert( i, " " );
+		}
+
+		return label;
+	}
+
+	protected override int BuildHash()
+	{
+		var hash = new HashCode();
+		hash.Add( IsOpen );
+
+		if ( Config is not null )
+		{
+			foreach ( var option in MatchConfigSchema.Options )
+				hash.Add( MatchConfigSchema.FormatValue( option, MatchConfigSchema.GetOptionValue( option, Config ) ) );
+		}
+
+		return hash.ToHashCode();
+	}
+}

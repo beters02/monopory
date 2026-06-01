@@ -29,10 +29,13 @@
 				GameRef="@GameRef"
 				IsEscapeMenuOpen="@IsEscapeMenuOpen"
 				IsOptionsMenuOpen="@IsOptionsMenuOpen"
+				IsMatchSettingsMenuOpen="@IsMatchSettingsMenuOpen"
 				OnResumeGame="@ResumeGame"
 				OnOpenOptions="@OpenOptionsMenu"
+				OnOpenMatchSettings="@OpenMatchSettingsMenu"
 				OnCloseMenu="@CloseEscapeMenu"
 				OnCloseOptions="@CloseOptionsMenu"
+				OnCloseMatchSettings="@CloseMatchSettingsMenu"
 				OnReturnToLobby="@ReturnToLobby"
 				OnLeaveLobby="@ConfirmLeaveLobby"
 				OnExitGame="@ConfirmExitGame">
@@ -87,13 +90,14 @@
 
 	private bool IsEscapeMenuOpen;
 	private bool IsOptionsMenuOpen;
+	private bool IsMatchSettingsMenuOpen;
 	public static bool IsMenuBlockingHud { get; private set; }
 
 	private bool IsHudVisible() => GameRef.IsGameHudVisible();
 
 	private List<GamePopup> Popups => GameRef?.Popups.ToList() ?? new();
 
-	public static bool IsAnyMenuOpen => Instance.IsEscapeMenuOpen || Instance.IsOptionsMenuOpen;
+	public static bool IsAnyMenuOpen => Instance.IsEscapeMenuOpen || Instance.IsOptionsMenuOpen || Instance.IsMatchSettingsMenuOpen;
 	private bool IsGambleScreenActive => GameRef?.IsGambleScreenActive == true;
 
 	protected override void OnStart()
@@ -112,6 +116,7 @@
 		{
 			IsEscapeMenuOpen = false;
 			IsOptionsMenuOpen = false;
+			IsMatchSettingsMenuOpen = false;
 			IsMenuBlockingHud = false;
 			if ( GameRef is null )
 				return;
@@ -128,12 +133,13 @@
 		{
 			IsEscapeMenuOpen = false;
 			IsOptionsMenuOpen = false;
+			IsMatchSettingsMenuOpen = false;
 			IsMenuBlockingHud = false;
 			Mouse.Visibility = MouseVisibility.Visible;
 			return;
 		}
 
-		if ( IsEscapeMenuOpen || IsOptionsMenuOpen )
+		if ( IsEscapeMenuOpen || IsOptionsMenuOpen || IsMatchSettingsMenuOpen )
 			Mouse.Visibility = MouseVisibility.Visible;
 
 		if ( StandaloneConsole.IsConsoleOpen )
@@ -141,6 +147,7 @@
 			Mouse.Visibility = MouseVisibility.Visible;
 			IsEscapeMenuOpen = false;
 			IsOptionsMenuOpen = false;
+			IsMatchSettingsMenuOpen = false;
 			IsMenuBlockingHud = false;
 			return;
 		}
@@ -186,12 +193,19 @@
 			return;
 		}
 
+		if ( IsMatchSettingsMenuOpen )
+		{
+			IsMatchSettingsMenuOpen = false;
+			return;
+		}
+
 		IsEscapeMenuOpen = !IsEscapeMenuOpen;
 	}
 
 	private void OpenOptionsMenu()
 	{
 		IsOptionsMenuOpen = true;
+		IsMatchSettingsMenuOpen = false;
 	}
 
 	private void CloseOptionsMenu()
@@ -199,9 +213,22 @@
 		IsOptionsMenuOpen = false;
 	}
 
+	private void OpenMatchSettingsMenu()
+	{
+		IsMatchSettingsMenuOpen = true;
+		IsOptionsMenuOpen = false;
+	}
+
+	private void CloseMatchSettingsMenu()
+	{
+		IsMatchSettingsMenuOpen = false;
+	}
+
 	private void CloseEscapeMenu()
 	{
 		IsEscapeMenuOpen = false;
+		IsOptionsMenuOpen = false;
+		IsMatchSettingsMenuOpen = false;
 	}
 
 	private void ResumeGame()
@@ -248,6 +275,7 @@
 	{
 		IsEscapeMenuOpen = false;
 		IsOptionsMenuOpen = false;
+		IsMatchSettingsMenuOpen = false;
 
 		if ( !NetworkSession.CanUseEditorSoftLeave )
 		{
@@ -291,6 +319,7 @@
 	{
 		IsEscapeMenuOpen = false;
 		IsOptionsMenuOpen = false;
+		IsMatchSettingsMenuOpen = false;
 		NetworkSession.ForceDisconnectToMenu( Scene );
 	}
 
@@ -310,6 +339,7 @@
 	{
 		IsEscapeMenuOpen = false;
 		IsOptionsMenuOpen = false;
+		IsMatchSettingsMenuOpen = false;
 		Game.Close();
 	}
 
@@ -347,6 +377,7 @@
 		hash.Add( GameRef?.IsRecoveringHostState ?? false );
 		hash.Add( IsEscapeMenuOpen );
 		hash.Add( IsOptionsMenuOpen );
+		hash.Add( IsMatchSettingsMenuOpen );
 		hash.Add( IsGambleScreenActive );
 		hash.Add( IsHudVisible() );
 		hash.Add( AppSettings.SettingsAvailable );
@@ -356,6 +387,12 @@
 		hash.Add( AppSettings.GetUpscaler() );
 		hash.Add( AppSettings.GetFsr3Quality() );
 		hash.Add( GetPopupsHash() );
+
+		if ( GameRef?.Config is not null )
+		{
+			foreach ( var option in MatchConfigSchema.Options )
+				hash.Add( MatchConfigSchema.FormatValue( option, MatchConfigSchema.GetOptionValue( option, GameRef.Config ) ) );
+		}
 
 		return hash.ToHashCode();
 	}
