@@ -69,6 +69,8 @@ public sealed partial class GameController : Component
 	{
 		if ( !CanCurrentPlayerAct( Rpc.Caller ) )
 			return;
+
+		ClearSelectedSpaceForPlayer( GetPlayerForCaller( Rpc.Caller ) );
 		_ = RollDiceAsync(amount, throwStrength);
 	}
 

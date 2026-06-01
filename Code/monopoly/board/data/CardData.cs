@@ -4,13 +4,10 @@ using Sandbox;
 public static class CardData
 {
 
-	public static bool gambleDebugEnabled = true;
+	public static bool gambleDebugEnabled = false;
 
 	public static List<CardDef> CreateChanceCards()
 	{
-		if (gambleDebugEnabled)
-			return GambleDebugChanceCards();
-
 		return new()
 		{
 			new() { Key = "chance_advance_go", Deck = CardDeck.Chance, Title = "Advance to GO", Description = "Collect $200.", Action = CardAction.MoveToSpace, TargetSpaceIndex = 0 },
@@ -34,9 +31,6 @@ public static class CardData
 
 	public static List<CardDef> CreateCommunityChestCards()
 	{
-		if (gambleDebugEnabled)
-			return GambleDebugChestCards();
-
 		return new()
 		{
 			new() { Key = "chest_advance_go", Deck = CardDeck.CommunityChest, Title = "Advance to GO", Description = "Collect $200.", Action = CardAction.MoveToSpace, TargetSpaceIndex = 0 },

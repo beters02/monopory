@@ -96,6 +96,10 @@ public sealed partial class GameController : Component
 	[Button( "Roll Dice" )]
 	public async Task RollDiceAsync(int amount = -1, float throwStrength = 0.5f)
 	{
+
+		if ( CurrentPlayer == LocalPlayer )
+			ClearSelectedSpaceForPlayer( CurrentPlayer );
+
 		await RollDiceAsync( amount, null, throwStrength );
 	}
 
@@ -705,6 +709,7 @@ public sealed partial class GameController : Component
 	{
 		if ( CurrentTurnGetsExtraRoll )
 		{
+			//ClearSelectedSpaceForPlayer( CurrentPlayer );
 			PlayTurnSound( CurrentPlayer );
 			Phase = GamePhase.WaitingToRoll;
 			StartTurnTimer();
