@@ -1,0 +1,21 @@
+{
+  "publish": {
+    "Enabled": false,
+    "ProjectConfig": {
+      "Title": "Chat Message Mentioned",
+      "Type": "sound",
+      "Org": "local",
+      "Ident": "chatmessagementioned",
+      "Schema": 0,
+      "IncludeSourceFiles": false,
+      "Resources": null,
+      "PackageReferences": null,
+      "EditorReferences": null,
+      "Mounts": null,
+      "IsStandaloneOnly": false,
+      "Metadata": {
+        "SingleAssetSource": "sounds/effects/chat-message-mentioned.sound"
+      }
+    }
+  }
+}

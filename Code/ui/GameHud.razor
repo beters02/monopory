@@ -96,8 +96,6 @@
 			.Concat( LocalPopups.Popups )
 			.ToList();
 
-	
-
 	public static bool IsAnyMenuOpen => Instance.IsEscapeMenuOpen || Instance.IsOptionsMenuOpen;
 	private bool IsGambleScreenActive => GameRef?.IsGambleScreenActive == true;
 
@@ -152,11 +150,24 @@
 			return;
 		}
 
-		HandleMenuOpen();
+		UpdateInputs();
 		IsMenuBlockingHud = IsAnyMenuOpen;
 	}
 
-	private void HandleMenuOpen()
+	private void UpdateInputs()
+	{
+		UpdateMenuOpenInput();
+
+		if (Input.Pressed( "ClearAllPopups" ))
+		{
+			LocalPopups.Clear();
+			GameRef?.ClearPopups();
+			Log.Info( "Cleared all popups" );
+		}
+			
+	}
+
+	private void UpdateMenuOpenInput()
 	{	
 		if (MonopolyApp.IsStandalone)
 		{

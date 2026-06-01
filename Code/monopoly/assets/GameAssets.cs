@@ -32,6 +32,8 @@ public static class GameAssets
 		Sounds.PianoBingBingBing.Preload();
 		Sounds.TradeNegotiated.Preload();
 		Sounds.TradeReceived.Preload();
+		Sounds.ChatReceived.Preload();
+		Sounds.ChatSent.Preload();
 	}
 
 	public static class Images
@@ -65,8 +67,11 @@ public static class GameAssets
 		public static readonly GameSound PianoBingBingBing = new ( "sounds/effects/uipack-modern16.sound" );
 		public static readonly GameSound TradeReceived = new ( "sounds/effects/uipack-retro8.sound" );
 		public static readonly GameSound TradeNegotiated = new ( "sounds/effects/uipack-retro9.sound" );
-		public static readonly GameSound Success = new( "sounds/effects/ui-success.sound" );
-		
+		public static readonly GameSound Success = new ( "sounds/effects/ui-success.sound" );
+		public static readonly GameSound ChatReceived = new ( "sounds/effects/chat-message-received.sound" );
+		public static readonly GameSound ChatSent = new ( "sounds/effects/chat-message-sent.sound" );
+		public static readonly GameSound ChatMentioned = new ( "sounds/effects/chat-message-mentioned.sound" );
+
 		public static class Popup
 		{
 			public static readonly GameSound Info = Unassigned;

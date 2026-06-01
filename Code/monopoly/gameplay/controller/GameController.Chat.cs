@@ -1,8 +1,12 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
 using Sandbox;
 
 public sealed partial class GameController
 {
+	private static readonly Regex MentionRegex = new( @"(?<!\S)@([^\s@]+)", RegexOptions.Compiled );
 
 	[Rpc.Host]
 	public void RequestSendChatMessage( string rawMessage )
@@ -18,6 +22,7 @@ public sealed partial class GameController
 			message = message[..MaxChatMessageLength];
 
 		var sender = GetPlayerForConnection( Rpc.Caller );
+		message = NormalizeMentionSpacing( message );
 		var senderName = (sender?.PlayerName ?? "").Trim();
 		if ( string.IsNullOrWhiteSpace( senderName ) )
 		{
@@ -26,6 +31,17 @@ public sealed partial class GameController
 		}
 
 		AppendChatMessage( senderName, message );
+		PlayChatMessageSound( Rpc.Caller.SteamId );
+		PlayMentionSounds( message, sender );
+	}
+
+	[Rpc.Broadcast]
+	private void PlayChatMessageSound( SteamId senderSteamId )
+	{
+		if ( senderSteamId == Connection.Local.SteamId )
+			GameAssets.Sounds.ChatSent.Play();
+		else
+			GameAssets.Sounds.ChatReceived.Play();
 	}
 
 	private void AppendChatMessage( string senderName, string message )
@@ -51,6 +67,76 @@ public sealed partial class GameController
 
 			ChatMessages.Remove( oldestId );
 		}
+	}
+
+	private void PlayMentionSounds( string message, PlayerState sender )
+	{
+		var senderSteamId = sender?.OwnerId ?? 0;
+		foreach ( var mentionedPlayer in GetMentionedPlayers( message ) )
+		{
+			if ( mentionedPlayer.OwnerId == senderSteamId )
+				continue;
+
+			PlaySoundToConnection( GetConnectionForPlayer( mentionedPlayer ), GameAssets.Sounds.ChatMentioned );
+		}
+	}
+
+	private IEnumerable<PlayerState> GetMentionedPlayers( string message )
+	{
+		if ( string.IsNullOrWhiteSpace( message ) || Players is null || Players.Count == 0 )
+			yield break;
+
+		var mentions = new HashSet<string>( StringComparer.OrdinalIgnoreCase );
+		foreach ( Match match in MentionRegex.Matches( message ) )
+		{
+			var token = match.Groups[1].Value.TrimEnd( '.', ',', '!', '?', ':', ';', ')', ']', '}' );
+			if ( !string.IsNullOrWhiteSpace( token ) )
+				mentions.Add( token );
+		}
+
+		if ( mentions.Count == 0 )
+			yield break;
+
+		foreach ( var player in Players )
+		{
+			if ( player is null || !player.IsAssigned )
+				continue;
+
+			var playerName = (player.PlayerName ?? "").Trim();
+			if ( string.IsNullOrWhiteSpace( playerName ) )
+				continue;
+
+			if ( mentions.Contains( playerName ) )
+				yield return player;
+		}
+	}
+
+	private string NormalizeMentionSpacing( string message )
+	{
+		if ( string.IsNullOrWhiteSpace( message ) )
+			return message ?? "";
+
+		var mentionedNames = GetMentionedPlayers( message )
+			.Select( player => (player.PlayerName ?? "").Trim())
+			.Where( name => !string.IsNullOrWhiteSpace( name ) )
+			.ToHashSet( StringComparer.OrdinalIgnoreCase );
+
+		if ( mentionedNames.Count == 0 )
+			return message;
+
+		return MentionRegex.Replace( message, match =>
+		{
+			var full = match.Value;
+			var name = match.Groups[1].Value.TrimEnd( '.', ',', '!', '?', ':', ';', ')', ']', '}' );
+			if ( !mentionedNames.Contains( name ) )
+				return full;
+
+			var matchEnd = match.Index + match.Length;
+			if ( matchEnd < message.Length && !char.IsWhiteSpace( message[matchEnd] ) )
+				return $"{full} ";
+
+			return full;
+		} );
 	}
 
 	public void SendSystemChatMessage( string message )

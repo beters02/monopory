@@ -323,6 +323,7 @@ public sealed partial class GameController : Component
 			return;
 		}
 
+		emptySlot.SteamId = connection.SteamId;
 		emptySlot.OwnerId = connection.SteamId;
 		emptySlot.PlayerName = connection.DisplayName;
 		emptySlot.IsReady = false;

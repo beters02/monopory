@@ -2,6 +2,7 @@
 @using Sandbox
 @using Sandbox.UI
 @using System
+@using System.Text.RegularExpressions
 @inherits PanelComponent
 
 <root class="@GetRootClasses()">
@@ -12,7 +13,19 @@
 				{
 					<div class="chat-overlay-line">
 						<span class="chat-overlay-sender">@entry.Sender:</span>
-						<span class="chat-overlay-message">@entry.Message</span>
+						<span class="chat-overlay-message">
+							@foreach ( var segment in BuildMessageSegments( entry.Message ) )
+							{
+								if ( segment.IsMention )
+								{
+									<span class="chat-overlay-mention">@segment.Text</span>
+								}
+								else
+								{
+									@segment.Text
+								}
+							}
+						</span>
 					</div>
 				}
 			</div>
@@ -43,7 +56,9 @@
 	[Property] public GameController GameRef { get; set; }
 	public float HideAfterSeconds { get; set; } = 5f;
 	private readonly record struct ChatEntry( int Id, string Sender, string Message );
+	private readonly record struct MessageSegment( string Text, bool IsMention );
 	private readonly List<ChatEntry> ChatEntries = new();
+	private static readonly Regex MentionRegex = new( @"@\S+", RegexOptions.Compiled );
 	private ConsoleCommandTextEntry ChatInput = null!;
 	private Panel MessagesPanel = null!;
 	private bool IsComposing;
@@ -76,6 +91,7 @@
 		if ( IsComposing )
 		{
 			Mouse.Visibility = MouseVisibility.Visible;
+			ConfigureInput();
 
 			if ( Input.EscapePressed )
 			{
@@ -96,6 +112,14 @@
 
 		if ( Input.Keyboard.Pressed( "Enter" ) || Input.Keyboard.Pressed( "KP_ENTER" ) )
 			BeginCompose();
+	}
+
+	private void ConfigureInput()
+	{
+		if ( ChatInput is null )
+			return;
+
+		ChatInput.AutoComplete = GetMentionAutoComplete;
 	}
 
 	private void SyncEntries()
@@ -174,6 +198,97 @@
 		}
 
 		CancelCompose();
+	}
+
+	private object[] GetMentionAutoComplete( string value )
+	{
+		if ( string.IsNullOrWhiteSpace( value ) )
+			return Array.Empty<object>();
+
+		var mentionStart = FindMentionStartIndex( value );
+		if ( mentionStart < 0 )
+			return Array.Empty<object>();
+
+		var prefix = value[(mentionStart + 1)..];
+		if ( prefix.Contains( ' ' ) )
+			return Array.Empty<object>();
+
+		var beforeMention = value[..mentionStart];
+		return GetMentionablePlayerNames()
+			.Where( name => name.StartsWith( prefix, StringComparison.OrdinalIgnoreCase ) )
+			.Take( 20 )
+			.Select( name => (object)new TextEntry.AutocompleteEntry
+			{
+				Title = $"@{name}",
+				Value = $"{beforeMention}@{name}"
+			} )
+			.ToArray();
+	}
+
+	private IEnumerable<string> GetMentionablePlayerNames()
+	{
+		var game = GameRef ?? GameController.Instance;
+		if ( game?.Players is null )
+			return Array.Empty<string>();
+
+		return game.Players
+			.Where( player => player is not null && player.IsAssigned )
+			.Select( player => (player.PlayerName ?? "").Trim() )
+			.Where( name => !string.IsNullOrWhiteSpace( name ) && !name.Contains( ' ' ) )
+			.Distinct( StringComparer.OrdinalIgnoreCase );
+	}
+
+	private static int FindMentionStartIndex( string value )
+	{
+		if ( string.IsNullOrEmpty( value ) )
+			return -1;
+
+		for ( var i = value.Length - 1; i >= 0; i-- )
+		{
+			if ( value[i] != '@' )
+				continue;
+
+			var isWordStart = i == 0 || char.IsWhiteSpace( value[i - 1] );
+			if ( isWordStart )
+				return i;
+		}
+
+		return -1;
+	}
+
+	private IReadOnlyList<MessageSegment> BuildMessageSegments( string message )
+	{
+		if ( string.IsNullOrEmpty( message ) )
+			return new[] { new MessageSegment( "", false ) };
+
+		var segments = new List<MessageSegment>();
+		var index = 0;
+
+		foreach ( Match match in MentionRegex.Matches( message ) )
+		{
+			if ( match.Index > index )
+				segments.Add( new MessageSegment( message[index..match.Index], false ) );
+
+			var mentionToken = match.Value;
+			var mentionName = mentionToken[1..].TrimEnd( '.', ',', '!', '?', ':', ';', ')', ']', '}' );
+			var trailing = mentionToken[(mentionName.Length + 1)..];
+			var isMention = GetMentionablePlayerNames().Any( name => string.Equals( name, mentionName, StringComparison.OrdinalIgnoreCase ) );
+
+			if ( isMention )
+				segments.Add( new MessageSegment( $"@{mentionName}", true ) );
+			else
+				segments.Add( new MessageSegment( mentionToken, false ) );
+
+			if ( trailing.Length > 0 )
+				segments.Add( new MessageSegment( trailing, false ) );
+
+			index = match.Index + match.Length;
+		}
+
+		if ( index < message.Length )
+			segments.Add( new MessageSegment( message[index..], false ) );
+
+		return segments;
 	}
 
 	private void Touch()

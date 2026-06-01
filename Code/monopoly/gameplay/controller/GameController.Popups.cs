@@ -76,6 +76,11 @@ public sealed partial class GameController : Component
 		popups.RemoveAll( popup => popup.Id == popupId );
 	}
 
+	public void ClearPopups()
+	{
+		popups.Clear();
+	}
+
 	public void ShowLocalPopup( string title, string message, PopupKind kind = PopupKind.Info, bool canDismiss = true, float lifetime = 5f, bool soundEnabled = true )
 	{
 		ShowPopupLocal( nextPopupId++, title, message, kind, canDismiss, lifetime, soundEnabled );

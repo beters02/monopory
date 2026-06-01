@@ -4,6 +4,7 @@ using Sandbox;
 public sealed class PlayerState : Component
 {
 	[Sync] public long OwnerId {get; set;}
+	[Sync] public long SteamId { get; set; }
 
 	[Sync] public int SpaceIndex { get; set; } = 0;
 	[Sync] public int Money { get; set; } = 1500;
