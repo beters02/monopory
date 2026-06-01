@@ -7,7 +7,7 @@
 
 <root class="monopoly-flow-ui">
 	<ButtonPopLayer></ButtonPopLayer>
-	<PopupStack Popups="@LocalPopupList" OnDismiss="@DismissLocalPopup"></PopupStack>
+	<PopupStack Popups="@PopupList" OnDismiss="@DismissPopup"></PopupStack>
 	<div class="flow-screen lobby-screen">
 		<OptionsMenu IsOpen="@IsOptionsMenuOpen" OnClose="@CloseOptionsMenu"></OptionsMenu>
 		@if ( IsConfigMenuOpen && EditableConfig is not null )
@@ -183,8 +183,9 @@
 	[Property] public LobbyController LobbyRef { get; set; }
 
 	private LobbyController Lobby => LobbyRef;
+	private GameController PopupGame => GameController.Instance;
 	private List<LobbyPlayer> Players => Lobby?.Players ?? new();
-	private List<GamePopup> LocalPopupList => LocalPopups.Popups.ToList();
+	private List<GamePopup> PopupList => PopupGame?.Popups.ToList() ?? new();
 	private LobbyPlayer LocalPlayer => Lobby?.LocalPlayer;
 	private bool CanClickStartGame => Lobby?.CanLocalPlayerStartGame == true;
 	private bool IsOptionsMenuOpen;
@@ -273,7 +274,7 @@
 		hash.Add( AppSettings.GetMotionBlurEnabled() );
 		hash.Add( AppSettings.GetUpscaler() );
 		hash.Add( AppSettings.GetFsr3Quality() );
-		hash.Add( GetLocalPopupsHash() );
+		hash.Add( GetPopupsHash() );
 
 		foreach ( var player in Players )
 		{
@@ -313,7 +314,7 @@
 
 		if ( !CanClickStartGame )
 		{
-			LocalPopups.Show( "Cannot start game", StartBlockedMessage, PopupKind.Warning, true, 3f, false );
+			ShowLocalPopup( "Cannot start game", StartBlockedMessage, PopupKind.Warning, true, 3f, false );
 			return;
 		}
 
@@ -501,13 +502,13 @@
 
 		if ( !Lobby.TrySaveConfig( EditableConfig, out var errorMessage ) )
 		{
-			LocalPopups.Show( "Could not save", errorMessage, PopupKind.Warning, true, 3f, false );
+			ShowLocalPopup( "Could not save", errorMessage, PopupKind.Warning, true, 3f, false );
 			return;
 		}
 
 		LoadedConfigSnapshot = Lobby.HostedConfigSnapshot ?? "";
 		EditableConfig = Lobby.GetEditableConfig();
-		LocalPopups.Show( "Configuration saved", "Lobby game settings have been updated.", PopupKind.Success, true, 2.5f, false );
+		ShowLocalPopup( "Configuration saved", "Lobby game settings have been updated.", PopupKind.Success, true, 2.5f, false );
 		configRevision++;
 	}
 
@@ -516,15 +517,20 @@
 		return enabled ? "match-config-toggle-button selected" : "match-config-toggle-button";
 	}
 
-	private void DismissLocalPopup( int popupId )
+	private void DismissPopup( int popupId )
 	{
-		LocalPopups.Dismiss( popupId );
+		PopupGame?.DismissPopup( popupId );
 	}
 
-	private int GetLocalPopupsHash()
+	private void ShowLocalPopup( string title, string message, PopupKind kind = PopupKind.Info, bool canDismiss = true, float lifetime = 5f, bool soundEnabled = true )
+	{
+		PopupGame?.ShowLocalPopup( title, message, kind, canDismiss, lifetime, soundEnabled );
+	}
+
+	private int GetPopupsHash()
 	{
 		var hash = new HashCode();
-		foreach ( var popup in LocalPopupList )
+		foreach ( var popup in PopupList )
 		{
 			hash.Add( popup.Id );
 			hash.Add( popup.Title );

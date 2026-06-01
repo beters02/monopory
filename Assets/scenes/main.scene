@@ -7654,16 +7654,6 @@
                 "go": "469cf384-89f4-4353-99dd-4b89667eff1f",
                 "component_type": "Board"
               },
-              "DiceMaxDropSpeed": 540,
-              "DiceMaxHorizontalSpeed": 95,
-              "DiceMaxSpinSpeed": 30,
-              "DiceMinDropSpeed": 260,
-              "DiceMinHorizontalSpeed": 35,
-              "DiceMinSpinSpeed": 12,
-              "DiceSettleTimeout": 5,
-              "DiceSpawnSpacing": 12,
-              "DiceThrowCenter": "0,0,0",
-              "DiceThrowHeight": 110,
               "DieA": null,
               "DieB": null,
               "OnComponentDestroy": null,
@@ -7681,8 +7671,7 @@
               "TokenPrefab": {
                 "_type": "gameobject",
                 "prefab": "prefabs/token_02.prefab"
-              },
-              "UsePhysicalDice": true
+              }
             },
             {
               "__type": "MonopolyTheme",
@@ -8624,37 +8613,6 @@
           "Children": []
         }
       ]
-    },
-    {
-      "__guid": "e5446b9c-b2b1-4198-a2c3-dcc66f3ba5da",
-      "__version": 2,
-      "Flags": 0,
-      "Name": "asd",
-      "Position": "-345.133362,-432.402405,286.538086",
-      "Rotation": "0,0,0,1",
-      "Scale": "1,1,1",
-      "Tags": "",
-      "Enabled": true,
-      "NetworkMode": 2,
-      "NetworkFlags": 0,
-      "NetworkOrphaned": 0,
-      "NetworkTransmit": true,
-      "OwnerTransfer": 1,
-      "Components": [
-        {
-          "__type": "ChangeDiceColorTest",
-          "__guid": "baa72e33-b7d6-4891-a555-f185b9c13613",
-          "__enabled": true,
-          "Flags": 0,
-          "OnComponentDestroy": null,
-          "OnComponentDisabled": null,
-          "OnComponentEnabled": null,
-          "OnComponentFixedUpdate": null,
-          "OnComponentStart": null,
-          "OnComponentUpdate": null
-        }
-      ],
-      "Children": []
     }
   ],
   "SceneProperties": {
@@ -8679,14 +8637,14 @@
       "CustomBounds": false
     },
     "GameObjectSystems": {
-      "Sandbox.SelectionSetsSystem": {
-        "Data": {
-          "SelectionSets": []
-        }
-      },
       "Sandbox.Clutter.ClutterGridSystem": {
         "Storage": {
           "$blob": "7664decd-7b1f-4214-a5a2-850285e10057"
+        }
+      },
+      "Sandbox.SelectionSetsSystem": {
+        "Data": {
+          "SelectionSets": []
         }
       }
     }

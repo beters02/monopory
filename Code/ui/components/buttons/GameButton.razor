@@ -73,10 +73,7 @@
 		if ( Disabled )
 			return;
 
-		if ( LocalPopups.HasBlockingPopup && !IgnoreGlobalPopupBlock )
-			return;
-
-		if (!isHovering)
+		if ( GameController.Instance?.HasBlockingPopup == true && !IgnoreGlobalPopupBlock )
 			return;
 
 		ButtonPopEffects.Show( Mouse.Position );
@@ -123,7 +120,7 @@
 
 		ButtonPopEffects.Show( Mouse.Position );
 
-		if ( LocalPopups.HasBlockingPopup && !IgnoreGlobalPopupBlock )
+		if ( GameController.Instance?.HasBlockingPopup == true && !IgnoreGlobalPopupBlock )
 			return;
 
 		if ( !CanClick )
@@ -193,7 +190,7 @@
 		if ( !ShowBlockedPopup )
 			return;
 
-		LocalPopups.Show(
+		GameController.Instance?.ShowLocalPopup(
 			BlockedPopupTitle,
 			BlockedPopupMessage,
 			BlockedPopupKind,

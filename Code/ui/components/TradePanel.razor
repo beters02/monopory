@@ -246,7 +246,7 @@
 		var isNegotiation = NegotiatedTradeId >= 0;
 		if ( GameRef.MaxPendingSentTradesPerPlayer > 0 && GameRef.GetTrades().Count( trade => trade.SenderPlayerIndex == GameRef.LocalPlayerIndex ) >= GameRef.MaxPendingSentTradesPerPlayer )
 		{
-			LocalPopups.Show(
+			GameRef.ShowLocalPopup(
 				"Trade limit reached",
 				$"You can only have {GameRef.MaxPendingSentTradesPerPlayer} sent trade request(s) pending.",
 				PopupKind.Warning

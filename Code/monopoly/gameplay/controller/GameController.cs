@@ -141,7 +141,10 @@ public sealed partial class GameController : Component, Component.INetworkListen
 
 	private static GameController instance;
 	private int nextPopupId = 1;
+	private int nextLocalPopupId = -1;
 	private readonly List<GamePopup> popups = new();
+	private readonly Dictionary<int, Action> confirmPopupActions = new();
+	private readonly Dictionary<int, Action> cancelPopupActions = new();
 	private readonly List<GameObject> spawnedTokenObjects = new();
 	private float pausedTurnRemainingSeconds;
 	private float pausedAuctionRemainingSeconds;
@@ -152,6 +155,7 @@ public sealed partial class GameController : Component, Component.INetworkListen
 
 	public static GameController Instance => instance;
 	public IReadOnlyList<GamePopup> Popups => popups;
+	public bool HasBlockingPopup => popups.Any( popup => popup.IsBlocking );
 
 	public int LocalSelectedSpaceIndex { get; set; } = -1;
 	public string LocalSelectedDrawnCardText { get; set; } = "";

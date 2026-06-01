@@ -430,7 +430,7 @@
 
 	private void Mortgage()
 	{
-		if ( SelectedSpaceIndex < 0 || LocalPopups.HasBlockingPopup )
+		if ( SelectedSpaceIndex < 0 || GameRef?.HasBlockingPopup == true )
 			return;
 
 		if ( IsSelectedSpaceMortgaged )
@@ -439,7 +439,7 @@
 				return;
 
 			var spaceName = SelectedSpace?.DisplayName ?? "this property";
-			LocalPopups.ShowConfirmation(
+			GameRef?.ShowLocalConfirmation(
 				"Confirm unmortgage",
 				$"Are you sure you want to unmortgage {spaceName} for ${SelectedUnmortgageCost}?",
 				() => GameRef?.RequestUnmortgageProperty( SelectedSpaceIndex ),
@@ -453,7 +453,7 @@
 			return;
 
 		var mortgageSpaceName = SelectedSpace?.DisplayName ?? "this property";
-		LocalPopups.ShowConfirmation(
+		GameRef?.ShowLocalConfirmation(
 			"Confirm mortgage",
 			$"Are you sure you want to mortgage {mortgageSpaceName} for ${SelectedMortgageValue}?",
 			() => GameRef?.RequestMortgageProperty( SelectedSpaceIndex ),

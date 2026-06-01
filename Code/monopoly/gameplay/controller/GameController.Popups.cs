@@ -19,7 +19,7 @@ public sealed partial class GameController : Component
 
 			popup.Lifetime -= Time.Delta;
 			if ( popup.Lifetime <= 0f )
-				popups.RemoveAt( i );
+				DismissPopup( popup.Id );
 		}
 	}
 
@@ -74,16 +74,54 @@ public sealed partial class GameController : Component
 	public void DismissPopup( int popupId )
 	{
 		popups.RemoveAll( popup => popup.Id == popupId );
+		confirmPopupActions.Remove( popupId );
+		cancelPopupActions.Remove( popupId );
 	}
 
 	public void ClearPopups()
 	{
 		popups.Clear();
+		confirmPopupActions.Clear();
+		cancelPopupActions.Clear();
 	}
 
 	public void ShowLocalPopup( string title, string message, PopupKind kind = PopupKind.Info, bool canDismiss = true, float lifetime = 5f, bool soundEnabled = true )
 	{
-		ShowPopupLocal( nextPopupId++, title, message, kind, canDismiss, lifetime, soundEnabled );
+		ShowPopupLocal( nextLocalPopupId--, title, message, kind, canDismiss, lifetime, false, "Confirm", "Cancel", soundEnabled );
+	}
+
+	public int ShowLocalConfirmation( string title, string message, Action onConfirm, Action onCancel = null, string confirmLabel = "Confirm", string cancelLabel = "Cancel", bool soundEnabled = true )
+	{
+		var popupId = nextLocalPopupId--;
+		ShowPopupLocal(
+			popupId,
+			title,
+			string.IsNullOrWhiteSpace( message ) ? "Are you sure?" : message,
+			PopupKind.Confirmation,
+			false,
+			0f,
+			true,
+			string.IsNullOrWhiteSpace( confirmLabel ) ? "Confirm" : confirmLabel,
+			string.IsNullOrWhiteSpace( cancelLabel ) ? "Cancel" : cancelLabel,
+			soundEnabled
+		);
+
+		confirmPopupActions[popupId] = onConfirm;
+		cancelPopupActions[popupId] = onCancel;
+		return popupId;
+	}
+
+	public void ResolveConfirmationPopup( int popupId, bool confirmed )
+	{
+		Action callback = null;
+
+		if ( confirmed )
+			confirmPopupActions.TryGetValue( popupId, out callback );
+		else
+			cancelPopupActions.TryGetValue( popupId, out callback );
+
+		DismissPopup( popupId );
+		callback?.Invoke();
 	}
 
 	public void SendTableChatMessage( string title, string message )
@@ -97,12 +135,12 @@ public sealed partial class GameController : Component
 	[Rpc.Broadcast]
 	private void ShowPopup( int popupId, string title, string message, PopupKind kind, bool canDismiss, float lifetime, bool soundEnabled )
 	{
-		ShowPopupLocal( popupId, title, message, kind, canDismiss, lifetime, soundEnabled );
+		ShowPopupLocal( popupId, title, message, kind, canDismiss, lifetime, false, "Confirm", "Cancel", soundEnabled );
 	}
 
-	private void ShowPopupLocal( int popupId, string title, string message, PopupKind kind, bool canDismiss, float lifetime, bool soundEnabled )
+	private void ShowPopupLocal( int popupId, string title, string message, PopupKind kind, bool canDismiss, float lifetime, bool isBlocking, string confirmLabel, string cancelLabel, bool soundEnabled )
 	{
-		popups.RemoveAll( popup => popup.Id == popupId );
+		DismissPopup( popupId );
 		popups.Add( new GamePopup
 		{
 			Id = popupId,
@@ -110,15 +148,31 @@ public sealed partial class GameController : Component
 			Message = message ?? "",
 			Kind = kind,
 			CanDismiss = canDismiss,
-			Lifetime = lifetime
+			Lifetime = lifetime,
+			IsBlocking = isBlocking,
+			ConfirmLabel = confirmLabel,
+			CancelLabel = cancelLabel
 		} );
 
 		if ( soundEnabled )
 			GameAssets.Sounds.Popup.ForKind( kind ).Play();
 
+		TrimPopupsToMaxVisible();
+	}
+
+	private void TrimPopupsToMaxVisible()
+	{
 		var maxVisiblePopups = Math.Max( 1, MaxVisiblePopups );
-		while ( popups.Count > maxVisiblePopups )
-			popups.RemoveAt( 0 );
+		var standardPopupCount = popups.Count( popup => popup.Kind != PopupKind.Confirmation );
+		while ( standardPopupCount > maxVisiblePopups )
+		{
+			var oldestStandardPopup = popups.FirstOrDefault( popup => popup.Kind != PopupKind.Confirmation );
+			if ( oldestStandardPopup is null )
+				return;
+
+			DismissPopup( oldestStandardPopup.Id );
+			standardPopupCount--;
+		}
 	}
 
 	// Custom Game Popups

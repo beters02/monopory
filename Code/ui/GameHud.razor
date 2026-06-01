@@ -91,10 +91,7 @@
 
 	private bool IsHudVisible() => GameRef.IsGameHudVisible();
 
-	private List<GamePopup> Popups =>
-		(GameRef?.Popups ?? Enumerable.Empty<GamePopup>())
-			.Concat( LocalPopups.Popups )
-			.ToList();
+	private List<GamePopup> Popups => GameRef?.Popups.ToList() ?? new();
 
 	public static bool IsAnyMenuOpen => Instance.IsEscapeMenuOpen || Instance.IsOptionsMenuOpen;
 	private bool IsGambleScreenActive => GameRef?.IsGambleScreenActive == true;
@@ -104,8 +101,6 @@
 		base.OnStart();
 
 		Instance = this;
-
-		LocalPopups.Clear();
 	}
 
 	protected override void OnUpdate()
@@ -160,7 +155,6 @@
 
 		if (Input.Pressed( "ClearAllPopups" ))
 		{
-			LocalPopups.Clear();
 			GameRef?.ClearPopups();
 			Log.Info( "Cleared all popups" );
 		}
@@ -240,7 +234,7 @@
 
 	private void ConfirmLeaveLobby()
 	{
-		LocalPopups.ShowConfirmation(
+		GameRef?.ShowLocalConfirmation(
 			"Leave lobby?",
 			"You will leave the current match lobby.",
 			LeaveLobby,
@@ -302,7 +296,7 @@
 
 	private void ConfirmExitGame()
 	{
-		LocalPopups.ShowConfirmation(
+		GameRef?.ShowLocalConfirmation(
 			"Exit game?",
 			"The game will close.",
 			ExitGame,
@@ -321,13 +315,12 @@
 
 	private void DismissPopup( int popupId )
 	{
-		LocalPopups.Dismiss( popupId );
 		GameRef?.DismissPopup( popupId );
 	}
 
 	private void HandleConfirmationDecision( int popupId, bool confirmed )
 	{
-		LocalPopups.ResolveConfirmation( popupId, confirmed );
+		GameRef?.ResolveConfirmationPopup( popupId, confirmed );
 	}
 
 	private int GetPopupsHash()
