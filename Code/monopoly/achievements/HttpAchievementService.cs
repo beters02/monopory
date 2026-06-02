@@ -20,6 +20,25 @@ public sealed class HttpAchievementService : IAchievementService, ICosmeticUnloc
 		this.bearerToken = bearerToken ?? "";
 	}
 
+	public static async Task<string> AuthenticateAsync( string baseUrl, long steamId, string authToken, string displayName )
+	{
+		using var client = new HttpClient
+		{
+			BaseAddress = new Uri( baseUrl.TrimEnd( '/' ) + "/" )
+		};
+
+		using var response = await client.PostAsJsonAsync( "auth/steam/session", new SteamSessionRequest
+		{
+			SteamId = steamId,
+			Token = authToken ?? "",
+			DisplayName = displayName ?? ""
+		} );
+		response.EnsureSuccessStatusCode();
+
+		var auth = await response.Content.ReadFromJsonAsync<SteamSessionResponse>();
+		return auth?.AccessToken ?? "";
+	}
+
 	public async Task<PlayerAchievementState> GetMyStateAsync()
 	{
 		var state = await SendAsync<PlayerAchievementState>( HttpMethod.Get, "me/achievements" );
@@ -118,5 +137,18 @@ public sealed class HttpAchievementService : IAchievementService, ICosmeticUnloc
 
 		return state?.UnlockedCosmeticIds?.Contains( cosmetic.Id, StringComparer.OrdinalIgnoreCase ) == true;
 	}
+}
+
+public sealed class SteamSessionRequest
+{
+	public long SteamId { get; init; }
+	public string Token { get; init; } = "";
+	public string DisplayName { get; init; } = "";
+}
+
+public sealed class SteamSessionResponse
+{
+	public string AccessToken { get; init; } = "";
+	public DateTimeOffset ExpiresAt { get; init; }
 }
 #endif
