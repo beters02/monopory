@@ -72,6 +72,9 @@ public sealed partial class GameController : Component
 		var creditorText = creditor is null ? "" : $" while owing {creditor.PlayerName}";
 		Log.Info( $"{player.PlayerName} went bankrupt{creditorText}." );
 		SendGlobalPopupToAll( "Bankrupt", $"{player.PlayerName} is bankrupt.", PopupKind.Danger, true, 6f );
+		ReportAchievementEvent( player, AchievementEventTypes.WentBankrupt );
+		if ( creditor is not null )
+			ReportAchievementEvent( creditor, AchievementEventTypes.BankruptedOpponent );
 
 		if ( advanceTurnIfCurrent &&
 			MatchState == MatchLifecycleState.InGame &&
@@ -115,6 +118,8 @@ public sealed partial class GameController : Component
 			NetworkSession.ClearRejoinWindow();
 
 		var winnerName = Winner?.PlayerName ?? "No one";
+		ReportMatchCompletedAchievements();
+		ReportWinnerAchievements();
 		SendGlobalPopupToAll( "Game over", $"{winnerName} won the game.", PopupKind.Success, true, 8f );
 		Log.Info( $"Game over. Winner: {winnerName}." );
 	}

@@ -15,7 +15,29 @@ public sealed partial class LobbyController
 			return false;
 
 		var normalizedPieceId = PieceCatalog.GetByIdOrDefault( pieceId ).Id;
+		if ( !AchievementServices.Cosmetics.CanUseCosmetic( ownerId, CosmeticCatalog.NormalizePieceCosmeticId( normalizedPieceId ) ) )
+			return false;
+
 		SelectedPieces[GetReadyKey( ownerId )] = normalizedPieceId;
+		return true;
+	}
+
+	public bool TrySetSelectedDiceSkin( long ownerId, string diceSkinId )
+	{
+		if ( !Networking.IsHost )
+			return false;
+
+		if ( ownerId == 0 || IsMarkedDisconnected( ownerId ) )
+			return false;
+
+		if ( !GetKnownOwnerIds().Contains( ownerId ) )
+			return false;
+
+		var normalizedDiceSkinId = DiceSkinCatalog.GetByIdOrDefault( diceSkinId ).Id;
+		if ( !AchievementServices.Cosmetics.CanUseCosmetic( ownerId, CosmeticCatalog.NormalizeDiceSkinCosmeticId( normalizedDiceSkinId ) ) )
+			return false;
+
+		SelectedDiceSkins[GetReadyKey( ownerId )] = normalizedDiceSkinId;
 		return true;
 	}
 
@@ -25,9 +47,28 @@ public sealed partial class LobbyController
 			return PieceCatalog.DefaultPieceId;
 
 		if ( SelectedPieces.TryGetValue( GetReadyKey( ownerId ), out var selectedPieceId ) && PieceCatalog.IsValidPieceId( selectedPieceId ) )
-			return PieceCatalog.GetByIdOrDefault( selectedPieceId ).Id;
+		{
+			var normalizedPieceId = PieceCatalog.GetByIdOrDefault( selectedPieceId ).Id;
+			if ( AchievementServices.Cosmetics.CanUseCosmetic( ownerId, CosmeticCatalog.NormalizePieceCosmeticId( normalizedPieceId ) ) )
+				return normalizedPieceId;
+		}
 
 		return PieceCatalog.DefaultPieceId;
+	}
+
+	public string GetSelectedDiceSkinForOwner( long ownerId )
+	{
+		if ( ownerId == 0 )
+			return DiceSkinCatalog.DefaultDiceSkinId;
+
+		if ( SelectedDiceSkins.TryGetValue( GetReadyKey( ownerId ), out var selectedDiceSkinId ) && DiceSkinCatalog.IsValidDiceSkinId( selectedDiceSkinId ) )
+		{
+			var normalizedDiceSkinId = DiceSkinCatalog.GetByIdOrDefault( selectedDiceSkinId ).Id;
+			if ( AchievementServices.Cosmetics.CanUseCosmetic( ownerId, CosmeticCatalog.NormalizeDiceSkinCosmeticId( normalizedDiceSkinId ) ) )
+				return normalizedDiceSkinId;
+		}
+
+		return DiceSkinCatalog.DefaultDiceSkinId;
 	}
 
 	public bool TrySetReady( long ownerId, bool isReady )
@@ -71,7 +112,8 @@ public sealed partial class LobbyController
 				IsConnected = connection is not null && !isDisconnected,
 				IsHost = ownerId == effectiveHostOwnerId,
 				IsAbandoned = false,
-				AbandonEndsAt = GetDisconnectedDeadline( ownerId )
+				AbandonEndsAt = GetDisconnectedDeadline( ownerId ),
+				SelectedDiceSkinId = GetSelectedDiceSkinForOwner( ownerId )
 			};
 
 			players.Add( player );

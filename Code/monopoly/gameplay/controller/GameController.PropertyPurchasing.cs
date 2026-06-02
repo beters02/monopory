@@ -139,6 +139,7 @@ public sealed partial class GameController : Component
 
 		var ownedSetsBeforePurchase = CaptureOwnedSetKeys( playerIndex );
 		PropertyOwners[def.Index] = playerIndex;
+		ReportPropertyAcquiredAchievements( playerIndex, def );
 		ShowPropertyBoughtPopup( player, def );
 		ShowNewlyOwnedSetPopups( ownedSetsBeforePurchase, playerIndex );
 		Log.Info( $"{player.PlayerName} bought {def.DisplayName} for ${def.Price}." );
@@ -220,6 +221,7 @@ public sealed partial class GameController : Component
 		foreach ( var def in propertiesToBuy )
 		{
 			PropertyOwners[def.Index] = playerIndex;
+			ReportPropertyAcquiredAchievements( playerIndex, def );
 			Log.Info( $"{player.PlayerName} bought {def.DisplayName} for ${def.Price}." );
 		}
 
@@ -304,6 +306,7 @@ public sealed partial class GameController : Component
 
 		var ownedSetsBeforePurchase = CaptureOwnedSetKeys( ownerIndex );
 		PropertyOwners[def.Index] = ownerIndex;
+		ReportPropertyAcquiredAchievements( ownerIndex, def );
 		ShowNewlyOwnedSetPopups( ownedSetsBeforePurchase, ownerIndex );
 
 		Log.Info( $"{player.PlayerName} bought {def.DisplayName} for ${def.Price}." );

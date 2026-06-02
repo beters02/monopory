@@ -8,6 +8,7 @@ public sealed class PieceDefinition
 	public string Description { get; init; } = "";
 	public string ModelPath { get; init; } = "";
 	public string AnimgraphPath { get; init; } = "";
+	public string RequiredAchievementId { get; init; } = "";
 	public Vector3 LocalVisualScale { get; init; } = Vector3.One;
 	public Vector3 LocalVisualOffset { get; init; } = Vector3.Zero;
 	public float HeightOffset { get; init; } = 4f;
@@ -39,6 +40,7 @@ public static class PieceCatalog
 				Id = "detective_man",
 				Label = "Detective (Man)",
 				Description = "Stylish detective character token.",
+				RequiredAchievementId = AchievementIds.FirstWin,
 				ModelPath = "models/cutieguys_detective_man/cutieguys_detective_man.vmdl",
 				AnimgraphPath = "animgraphs/cutieguys_detective_man.vanmgrph",
 				LocalVisualScale = new Vector3( 0.2f, 0.2f, 0.2f ),

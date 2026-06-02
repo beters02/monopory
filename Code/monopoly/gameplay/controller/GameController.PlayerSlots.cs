@@ -109,6 +109,7 @@ public sealed partial class GameController : Component
 			emptySlot.IsReady = false;
 			ResetPlayerForGame( emptySlot );
 			emptySlot.SelectedPieceId = PieceCatalog.GetByIdOrDefault( startingPlayer.SelectedPieceId ).Id;
+			emptySlot.SelectedDiceSkinId = DiceSkinCatalog.GetByIdOrDefault( startingPlayer.SelectedDiceSkinId ).Id;
 		}
 	}
 
@@ -239,6 +240,7 @@ public sealed partial class GameController : Component
 		player.TurnTimeoutCount = 0;
 		ResetPlayerForGame( player );
 		player.SelectedPieceId = PieceCatalog.DefaultPieceId;
+		player.SelectedDiceSkinId = DiceSkinCatalog.DefaultDiceSkinId;
 	}
 
 	private void ResetPlayerForGame( PlayerState player )
@@ -329,6 +331,7 @@ public sealed partial class GameController : Component
 		emptySlot.IsReady = false;
 		ResetPlayerForGame( emptySlot );
 		emptySlot.SelectedPieceId = PieceCatalog.DefaultPieceId;
+		emptySlot.SelectedDiceSkinId = DiceSkinCatalog.DefaultDiceSkinId;
 
 		if ( PreferredHostOwnerId == 0 )
 			PreferredHostOwnerId = connection.SteamId;

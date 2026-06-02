@@ -382,6 +382,8 @@ public sealed partial class GameController : Component
 		if ( previousKeys is null )
 			return;
 
+		ReportNewlyOwnedSetAchievements( previousKeys, playerIndexes );
+
 		foreach ( var playerIndex in playerIndexes.Distinct().Where( index => index >= 0 ) )
 		{
 			var player = Players.ElementAtOrDefault( playerIndex );

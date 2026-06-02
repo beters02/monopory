@@ -43,6 +43,15 @@ public sealed partial class LobbyController
 	}
 
 	[Rpc.Host]
+	public void RequestSetSelectedDiceSkin( string diceSkinId )
+	{
+		if ( Rpc.Caller is null )
+			return;
+
+		TrySetSelectedDiceSkin( Rpc.Caller.SteamId, diceSkinId );
+	}
+
+	[Rpc.Host]
 	public void RequestStartGame()
 	{
 		if ( OnlyHostStartsGame && !IsEffectiveHostCaller( Rpc.Caller ) )

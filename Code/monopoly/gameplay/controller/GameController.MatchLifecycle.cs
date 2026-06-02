@@ -57,6 +57,7 @@ public sealed partial class GameController : Component
 		BeginTurnForCurrentPlayer();
 		StartTurnTimer();
 
+		ReportMatchStartedAchievements();
 		SendGlobalPopupToAll( "Game started", "The first turn is live.", PopupKind.Success, true, 4f );
 		return true;
 	}
@@ -115,6 +116,51 @@ public sealed partial class GameController : Component
 		SyncLobbyConnections();
 		MatchState = MatchLifecycleState.Lobby;
 		SceneFlow.LoadLobby( Scene );
+		return true;
+	}
+
+	public bool TryForceEndGameWin( PlayerState winner, out string message )
+	{
+		message = "";
+
+		if ( !Networking.IsHost )
+		{
+			message = "Only the host can force a game win.";
+			return false;
+		}
+
+		if ( winner is null || !winner.IsAssigned )
+		{
+			message = "Winner is not an active player.";
+			return false;
+		}
+
+		var winnerIndex = Players.IndexOf( winner );
+		if ( winnerIndex < 0 )
+		{
+			message = "Winner is not part of this game.";
+			return false;
+		}
+
+		CurrentTurnEndsAt = 0f;
+		ClearAuction();
+		ClearPendingForcedPayment();
+		PendingPurchaseSpaceIndex = -1;
+		CurrentTurnGetsExtraRoll = false;
+		CurrentTurnConsecutiveDoubles = 0;
+		CurrentTurnDoublesPlayerIndex = -1;
+		Phase = GamePhase.TurnEnded;
+		WinnerPlayerIndex = winnerIndex;
+		MatchState = MatchLifecycleState.GameOver;
+		if ( Networking.IsHost && Connection.All.Count <= 1 )
+			NetworkSession.ClearRejoinWindow();
+
+		ReportMatchCompletedAchievements();
+		ReportWinnerAchievements();
+		SendGlobalPopupToAll( "Game over", $"{winner.PlayerName} won the game.", PopupKind.Success, true, 8f );
+		Log.Info( $"Game force-ended. Winner: {winner.PlayerName}." );
+
+		message = $"Forced game over. Winner: {winner.PlayerName}.";
 		return true;
 	}
 

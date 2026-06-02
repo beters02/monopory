@@ -220,6 +220,7 @@ public sealed partial class GameController : Component
 
 	private async Task CompletePendingJailRollAsync( int total, bool rolledDoubles )
 	{
+		ReportDiceRollAchievements( CurrentPlayer, rolledDoubles );
 		ApplySnakeEyesBonus( CurrentPlayer );
 
 		if ( rolledDoubles )
@@ -329,6 +330,7 @@ public sealed partial class GameController : Component
 			: RollExecutionKind.Physical;
 
 		ApplySnakeEyesBonus( CurrentPlayer );
+		ReportDiceRollAchievements( CurrentPlayer, rolledDoubles );
 
 		if ( !suppressDoublesExtraTurn && Config?.DoublesGoesAgain == true && ApplyDoublesRule( rolledDoubles ) )
 		{
@@ -601,6 +603,9 @@ public sealed partial class GameController : Component
 
 	public void SendPlayerToJail( PlayerState player )
 	{
+		if ( player is null )
+			return;
+
 		player.SpaceIndex = 10;
 		player.IsInJail = true;
 		player.JailTurnsRemaining = JailTurnCount;
@@ -610,6 +615,7 @@ public sealed partial class GameController : Component
 		CurrentTurnDoublesPlayerIndex = -1;
 
 		Log.Info( $"{player.PlayerName} was sent to Jail." );
+		ReportAchievementEvent( player, AchievementEventTypes.SentToJail );
 	}
 
 	private void ReleasePlayerFromJail( PlayerState player )

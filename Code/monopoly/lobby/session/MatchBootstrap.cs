@@ -63,7 +63,8 @@ public sealed class MatchBootstrap
 				Name = player.Name,
 				IsReady = player.IsReady,
 				IsLocal = player.IsLocal,
-				SelectedPieceId = PieceCatalog.GetByIdOrDefault( player.SelectedPieceId ).Id
+				SelectedPieceId = PieceCatalog.GetByIdOrDefault( player.SelectedPieceId ).Id,
+				SelectedDiceSkinId = DiceSkinCatalog.GetByIdOrDefault( player.SelectedDiceSkinId ).Id
 			} )
 			.ToList();
 	}

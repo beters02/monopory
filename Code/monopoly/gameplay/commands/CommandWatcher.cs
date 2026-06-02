@@ -52,6 +52,12 @@ public sealed class CommandWatcher : Component
 		LogCommandResult( "change_vacation_cash", GameCommandManager.ChangeVacationCash( connection, amount ) );
 	}
 
+	[ConCmd( "force_end_game_win" )]
+	private static void ForceEndGameWin( Connection connection, string playerName = "self", params string[] playerNameTail )
+	{
+		LogCommandResult( "force_end_game_win", GameCommandManager.ForceEndGameWin( connection, JoinPlayerName( playerName, playerNameTail ) ) );
+	}
+
 	[ConCmd( "jail_player" )]
 	private static void JailPlayer( Connection connection, string playerName = "self" )
 	{

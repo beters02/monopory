@@ -9,4 +9,5 @@ public sealed class LobbyPlayer
 	public bool IsAbandoned { get; set; }
 	public float AbandonEndsAt { get; set; }
 	public string SelectedPieceId { get; set; } = PieceCatalog.DefaultPieceId;
+	public string SelectedDiceSkinId { get; set; } = DiceSkinCatalog.DefaultDiceSkinId;
 }

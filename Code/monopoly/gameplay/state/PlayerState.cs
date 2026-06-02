@@ -23,6 +23,7 @@ public sealed class PlayerState : Component
 	[Sync] public string PlayerName { get; set; } = "Player";
 	[Sync] public int ColorSlot { get; set; } = -1;
 	[Sync] public string SelectedPieceId { get; set; } = PieceCatalog.DefaultPieceId;
+	[Sync] public string SelectedDiceSkinId { get; set; } = DiceSkinCatalog.DefaultDiceSkinId;
 
 	public bool IsOwner => OwnerId == Connection.Local.SteamId;
 

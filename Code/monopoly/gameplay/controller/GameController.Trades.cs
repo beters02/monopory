@@ -84,10 +84,16 @@ public sealed partial class GameController : Component
 		sender.Money += trade.ReceiverMoney;
 
 		foreach ( var spaceIndex in trade.SenderPropertyIndexes )
+		{
 			PropertyOwners[spaceIndex] = trade.ReceiverPlayerIndex;
+			ReportPropertyAcquiredAchievements( trade.ReceiverPlayerIndex, Board?.GetSpaceDef( spaceIndex ) );
+		}
 
 		foreach ( var spaceIndex in trade.ReceiverPropertyIndexes )
+		{
 			PropertyOwners[spaceIndex] = trade.SenderPlayerIndex;
+			ReportPropertyAcquiredAchievements( trade.SenderPlayerIndex, Board?.GetSpaceDef( spaceIndex ) );
+		}
 
 		foreach ( var cardId in trade.SenderCardIds )
 			TransferTradableCard( trade.SenderPlayerIndex, trade.ReceiverPlayerIndex, cardId );

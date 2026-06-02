@@ -184,6 +184,24 @@ public sealed class GameCommandManager : Component
 			: CommandResult.Fail( message );
 	}
 
+	public static CommandResult ForceEndGameWin( Connection caller, string playerName = "self" )
+	{
+		if ( !CanUseCheatCommand( caller ) )
+			return CommandResult.Fail( "sv_cheats must be enabled to force-end the game." );
+
+		var game = GameController.Instance;
+		if ( game is null )
+			return CommandResult.Fail( "No active game." );
+
+		var player = game.ResolvePlayerReference( playerName, caller );
+		if ( player is null )
+			return CommandResult.Fail( $"Could not find player \"{playerName}\"." );
+
+		return game.TryForceEndGameWin( player, out var message )
+			? CommandResult.Success( message )
+			: CommandResult.Fail( message );
+	}
+
 	private static bool CanUseCheatCommand( Connection caller )
 	{
 		if ( Networking.IsHost && (caller is null || caller == Connection.Local) )
