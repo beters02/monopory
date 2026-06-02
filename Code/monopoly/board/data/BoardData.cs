@@ -88,7 +88,7 @@ public static class BoardData
 			{
 				Index = 6,
 				Key = "property_light_blue_0",
-				DisplayName = "CSGOWild.com", // CSGO Blackjack
+				DisplayName = "CSGOWild\n.com", // CSGO Blackjack
 				Type = SpaceType.Property,
 				Price = 100,
 				BaseRent = 6,
@@ -110,7 +110,7 @@ public static class BoardData
 			{
 				Index = 8,
 				Key = "property_light_blue_1",
-				DisplayName = "CSGO\nRoll\n.com",
+				DisplayName = "CSGORoll\n.com",
 				Type = SpaceType.Property,
 				Price = 100,
 				BaseRent = 6,
@@ -147,7 +147,7 @@ public static class BoardData
 			{
 				Index = 11,
 				Key = "property_pink_0",
-				DisplayName = "Bryce's Skunky Dungeon",
+				DisplayName = "Yodie-Land",
 				Type = SpaceType.Property,
 				Price = 140,
 				BaseRent = 10,
@@ -171,7 +171,7 @@ public static class BoardData
 			{
 				Index = 13,
 				Key = "property_pink_1",
-				DisplayName = "Fitz' FN FREEHAND",
+				DisplayName = "The Liqo Sto", //  
 				Type = SpaceType.Property,
 				Price = 140,
 				BaseRent = 10,
@@ -186,7 +186,7 @@ public static class BoardData
 			{
 				Index = 14,
 				Key = "property_pink_2",
-				DisplayName = "Brycen's Goon Cave",
+				DisplayName = "Section 80", // Section 80
 				Type = SpaceType.Property,
 				Price = 160,
 				BaseRent = 12,
@@ -210,7 +210,7 @@ public static class BoardData
 			{
 				Index = 16,
 				Key = "property_orange_0",
-				DisplayName = "Yodie-Land",
+				DisplayName = "Brycen's Goon Cave",
 				Type = SpaceType.Property,
 				Price = 180,
 				BaseRent = 14,
@@ -232,7 +232,7 @@ public static class BoardData
 			{
 				Index = 18,
 				Key = "property_orange_1",
-				DisplayName = "Section 80",
+				DisplayName = "Fitz' FN FREEHAND",
 				Type = SpaceType.Property,
 				Price = 180,
 				BaseRent = 14,
@@ -247,7 +247,7 @@ public static class BoardData
 			{
 				Index = 19,
 				Key = "property_orange_2",
-				DisplayName = "The Liqo Sto",
+				DisplayName = "Bryce's Skunky Dungeon",
 				Type = SpaceType.Property,
 				Price = 200,
 				BaseRent = 16,
@@ -330,7 +330,7 @@ public static class BoardData
 			{
 				Index = 26,
 				Key = "property_yellow_0",
-				DisplayName = "The Co-Op",
+				DisplayName = "LeBron’s Bedroom",
 				Type = SpaceType.Property,
 				Price = 260,
 				BaseRent = 22,
