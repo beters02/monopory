@@ -1,317 +1,225 @@
 using System;
-using System.Linq;
-using System.Reflection;
+using System.IO;
+using System.Security.Cryptography;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Sandbox;
+#if STANDALONE
+using Steamworks;
+#endif
 
 namespace Sandbox.Services;
 
 public static class RentRushService
 {
-	public const string DefaultServiceName = "RentRushService";
-
-	public static async Task<string> GetSteamWebApiTicketAsync( string identity, ulong targetSteamId = 0 )
-	{
-#if STANDALONE
-		try
-		{
-			var sandboxTicket = GetSandboxAuthTicketHex( targetSteamId );
-			if ( !string.IsNullOrWhiteSpace( sandboxTicket ) )
-				return sandboxTicket;
-
-			var steamUserType = FindSteamUserType();
-			if ( steamUserType is null )
-			{
-				Log.Warning( $"No Steam user auth type was found; cannot request Steam Web API auth ticket. Candidates={DescribeSteamAuthCandidates()}." );
-				return "";
-			}
-
-			var method = FindAuthTicketMethod( steamUserType );
-			if ( method is null )
-			{
-				Log.Warning( "Steamworks.SteamUser.GetAuthTicketForWebApi was not found." );
-				return "";
-			}
-
-			Log.Info( $"Requesting Steam Web API auth ticket. identity={GetTicketIdentity( identity )} method={method.Name}." );
-			var result = method.Invoke( null, BuildAuthTicketArguments( method, identity ) );
-			var ticket = await ExtractTicketHexAsync( result );
-			if ( !string.IsNullOrWhiteSpace( ticket ) )
-			{
-				Log.Info( $"Steam Web API auth ticket acquired. length={ticket.Length}." );
-				return ticket;
-			}
-
-			Log.Warning( $"Steam Web API auth ticket request returned no ticket. returnType={method.ReturnType.FullName}." );
-		}
-		catch ( Exception exception )
-		{
-			Log.Warning( $"Failed to get Steam Web API auth ticket: {exception.Message}" );
-		}
-#else
-		await Task.CompletedTask;
-#endif
-
-		return "";
-	}
+	public const string DefaultSboxAuthServiceName = "sbox-network-storage";
+	public const uint DefaultSteamAppId = 4745160;
+	public const string DefaultSteamworksTicketIdentity = "RentRushAchievements";
 
 #if STANDALONE
-	public static string GetSteamAuthDiagnostics()
-	{
-		var authTypes = AppDomain.CurrentDomain.GetAssemblies()
-			.SelectMany( assembly =>
-			{
-				try
-				{
-					return assembly.GetTypes();
-				}
-				catch
-				{
-					return [];
-				}
-			} )
-			.Where( type =>
-				type.FullName?.Contains( "Steam", StringComparison.OrdinalIgnoreCase ) == true ||
-				type.FullName?.Contains( "Auth", StringComparison.OrdinalIgnoreCase ) == true )
-			.Select( type =>
-			{
-				var methods = type.GetMethods( BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance )
-					.Where( method =>
-						method.Name.Contains( "Auth", StringComparison.OrdinalIgnoreCase ) ||
-						method.Name.Contains( "Ticket", StringComparison.OrdinalIgnoreCase ) )
-					.Select( method => method.ToString() )
-					.Take( 8 );
-				return $"{type.FullName}: {string.Join( "; ", methods )}";
-			} )
-			.Where( text => text.Contains( "Ticket", StringComparison.OrdinalIgnoreCase ) || text.Contains( "Auth", StringComparison.OrdinalIgnoreCase ) )
-			.Take( 20 );
-
-		return string.Join( "\n", authTypes );
-	}
-
-	public static async Task<string> AuthenticateAchievementsBackendAsync(
+	public static async Task<SteamworksSessionResponse> AuthenticateAchievementsBackendWithSteamworksAsync(
 		string backendUrl,
-		long steamId,
-		string serviceAuthToken,
+		uint appId,
+		string ticketIdentity,
 		string displayName )
 	{
-		if ( string.IsNullOrWhiteSpace( backendUrl ) || steamId == 0 || string.IsNullOrWhiteSpace( serviceAuthToken ) )
-			return "";
+		if ( string.IsNullOrWhiteSpace( backendUrl ) )
+			return null;
 
-		return await HttpAchievementService.AuthenticateAsync(
+		if ( !TryInitializeSteamworks( appId ) )
+			return null;
+
+		var steamId = (long)SteamClient.SteamId.Value;
+		if ( steamId == 0 )
+		{
+			Log.Warning( "Cannot authenticate achievements backend with Facepunch Steamworks because SteamClient.SteamId was not available." );
+			return null;
+		}
+
+		var identity = string.IsNullOrWhiteSpace( ticketIdentity )
+			? DefaultSteamworksTicketIdentity
+			: ticketIdentity.Trim();
+		Log.Info( $"Requesting Facepunch Steamworks Web API auth ticket. appId={appId} steamId={steamId} identity={identity}." );
+		var ticket = await SteamUser.GetAuthTicketForWebApiAsync( identity, 10.0 );
+		if ( ticket is null || ticket.Data is null || ticket.Data.Length == 0 )
+		{
+			Log.Warning( "Facepunch Steamworks Web API auth ticket request returned no ticket." );
+			return null;
+		}
+
+		try
+		{
+			var ticketHex = Convert.ToHexString( ticket.Data ).ToLowerInvariant();
+			Log.Info( $"Authenticating achievements backend with Facepunch Steamworks ticket. steamId={steamId} ticketLength={ticketHex.Length}." );
+			return await HttpAchievementService.AuthenticateSteamworksAsync(
+				backendUrl,
+				steamId,
+				ticketHex,
+				displayName ?? ""
+			);
+		}
+		finally
+		{
+			ticket.Cancel();
+		}
+	}
+
+	public static async Task<SboxSessionResponse> AuthenticateAchievementsBackendWithSboxAsync( string backendUrl, string authServiceName, string displayName )
+	{
+		if ( string.IsNullOrWhiteSpace( backendUrl ) )
+			return null;
+
+		var steamId = GetLocalSteamId();
+		if ( steamId == 0 )
+		{
+			Log.Warning( "Cannot authenticate achievements backend with s&box token because Game.SteamId was not available." );
+			return null;
+		}
+
+		var serviceName = string.IsNullOrWhiteSpace( authServiceName )
+			? DefaultSboxAuthServiceName
+			: authServiceName.Trim();
+		Log.Info( $"Requesting s&box auth token for achievements. service={serviceName} steamId={steamId}." );
+		var token = await Auth.GetToken( serviceName );
+		if ( string.IsNullOrWhiteSpace( token ) )
+		{
+			Log.Warning( $"s&box auth token request returned an empty token. service={serviceName}." );
+			return null;
+		}
+
+		Log.Info( $"Authenticating achievements backend with s&box token. service={serviceName} steamId={steamId} tokenLength={token.Length}." );
+		return await HttpAchievementService.AuthenticateSboxAsync(
 			backendUrl,
 			steamId,
-			serviceAuthToken,
+			token,
 			displayName ?? ""
 		);
 	}
 
-	private static string GetSandboxAuthTicketHex( ulong targetSteamId )
+	public static async Task<DeviceSessionResponse> AuthenticateAchievementsBackendWithDeviceAsync( string backendUrl, string displayName )
+	{
+		if ( string.IsNullOrWhiteSpace( backendUrl ) )
+			return null;
+
+		var identity = LoadOrCreateIdentity();
+		Log.Info( $"Authenticating achievements backend with device identity. deviceId={identity.DeviceId}." );
+		return await HttpAchievementService.AuthenticateDeviceAsync(
+			backendUrl,
+			identity.DeviceId,
+			identity.Secret,
+			displayName ?? ""
+		);
+	}
+
+	public static string GetDeviceAuthDiagnostics()
+	{
+		var identity = LoadOrCreateIdentity();
+		return $"steamworksValid={SteamClient.IsValid} steamworksSteamId={(SteamClient.IsValid ? SteamClient.SteamId.Value : 0)}; s&box auth service={DefaultSboxAuthServiceName}; device fallback ready. deviceId={identity.DeviceId} path={GetIdentityPath()} steamId={GetLocalSteamId()}";
+	}
+
+	private static bool TryInitializeSteamworks( uint appId )
 	{
 		try
 		{
-			var authType = FindLoadedType( "Sandbox.Services.Auth" );
-			var method = authType?.GetMethod(
-				"GetAuthTicket",
-				BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static,
-				null,
-				[typeof( ulong ), typeof( byte[] ).MakeByRefType()],
-				null );
-			if ( method is null )
-			{
-				Log.Warning( "Sandbox.Services.Auth.GetAuthTicket was not found at runtime." );
-				return "";
-			}
+			if ( SteamClient.IsValid )
+				return true;
 
-			Log.Info( $"Requesting s&box Steam auth ticket. targetSteamId={targetSteamId}." );
-			var arguments = new object[] { targetSteamId, null };
-			var handle = method.Invoke( null, arguments );
-			var ticketHex = BytesToHex( arguments[1] as byte[] );
-			if ( !string.IsNullOrWhiteSpace( ticketHex ) )
-			{
-				Log.Info( $"s&box Steam auth ticket acquired. length={ticketHex.Length} handle={handle}." );
-				return ticketHex;
-			}
-
-			Log.Warning( $"s&box Steam auth ticket request returned no bytes. handle={handle}." );
+			SteamClient.Init( appId, true );
+			Log.Info( $"Facepunch Steamworks initialized. appId={SteamClient.AppId} steamId={SteamClient.SteamId.Value} name={SteamClient.Name}." );
+			return SteamClient.IsValid;
 		}
 		catch ( Exception exception )
 		{
-			Log.Warning( $"Failed to get s&box Steam auth ticket: {exception.Message}" );
+			Log.Warning( $"Failed to initialize Facepunch Steamworks. appId={appId} error={exception.Message}" );
+			return false;
 		}
-
-		return "";
 	}
 
-	private static Type FindSteamUserType()
+	private static long GetLocalSteamId()
 	{
-		foreach ( var typeName in new[]
+		try
 		{
-			"Steamworks.SteamUser",
-			"Steamworks.User",
-			"Steamworks.SteamClient",
-			"Sandbox.Utility.Steam"
-		} )
+			var gameSteamId = Game.SteamId.Value;
+			if ( gameSteamId != 0 )
+				return gameSteamId;
+		}
+		catch
 		{
-			var type = FindLoadedType( typeName );
-			if ( type is not null )
-				return type;
 		}
 
-		return AppDomain.CurrentDomain.GetAssemblies()
-			.SelectMany( assembly =>
+		return Connection.Local is not null ? Connection.Local.SteamId.Value : 0;
+	}
+
+	private static LocalDeviceIdentity LoadOrCreateIdentity()
+	{
+		var path = GetIdentityPath();
+		try
+		{
+			if ( File.Exists( path ) )
 			{
-				try
-				{
-					return assembly.GetTypes();
-				}
-				catch
-				{
-					return [];
-				}
-			} )
-			.FirstOrDefault( type =>
-				type.FullName?.Contains( "Steam", StringComparison.OrdinalIgnoreCase ) == true &&
-				type.GetMethods( BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance )
-					.Any( method => method.Name.Contains( "AuthTicket", StringComparison.OrdinalIgnoreCase ) ) );
-	}
-
-	private static string DescribeSteamAuthCandidates()
-	{
-		var candidates = AppDomain.CurrentDomain.GetAssemblies()
-			.SelectMany( assembly =>
-			{
-				try
-				{
-					return assembly.GetTypes();
-				}
-				catch
-				{
-					return [];
-				}
-			} )
-			.Where( type =>
-				type.FullName?.Contains( "Steam", StringComparison.OrdinalIgnoreCase ) == true &&
-				type.GetMethods( BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance )
-					.Any( method => method.Name.Contains( "Auth", StringComparison.OrdinalIgnoreCase ) || method.Name.Contains( "Ticket", StringComparison.OrdinalIgnoreCase ) ) )
-			.Select( type => type.FullName )
-			.Take( 10 );
-
-		return string.Join( ", ", candidates );
-	}
-
-	private static MethodInfo FindAuthTicketMethod( Type steamUserType )
-	{
-		return steamUserType
-			.GetMethods( BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance )
-			.FirstOrDefault( method =>
-				string.Equals( method.Name, "GetAuthTicketForWebApi", StringComparison.Ordinal ) ||
-				string.Equals( method.Name, "GetAuthTicketForWebAPI", StringComparison.Ordinal ) ||
-				string.Equals( method.Name, "GetAuthSessionTicket", StringComparison.Ordinal ) ||
-				string.Equals( method.Name, "GetAuthTicket", StringComparison.Ordinal ) );
-	}
-
-	private static object[] BuildAuthTicketArguments( MethodInfo method, string identity )
-	{
-		var parameters = method.GetParameters();
-		if ( parameters.Length == 0 )
-			return [];
-
-		if ( parameters.Length == 1 && parameters[0].ParameterType == typeof( string ) )
-			return [GetTicketIdentity( identity )];
-
-		Log.Warning( $"Steam Web API ticket method has unexpected signature: {method}." );
-		return parameters.Select( parameter => parameter.HasDefaultValue ? parameter.DefaultValue : GetDefaultValue( parameter.ParameterType ) ).ToArray();
-	}
-
-	private static string GetTicketIdentity( string identity )
-	{
-		return string.IsNullOrWhiteSpace( identity ) ? DefaultServiceName : identity.Trim();
-	}
-
-	private static object GetDefaultValue( Type type )
-	{
-		return type.IsValueType ? Activator.CreateInstance( type ) : null;
-	}
-
-	private static async Task<string> ExtractTicketHexAsync( object value )
-	{
-		if ( value is null )
-			return "";
-
-		if ( value is Task task )
+				var existing = JsonSerializer.Deserialize<LocalDeviceIdentity>( File.ReadAllText( path ) );
+				if ( IsValid( existing ) )
+					return existing;
+			}
+		}
+		catch ( Exception exception )
 		{
-			await task;
-			var resultProperty = task.GetType().GetProperty( "Result", BindingFlags.Public | BindingFlags.Instance );
-			return ExtractTicketHex( resultProperty?.GetValue( task ) );
+			Log.Warning( $"Failed to read achievements device identity; a new one will be created. {exception.Message}" );
 		}
 
-		var asTaskMethod = value.GetType().GetMethod( "AsTask", BindingFlags.Public | BindingFlags.Instance, null, Type.EmptyTypes, null );
-		if ( asTaskMethod is not null && value.GetType().FullName?.StartsWith( "System.Threading.Tasks.ValueTask", StringComparison.Ordinal ) == true )
-			return await ExtractTicketHexAsync( asTaskMethod.Invoke( value, null ) );
-
-		return ExtractTicketHex( value );
-	}
-
-	private static string ExtractTicketHex( object value, int depth = 0 )
-	{
-		if ( value is null || depth > 3 )
-			return "";
-
-		if ( value is string text )
-			return IsProbablyHex( text ) ? text : "";
-
-		if ( value is byte[] bytes )
-			return BytesToHex( bytes );
-
-		if ( value is Array array && array.GetType().GetElementType() == typeof( byte ) )
+		var identity = new LocalDeviceIdentity
 		{
-			var bytesFromArray = new byte[array.Length];
-			Array.Copy( array, bytesFromArray, array.Length );
-			return BytesToHex( bytesFromArray );
-		}
+			DeviceId = Guid.NewGuid().ToString( "D" ),
+			Secret = Convert.ToHexString( RandomNumberGenerator.GetBytes( 32 ) ).ToLowerInvariant()
+		};
 
-		var toArrayMethod = value.GetType().GetMethod( "ToArray", BindingFlags.Public | BindingFlags.Instance, null, Type.EmptyTypes, null );
-		if ( toArrayMethod?.ReturnType == typeof( byte[] ) )
-			return BytesToHex( (byte[])toArrayMethod.Invoke( value, null ) );
-
-		foreach ( var propertyName in new[] { "Ticket", "Data", "AuthTicket", "Bytes", "Value", "Result" } )
-		{
-			var property = value.GetType().GetProperty( propertyName, BindingFlags.Public | BindingFlags.Instance );
-			if ( property is null )
-				continue;
-
-			var ticket = ExtractTicketHex( property.GetValue( value ), depth + 1 );
-			if ( !string.IsNullOrWhiteSpace( ticket ) )
-				return ticket;
-		}
-
-		return "";
+		Directory.CreateDirectory( Path.GetDirectoryName( path ) );
+		File.WriteAllText( path, JsonSerializer.Serialize( identity ) );
+		return identity;
 	}
 
-	private static bool IsProbablyHex( string text )
+	private static bool IsValid( LocalDeviceIdentity identity )
 	{
-		return text.Length > 0 && text.Length % 2 == 0 && text.All( Uri.IsHexDigit );
+		return identity is not null &&
+			Guid.TryParse( identity.DeviceId, out _ ) &&
+			!string.IsNullOrWhiteSpace( identity.Secret ) &&
+			identity.Secret.Length >= 32;
 	}
 
-	private static string BytesToHex( byte[] bytes )
+	private static string GetIdentityPath()
 	{
-		return bytes is null || bytes.Length == 0
-			? ""
-			: Convert.ToHexString( bytes ).ToLowerInvariant();
+		var root = Environment.GetFolderPath( Environment.SpecialFolder.LocalApplicationData );
+		return Path.Combine( root, "RentRush", "achievements-device.json" );
+	}
+#else
+	public static Task<SteamworksSessionResponse> AuthenticateAchievementsBackendWithSteamworksAsync(
+		string backendUrl,
+		uint appId,
+		string ticketIdentity,
+		string displayName )
+	{
+		return Task.FromResult<SteamworksSessionResponse>( null );
 	}
 
-	private static Type FindLoadedType( string typeName )
+	public static Task<SboxSessionResponse> AuthenticateAchievementsBackendWithSboxAsync( string backendUrl, string authServiceName, string displayName )
 	{
-		var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-		for ( var i = 0; i < assemblies.Length; i++ )
-		{
-			var type = assemblies[i].GetType( typeName, false );
-			if ( type is not null )
-				return type;
-		}
+		return Task.FromResult<SboxSessionResponse>( null );
+	}
 
-		return null;
+	public static Task<DeviceSessionResponse> AuthenticateAchievementsBackendWithDeviceAsync( string backendUrl, string displayName )
+	{
+		return Task.FromResult<DeviceSessionResponse>( null );
+	}
+
+	public static string GetDeviceAuthDiagnostics()
+	{
+		return "Device auth is only available in standalone builds.";
 	}
 #endif
+
+	private sealed class LocalDeviceIdentity
+	{
+		public string DeviceId { get; set; } = "";
+		public string Secret { get; set; } = "";
+	}
 }

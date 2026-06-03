@@ -14,10 +14,10 @@ public static class AchievementServices
 			Cosmetics = cosmetics;
 	}
 
-	public static void UseBackend( string baseUrl, string bearerToken )
+	public static void UseBackend( string baseUrl, string bearerToken, long playerId = 0 )
 	{
 #if STANDALONE
-		var backend = new HttpAchievementService( baseUrl, bearerToken );
+		var backend = new HttpAchievementService( baseUrl, bearerToken, playerId );
 		Use( backend, backend );
 #else
 		Log.Warning( "HTTP achievements backend is only available in standalone builds. Using the local achievement service." );

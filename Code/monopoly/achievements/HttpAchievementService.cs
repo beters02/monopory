@@ -9,8 +9,9 @@ public sealed class HttpAchievementService : IAchievementService, ICosmeticUnloc
 	private readonly HttpClient http;
 	private readonly Dictionary<long, PlayerAchievementState> cachedStates = new();
 	private readonly string bearerToken;
+	private readonly long authenticatedPlayerId;
 
-	public HttpAchievementService( string baseUrl, string bearerToken )
+	public HttpAchievementService( string baseUrl, string bearerToken, long authenticatedPlayerId = 0 )
 	{
 		http = new HttpClient
 		{
@@ -18,25 +19,70 @@ public sealed class HttpAchievementService : IAchievementService, ICosmeticUnloc
 		};
 
 		this.bearerToken = bearerToken ?? "";
+		this.authenticatedPlayerId = authenticatedPlayerId;
 	}
 
-	public static async Task<string> AuthenticateAsync( string baseUrl, long steamId, string authToken, string displayName )
+	public static async Task<DeviceSessionResponse> AuthenticateDeviceAsync( string baseUrl, string deviceId, string secret, string displayName )
 	{
 		using var client = new HttpClient
 		{
 			BaseAddress = new Uri( baseUrl.TrimEnd( '/' ) + "/" )
 		};
 
-		using var response = await client.PostAsJsonAsync( "auth/steam/session", new SteamSessionRequest
+		using var response = await client.PostAsJsonAsync( "auth/device/session", new DeviceSessionRequest
 		{
-			SteamId = steamId,
-			Token = authToken ?? "",
+			DeviceId = deviceId ?? "",
+			Secret = secret ?? "",
 			DisplayName = displayName ?? ""
 		} );
-		response.EnsureSuccessStatusCode();
+		await EnsureAuthSuccessAsync( response, "device" );
 
-		var auth = await response.Content.ReadFromJsonAsync<SteamSessionResponse>();
-		return auth?.AccessToken ?? "";
+		return await response.Content.ReadFromJsonAsync<DeviceSessionResponse>();
+	}
+
+	public static async Task<SboxSessionResponse> AuthenticateSboxAsync( string baseUrl, long steamId, string token, string displayName )
+	{
+		using var client = new HttpClient
+		{
+			BaseAddress = new Uri( baseUrl.TrimEnd( '/' ) + "/" )
+		};
+
+		using var response = await client.PostAsJsonAsync( "auth/sbox/session", new SboxSessionRequest
+		{
+			SteamId = steamId,
+			Token = token ?? "",
+			DisplayName = displayName ?? ""
+		} );
+		await EnsureAuthSuccessAsync( response, "sbox" );
+
+		return await response.Content.ReadFromJsonAsync<SboxSessionResponse>();
+	}
+
+	public static async Task<SteamworksSessionResponse> AuthenticateSteamworksAsync( string baseUrl, long steamId, string ticket, string displayName )
+	{
+		using var client = new HttpClient
+		{
+			BaseAddress = new Uri( baseUrl.TrimEnd( '/' ) + "/" )
+		};
+
+		using var response = await client.PostAsJsonAsync( "auth/steamworks/session", new SteamworksSessionRequest
+		{
+			SteamId = steamId,
+			Ticket = ticket ?? "",
+			DisplayName = displayName ?? ""
+		} );
+		await EnsureAuthSuccessAsync( response, "steamworks" );
+
+		return await response.Content.ReadFromJsonAsync<SteamworksSessionResponse>();
+	}
+
+	private static async Task EnsureAuthSuccessAsync( HttpResponseMessage response, string authKind )
+	{
+		if ( response.IsSuccessStatusCode )
+			return;
+
+		var body = await response.Content.ReadAsStringAsync();
+		throw new HttpRequestException( $"Achievements {authKind} auth failed: {(int)response.StatusCode} {response.ReasonPhrase}. {body}" );
 	}
 
 	public async Task<PlayerAchievementState> GetMyStateAsync()
@@ -55,22 +101,23 @@ public sealed class HttpAchievementService : IAchievementService, ICosmeticUnloc
 
 	public async Task ReportEventAsync( AchievementEvent achievementEvent )
 	{
-		var state = await SendAsync<PlayerAchievementState>( HttpMethod.Post, "me/achievement-events", true, achievementEvent );
+		var state = await SendAsync<PlayerAchievementState>( HttpMethod.Post, "me/achievement-events", true, RewriteEventForAuthenticatedPlayer( achievementEvent ) );
 		CacheState( state );
 	}
 
 	public async Task<bool> CanUseCosmeticAsync( long steamId, string cosmeticId )
 	{
-		var state = GetCachedState( steamId );
-		if ( state.SteamId == 0 || state.SteamId != steamId )
-			state = await GetPublicStateAsync( steamId );
+		var playerId = ResolvePlayerId( steamId );
+		var state = GetCachedState( playerId );
+		if ( state.SteamId == 0 || state.SteamId != playerId )
+			state = authenticatedPlayerId != 0 ? await GetMyStateAsync() : await GetPublicStateAsync( playerId );
 
 		return StateCanUseCosmetic( state, cosmeticId );
 	}
 
 	public bool CanUseCosmetic( long steamId, string cosmeticId )
 	{
-		return StateCanUseCosmetic( GetCachedState( steamId ), cosmeticId );
+		return StateCanUseCosmetic( GetCachedState( ResolvePlayerId( steamId ) ), cosmeticId );
 	}
 
 	public IReadOnlyList<CosmeticDefinition> GetAvailableCosmetics( long steamId )
@@ -80,6 +127,7 @@ public sealed class HttpAchievementService : IAchievementService, ICosmeticUnloc
 
 	public PlayerAchievementState GetCachedState( long steamId )
 	{
+		steamId = ResolvePlayerId( steamId );
 		if ( steamId != 0 && cachedStates.TryGetValue( steamId, out var state ) )
 			return state;
 
@@ -126,6 +174,28 @@ public sealed class HttpAchievementService : IAchievementService, ICosmeticUnloc
 		cachedStates[state.SteamId] = state;
 	}
 
+	private long ResolvePlayerId( long requestedPlayerId )
+	{
+		return authenticatedPlayerId != 0 ? authenticatedPlayerId : requestedPlayerId;
+	}
+
+	private AchievementEvent RewriteEventForAuthenticatedPlayer( AchievementEvent achievementEvent )
+	{
+		if ( achievementEvent is null || authenticatedPlayerId == 0 )
+			return achievementEvent;
+
+		return new AchievementEvent
+		{
+			EventId = achievementEvent.EventId,
+			SteamId = authenticatedPlayerId,
+			Type = achievementEvent.Type,
+			Amount = achievementEvent.Amount,
+			Value = achievementEvent.Value,
+			SourceMatchId = achievementEvent.SourceMatchId,
+			OccurredAtUnixSeconds = achievementEvent.OccurredAtUnixSeconds
+		};
+	}
+
 	private static bool StateCanUseCosmetic( PlayerAchievementState state, string cosmeticId )
 	{
 		var cosmetic = CosmeticCatalog.GetById( cosmeticId );
@@ -139,16 +209,4 @@ public sealed class HttpAchievementService : IAchievementService, ICosmeticUnloc
 	}
 }
 
-public sealed class SteamSessionRequest
-{
-	public long SteamId { get; init; }
-	public string Token { get; init; } = "";
-	public string DisplayName { get; init; } = "";
-}
-
-public sealed class SteamSessionResponse
-{
-	public string AccessToken { get; init; } = "";
-	public DateTimeOffset ExpiresAt { get; init; }
-}
 #endif
