@@ -16,11 +16,13 @@ public static class AchievementServices
 
 	public static void UseBackend( string baseUrl, string bearerToken, long playerId = 0 )
 	{
-#if STANDALONE
+//do if standalone
 		var backend = new HttpAchievementService( baseUrl, bearerToken, playerId );
 		Use( backend, backend );
-#else
+//do else
+/*
 		Log.Warning( "HTTP achievements backend is only available in standalone builds. Using the local achievement service." );
-#endif
+*/
+//do endif
 	}
 }

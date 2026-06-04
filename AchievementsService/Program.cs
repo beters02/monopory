@@ -77,6 +77,20 @@ app.MapPost( "/auth/steamworks/session", async ( SteamworksSessionRequest reques
 	return Results.Ok( new SteamworksSessionResponse( token, DateTimeOffset.UtcNow.AddHours( 2 ), result.SteamId ) );
 } );
 
+app.MapPost( "/auth/forkbox/session", async ( ForkboxSessionRequest request, IAchievementRepository repository, TokenStore tokens, ISteamworksAuthTicketVerifier authVerifier ) =>
+{
+	if ( request is null || request.SteamId == 0 || string.IsNullOrWhiteSpace( request.Token ) )
+		return Results.BadRequest();
+
+	var result = await authVerifier.VerifyAsync( request.SteamId, request.Token );
+	if ( !result.IsValid )
+		return Results.Unauthorized();
+
+	await repository.EnsurePlayerAsync( result.SteamId, request.DisplayName ?? "" );
+	var token = tokens.Create( result.SteamId );
+	return Results.Ok( new ForkboxSessionResponse( token, DateTimeOffset.UtcNow.AddHours( 2 ), result.SteamId ) );
+} );
+
 app.MapGet( "/players/{steamId:long}/achievements", async ( long steamId, IAchievementRepository repository ) =>
 {
 	var state = await repository.GetStateAsync( steamId );
@@ -149,6 +163,8 @@ public sealed record SboxSessionRequest( long SteamId, string Token, string Disp
 public sealed record SboxSessionResponse( string AccessToken, DateTimeOffset ExpiresAt, long PlayerId );
 public sealed record SteamworksSessionRequest( long SteamId, string Ticket, string DisplayName );
 public sealed record SteamworksSessionResponse( string AccessToken, DateTimeOffset ExpiresAt, long PlayerId );
+public sealed record ForkboxSessionRequest( long SteamId, string Token, string DisplayName );
+public sealed record ForkboxSessionResponse( string AccessToken, DateTimeOffset ExpiresAt, long PlayerId );
 
 public sealed class AchievementDefinition
 {

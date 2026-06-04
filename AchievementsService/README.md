@@ -7,15 +7,17 @@ Authoritative achievement and cosmetic unlock API for the game.
 - Uses Postgres when `ConnectionStrings:AchievementsPostgres`, `Achievements:PostgresConnectionString`, or `ACHIEVEMENTS_POSTGRES` is configured.
 - Falls back to an in-memory repository when no Postgres connection string is configured.
 - If a Postgres connection string is configured but Postgres is unreachable during local startup, the service logs a warning and falls back to in-memory storage for that process.
-- `/auth/steamworks/session` validates a Facepunch Steamworks Web API ticket and returns a short-lived bearer token.
+- `/auth/forkbox/session` validates a `Forkbox.Steamworks.SteamUser` auth token and returns a short-lived bearer token.
+- `/auth/steamworks/session` remains as a compatibility alias for older local scripts.
 - `/auth/sbox/session` validates a Facepunch s&box auth token and returns a short-lived bearer token.
-- The game currently tries Facepunch Steamworks first, then s&box auth with `Sandbox.Services.Auth.GetToken("sbox-network-storage")`.
+- The game currently tries Forkbox SteamUser first, then s&box auth with `Sandbox.Services.Auth.GetToken("sbox-network-storage")`.
 - `/auth/device/session` remains as a local fallback when s&box auth is unavailable.
-- Steamworks DLL/client tickets are no longer required for internal achievements.
+- External Steamworks DLL/client tickets are no longer required for internal achievements.
 
 ## Endpoints
 
 - `POST /auth/device/session`
+- `POST /auth/forkbox/session`
 - `POST /auth/steamworks/session`
 - `POST /auth/sbox/session`
 - `GET /players/{playerId}/achievements`

@@ -1,15 +1,12 @@
 using Sandbox;
-#if STANDALONE
 using System;
 using System.Collections;
 using System.Reflection;
-#endif
 
 public sealed partial class LobbyController
 {
 	public bool TryOpenInviteOverlay()
 	{
-#if STANDALONE
 		if ( !Networking.IsActive )
 		{
 			Log.Warning( "Cannot open invite overlay because networking is not active." );
@@ -27,13 +24,16 @@ public sealed partial class LobbyController
 
 		Log.Warning( "Steam friend invite overlay is not available from the public game API." );
 		return false;
-#else
+// do #else
+		/*
 		Log.Warning( "Steam friend invite overlay is only enabled in standalone builds." );
 		return false;
-#endif
+		*/
+		
+// do endif
 	}
 
-#if STANDALONE
+// do if standalone
 	private static bool TryGetActiveLobbyId( out ulong lobbyId )
 	{
 		lobbyId = 0;
@@ -142,5 +142,6 @@ public sealed partial class LobbyController
 
 		return null;
 	}
-#endif
+
+// do endif standalone
 }

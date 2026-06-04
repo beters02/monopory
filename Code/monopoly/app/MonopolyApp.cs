@@ -1,12 +1,25 @@
 using System;
 using System.Threading.Tasks;
+using System.IO;
+using System.Text.Json;
 
 public class MonopolyApp : Component
 {
 
+    private class SecretsJsonObject
+    {
+        public string WebApiKey;
+        public string AppId;
+        public bool UseSecretsAppId;
+        public string BackendUrl;
+    }
+
     public static bool IsStandalone = false;
     public static bool IsDebugEnabled = false;
     public static bool GameLaunchedWithDebugConvar = false;
+
+    public static string SecretsFileName = "secrets.json";
+    public static string SecretsDirectoryPath = "C:\\Users\\Bryce\\Documents\\s&box projects priv\\MonoporySecrets";
 
     [ConVar( "achievements_backend_url" )]
     public static string AchievementsBackendUrl { get; set; } = "";
@@ -20,25 +33,27 @@ public class MonopolyApp : Component
     [ConVar( "achievements_steamworks_auth_enabled" )]
     public static bool AchievementsSteamworksAuthEnabled { get; set; } = true;
 
+    // DONT USE THIS - GET APP ID FROM APPLICATION
     [ConVar( "achievements_steam_app_id" )]
     public static string AchievementsSteamAppId { get; set; } = Sandbox.Services.RentRushService.DefaultSteamAppId.ToString();
-
+    
+    // DONT USE THIS - USE NULL
     [ConVar( "achievements_steamworks_ticket_identity" )]
     public static string AchievementsSteamworksTicketIdentity { get; set; } = Sandbox.Services.RentRushService.DefaultSteamworksTicketIdentity;
 
-#if STANDALONE
+//do if standalone
     private static bool achievementsBackendInitialized;
     private static bool achievementsBackendInitializationInFlight;
     private static string lastAchievementsBackendUrl = "";
     private static long authenticatedAchievementsPlayerId;
-#endif
+//do endif
 
 	protected override void OnAwake()
 	{
-#if STANDALONE
+//do if standalone
         IsStandalone = true;
         Sandbox.Services.RentRushService.TestInit();
-#endif
+//do endif
 
         var debugConvarParsed = bool.TryParse(ConsoleSystem.GetValue( "debug" ), out bool debugConvar);
         GameLaunchedWithDebugConvar = debugConvar;
@@ -47,32 +62,76 @@ public class MonopolyApp : Component
 
         Log.Info($"IsStandalone: {IsStandalone}");
 
-#if STANDALONE
+//do if standalone
         _ = InitializeAchievementsBackendAsync();
-#endif
+//do endif
 	}
 
     [ConCmd( "achievements_connect_backend" )]
     private static void ConnectAchievementsBackend( Connection connection )
     {
-#if STANDALONE
+//do if standalone
         _ = InitializeAchievementsBackendAsync( true );
-#else
+//do else
+/*
         Log.Warning( "Achievements backend connection is only available in standalone builds." );
-#endif
+*/
+//do endif
     }
 
     [ConCmd( "achievements_auth_diagnostics" )]
     private static void PrintAchievementsAuthDiagnostics( Connection connection )
     {
-#if STANDALONE
+//do if standalone
         Log.Info( Sandbox.Services.RentRushService.GetDeviceAuthDiagnostics() );
-#else
+//do else
+/*
         Log.Warning( "Achievements auth diagnostics are only available in standalone builds." );
-#endif
+*/
+//do endif
     }
 
-#if STANDALONE
+    private static string GetAppId(SecretsJsonObject secrets)
+    {
+        if (secrets.AppId is null || !secrets.UseSecretsAppId)
+            return Application.AppId.ToString();
+        
+        return secrets.AppId;
+    }
+
+    [ConCmd( "achment_debug" )]
+    private static void RunAchievementsDebug( Connection connection )
+    {
+        string path = SecretsDirectoryPath + "\\" + SecretsFileName;
+        if ( !File.Exists(path) )
+        {
+            Log.Warning( $"Secrets not found at: {path}" );
+            return;
+        }
+
+        // 1. Read the full text of the file
+        string jsonString = File.ReadAllText(path);
+
+        // 2. Parse (deserialize) the text into your C# object
+        SecretsJsonObject secrets = JsonSerializer.Deserialize<SecretsJsonObject>(jsonString);
+        
+        string appId = GetAppId(secrets);
+        string backendUrl = secrets.BackendUrl;
+
+        AchievementsSteamAppId = appId;
+        Log.Info($"Set app id to: {appId}");
+        
+        AchievementsBackendUrl = backendUrl;
+        Log.Info($"Set backend url to: {backendUrl}");
+
+        Log.Info("Running diagnostics.");
+        ConsoleSystem.Run("achievements_auth_diagnostics");
+
+        Log.Info("Connecting to backend.");
+        ConsoleSystem.Run("achievements_connect_backend");
+    }
+
+//do if standalone
     private static async Task InitializeAchievementsBackendAsync( bool force = false )
     {
         if ( string.IsNullOrWhiteSpace( AchievementsBackendUrl ) )
@@ -111,7 +170,7 @@ public class MonopolyApp : Component
 
                 if ( string.IsNullOrWhiteSpace( token ) )
                 {
-                    Log.Warning( "Facepunch Steamworks achievements auth was not available; trying s&box auth token." );
+                    Log.Warning( "Forkbox SteamUser achievements auth was not available; trying s&box auth token." );
                     var sboxSession = await Sandbox.Services.RentRushService.AuthenticateAchievementsBackendWithSboxAsync(
                         AchievementsBackendUrl,
                         AchievementsAuthServiceName,
@@ -160,18 +219,19 @@ public class MonopolyApp : Component
             : Sandbox.Services.RentRushService.DefaultSteamAppId;
     }
 
-#endif
+//do endif
+
 
     protected override void OnUpdate()
     {
-#if STANDALONE
+//do if standalone
         if ( !string.IsNullOrWhiteSpace( AchievementsBackendUrl ) &&
             !achievementsBackendInitialized &&
             !achievementsBackendInitializationInFlight )
         {
             _ = InitializeAchievementsBackendAsync();
         }
-#endif
+//do endif
 
         if ( Scene.Camera is null )
             return;

@@ -11,9 +11,8 @@ public class AuthTest : Component
         _ = getToken();
 	}
 
-    public async Task getToken()
+    public async Task<Forkbox.Steamworks.AuthToken> getToken()
     {
-        var token = await Auth.GetToken("sbox-network-storage");
-        Log.Info(token);
+        return Forkbox.Steamworks.SteamUser.GetAuthToken(null);
     }
 }

@@ -1,4 +1,4 @@
-#if STANDALONE
+//do if standalone
 using System;
 using System.Net.Http;
 using System.Net.Http.Json;
@@ -60,20 +60,33 @@ public sealed class HttpAchievementService : IAchievementService, ICosmeticUnloc
 
 	public static async Task<SteamworksSessionResponse> AuthenticateSteamworksAsync( string baseUrl, long steamId, string ticket, string displayName )
 	{
+		var forkboxSession = await AuthenticateForkboxAsync( baseUrl, steamId, ticket, displayName );
+		return forkboxSession is null
+			? null
+			: new SteamworksSessionResponse
+			{
+				AccessToken = forkboxSession.AccessToken,
+				ExpiresAt = forkboxSession.ExpiresAt,
+				PlayerId = forkboxSession.PlayerId
+			};
+	}
+
+	public static async Task<ForkboxSessionResponse> AuthenticateForkboxAsync( string baseUrl, long steamId, string token, string displayName )
+	{
 		using var client = new HttpClient
 		{
 			BaseAddress = new Uri( baseUrl.TrimEnd( '/' ) + "/" )
 		};
 
-		using var response = await client.PostAsJsonAsync( "auth/steamworks/session", new SteamworksSessionRequest
+		using var response = await client.PostAsJsonAsync( "auth/forkbox/session", new ForkboxSessionRequest
 		{
 			SteamId = steamId,
-			Ticket = ticket ?? "",
+			Token = token ?? "",
 			DisplayName = displayName ?? ""
 		} );
-		await EnsureAuthSuccessAsync( response, "steamworks" );
+		await EnsureAuthSuccessAsync( response, "forkbox" );
 
-		return await response.Content.ReadFromJsonAsync<SteamworksSessionResponse>();
+		return await response.Content.ReadFromJsonAsync<ForkboxSessionResponse>();
 	}
 
 	private static async Task EnsureAuthSuccessAsync( HttpResponseMessage response, string authKind )
@@ -209,4 +222,4 @@ public sealed class HttpAchievementService : IAchievementService, ICosmeticUnloc
 	}
 }
 
-#endif
+//do endif
