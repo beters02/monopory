@@ -31,7 +31,9 @@
       "TreatWarningsAsErrors": false,
       "Nullables": false,
       "ReleaseMode": "Debug",
-      "AssemblyReferences": [],
+      "AssemblyReferences": [
+        "Forkbox.Steamworks"
+      ],
       "ReplacementDirectives": {
         ".Server.cs": "SERVER"
       },
@@ -39,7 +41,9 @@
         "editor",
         "unittest"
       ],
-      "DistinctAssemblyReferences": []
+      "DistinctAssemblyReferences": [
+        "Forkbox.Steamworks"
+      ]
     },
     "LaunchMode": "Normal",
     "ControlModes": {
