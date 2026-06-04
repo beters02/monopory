@@ -42,6 +42,7 @@
 		<Reference Include="../../../GitHub/sbox-public/game/bin/managed/Sandbox.Bind.dll"/> 
 		<Reference Include="../../../GitHub/sbox-public/game/bin/managed/Facepunch.ActionGraphs.dll"/> 
 		<Reference Include="../../../GitHub/sbox-public/game/bin/managed/SkiaSharp.dll"/> 
+		<Reference Include="../../../GitHub/sbox-public/game/bin/managed/../thirdparty/Forkbox.Steamworks.dll"/> 
 	</ItemGroup>
 
 	<ItemGroup>
