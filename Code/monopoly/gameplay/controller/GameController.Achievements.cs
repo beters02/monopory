@@ -33,7 +33,10 @@ public sealed partial class GameController : Component
 		}
 		catch ( Exception exception )
 		{
-			Log.Warning( $"Failed to report achievement event {eventType}: {exception.Message}" );
+			var detail = exception.InnerException is null
+				? exception.Message
+				: $"{exception.Message} Inner={exception.InnerException.GetType().Name}: {exception.InnerException.Message}";
+			Log.Warning( $"Failed to report achievement event {eventType}: {exception.GetType().Name}: {detail}" );
 		}
 	}
 

@@ -115,7 +115,8 @@ public sealed class HttpAchievementService : IAchievementService, ICosmeticUnloc
 	public async Task ReportEventAsync( AchievementEvent achievementEvent )
 	{
 		var state = await SendAsync<PlayerAchievementState>( HttpMethod.Post, "me/achievement-events", true, RewriteEventForAuthenticatedPlayer( achievementEvent ) );
-		CacheState( state );
+		if ( state is not null )
+			CacheState( state );
 	}
 
 	public async Task<bool> CanUseCosmeticAsync( long steamId, string cosmeticId )
@@ -176,7 +177,7 @@ public sealed class HttpAchievementService : IAchievementService, ICosmeticUnloc
 
 		using var response = await http.SendAsync( request );
 		response.EnsureSuccessStatusCode();
-		return await response.Content.ReadFromJsonAsync<T>();
+		return response.Content is null ? default : await response.Content.ReadFromJsonAsync<T>();
 	}
 
 	private void CacheState( PlayerAchievementState state )
