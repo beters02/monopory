@@ -560,6 +560,7 @@ public sealed class FallbackAchievementRepository : IAchievementRepository, IIni
 
 	public async Task InitializeAsync()
 	{
+		logger.LogInformation("Starting achievements server");
 		try
 		{
 			await postgres.InitializeAsync();

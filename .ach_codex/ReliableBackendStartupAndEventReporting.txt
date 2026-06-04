@@ -1,0 +1,70 @@
+# Next Pass: Reliable Backend Startup And Event Reporting
+
+## Summary
+- Make achievements backend connection happen automatically when the game opens, before early match events are reported.
+- Prevent stale bearer tokens from causing `401` event failures after backend restarts.
+- Queue achievement events while auth is still in flight, then flush them once backend auth succeeds.
+- Keep gameplay unblocked: backend failure should not stop the game from starting, but it should log clearly and never grant unlocks locally as if they were server-confirmed.
+
+## Key Changes
+- Startup auth:
+  - On game open, load `MonoporySecrets/secrets.json` first, set `AchievementsBackendUrl`, then begin backend auth.
+  - Force reconnect paths like `achievements_connect_backend` and `achment_debug` must clear `AchievementsAccessToken`, `authenticatedAchievementsPlayerId`, and the current HTTP achievement service before re-authing.
+  - Treat backend restart as normal: old in-memory bearer tokens are invalid, so forced reconnect always requests a fresh Forkbox token.
+
+- Auth state:
+  - Add a simple achievement backend state: `Disabled`, `Connecting`, `Connected`, `Failed`.
+  - Log state transitions in game console:
+    - `Achievements backend connecting...`
+    - `Achievements backend enabled. playerId=...`
+    - `Achievements backend auth failed: ...`
+  - Do not repeatedly start parallel auth attempts from `OnUpdate`.
+
+- Event handling:
+  - If an achievement event fires before backend is connected, queue it in memory instead of immediately sending it through a stale/local service.
+  - After backend connects, flush queued events in order.
+  - If backend returns `401` on event post, mark backend disconnected, clear token, re-auth once, then retry queued events.
+  - If retry fails, keep events queued for the session but do not unlock anything locally from those queued events.
+
+- Debug commands:
+  - `achment_debug` should become the full smoke command:
+    - load secrets
+    - clear stale auth
+    - connect backend
+    - print diagnostics
+  - Add/keep a command to inspect current state:
+    - backend URL
+    - auth state
+    - player id
+    - queued event count
+    - whether token exists, without printing token value
+
+## Test Plan
+- Startup test:
+  - Start backend.
+  - Open game.
+  - Confirm game logs backend connecting, Forkbox auth, then backend enabled without running `achment_debug`.
+
+- Backend restart test:
+  - Connect successfully.
+  - Restart backend.
+  - Trigger `achment_debug` or `achievements_connect_backend`.
+  - Confirm old token is discarded and new token is issued.
+  - Trigger `force_end_game_win`; no `401`.
+
+- Early event test:
+  - Open game and immediately start match before auth completes.
+  - Confirm `match_started` is queued, not sent with stale auth.
+  - Confirm it flushes after `Achievements backend enabled`.
+
+- Failure test:
+  - Run game with backend off.
+  - Start match.
+  - Confirm events queue and gameplay continues.
+  - Start backend, reconnect, confirm queued events flush.
+
+## Assumptions
+- Gameplay should not block on achievements auth.
+- Queued local events are session-only for now.
+- Unlocks only become real after backend accepts events and returns updated state.
+- `achment_debug` remains the primary manual smoke-test command.

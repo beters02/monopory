@@ -108,7 +108,10 @@ public class MonopolyApp : Component
         if ( !File.Exists(path) )
         {
             if ( verbose )
+            {
                 Log.Warning( $"Secrets not found at: {path}" );
+            }
+                
             return false;
         }
 
@@ -143,12 +146,26 @@ public class MonopolyApp : Component
         return !string.IsNullOrWhiteSpace( AchievementsBackendUrl );
     }
 
+    private static void ApplyOtherAchievementDebugVariables()
+    {
+        AchievementsAccessToken = "";
+        AchievementsSteamworksAuthEnabled = true;
+    }
+
     [ConCmd( "achment_debug" )]
     private static void RunAchievementsDebug( Connection connection )
     {
         Log.Info( $"Application AppId: {Application.AppId}" );
+        Log.Info("Attempting to apply achievements debug secrets.");
         if ( !TryApplyAchievementSecrets( true ) )
+        {
+            Log.Info("Secrets failed");
             return;
+        }
+        Log.Info("Secrets applied");
+
+        Log.Info("Applying achievements debug variables.");
+        ApplyOtherAchievementDebugVariables();
 
         Log.Info("Running diagnostics.");
         ConsoleSystem.Run("achievements_auth_diagnostics");

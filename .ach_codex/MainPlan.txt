@@ -1,0 +1,86 @@
+# Secure Achievements And Unlocks Plan
+
+## Summary
+- Build an authoritative ASP.NET Core achievements service as the source of truth for achievements, progress, and cosmetic unlock eligibility.
+- Use Postgres for permanent backend state. Do not use Steamworks, Steam Cloud, or local cache as trusted unlock storage.
+- Use `Forkbox.Steamworks.SteamUser` only for identity/auth ticket acquisition; the backend validates tickets and issues short-lived game service tokens.
+- Add a game-side achievements facade so gameplay, lobby cosmetics, future profiles, and future Steam achievement mirroring all use one stable API.
+- Enforce locked pieces and dice skins through authoritative unlock data; clients may request selections, but only validated selections are accepted.
+
+## Key Changes
+- Add shared achievement and cosmetic definitions:
+  - `AchievementDefinition`, `AchievementProgress`, `CosmeticDefinition`, and data-first catalog-style definitions.
+  - Rewards map achievement ids to cosmetic ids such as pieces and dice skins.
+- Add game client/service interfaces:
+  - `IAchievementService.GetMyStateAsync()`
+  - `IAchievementService.GetPublicStateAsync(long steamId)`
+  - `IAchievementService.ReportEventAsync(AchievementEvent evt)`
+  - `IAchievementService.CanUseCosmeticAsync(long steamId, string cosmeticId)`
+  - `ICosmeticUnlockService.GetAvailableCosmetics(long steamId)`
+- Add backend API:
+  - `POST /auth/forkbox/session`: validate Forkbox/Steam auth ticket and issue a short-lived backend bearer token.
+  - `GET /players/{steamId}/achievements`
+  - `GET /me/achievements`
+  - `POST /me/achievement-events`
+  - `GET /me/unlocks`
+  - `POST /me/cosmetics/selection`
+- Store backend data in Postgres:
+  - `players`, `achievement_progress`, `achievement_events`, `cosmetic_selections`.
+  - Progress is monotonic and event history is append-only/deduplicated.
+- Integrate with game startup and event flow:
+  - Load local dev secrets/config before attempting backend auth.
+  - Connect to backend automatically when the game opens.
+  - Track backend state: `Disabled`, `Connecting`, `Connected`, `Failed`.
+  - Force reconnect commands clear stale bearer tokens and always request a fresh backend token.
+  - Queue achievement events while backend auth is in flight, then flush after auth succeeds.
+  - If `/me/*` returns `401`, clear token, reconnect once, and retry queued events.
+- Integrate with gameplay and cosmetics:
+  - `GameController` emits typed events from host-authoritative moments: start/end, winner, bankruptcy, property purchase, owned set completion, jail, dice outcomes.
+  - Lobby piece/dice selection checks unlock eligibility before accepting locked cosmetics.
+  - `MatchBootstrap` carries already-validated cosmetic ids into gameplay.
+  - Dice rendering reads selected dice skin from validated player state.
+- Steam achievement bridge remains future-facing:
+  - Keep internal ids mappable to future Steam API names.
+  - Later export unlocks to Steam only after backend unlock succeeds.
+  - Later import Steam achievements only through a controlled migration path.
+
+## Security Rules
+- Backend is the only permanent authority for achievements and unlocks.
+- Clients never directly unlock achievements; they submit events.
+- Backend validates event shape, player identity, monotonic progress, duplicate event ids, and plausible transition rules.
+- Local queued events are session-only and must not grant new unlocks by themselves.
+- Cosmetic selection is rejected unless backend unlock data says the player owns it.
+- Backend bearer tokens are short-lived and process-local; game reconnect must handle backend restarts by re-authing.
+- Profile reads expose only public achievement state.
+
+## Test Plan
+- Startup auth test:
+  - Start backend and open game.
+  - Confirm backend config loads before auth.
+  - Confirm game logs backend connecting, Forkbox auth, and backend enabled.
+- Backend restart test:
+  - Connect successfully, restart backend, force reconnect.
+  - Confirm stale token is discarded and a fresh token is issued.
+  - Trigger achievement event and confirm no `401`.
+- Early event queue test:
+  - Start match before auth completes.
+  - Confirm `match_started` queues instead of sending with stale auth.
+  - Confirm queued event flushes after backend connects.
+- Achievement unlock test:
+  - Trigger `force_end_game_win`.
+  - Confirm `match_won` posts to backend.
+  - Confirm `first_win` unlocks and reward cosmetic appears.
+- Offline/failure test:
+  - Run game with backend unavailable.
+  - Confirm gameplay continues, locked cosmetics fail closed, events queue locally, and no new unlocks are granted from cache alone.
+- Backend tests:
+  - Forkbox auth failure, stale bearer token, duplicate event ids, invalid cosmetic selection, public profile reads.
+- Integration persistence test:
+  - Unlock reward, select cosmetic, restart backend/game, confirm unlock and selection persist.
+
+## Assumptions
+- Backend stack remains ASP.NET Core with Postgres.
+- Local dev uses `MonoporySecrets/secrets.json` for game-side backend URL/app-id configuration.
+- Forkbox auth tokens are validated through Steam Web API, but Steam achievements are not created yet.
+- Backend unavailability should never block gameplay startup.
+- V1 queues events in memory only; durable offline event storage can be a later pass.
