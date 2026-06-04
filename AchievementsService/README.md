@@ -66,7 +66,10 @@ Run with Postgres:
 
 ```powershell
 $env:ACHIEVEMENTS_POSTGRES="Host=localhost;Port=5432;Database=rentrush_achievements;Username=postgres;Password=postgres"
-$env:Steam__AppId="4745160"
+$env:Steam__AppId="590830"
+$env:Steam__TicketAppIds="590830,480,4745160"
 $env:Steam__WebApiKey="<your Steam Web API key>"
 dotnet run --project AchievementsService\AchievementsService.csproj --launch-profile AchievementsService
 ```
+
+Forkbox auth tokens are validated through `https://api.steampowered.com` by default. Override with `Steam__WebApiBaseUrl` only when testing a different Steam Web API host.

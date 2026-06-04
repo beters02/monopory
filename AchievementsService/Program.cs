@@ -799,7 +799,9 @@ public sealed class SteamworksWebApiAuthTicketVerifier : ISteamworksAuthTicketVe
 
 	private async Task<SteamworksAuthResult> VerifyForAppIdAsync( long claimedSteamId, string ticket, string webApiKey, string appId )
 	{
-		var baseUrl = configuration["Steam:WebApiBaseUrl"] ?? "https://partner.steam-api.com";
+		var baseUrl = configuration["Steam:WebApiBaseUrl"] ??
+			configuration["STEAM_WEB_API_BASE_URL"] ??
+			"https://api.steampowered.com";
 		var url = $"{baseUrl.TrimEnd( '/')}/ISteamUserAuth/AuthenticateUserTicket/v1/?" +
 			$"key={Uri.EscapeDataString( webApiKey )}&" +
 			$"appid={Uri.EscapeDataString( appId )}&" +

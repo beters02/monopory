@@ -8,10 +8,11 @@ public class MonopolyApp : Component
 
     private class SecretsJsonObject
     {
-        public string WebApiKey;
-        public string AppId;
-        public bool UseSecretsAppId;
-        public string BackendUrl;
+        public string WebApiKey { get; set; }
+        public string AppId { get; set; }
+        public string BackendUrl { get; set; }
+        public bool UseSecretsAppId { get; set; }
+        
     }
 
     public static bool IsStandalone = false;
@@ -53,6 +54,7 @@ public class MonopolyApp : Component
 //do if standalone
         IsStandalone = true;
         Sandbox.Services.RentRushService.TestInit();
+        Log.Info(Application.AppId);
 //do endif
 
         var debugConvarParsed = bool.TryParse(ConsoleSystem.GetValue( "debug" ), out bool debugConvar);
@@ -102,6 +104,7 @@ public class MonopolyApp : Component
     [ConCmd( "achment_debug" )]
     private static void RunAchievementsDebug( Connection connection )
     {
+        Log.Info(Application.AppId);
         string path = SecretsDirectoryPath + "\\" + SecretsFileName;
         if ( !File.Exists(path) )
         {
@@ -111,11 +114,15 @@ public class MonopolyApp : Component
 
         // 1. Read the full text of the file
         string jsonString = File.ReadAllText(path);
+        Log.Info(jsonString);
 
         // 2. Parse (deserialize) the text into your C# object
         SecretsJsonObject secrets = JsonSerializer.Deserialize<SecretsJsonObject>(jsonString);
-        
+        Log.Info(secrets.BackendUrl);
+        Log.Info("ya");
+
         string appId = GetAppId(secrets);
+        Log.Info(appId);
         string backendUrl = secrets.BackendUrl;
 
         AchievementsSteamAppId = appId;
@@ -166,29 +173,6 @@ public class MonopolyApp : Component
                     );
                     token = steamworksSession?.AccessToken ?? "";
                     playerId = steamworksSession?.PlayerId ?? 0;
-                }
-
-                if ( string.IsNullOrWhiteSpace( token ) )
-                {
-                    Log.Warning( "Forkbox SteamUser achievements auth was not available; trying s&box auth token." );
-                    var sboxSession = await Sandbox.Services.RentRushService.AuthenticateAchievementsBackendWithSboxAsync(
-                        AchievementsBackendUrl,
-                        AchievementsAuthServiceName,
-                        Connection.Local?.DisplayName ?? ""
-                    );
-                    token = sboxSession?.AccessToken ?? "";
-                    playerId = sboxSession?.PlayerId ?? 0;
-                }
-
-                if ( string.IsNullOrWhiteSpace( token ) )
-                {
-                    Log.Warning( "s&box achievements auth was not available; falling back to local device identity." );
-                    var deviceSession = await Sandbox.Services.RentRushService.AuthenticateAchievementsBackendWithDeviceAsync(
-                        AchievementsBackendUrl,
-                        Connection.Local?.DisplayName ?? ""
-                    );
-                    token = deviceSession?.AccessToken ?? "";
-                    playerId = deviceSession?.PlayerId ?? 0;
                 }
             }
 
