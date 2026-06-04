@@ -33,7 +33,6 @@
 		<Reference Include="../../../GitHub/sbox-public/game/bin/managed/Sandbox.Reflection.dll"/> 
 		<Reference Include="../../../GitHub/sbox-public/game/bin/managed/Sandbox.Mounting.dll"/> 
 		<Reference Include="../../../GitHub/sbox-public/game/bin/managed/Microsoft.AspNetCore.Components.dll"/> 
-		<Reference Include="../../../GitHub/sbox-public/game/bin/managed/../thirdparty/Forkbox.Steamworks.dll"/> 
 		<Reference Include="../../../GitHub/sbox-public/game/bin/managed/Sandbox.AppSystem.dll"/> 
 		<Reference Include="../../../GitHub/sbox-public/game/bin/managed/Sandbox.Tools.dll"/> 
 		<Reference Include="../../../GitHub/sbox-public/game/bin/managed/Sandbox.Compiling.dll"/> 
