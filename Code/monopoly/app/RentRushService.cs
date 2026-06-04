@@ -39,11 +39,15 @@ public static class RentRushService
 		var identity = string.IsNullOrWhiteSpace( ticketIdentity )
 			? DefaultForkboxTicketIdentity
 			: ticketIdentity.Trim();
-		Log.Info( $"Requesting Forkbox Steam Web API auth ticket. steamId={steamId} identity={identity}." );
-		var token = await SteamUser.GetAuthTokenAsync( identity, 10.0 );
+
+		if ( string.Equals( identity, "null", StringComparison.OrdinalIgnoreCase ) )
+			identity = null;
+
+		Log.Info( $"Requesting Forkbox Steam Web API auth ticket. steamId={steamId} identity={identity ?? "<default>"}." );
+		var token = await RequestForkboxAuthTokenAsync( identity );
 		if ( token is null || string.IsNullOrWhiteSpace( token.Value ) )
 		{
-			Log.Warning( "Forkbox Steam Web API auth token request returned no token." );
+			Log.Warning( "Forkbox Steam Web API auth token request returned no token. Make sure Steam is running and standalone was launched from the s&box/Steam environment." );
 			return null;
 		}
 
@@ -61,6 +65,23 @@ public static class RentRushService
 		{
 			token.Dispose();
 		}
+	}
+
+	private static async Task<AuthToken> RequestForkboxAuthTokenAsync( string identity )
+	{
+		var token = await SteamUser.GetAuthTokenAsync( identity, 15.0 );
+		if ( token is not null )
+			return token;
+
+		Log.Warning( "Forkbox async auth token request timed out; retrying once with the default identity." );
+		await Task.Delay( 500 );
+
+		token = await SteamUser.GetAuthTokenAsync( null, 15.0 );
+		if ( token is not null )
+			return token;
+
+		Log.Warning( "Forkbox default async auth token request timed out; trying the synchronous token path used by the validation sample." );
+		return SteamUser.GetAuthToken( null );
 	}
 
 	public static async Task<SboxSessionResponse> AuthenticateAchievementsBackendWithSboxAsync( string backendUrl, string authServiceName, string displayName )

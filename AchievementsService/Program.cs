@@ -823,7 +823,7 @@ public sealed class SteamworksWebApiAuthTicketVerifier : ISteamworksAuthTicketVe
 		var parameters = validation?.Response?.Params;
 		if ( parameters is null || !string.Equals( parameters.Result, "OK", StringComparison.OrdinalIgnoreCase ) )
 		{
-			logger.LogWarning( "Steamworks ticket validation failed for AppId={AppId}. Result={Result} Error={Error} Body={Body}", appId, parameters?.Result ?? "<null>", validation?.Response?.Error ?? "", responseText );
+			logger.LogWarning( "Steamworks ticket validation failed for AppId={AppId}. Result={Result} Error={Error} Body={Body}", appId, parameters?.Result ?? "<null>", SteamAuthenticateUserTicketErrors.Get( validation ), responseText );
 			return SteamworksAuthResult.Failed( $"steamworks_result_{parameters?.Result ?? "null"}_appid_{appId}" );
 		}
 
@@ -869,7 +869,21 @@ public sealed class SteamAuthenticateUserTicketResponse
 public sealed class SteamAuthenticateUserTicketBody
 {
 	public SteamAuthenticateUserTicketParams Params { get; set; } = new();
-	public string Error { get; set; } = "";
+	public JsonElement Error { get; set; }
+}
+
+public static class SteamAuthenticateUserTicketErrors
+{
+	public static string Get( SteamAuthenticateUserTicketResponse validation )
+	{
+		var error = validation?.Response?.Error;
+		if ( error is null || error.Value.ValueKind is JsonValueKind.Undefined or JsonValueKind.Null )
+			return "";
+
+		return error.Value.ValueKind == JsonValueKind.String
+			? error.Value.GetString() ?? ""
+			: error.Value.GetRawText();
+	}
 }
 
 public sealed class SteamAuthenticateUserTicketParams

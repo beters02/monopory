@@ -54,7 +54,8 @@ public class MonopolyApp : Component
 //do if standalone
         IsStandalone = true;
         Sandbox.Services.RentRushService.TestInit();
-        Log.Info(Application.AppId);
+        Log.Info( $"Application AppId: {Application.AppId}" );
+        TryApplyAchievementSecrets( false );
 //do endif
 
         var debugConvarParsed = bool.TryParse(ConsoleSystem.GetValue( "debug" ), out bool debugConvar);
@@ -95,41 +96,59 @@ public class MonopolyApp : Component
 
     private static string GetAppId(SecretsJsonObject secrets)
     {
-        if (secrets.AppId is null || !secrets.UseSecretsAppId)
+        if (secrets is null || secrets.AppId is null || !secrets.UseSecretsAppId)
             return Application.AppId.ToString();
         
         return secrets.AppId;
     }
 
+    private static bool TryApplyAchievementSecrets( bool verbose )
+    {
+        var path = Path.Combine( SecretsDirectoryPath, SecretsFileName );
+        if ( !File.Exists(path) )
+        {
+            if ( verbose )
+                Log.Warning( $"Secrets not found at: {path}" );
+            return false;
+        }
+
+        SecretsJsonObject secrets;
+        try
+        {
+            secrets = JsonSerializer.Deserialize<SecretsJsonObject>(File.ReadAllText(path));
+        }
+        catch ( Exception exception )
+        {
+            Log.Warning( $"Failed to read achievement secrets from {path}: {exception.Message}" );
+            return false;
+        }
+
+        string appId = GetAppId(secrets);
+        string backendUrl = secrets?.BackendUrl;
+
+        if ( !string.IsNullOrWhiteSpace( appId ) )
+        {
+            AchievementsSteamAppId = appId;
+            if ( verbose )
+                Log.Info($"Set app id to: {appId}");
+        }
+
+        if ( !string.IsNullOrWhiteSpace( backendUrl ) )
+        {
+            AchievementsBackendUrl = backendUrl;
+            if ( verbose )
+                Log.Info($"Set backend url to: {backendUrl}");
+        }
+
+        return !string.IsNullOrWhiteSpace( AchievementsBackendUrl );
+    }
+
     [ConCmd( "achment_debug" )]
     private static void RunAchievementsDebug( Connection connection )
     {
-        Log.Info(Application.AppId);
-        string path = SecretsDirectoryPath + "\\" + SecretsFileName;
-        if ( !File.Exists(path) )
-        {
-            Log.Warning( $"Secrets not found at: {path}" );
+        Log.Info( $"Application AppId: {Application.AppId}" );
+        if ( !TryApplyAchievementSecrets( true ) )
             return;
-        }
-
-        // 1. Read the full text of the file
-        string jsonString = File.ReadAllText(path);
-        Log.Info(jsonString);
-
-        // 2. Parse (deserialize) the text into your C# object
-        SecretsJsonObject secrets = JsonSerializer.Deserialize<SecretsJsonObject>(jsonString);
-        Log.Info(secrets.BackendUrl);
-        Log.Info("ya");
-
-        string appId = GetAppId(secrets);
-        Log.Info(appId);
-        string backendUrl = secrets.BackendUrl;
-
-        AchievementsSteamAppId = appId;
-        Log.Info($"Set app id to: {appId}");
-        
-        AchievementsBackendUrl = backendUrl;
-        Log.Info($"Set backend url to: {backendUrl}");
 
         Log.Info("Running diagnostics.");
         ConsoleSystem.Run("achievements_auth_diagnostics");
@@ -177,7 +196,11 @@ public class MonopolyApp : Component
             }
 
             if ( string.IsNullOrWhiteSpace( token ) )
+            {
+                achievementsBackendInitialized = false;
+                Log.Warning( "Achievements backend auth did not return a token; backend was not enabled." );
                 return;
+            }
 
             AchievementsAccessToken = token;
             authenticatedAchievementsPlayerId = playerId;
