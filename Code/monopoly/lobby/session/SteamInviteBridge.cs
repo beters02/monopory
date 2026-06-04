@@ -72,13 +72,30 @@ public static class SteamInviteBridge
 #endif
 		return 0;
 	}
+	
+	
 
 #if STANDALONE
+	private static void PrintAssemblyTypes( )
+	{
+		var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+		for ( var i = 0; i < assemblies.Length; i++ )
+		{
+			var types = assemblies[i].GetTypes();
+			if ( types is null ) continue;
+			Log.Info(assemblies[i].ToString());
+			for ( var bi = 0; bi < types.Length; bi++ )
+			{
+				Log.Info(types[bi].FullName);
+			}
+		}
+	}
 	private static Type FindLoadedType( string typeName )
 	{
 		var assemblies = AppDomain.CurrentDomain.GetAssemblies();
 		for ( var i = 0; i < assemblies.Length; i++ )
 		{
+			Log.Info(assemblies[i].ToString());
 			var type = assemblies[i].GetType( typeName, false );
 			if ( type is not null )
 				return type;

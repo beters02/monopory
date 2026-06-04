@@ -37,6 +37,7 @@ public class MonopolyApp : Component
 	{
 #if STANDALONE
         IsStandalone = true;
+        Sandbox.Services.RentRushService.TestInit();
 #endif
 
         var debugConvarParsed = bool.TryParse(ConsoleSystem.GetValue( "debug" ), out bool debugConvar);
