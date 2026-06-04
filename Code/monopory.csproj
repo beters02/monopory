@@ -35,6 +35,7 @@
 		<Reference Include="../../../GitHub/sbox-public/game/bin/managed/Sandbox.Mounting.dll"/> 
 		<Reference Include="../../../GitHub/sbox-public/game/bin/managed/Microsoft.AspNetCore.Components.dll"/> 
 		<Reference Include="../../../GitHub/sbox-public/game/bin/managed/../thirdparty/Forkbox.Steamworks.dll"/> 
+		<Reference Include="../../../GitHub/sbox-public/game/bin/managed/../thirdparty/Forkbox.Steamworks.dll"/> 
 	</ItemGroup>
 
 	<ItemGroup>

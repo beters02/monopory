@@ -30,19 +30,13 @@
       "WarningsAsErrors": "",
       "TreatWarningsAsErrors": false,
       "Nullables": false,
-      "ReleaseMode": "Debug",
-      "AssemblyReferences": [
-        "Forkbox.Steamworks"
-      ],
+      "ReleaseMode": "Debug"
       "ReplacementDirectives": {
         ".Server.cs": "SERVER"
       },
       "IgnoreFolders": [
         "editor",
         "unittest"
-      ],
-      "DistinctAssemblyReferences": [
-        "Forkbox.Steamworks"
       ]
     },
     "LaunchMode": "Normal",
