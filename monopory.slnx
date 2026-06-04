@@ -1,0 +1,18 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+  </Configurations>
+  <Project Path="Code/monopory.csproj" />
+  <Project Path="Editor/monopory.editor.csproj" />
+  <Folder Name="/Addons/">
+    <Project Path="../../GitHub/sbox-public/game/addons/base/code/Base Library.csproj" />
+  </Folder>
+  <Folder Name="/Tools/">
+    <Project Path="../../GitHub/sbox-public/game/addons/tools/Code/Base Editor Library.csproj" />
+    <Project Path="../../GitHub/sbox-public/game/editor/ActionGraph/Code/actiongraph.csproj" />
+    <Project Path="../../GitHub/sbox-public/game/editor/DooEditor/Code/dooeditor.csproj" />
+    <Project Path="../../GitHub/sbox-public/game/editor/Hammer/Code/hammer.csproj" />
+    <Project Path="../../GitHub/sbox-public/game/editor/MovieMaker/Code/moviemaker.csproj" />
+    <Project Path="../../GitHub/sbox-public/game/editor/ShaderGraph/Code/shadergraph.csproj" />
+  </Folder>
+</Solution>

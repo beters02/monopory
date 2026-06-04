@@ -369,7 +369,7 @@ public static class BoardData
 			{
 				Index = 29,
 				Key = "property_yellow_2",
-				DisplayName = "Shrine Auditorium",
+				DisplayName = "Costco Executive Lounge",
 				Type = SpaceType.Property,
 				Price = 280,
 				BaseRent = 24,
