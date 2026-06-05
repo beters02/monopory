@@ -168,7 +168,7 @@
 						<GameButton Variant="flow-secondary-button flow-utility-button" OnClick="@CustomizePiece">Customize</GameButton>
 					</div>
 					<div class="lobby-action-row lobby-action-row-bottom">
-						<GameButton Variant="flow-secondary-button flow-back-button" OnClick="@BackToMenu">Back</GameButton>
+						<GameButton Variant="flow-secondary-button flow-back-button" OnClick="@BackToMenu">@BackButtonLabel</GameButton>
 						<GameButton Variant="flow-secondary-button flow-utility-button" OnClick="@InviteFriends">Invite</GameButton>
 						<GameButton Variant="@ConfigButtonClasses" CanClick="@CanOpenConfig" OnClick="@OpenConfigMenu" BlockedPopupTitle="Host only" BlockedPopupMessage="Only the host can change lobby game settings.">Match Settings</GameButton>
 					</div>
@@ -234,6 +234,7 @@
 	private string ReadyButtonClasses => LocalPlayer?.IsReady == true ? "flow-secondary-button ready" : "flow-primary-button";
 	private string StartButtonClasses => CanClickStartGame ? "flow-primary-button" : "flow-primary-button blocked-action-button";
 	private string ConfigButtonClasses => "flow-secondary-button flow-utility-button flow-config-button";
+	private string BackButtonLabel => Lobby?.IsLocalEffectiveHost == true ? "Back" : "Leave";
 	private string ConfigMenuCopy => CanEditConfig
 		? "Changes stay local to the host until you press Save."
 		: "Viewing current host settings. Only the host can change or save configuration.";
@@ -330,6 +331,12 @@
 		if ( Lobby is null )
 			return;
 
+		if ( Lobby?.IsLocalEffectiveHost == false || Lobby?.IsLocalEffectiveHost == null )
+		{
+			ConfirmLeaveLobby();
+			return;
+		}
+
 		if ( HasOtherLobbyPlayers )
 		{
 			if ( PopupGame is null )
@@ -358,6 +365,29 @@
 			return;
 
 		Lobby.RequestBackToMenu();
+	}
+
+	private void ConfirmLeaveLobby()
+	{
+		if ( PopupGame is null )
+		{
+			LeaveLobby();
+			return;
+		}
+
+		PopupGame.ShowLocalConfirmation(
+			"Leave lobby?",
+			"You will leave this lobby and return to the main menu.",
+			LeaveLobby,
+			null,
+			"Leave",
+			"Stay",
+			false );
+	}
+
+	private void LeaveLobby()
+	{
+		NetworkSession.ForceDisconnectToMenu( Scene );
 	}
 
 	private void InviteFriends()
