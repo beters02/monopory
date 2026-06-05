@@ -1,9 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using Sandbox;
-
-#pragma warning disable CA2255
 
 public sealed class CommandResult
 {
@@ -20,37 +17,37 @@ public sealed class CommandResult
 	public static CommandResult Fail( string message ) => new( false, message );
 }
 
-public interface IGameCommand
-{
-	string Name { get; }
-	Delegate Callback { get; }
-}
-
-public sealed class GameCommand<TCallback> : IGameCommand
-	where TCallback : Delegate
-{
-	public string Name { get; }
-	public TCallback TypedCallback { get; }
-	public Delegate Callback => TypedCallback;
-
-	public GameCommand( string name, TCallback callback )
-	{
-		Name = name;
-		TypedCallback = callback;
-	}
-}
+public sealed record GameCommand( string Name, MethodDescription Method, ConCmdAttribute Attribute );
 
 public static class GameCommands
 {
-	private static readonly Dictionary<string, IGameCommand> Commands = new();
+	private static readonly Dictionary<string, GameCommand> Commands = new();
+	private static bool registered;
 
-	public static IReadOnlyDictionary<string, IGameCommand> All => Commands;
-
-	public static GameCommand<TCallback> Register<TCallback>( GameCommand<TCallback> command )
-		where TCallback : Delegate
+	public static IReadOnlyDictionary<string, GameCommand> All
 	{
-		Commands[command.Name] = command;
-		return command;
+		get
+		{
+			EnsureRegistered();
+			return Commands;
+		}
+	}
+
+	private static void EnsureRegistered()
+	{
+		if ( registered )
+			return;
+
+		registered = true;
+
+		foreach ( var (method, attribute) in Game.TypeLibrary.GetMethodsWithAttribute<ConCmdAttribute>() )
+		{
+			var name = attribute.Name;
+			if ( string.IsNullOrWhiteSpace( name ) )
+				name = method.Name;
+
+			Commands[name] = new GameCommand( name, method, attribute );
+		}
 	}
 }
 
@@ -78,15 +75,15 @@ public sealed class GameCommandManager : Component
 		return string.Join( " ", new[] { playerName }.Concat( playerNameTail ) );
 	}
 
-	internal static void RunCommand( IGameCommand command, Func<CommandResult> callback )
+	internal static void RunCommand( string commandName, Func<CommandResult> callback )
 	{
 		try
 		{
-			LogCommandResult( command, callback() );
+			LogCommandResult( commandName, callback() );
 		}
 		catch ( Exception exception )
 		{
-			var message = $"{command.Name} command threw: {exception.Message}";
+			var message = $"{commandName} command threw: {exception.Message}";
 			Log.Error( message );
 			WriteStandaloneConsoleLine( message, "err" );
 		}
@@ -102,9 +99,11 @@ public sealed class GameCommandManager : Component
 
 	internal static bool CanUseHostCheatCommand( Connection caller )
 	{
-		return Networking.IsHost &&
+		/*return Networking.IsHost &&
 			(caller is null || caller == Connection.Local) &&
-			Game.CheatsEnabled;
+			Game.CheatsEnabled;*/
+
+		return CanUseCheatCommand(caller);
 	}
 
 	internal static bool HasUnresolvedPendingBuyDecision( GameController game, PlayerState player )
@@ -124,11 +123,11 @@ public sealed class GameCommandManager : Component
 		return $"Resolve the pending property decision for {pendingName} before buying other properties for that player.";
 	}
 
-	private static void LogCommandResult( IGameCommand command, CommandResult result )
+	private static void LogCommandResult( string commandName, CommandResult result )
 	{
 		if ( result is null )
 		{
-			var message = $"{command.Name} command failed: no command result.";
+			var message = $"{commandName} command failed: no command result.";
 			Log.Warning( message );
 			WriteStandaloneConsoleLine( message, "wrn" );
 			return;
@@ -136,7 +135,7 @@ public sealed class GameCommandManager : Component
 
 		if ( !result.Ok )
 		{
-			var message = $"{command.Name} command failed: {result.Message}";
+			var message = $"{commandName} command failed: {result.Message}";
 			Log.Warning( message );
 			WriteStandaloneConsoleLine( message, "wrn" );
 			return;
@@ -144,13 +143,13 @@ public sealed class GameCommandManager : Component
 
 		if ( string.IsNullOrWhiteSpace( result.Message ) )
 		{
-			var message = $"{command.Name} command succeeded.";
+			var message = $"{commandName} command succeeded.";
 			Log.Info( message );
 			WriteStandaloneConsoleLine( message, "msg" );
 			return;
 		}
 
-		var successMessage = $"{command.Name}: {result.Message}";
+		var successMessage = $"{commandName}: {result.Message}";
 		Log.Info( successMessage );
 		WriteStandaloneConsoleLine( successMessage, "msg" );
 	}
@@ -191,18 +190,11 @@ public sealed class GameCommandManager : Component
 public static class RollPhysicalDiceCommand
 {
 	public const string Name = "roll_physical_dice";
-	public static readonly GameCommand<Action<Connection, string, string[]>> Command = new( Name, Execute );
-
-	[ModuleInitializer]
-	public static void Register()
-	{
-		GameCommands.Register( Command );
-	}
 
 	[ConCmd( Name )]
 	public static void Execute( Connection connection, string playerName = "self", params string[] playerNameTail )
 	{
-		GameCommandManager.RunCommand( Command, () =>
+		GameCommandManager.RunCommand( Name, () =>
 		{
 			if ( !GameCommandManager.CanUseHostCheatCommand( connection ) )
 				return CommandResult.Fail( "roll_physical_dice can only be used by the host with sv_cheats enabled." );
@@ -228,18 +220,11 @@ public static class RollPhysicalDiceCommand
 public static class EndTurnCommand
 {
 	public const string Name = "end_turn";
-	public static readonly GameCommand<Action<Connection, string, string[]>> Command = new( Name, Execute );
-
-	[ModuleInitializer]
-	public static void Register()
-	{
-		GameCommands.Register( Command );
-	}
 
 	[ConCmd( Name )]
 	public static void Execute( Connection connection, string playerName = "self", params string[] playerNameTail )
 	{
-		GameCommandManager.RunCommand( Command, () =>
+		GameCommandManager.RunCommand( Name, () =>
 		{
 			if ( !GameCommandManager.CanUseHostCheatCommand( connection ) )
 				return CommandResult.Fail( "end_turn can only be used by the host with sv_cheats enabled." );
@@ -265,18 +250,11 @@ public static class EndTurnCommand
 public static class BuyPropertyCommand
 {
 	public const string Name = "buy_property";
-	public static readonly GameCommand<Action<Connection, int, string, string[]>> Command = new( Name, Execute );
-
-	[ModuleInitializer]
-	public static void Register()
-	{
-		GameCommands.Register( Command );
-	}
 
 	[ConCmd( Name )]
 	public static void Execute( Connection connection, int propertyIndex, string playerName = "self", params string[] playerNameTail )
 	{
-		GameCommandManager.RunCommand( Command, () =>
+		GameCommandManager.RunCommand( Name, () =>
 		{
 			var game = GameController.Instance;
 			if ( game is null )
@@ -308,18 +286,11 @@ public static class BuyPropertyCommand
 public static class BuyPropertySetCommand
 {
 	public const string Name = "buy_property_set";
-	public static readonly GameCommand<Action<Connection, string, string, string[]>> Command = new( Name, Execute );
-
-	[ModuleInitializer]
-	public static void Register()
-	{
-		GameCommands.Register( Command );
-	}
 
 	[ConCmd( Name )]
 	public static void Execute( Connection connection, string propertySet, string playerName = "self", params string[] playerNameTail )
 	{
-		GameCommandManager.RunCommand( Command, () =>
+		GameCommandManager.RunCommand( Name, () =>
 		{
 			if ( !GameCommandManager.CanUseCheatCommand( connection ) )
 				return CommandResult.Fail( "sv_cheats must be enabled to buy property sets." );
@@ -354,18 +325,11 @@ public static class BuyPropertySetCommand
 public static class RollDiceCommand
 {
 	public const string Name = "roll_dice";
-	public static readonly GameCommand<Action<Connection, int, string, string[]>> Command = new( Name, Execute );
-
-	[ModuleInitializer]
-	public static void Register()
-	{
-		GameCommands.Register( Command );
-	}
 
 	[ConCmd( Name )]
 	public static void Execute( Connection connection, int amount = -1, string playerName = "self", params string[] playerNameTail )
 	{
-		GameCommandManager.RunCommand( Command, () =>
+		GameCommandManager.RunCommand( Name, () =>
 		{
 			var game = GameController.Instance;
 			if ( game is null )
@@ -399,18 +363,11 @@ public static class RollDiceCommand
 public static class RollTwoDiceCommand
 {
 	public const string Name = "roll_two_dice";
-	public static readonly GameCommand<Action<Connection, int, int, string, string[]>> Command = new( Name, Execute );
-
-	[ModuleInitializer]
-	public static void Register()
-	{
-		GameCommands.Register( Command );
-	}
 
 	[ConCmd( Name )]
 	public static void Execute( Connection connection, int dieA, int dieB, string playerName = "self", params string[] playerNameTail )
 	{
-		GameCommandManager.RunCommand( Command, () =>
+		GameCommandManager.RunCommand( Name, () =>
 		{
 			if ( dieA is < 1 or > 6 || dieB is < 1 or > 6 )
 				return CommandResult.Fail( "Dice values must be between 1 and 6." );
@@ -443,18 +400,11 @@ public static class RollTwoDiceCommand
 public static class ChangeMoneyCommand
 {
 	public const string Name = "change_money";
-	public static readonly GameCommand<Action<Connection, int, string, string[]>> Command = new( Name, Execute );
-
-	[ModuleInitializer]
-	public static void Register()
-	{
-		GameCommands.Register( Command );
-	}
 
 	[ConCmd( Name )]
 	public static void Execute( Connection connection, int amount, string playerName = "self", params string[] playerNameTail )
 	{
-		GameCommandManager.RunCommand( Command, () =>
+		GameCommandManager.RunCommand( Name, () =>
 		{
 			if ( !GameCommandManager.CanUseCheatCommand( connection ) )
 				return CommandResult.Fail( "sv_cheats must be enabled to change player money." );
@@ -478,18 +428,11 @@ public static class ChangeMoneyCommand
 public static class ChangeVacationCashCommand
 {
 	public const string Name = "change_vacation_cash";
-	public static readonly GameCommand<Action<Connection, int>> Command = new( Name, Execute );
-
-	[ModuleInitializer]
-	public static void Register()
-	{
-		GameCommands.Register( Command );
-	}
 
 	[ConCmd( Name )]
 	public static void Execute( Connection connection, int amount )
 	{
-		GameCommandManager.RunCommand( Command, () =>
+		GameCommandManager.RunCommand( Name, () =>
 		{
 			if ( !GameCommandManager.CanUseCheatCommand( connection ) )
 				return CommandResult.Fail( "sv_cheats must be enabled to change vacation cash." );
@@ -508,18 +451,11 @@ public static class ChangeVacationCashCommand
 public static class ForceEndGameWinCommand
 {
 	public const string Name = "force_end_game_win";
-	public static readonly GameCommand<Action<Connection, string, string[]>> Command = new( Name, Execute );
-
-	[ModuleInitializer]
-	public static void Register()
-	{
-		GameCommands.Register( Command );
-	}
 
 	[ConCmd( Name )]
 	public static void Execute( Connection connection, string playerName = "self", params string[] playerNameTail )
 	{
-		GameCommandManager.RunCommand( Command, () =>
+		GameCommandManager.RunCommand( Name, () =>
 		{
 			if ( !GameCommandManager.CanUseCheatCommand( connection ) )
 				return CommandResult.Fail( "sv_cheats must be enabled to force-end the game." );
@@ -543,18 +479,11 @@ public static class ForceEndGameWinCommand
 public static class JailPlayerCommand
 {
 	public const string Name = "jail_player";
-	public static readonly GameCommand<Action<Connection, string>> Command = new( Name, Execute );
-
-	[ModuleInitializer]
-	public static void Register()
-	{
-		GameCommands.Register( Command );
-	}
 
 	[ConCmd( Name )]
 	public static void Execute( Connection connection, string playerName = "self" )
 	{
-		GameCommandManager.RunCommand( Command, () =>
+		GameCommandManager.RunCommand( Name, () =>
 		{
 			var game = GameController.Instance;
 			if ( game is null )

@@ -51,7 +51,11 @@
 
 	private static readonly ConcurrentQueue<ConsoleEntry> PendingLogEntries = new();
 	private static string[] KnownCommands =>
-		GameCommands.All.Keys.ToArray();
+		GameCommands.All.Keys
+			.Concat( GameConVars.All.Keys )
+			.Distinct( StringComparer.OrdinalIgnoreCase )
+			.OrderBy( command => command, StringComparer.OrdinalIgnoreCase )
+			.ToArray();
 
 	private readonly List<ConsoleEntry> Entries = new();
 	private ConsoleCommandTextEntry CommandInput = null!;
@@ -352,6 +356,7 @@
 
 		return KnownCommands
 			.Where( command => command.StartsWith( value, StringComparison.OrdinalIgnoreCase ) )
+			.Distinct( StringComparer.OrdinalIgnoreCase )
 			.Take( 20 )
 			.Select( command => (object)new TextEntry.AutocompleteEntry { Title = command, Value = command } )
 			.ToArray();

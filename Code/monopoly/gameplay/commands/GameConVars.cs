@@ -1,67 +1,104 @@
 using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 
-#pragma warning disable CA2255
-
-public interface IGameConVar
+public sealed class GameConVar
 {
-	string Name { get; }
-	Type ValueType { get; }
-	object BoxedValue { get; set; }
-}
-
-public sealed class GameConVar<TValue> : IGameConVar
-{
-	private readonly Func<TValue> getter;
-	private readonly Action<TValue> setter;
-
 	public string Name { get; }
-	public Type ValueType => typeof( TValue );
+	public MemberDescription Member { get; }
+	public ConVarAttribute Attribute { get; }
 
-	public TValue Value
+	public Type ValueType
 	{
-		get => getter();
-		set => setter( value );
+		get
+		{
+			if ( Member is PropertyDescription property )
+				return property.PropertyType;
+
+			if ( Member is FieldDescription fieldDescription )
+				return fieldDescription.FieldType;
+
+			return typeof( object );
+		}
 	}
 
 	public object BoxedValue
 	{
-		get => Value;
-		set => Value = (TValue)value;
+		get
+		{
+			if ( Member is PropertyDescription property )
+				return property.GetValue( null );
+
+			if ( Member is FieldDescription fieldDescription )
+				return fieldDescription.GetValue( null );
+
+			return null;
+		}
+		set
+		{
+			if ( Member is PropertyDescription property )
+			{
+				property.SetValue( null, value );
+				return;
+			}
+
+			if ( Member is FieldDescription fieldDescription )
+				fieldDescription.SetValue( null, value );
+		}
 	}
 
-	public GameConVar( string name, Func<TValue> getter, Action<TValue> setter )
+	public GameConVar( string name, MemberDescription member, ConVarAttribute attribute )
 	{
 		Name = name;
-		this.getter = getter;
-		this.setter = setter;
+		Member = member;
+		Attribute = attribute;
 	}
 }
 
 public static class GameConVars
 {
-	private static readonly Dictionary<string, IGameConVar> ConVars = new();
+	private static readonly Dictionary<string, GameConVar> ConVars = new();
+	private static bool registered;
 
-	public static IReadOnlyDictionary<string, IGameConVar> All => ConVars;
-
-	public static GameConVar<TValue> Register<TValue>( GameConVar<TValue> conVar )
+	public static IReadOnlyDictionary<string, GameConVar> All
 	{
-		ConVars[conVar.Name] = conVar;
-		return conVar;
+		get
+		{
+			EnsureRegistered();
+			return ConVars;
+		}
+	}
+
+	private static void EnsureRegistered()
+	{
+		if ( registered )
+			return;
+
+		registered = true;
+
+		foreach ( var type in Game.TypeLibrary.GetTypes() )
+		{
+			foreach ( var member in type.Members )
+			{
+				if ( !member.IsStatic )
+					continue;
+
+				var attribute = member.GetCustomAttribute<ConVarAttribute>();
+				if ( attribute is null )
+					continue;
+
+				var name = attribute.Name;
+				if ( string.IsNullOrWhiteSpace( name ) )
+					name = member.Name;
+
+				ConVars[name] = new GameConVar( name, member, attribute );
+			}
+		}
 	}
 }
 
 public static class DebugConVar
 {
 	public const string Name = "debug";
-	public static readonly GameConVar<bool> ConVar = new( Name, () => Value, value => Value = value );
-
-	[ModuleInitializer]
-	public static void Register()
-	{
-		GameConVars.Register( ConVar );
-	}
 
 	[ConVar( Name )]
 	public static bool Value { get; set; } = false;
