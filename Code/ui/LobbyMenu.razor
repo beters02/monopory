@@ -7,7 +7,7 @@
 
 <root class="monopoly-flow-ui">
 	<ButtonPopLayer></ButtonPopLayer>
-	<PopupStack Popups="@PopupList" OnDismiss="@DismissPopup"></PopupStack>
+	<PopupStack Popups="@PopupList" OnDismiss="@DismissPopup" OnConfirmDecision="@HandleConfirmationDecision"></PopupStack>
 	<div class="flow-screen lobby-screen">
 		<OptionsMenu IsOpen="@IsOptionsMenuOpen" OnClose="@CloseOptionsMenu"></OptionsMenu>
 		@if ( IsConfigMenuOpen && EditableConfig is not null )
@@ -240,6 +240,7 @@
 	private string StartBlockedMessage => Lobby?.OnlyHostStartsGame == true && Lobby?.IsLocalEffectiveHost != true
 		? "Only the host can start this game."
 		: LobbyStatusText;
+	private bool HasOtherLobbyPlayers => Players.Any( player => !player.IsLocal );
 
 	private bool HasUnreadyPlayers
 	{
@@ -325,6 +326,33 @@
 	}
 
 	private void BackToMenu()
+	{
+		if ( Lobby is null )
+			return;
+
+		if ( HasOtherLobbyPlayers )
+		{
+			if ( PopupGame is null )
+			{
+				RequestBackToMenu();
+				return;
+			}
+
+			PopupGame.ShowLocalConfirmation(
+				"Return to menu?",
+				"This will send everyone in the lobby back to the main menu.",
+				RequestBackToMenu,
+				null,
+				"Return",
+				"Stay",
+				false );
+			return;
+		}
+
+		RequestBackToMenu();
+	}
+
+	private void RequestBackToMenu()
 	{
 		if ( Lobby is null )
 			return;
@@ -520,6 +548,11 @@
 	private void DismissPopup( int popupId )
 	{
 		PopupGame?.DismissPopup( popupId );
+	}
+
+	private void HandleConfirmationDecision( int popupId, bool confirmed )
+	{
+		PopupGame?.ResolveConfirmationPopup( popupId, confirmed );
 	}
 
 	private void ShowLocalPopup( string title, string message, PopupKind kind = PopupKind.Info, bool canDismiss = true, float lifetime = 5f, bool soundEnabled = true )

@@ -9,17 +9,20 @@ public sealed partial class GameController : Component
 	private readonly List<CardDef> chanceDrawPile = new();
 	private readonly List<CardDef> communityChestDrawPile = new();
 
-	private void ResolveCardLanding( PlayerState player, CardDeck deck )
+	private string ResolveCardLanding( PlayerState player, CardDeck deck )
 	{
 		var card = DrawCard( deck );
 		if ( player is null || card is null )
-			return;
+			return card is null ? $"No {deck} card drawn" : "Card landing missing player";
 
 		string cardDisplayText = GetCardDisplayText( card );
 		ShowCardForPlayerWhoLanded( player, cardDisplayText );
 		SendCardDrawPopupToOtherPlayers( player, card );
-		Log.Info( $"{player.PlayerName} drew {deck}: {card.Title}." );
-		ApplyCard( player, card );
+		var cardResult = ApplyCard( player, card );
+		Log.Info(
+			$"{player.PlayerName} drew {deck}: title=\"{card.Title}\", text=\"{card.Description}\", " +
+			$"action={card.Action}, result={cardResult}" );
+		return $"Drew {deck}: {card.Title}; {cardResult}";
 	}
 
 	private void SendCardDrawPopupToOtherPlayers( PlayerState drawingPlayer, CardDef card )
@@ -196,10 +199,10 @@ public sealed partial class GameController : Component
 		}
 	}
 
-	private void ApplyCard( PlayerState player, CardDef card )
+	private string ApplyCard( PlayerState player, CardDef card )
 	{
 		if ( player is null || card is null )
-			return;
+			return "Card not applied";
 
 		switch ( card.Action )
 		{
@@ -209,33 +212,38 @@ public sealed partial class GameController : Component
 				ShowMoneyReceivedPopup( player, collectedAmount, string.IsNullOrWhiteSpace( card.Title ) ? "the bank" : card.Title );
 				TrySettlePendingForcedPaymentForPlayer( GetPlayerIndex( player ) );
 				Log.Info( $"{player.PlayerName} collected ${card.Amount} from {card.Title}." );
-				break;
+				return $"Collected ${collectedAmount} from bank";
 
 			case CardAction.PayBank:
 				if ( PayBank( player, card.Amount, true, BankPaymentSource.ChanceOrCommunityChest ) )
+				{
 					Log.Info( $"{player.PlayerName} paid ${card.Amount} from {card.Title}." );
-				break;
+					return $"Paid ${card.Amount} to bank";
+				}
+				return $"Bank payment unresolved for ${card.Amount}";
 
 			case CardAction.MoveToSpace:
 				MovePlayerToCardDestination( player, card.TargetSpaceIndex, card.CollectGo, card.ResolveDestination );
-				break;
+				return $"Moved to space {NormalizeSpaceIndex( card.TargetSpaceIndex )}";
 
 			case CardAction.MoveToNearestRailroad:
-				MovePlayerToCardDestination( player, GetNextSpaceIndexOfType( player.SpaceIndex, SpaceType.Railroad ), card.CollectGo, card.ResolveDestination );
-				break;
+				var railroadIndex = GetNextSpaceIndexOfType( player.SpaceIndex, SpaceType.Railroad );
+				MovePlayerToCardDestination( player, railroadIndex, card.CollectGo, card.ResolveDestination );
+				return $"Moved to nearest railroad at space {railroadIndex}";
 
 			case CardAction.MoveToNearestUtility:
-				MovePlayerToCardDestination( player, GetNextSpaceIndexOfType( player.SpaceIndex, SpaceType.Utility ), card.CollectGo, card.ResolveDestination );
-				break;
+				var utilityIndex = GetNextSpaceIndexOfType( player.SpaceIndex, SpaceType.Utility );
+				MovePlayerToCardDestination( player, utilityIndex, card.CollectGo, card.ResolveDestination );
+				return $"Moved to nearest utility at space {utilityIndex}";
 
 			case CardAction.MoveRelative:
 				MovePlayerByCardOffset( player, card.RelativeSpaces, card.CollectGo, card.ResolveDestination );
-				break;
+				return $"Moved {card.RelativeSpaces} spaces";
 
 			case CardAction.GoToJail:
 				SendPlayerToJail( player );
 				MarkResolvedActionToAdvanceImmediately();
-				break;
+				return "Sent to Jail";
 
 			case CardAction.GetOutOfJailFree:
 				if ( card.Deck == CardDeck.Chance )
@@ -244,24 +252,26 @@ public sealed partial class GameController : Component
 					player.CommunityChestGetOutOfJailFreeCards++;
 
 				Log.Info( $"{player.PlayerName} kept a Get Out of Jail Free card." );
-				break;
+				return $"Kept Get Out of Jail Free card from {card.Deck}";
 
 			case CardAction.CollectFromEachPlayer:
 				CollectFromEachPlayerForCard( player, card.Amount );
-				break;
+				return $"Collected up to ${Math.Max( card.Amount, 0 )} from each player";
 
 			case CardAction.PayEachPlayer:
 				PayEachPlayerForCard( player, card.Amount );
-				break;
+				return $"Paid or owes ${Math.Max( card.Amount, 0 )} to each player";
 
 			case CardAction.PayPerImprovement:
 				PayPerImprovementForCard( player, card.HouseAmount, card.HotelAmount );
-				break;
+				return $"Paid repairs at ${Math.Max( card.HouseAmount, 0 )}/house and ${Math.Max( card.HotelAmount, 0 )}/hotel";
 
 			case CardAction.Gamble:
 				_ = PlayGambleCardAsync( player, card );
-				break;
+				return "Started gamble card";
 		}
+
+		return $"Unhandled card action {card.Action}";
 	}
 
 	private int GetNextSpaceIndexOfType( int startSpaceIndex, SpaceType type )

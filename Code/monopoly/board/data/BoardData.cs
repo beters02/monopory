@@ -474,7 +474,7 @@ public static class BoardData
 			{
 				Index = 38,
 				Key = "tax_luxury",
-				DisplayName = "Luxury Tax",
+				DisplayName = "Bag Tax",
 				Type = SpaceType.Tax,
 				TaxAmount = 200
 			},
@@ -490,7 +490,7 @@ public static class BoardData
 				TwoHouseRent = 600,
 				ThreeHouseRent = 1400,
 				FourHouseRent = 1700,
-				HotelRent = 1500,
+				HotelRent = 2000,
 				ColorGroup = ColorGroup.DarkBlue
 			},
 		};

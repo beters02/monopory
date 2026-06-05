@@ -65,6 +65,12 @@ public sealed partial class GameController : Component
 	}
 
 	[Rpc.Host]
+	public void RequestBankruptAndAbandon()
+	{
+		TryBankruptAndAbandonPlayer( GetPlayerForConnection( Rpc.Caller ) );
+	}
+
+	[Rpc.Host]
 	public void RequestRollDice(int amount = -1, float throwStrength = 0.5f)
 	{
 		if ( !CanCurrentPlayerAct( Rpc.Caller ) )
@@ -90,6 +96,15 @@ public sealed partial class GameController : Component
 			return;
 
 		_ = PayToLeaveJailAsync();
+	}
+
+	[Rpc.Host]
+	public void RequestUseGetOutOfJailFreeCard()
+	{
+		if ( !CanCurrentPlayerAct( Rpc.Caller ) )
+			return;
+
+		_ = UseGetOutOfJailFreeCardAsync();
 	}
 
 	[Rpc.Host]

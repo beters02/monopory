@@ -1,3 +1,4 @@
+using System;
 using Sandbox;
 
 public sealed class CommandWatcher : Component
@@ -14,6 +15,20 @@ public sealed class CommandWatcher : Component
 
 		if ( firstRun )
 			firstRun = false; 
+	}
+
+	private void test()
+	{
+		Dictionary<string, Action<CommandResult>> dict = new()
+		{
+			
+		};
+	}
+
+	[ConCmd("roll_physical_dice")]
+	private static void RollPhysicalDice( Connection connection, string playerName = "self", params string[] playerNameTail )
+	{
+		LogCommandResult( "roll_physical_dice", GameCommandManager.RollPhysicalDice( connection, JoinPlayerName( playerName, playerNameTail ) ) );
 	}
 
 	[ConCmd( "buy_property" )]

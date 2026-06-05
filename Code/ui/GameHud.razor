@@ -3,6 +3,7 @@
 @using Sandbox.ui.components;
 @using Sandbox.ui.components.buttons;
 @using System;
+@using System.Threading.Tasks;
 @inherits PanelComponent
 
 <root class="monopoly-hud">
@@ -38,6 +39,7 @@
 				OnCloseMatchSettings="@CloseMatchSettingsMenu"
 				OnReturnToLobby="@ReturnToLobby"
 				OnLeaveLobby="@ConfirmLeaveLobby"
+				OnBankruptAndAbandon="@ConfirmBankruptAndAbandon"
 				OnExitGame="@ConfirmExitGame">
 			</SessionOverlay>
 
@@ -320,6 +322,48 @@
 		IsEscapeMenuOpen = false;
 		IsOptionsMenuOpen = false;
 		IsMatchSettingsMenuOpen = false;
+		NetworkSession.ForceDisconnectToMenu( Scene );
+	}
+
+	private void ConfirmBankruptAndAbandon()
+	{
+		GameRef?.ShowLocalConfirmation(
+			"Declare bankruptcy?",
+			"You will instantly go bankrupt and leave the match.",
+			BankruptAndAbandon,
+			null,
+			"Bankrupt",
+			"Cancel"
+		);
+	}
+
+	private void BankruptAndAbandon()
+	{
+		IsEscapeMenuOpen = false;
+		IsOptionsMenuOpen = false;
+		IsMatchSettingsMenuOpen = false;
+		NetworkSession.ClearRejoinWindow();
+
+		if ( GameRef is null )
+		{
+			NetworkSession.ForceDisconnectToMenu( Scene );
+			return;
+		}
+
+		if ( Networking.IsHost )
+		{
+			GameRef.TryBankruptAndAbandonPlayer( GameRef.LocalPlayer );
+			NetworkSession.ForceDisconnectToMenu( Scene );
+			return;
+		}
+
+		GameRef.RequestBankruptAndAbandon();
+		_ = DisconnectAfterBankruptRequest();
+	}
+
+	private async Task DisconnectAfterBankruptRequest()
+	{
+		await Task.Delay( 150 );
 		NetworkSession.ForceDisconnectToMenu( Scene );
 	}
 

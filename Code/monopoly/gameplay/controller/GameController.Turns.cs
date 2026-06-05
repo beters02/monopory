@@ -157,12 +157,6 @@ public sealed partial class GameController : Component
 		if ( Phase != GamePhase.WaitingToRoll || !CurrentPlayer.IsInJail )
 			return;
 
-		if ( TryUseGetOutOfJailFreeCard( CurrentPlayer ) )
-		{
-			await RollCurrentPlayerAsync( -1, true, RollExecutionKind.JailRelease );
-			return;
-		}
-
 		if ( !PayBank( CurrentPlayer, JailFineAmount ) )
 		{
 			SendPopupToPlayer( CurrentPlayer, "Jail fine", $"Raise ${JailFineAmount} to leave Jail.", PopupKind.Warning );
@@ -171,6 +165,35 @@ public sealed partial class GameController : Component
 
 		ReleasePlayerFromJail( CurrentPlayer );
 		SendTableChatMessage( "Jail fine paid", $"{CurrentPlayer.PlayerName} paid ${JailFineAmount} to leave Jail." );
+		await RollCurrentPlayerAsync( -1, true, RollExecutionKind.JailRelease );
+	}
+
+	public async Task UseGetOutOfJailFreeCardAsync()
+	{
+		if ( !Networking.IsHost )
+			return;
+
+		if ( !CanAcceptGameplayInput() )
+			return;
+
+		if ( CurrentPlayer is null || !CurrentPlayer.IsAssigned || CurrentPlayer.IsBankrupt )
+			return;
+
+		if ( Phase != GamePhase.WaitingToRoll || !CurrentPlayer.IsInJail )
+			return;
+
+		if ( IsForcedJailFineDue( CurrentPlayer ) )
+		{
+			SendPopupToPlayer( CurrentPlayer, "Jail fine", $"Pay the ${JailFineAmount} fine to leave Jail.", PopupKind.Warning );
+			return;
+		}
+
+		if ( !TryUseGetOutOfJailFreeCard( CurrentPlayer ) )
+		{
+			SendPopupToPlayer( CurrentPlayer, "Get Out of Jail Free", "You do not have a Get Out of Jail Free card.", PopupKind.Warning );
+			return;
+		}
+
 		await RollCurrentPlayerAsync( -1, true, RollExecutionKind.JailRelease );
 	}
 
@@ -187,6 +210,12 @@ public sealed partial class GameController : Component
 
 		if ( Phase != GamePhase.WaitingToRoll || !CurrentPlayer.IsInJail )
 			return;
+
+		if ( IsForcedJailFineDue( CurrentPlayer ) )
+		{
+			SendPopupToPlayer( CurrentPlayer, "Jail fine", $"Pay the ${JailFineAmount} fine to leave Jail.", PopupKind.Warning );
+			return;
+		}
 
 		BeginResolvedAction();
 		BeginPendingRoll( CurrentPlayerIndex, RollExecutionKind.JailRelease, true, true );
@@ -248,8 +277,16 @@ public sealed partial class GameController : Component
 			if ( !PayBank( CurrentPlayer, JailFineAmount ) )
 			{
 				ClearPendingRollState();
+				if ( CurrentPlayer is null || CurrentPlayer.IsBankrupt )
+				{
+					AdvanceTurnImmediately();
+					return;
+				}
+
+				Phase = GamePhase.WaitingToRoll;
+				CurrentTurnGetsExtraRoll = false;
+				StartTurnTimer();
 				SendPopupToPlayer( CurrentPlayer, "Jail fine", $"Raise ${JailFineAmount} to leave Jail.", PopupKind.Warning );
-				AdvanceTurnImmediately();
 				return;
 			}
 
@@ -616,6 +653,14 @@ public sealed partial class GameController : Component
 
 		Log.Info( $"{player.PlayerName} was sent to Jail." );
 		ReportAchievementEvent( player, AchievementEventTypes.SentToJail );
+	}
+
+	public bool IsForcedJailFineDue( PlayerState player )
+	{
+		return player is not null &&
+			player.IsInJail &&
+			player.JailTurnsRemaining <= 0 &&
+			Config?.ForceJailFineAfterFailedDoubles == true;
 	}
 
 	private void ReleasePlayerFromJail( PlayerState player )

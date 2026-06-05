@@ -91,6 +91,18 @@ public sealed partial class GameController : Component
 		CheckForGameOver();
 	}
 
+	public bool TryBankruptAndAbandonPlayer( PlayerState player )
+	{
+		if ( !Networking.IsHost )
+			return false;
+
+		if ( player is null || !player.IsAssigned || player.IsBankrupt )
+			return false;
+
+		FinalizeAbandonedPlayer( player );
+		return true;
+	}
+
 	private void CheckForGameOver()
 	{
 		if ( MatchState != MatchLifecycleState.InGame )

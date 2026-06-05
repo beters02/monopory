@@ -103,26 +103,47 @@
 	text-transform: uppercase;
 }
 
-.session-primary-button {
+.session-actions .monopoly-button.session-primary-button,
+.escape-menu-actions .monopoly-button.session-primary-button {
 	background-color: $monopoly-gold;
 	color: $monopoly-ink;
 }
 
-.session-secondary-button {
+.session-actions .monopoly-button.session-primary-button:hover,
+.escape-menu-actions .monopoly-button.session-primary-button:hover {
+	background-color: $monopoly-gold-hover;
+}
+
+.session-actions .monopoly-button.session-secondary-button,
+.escape-menu-actions .monopoly-button.session-secondary-button {
 	background-color: $monopoly-ink;
 	color: $monopoly-board;
 }
 
-.session-secondary-button:hover {
+.session-actions .monopoly-button.session-secondary-button:hover,
+.escape-menu-actions .monopoly-button.session-secondary-button:hover {
 	background-color: $monopoly-ink-hover;
 }
 
-.session-danger-button {
+.session-actions .monopoly-button.session-utility-button,
+.escape-menu-actions .monopoly-button.session-utility-button {
+	background-color: $monopoly-utility;
+	color: $monopoly-board;
+}
+
+.session-actions .monopoly-button.session-utility-button:hover,
+.escape-menu-actions .monopoly-button.session-utility-button:hover {
+	background-color: $monopoly-utility-hover;
+}
+
+.session-actions .monopoly-button.session-danger-button,
+.escape-menu-actions .monopoly-button.session-danger-button {
 	background-color: $monopoly-danger;
 	color: $monopoly-board;
 }
 
-.session-danger-button:hover {
+.session-actions .monopoly-button.session-danger-button:hover,
+.escape-menu-actions .monopoly-button.session-danger-button:hover {
 	background-color: $monopoly-danger-hover;
 }
 

@@ -128,6 +128,46 @@ public sealed class GameCommandManager : Component
 		return CommandResult.Success();
 	}
 
+	public static CommandResult RollPhysicalDice( Connection caller, string playerName = "self" )
+	{
+		if ( !CanUseHostCheatCommand( caller ) )
+			return CommandResult.Fail( "roll_physical_dice can only be used by the host with sv_cheats enabled." );
+
+		var game = GameController.Instance;
+		if ( game is null )
+			return CommandResult.Fail( "No active game." );
+
+		var player = game.ResolvePlayerReference( playerName, caller );
+		if ( player is null )
+			return CommandResult.Fail( $"Could not find player \"{playerName}\"." );
+
+		if ( game.CurrentPlayer != player )
+			return CommandResult.Fail( "It is not that player's turn." );
+
+		_ = game.RollDiceAsync();
+		return CommandResult.Success();
+	}
+
+	public static CommandResult EndTurn( Connection caller, string playerName = "self" )
+	{
+		if ( !CanUseHostCheatCommand( caller ) )
+			return CommandResult.Fail( "end_turn can only be used by the host with sv_cheats enabled." );
+
+		var game = GameController.Instance;
+		if ( game is null )
+			return CommandResult.Fail( "No active game." );
+
+		var player = game.ResolvePlayerReference( playerName, caller );
+		if ( player is null )
+			return CommandResult.Fail( $"Could not find player \"{playerName}\"." );
+
+		if ( game.CurrentPlayer != player )
+			return CommandResult.Fail( "It is not that player's turn." );
+
+		game.EndTurn();
+		return CommandResult.Success();
+	}
+
 	public static CommandResult SendToJail( Connection caller, string playerName = "self" )
 	{
 		var game = GameController.Instance;
@@ -208,6 +248,13 @@ public sealed class GameCommandManager : Component
 			return true;
 
 		return Game.CheatsEnabled;
+	}
+
+	private static bool CanUseHostCheatCommand( Connection caller )
+	{
+		return Networking.IsHost &&
+			(caller is null || caller == Connection.Local) &&
+			Game.CheatsEnabled;
 	}
 
 	private static bool HasUnresolvedPendingBuyDecision( GameController game, PlayerState player )

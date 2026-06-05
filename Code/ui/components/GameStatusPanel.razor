@@ -46,13 +46,20 @@
 				@if ( IsCurrentPlayerInJail )
 				{
 					<div class="jail-action-buttons">
+						@if ( CurrentPlayerHasGetOutOfJailFreeCard && !CurrentPlayerMustPayForcedJailFine )
+						{
+							<GameButton OnClick="@UseGetOutOfJailFreeCard">Use Card</GameButton>
+						}
 						<GameButton OnClick="@PayToLeaveJail">Pay $50</GameButton>
-						<GameButton @ref="ActionJailRollButton" OnHoldComplete="@RollForJailRelease" HoldMaxSeconds="@RollHoldMaxSeconds">
-							<ChildContent>
-								Try Doubles
-								<HoldIndicator Variant="compact" ParentButton="@ActionJailRollButton"></HoldIndicator>
-							</ChildContent>
-						</GameButton>
+						@if ( !CurrentPlayerMustPayForcedJailFine )
+						{
+							<GameButton @ref="ActionJailRollButton" OnHoldComplete="@RollForJailRelease" HoldMaxSeconds="@RollHoldMaxSeconds">
+								<ChildContent>
+									Try Doubles
+									<HoldIndicator Variant="compact" ParentButton="@ActionJailRollButton"></HoldIndicator>
+								</ChildContent>
+							</GameButton>
+						}
 					</div>
 				} else {
 					<GameButton @ref="ActionRollButton" Variant="action-buttons" OnHoldComplete="@RollDice" HoldMaxSeconds="@RollHoldMaxSeconds">
@@ -93,13 +100,20 @@
 
 		<Sandbox.ui.components.HudPanel.HudPanel Variant="@GetJailButtonPanelClass()">
 			<ChildContent>
+				@if ( CurrentPlayerHasGetOutOfJailFreeCard && !CurrentPlayerMustPayForcedJailFine )
+				{
+					<GameButton Variant="@GetJailButtonClass()" OnClick="@UseGetOutOfJailFreeCard">Use Card</GameButton>
+				}
 				<GameButton Variant="@GetJailButtonClass()" OnClick="@PayToLeaveJail">Pay $50</GameButton>
-				<GameButton @ref="StatusJailRollButton" Variant="@GetJailButtonClass()" OnHoldComplete="@RollForJailRelease" HoldMaxSeconds="@RollHoldMaxSeconds">
-					<ChildContent>
-						Try Doubles
-						<HoldIndicator Variant="status-roll" ParentButton="@StatusJailRollButton"></HoldIndicator>
-					</ChildContent>
-				</GameButton>
+				@if ( !CurrentPlayerMustPayForcedJailFine )
+				{
+					<GameButton @ref="StatusJailRollButton" Variant="@GetJailButtonClass()" OnHoldComplete="@RollForJailRelease" HoldMaxSeconds="@RollHoldMaxSeconds">
+						<ChildContent>
+							Try Doubles
+							<HoldIndicator Variant="status-roll" ParentButton="@StatusJailRollButton"></HoldIndicator>
+						</ChildContent>
+					</GameButton>
+				}
 			</ChildContent>
 		</Sandbox.ui.components.HudPanel.HudPanel>		
 	}
@@ -155,6 +169,13 @@
 
 	private bool IsCurrentPlayerInJail =>
 		CurrentPlayer?.IsInJail == true;
+
+	private bool CurrentPlayerHasGetOutOfJailFreeCard =>
+		(CurrentPlayer?.ChanceGetOutOfJailFreeCards ?? 0) > 0 ||
+		(CurrentPlayer?.CommunityChestGetOutOfJailFreeCards ?? 0) > 0;
+
+	private bool CurrentPlayerMustPayForcedJailFine =>
+		GameRef?.IsForcedJailFineDue( CurrentPlayer ) == true;
 
 	private BoardCameraMode CurrentCameraMode =>
 		GameCamera.Instance?.Mode ?? BoardCameraMode.Board;
@@ -244,6 +265,11 @@
 		GameRef?.RequestPayToLeaveJail();
 	}
 
+	private void UseGetOutOfJailFreeCard()
+	{
+		GameRef?.RequestUseGetOutOfJailFreeCard();
+	}
+
 	private void RollForJailRelease( float throwStrength )
 	{
 		GameRef?.RequestRollForJailRelease( throwStrength );
@@ -290,6 +316,9 @@
 		hash.Add( GameRef?.HasPendingForcedPayment ?? false );
 		hash.Add( CurrentPlayer?.IsInJail ?? false );
 		hash.Add( CurrentPlayer?.JailTurnsRemaining ?? 0 );
+		hash.Add( CurrentPlayer?.ChanceGetOutOfJailFreeCards ?? 0 );
+		hash.Add( CurrentPlayer?.CommunityChestGetOutOfJailFreeCards ?? 0 );
+		hash.Add( CurrentPlayerMustPayForcedJailFine );
 		hash.Add( CurrentCameraMode );
 		hash.Add( CanEndTurn );
 		return hash.ToHashCode();
