@@ -187,6 +187,15 @@ LobbyMenu {
 		background-color: $monopoly-ink-hover;
 	}
 
+	.flow-danger-button {
+		background-color: $monopoly-danger;
+		color: $monopoly-board;
+	}
+
+	.flow-danger-button:hover {
+		background-color: $monopoly-danger-hover;
+	}
+
 	.flow-utility-button {
 		background-color: $monopoly-utility;
 		color: $monopoly-board;

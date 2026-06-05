@@ -22,7 +22,7 @@
 
 	@if ( IsOpen )
 	{
-		<div class="dropdown-menu" @ref="MenuPanel">
+		<div class="dropdown-menu" style="@MenuStyle" @ref="MenuPanel">
 			@foreach ( var item in Items )
 			{
 				<GameButton Variant="@GetItemClasses( item )" OnClick="@(() => SelectItem( item ))" SoundEnabled="@SoundEnabled">
@@ -65,7 +65,8 @@
 
 	private bool IsOpen => ActiveInstanceId == InstanceId;
 	private string RootClasses => IsOpen ? "dropdown-button open" : "dropdown-button";
-	private string RootStyle => "";
+	private string RootStyle => IsOpen ? $"height: {GetOpenHeight()}px; min-height: {GetOpenHeight()}px;" : "";
+	private string MenuStyle => $"height: {GetMenuHeight()}px; min-height: {GetMenuHeight()}px;";
 	private string ButtonClasses => string.IsNullOrWhiteSpace( Variant )
 		? "dropdown-toggle"
 		: $"dropdown-toggle {Variant}";
@@ -222,6 +223,18 @@
 		return label;
 	}
 
+	private int GetOpenHeight()
+	{
+		return 42 + 8 + GetMenuHeight();
+	}
+
+	private int GetMenuHeight()
+	{
+		var itemCount = Math.Max( Items?.Count ?? 0, 1 );
+		var menuGapHeight = Math.Max( itemCount - 1, 0 ) * 4;
+		return 8 + menuGapHeight + itemCount * 46 + 14;
+	}
+
 	protected override int BuildHash()
 	{
 		var hash = new HashCode();
@@ -232,6 +245,7 @@
 		hash.Add( Placeholder ?? "" );
 		hash.Add( CanClick );
 		hash.Add( RootStyle );
+		hash.Add( MenuStyle );
 
 		foreach ( var item in Items )
 			hash.Add( item ?? "" );
