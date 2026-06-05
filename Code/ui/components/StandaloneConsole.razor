@@ -50,22 +50,8 @@
 	}
 
 	private static readonly ConcurrentQueue<ConsoleEntry> PendingLogEntries = new();
-	private static readonly string[] KnownCommands =
-	{
-		"clear",
-		"debug",
-		"buy_property",
-		"buy_property_set",
-		"roll_dice",
-		"roll_two_dice",
-		"change_money",
-		"change_vacation_cash",
-		"force_end_game_win",
-		"jail_player",
-		"sv_cheats",
-		"quit",
-		"disconnect"
-	};
+	private static string[] KnownCommands =>
+		GameCommands.All.Keys.ToArray();
 
 	private readonly List<ConsoleEntry> Entries = new();
 	private ConsoleCommandTextEntry CommandInput = null!;

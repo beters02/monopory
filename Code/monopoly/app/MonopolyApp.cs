@@ -8,24 +8,6 @@ public class MonopolyApp : Component
     public static bool IsDebugEnabled = false;
     public static bool GameLaunchedWithDebugConvar = false;
 
-    [ConVar( "achievements_backend_url" )]
-    public static string AchievementsBackendUrl { get; set; } = "";
-
-    [ConVar( "achievements_access_token" )]
-    public static string AchievementsAccessToken { get; set; } = "";
-
-    [ConVar( "achievements_auth_service_name" )]
-    public static string AchievementsAuthServiceName { get; set; } = Sandbox.Services.RentRushService.DefaultSboxAuthServiceName;
-
-    [ConVar( "achievements_steamworks_auth_enabled" )]
-    public static bool AchievementsSteamworksAuthEnabled { get; set; } = true;
-
-    [ConVar( "achievements_steam_app_id" )]
-    public static string AchievementsSteamAppId { get; set; } = Sandbox.Services.RentRushService.DefaultSteamAppId.ToString();
-
-    [ConVar( "achievements_steamworks_ticket_identity" )]
-    public static string AchievementsSteamworksTicketIdentity { get; set; } = Sandbox.Services.RentRushService.DefaultSteamworksTicketIdentity;
-
 #if STANDALONE
     private static bool achievementsBackendInitialized;
     private static bool achievementsBackendInitializationInFlight;
@@ -40,7 +22,7 @@ public class MonopolyApp : Component
         Sandbox.Services.RentRushService.TestInit();
 #endif
 
-        var debugConvarParsed = bool.TryParse(ConsoleSystem.GetValue( "debug" ), out bool debugConvar);
+        var debugConvarParsed = bool.TryParse(ConsoleSystem.GetValue( DebugConVar.Name ), out bool debugConvar);
         GameLaunchedWithDebugConvar = debugConvar;
 		if (debugConvarParsed && debugConvar)
 			IsDebugEnabled = true;
@@ -75,7 +57,7 @@ public class MonopolyApp : Component
 #if STANDALONE
     private static async Task InitializeAchievementsBackendAsync( bool force = false )
     {
-        if ( string.IsNullOrWhiteSpace( AchievementsBackendUrl ) )
+        if ( string.IsNullOrWhiteSpace( AchievementsBackendUrlConVar.Value ) )
         {
             if ( force )
                 Log.Warning( "Set achievements_backend_url before connecting achievements backend." );
@@ -85,24 +67,24 @@ public class MonopolyApp : Component
         if ( achievementsBackendInitializationInFlight )
             return;
 
-        if ( achievementsBackendInitialized && !force && string.Equals( lastAchievementsBackendUrl, AchievementsBackendUrl, StringComparison.Ordinal ) )
+        if ( achievementsBackendInitialized && !force && string.Equals( lastAchievementsBackendUrl, AchievementsBackendUrlConVar.Value, StringComparison.Ordinal ) )
             return;
 
         try
         {
             achievementsBackendInitializationInFlight = true;
-            lastAchievementsBackendUrl = AchievementsBackendUrl;
+            lastAchievementsBackendUrl = AchievementsBackendUrlConVar.Value;
 
-            var token = AchievementsAccessToken;
+            var token = AchievementsAccessTokenConVar.Value;
             var playerId = authenticatedAchievementsPlayerId;
             if ( string.IsNullOrWhiteSpace( token ) )
             {
-                if ( AchievementsSteamworksAuthEnabled )
+                if ( AchievementsSteamworksAuthEnabledConVar.Value )
                 {
                     var steamworksSession = await Sandbox.Services.RentRushService.AuthenticateAchievementsBackendWithSteamworksAsync(
-                        AchievementsBackendUrl,
+                        AchievementsBackendUrlConVar.Value,
                         GetSteamAppId(),
-                        AchievementsSteamworksTicketIdentity,
+                        AchievementsSteamworksTicketIdentityConVar.Value,
                         Connection.Local?.DisplayName ?? ""
                     );
                     token = steamworksSession?.AccessToken ?? "";
@@ -113,8 +95,8 @@ public class MonopolyApp : Component
                 {
                     Log.Warning( "Facepunch Steamworks achievements auth was not available; trying s&box auth token." );
                     var sboxSession = await Sandbox.Services.RentRushService.AuthenticateAchievementsBackendWithSboxAsync(
-                        AchievementsBackendUrl,
-                        AchievementsAuthServiceName,
+                        AchievementsBackendUrlConVar.Value,
+                        AchievementsAuthServiceNameConVar.Value,
                         Connection.Local?.DisplayName ?? ""
                     );
                     token = sboxSession?.AccessToken ?? "";
@@ -125,7 +107,7 @@ public class MonopolyApp : Component
                 {
                     Log.Warning( "s&box achievements auth was not available; falling back to local device identity." );
                     var deviceSession = await Sandbox.Services.RentRushService.AuthenticateAchievementsBackendWithDeviceAsync(
-                        AchievementsBackendUrl,
+                        AchievementsBackendUrlConVar.Value,
                         Connection.Local?.DisplayName ?? ""
                     );
                     token = deviceSession?.AccessToken ?? "";
@@ -136,9 +118,9 @@ public class MonopolyApp : Component
             if ( string.IsNullOrWhiteSpace( token ) )
                 return;
 
-            AchievementsAccessToken = token;
+            AchievementsAccessTokenConVar.Value = token;
             authenticatedAchievementsPlayerId = playerId;
-            AchievementServices.UseBackend( AchievementsBackendUrl, token, playerId );
+            AchievementServices.UseBackend( AchievementsBackendUrlConVar.Value, token, playerId );
             achievementsBackendInitialized = true;
             Log.Info( $"Achievements backend enabled. playerId={playerId}." );
         }
@@ -155,7 +137,7 @@ public class MonopolyApp : Component
 
     private static uint GetSteamAppId()
     {
-        return uint.TryParse( AchievementsSteamAppId, out var appId ) && appId != 0
+        return uint.TryParse( AchievementsSteamAppIdConVar.Value, out var appId ) && appId != 0
             ? appId
             : Sandbox.Services.RentRushService.DefaultSteamAppId;
     }
@@ -165,7 +147,7 @@ public class MonopolyApp : Component
     protected override void OnUpdate()
     {
 #if STANDALONE
-        if ( !string.IsNullOrWhiteSpace( AchievementsBackendUrl ) &&
+        if ( !string.IsNullOrWhiteSpace( AchievementsBackendUrlConVar.Value ) &&
             !achievementsBackendInitialized &&
             !achievementsBackendInitializationInFlight )
         {
