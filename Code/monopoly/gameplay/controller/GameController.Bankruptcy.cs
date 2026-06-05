@@ -2,6 +2,7 @@ using System.Threading.Tasks;
 using System;
 using System.Text.RegularExpressions;
 using Sandbox;
+using Sandbox.Network;
 
 public sealed partial class GameController : Component
 {

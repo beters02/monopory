@@ -10,6 +10,7 @@ public sealed partial class LobbyController
 		var startingPlayers = BuildPlayers();
 		MatchBootstrap.PrepareGame( GetGameConfig(), startingPlayers );
 		LoadGameScene();
+		
 		return true;
 	}
 
