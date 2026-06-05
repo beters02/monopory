@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using System.IO;
 using System.Text.Json;
+using Sandbox.Internal;
 
 
 public class MonopolyApp : Component
@@ -88,8 +89,15 @@ public class MonopolyApp : Component
 
 	[GameClosed]
     public void OnGameClosed()
-    {
+    {   
         Log.Info("Game Closed");
+//do if standalone
+        AchievementServices.Shutdown();
+        achievementsBackendInitialized = false;
+        achievementsBackendInitializationInFlight = false;
+        authenticatedAchievementsPlayerId = 0;
+        achievementsBackendState = AchievementsBackendState.Disabled;
+//do endif
         // editor play session stopped
         Networking.Disconnect();
     }

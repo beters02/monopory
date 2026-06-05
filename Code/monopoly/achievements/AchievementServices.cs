@@ -33,6 +33,11 @@ public static class AchievementServices
 		queuedService.UseLocal();
 	}
 
+	public static void Shutdown()
+	{
+		queuedService.UseLocal();
+	}
+
 	public static void SetReconnectHandler( Func<Task> reconnectHandler )
 	{
 		queuedService.SetReconnectHandler( reconnectHandler );
@@ -65,9 +70,14 @@ public sealed class QueuedAchievementService : IAchievementService, ICosmeticUnl
 
 	public void Use( IAchievementService achievements, ICosmeticUnlockService cosmetics )
 	{
+		var previousAchievements = this.achievements;
+		var previousCosmetics = this.cosmetics;
+
 		this.achievements = achievements ?? localService;
 		this.cosmetics = cosmetics ?? localService;
 		backendConnected = achievements is not null && cosmetics is not null && achievements != localService;
+		DisposePreviousBackend( previousAchievements, previousCosmetics );
+
 		if ( backendConnected )
 		{
 			Log.Info( $"Achievements backend service active. queuedEvents={queuedEvents.Count}." );
@@ -77,9 +87,13 @@ public sealed class QueuedAchievementService : IAchievementService, ICosmeticUnl
 
 	public void UseLocal()
 	{
+		var previousAchievements = achievements;
+		var previousCosmetics = cosmetics;
+
 		achievements = localService;
 		cosmetics = localService;
 		backendConnected = false;
+		DisposePreviousBackend( previousAchievements, previousCosmetics );
 	}
 
 	public async Task<PlayerAchievementState> GetMyStateAsync()
@@ -220,5 +234,22 @@ public sealed class QueuedAchievementService : IAchievementService, ICosmeticUnl
 			SourceMatchId = achievementEvent.SourceMatchId,
 			OccurredAtUnixSeconds = achievementEvent.OccurredAtUnixSeconds
 		};
+	}
+
+	private void DisposePreviousBackend( IAchievementService previousAchievements, ICosmeticUnlockService previousCosmetics )
+	{
+		DisposeIfOwnedBackend( previousAchievements );
+
+		if ( !ReferenceEquals( previousAchievements, previousCosmetics ) )
+			DisposeIfOwnedBackend( previousCosmetics );
+	}
+
+	private void DisposeIfOwnedBackend( object service )
+	{
+		if ( service is null || ReferenceEquals( service, localService ) || ReferenceEquals( service, achievements ) || ReferenceEquals( service, cosmetics ) )
+			return;
+
+		if ( service is IDisposable disposable )
+			disposable.Dispose();
 	}
 }
