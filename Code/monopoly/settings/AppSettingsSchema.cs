@@ -29,7 +29,7 @@ public sealed class AppSettingOption
 	public AppSettingOptionKind Kind { get; init; }
 	public string[] EnumNames { get; init; } = Array.Empty<string>();
 	public Func<bool> IsVisible { get; init; } = () => true;
-	public Func<bool> IsAvailable { get; init; } = () => AppSettings.SettingsAvailable;
+	public Func<bool> IsAvailable { get; init; } = () => true;
 	public Func<bool> GetBoolValue { get; init; } = () => false;
 	public Func<bool> ToggleBoolValue { get; init; } = () => false;
 	public Func<string> GetEnumValue { get; init; } = () => "";
@@ -238,7 +238,7 @@ public static class AppSettingsSchema
 			Order = order,
 			Kind = AppSettingOptionKind.Int,
 			IsVisible = isVisible ?? (() => true),
-			IsAvailable = isAvailable ?? (() => AppSettings.SettingsAvailable),
+			IsAvailable = isAvailable ?? (() => true),
 			IntMin = min,
 			IntMax = max,
 			IntStep = step,

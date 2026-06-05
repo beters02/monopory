@@ -15,10 +15,6 @@
 						<div class="options-kicker">Settings</div>
 						<div class="options-title">Options</div>
 					</div>
-					@if ( ShouldShowSettingsUnavailableWarning )
-					{
-						<div class="options-header-warning">Video settings are only available when s&box exposes render settings for this session.</div>
-					}
 					<CloseButton Variant="options-close-button" Title="Close" OnClick="@Close"></CloseButton>
 				</div>
 
@@ -98,6 +94,10 @@
 				</div>
 
 				<div class="options-footer">
+					@if ( !string.IsNullOrWhiteSpace( applyErrorMessage ) )
+					{
+						<div class="options-apply-error">@applyErrorMessage</div>
+					}
 					<GameButton Variant="options-apply-button" OnClick="@ApplyOptions">Apply</GameButton>
 				</div>
 			</div>
@@ -124,14 +124,15 @@
 	private bool wasOpen;
 	private bool isCloseConfirmationOpen;
 	private AppSettingsData openingSettingsSnapshot;
+	private string applyErrorMessage = "";
 
 	private string RootClasses => IsOpen ? "options-menu-root open" : "options-menu-root";
 	private string OptionsScreenClasses => UseBlurBackdrop ? "options-screen blur-backdrop" : "options-screen";
 	private bool IsCloseConfirmationOpen => IsOpen && isCloseConfirmationOpen;
 	private bool HasUnsavedChanges => openingSettingsSnapshot is not null && !AppSettings.Matches( openingSettingsSnapshot );
 	private bool SettingsAvailable => AppSettings.SettingsAvailable;
-	private bool ShouldShowSettingsUnavailableWarning => !SettingsAvailable;
-	private string UnavailableMessage => "s&box is not exposing render settings here. Try standalone mode if this is the editor.";
+	private string UnavailableMessage => "This setting is not available right now.";
+	private string RenderSettingsUnavailableMessage => "Video settings cannot be applied because s&box is not exposing render settings for this session. Try standalone mode if this is the editor.";
 
 	protected override void OnParametersSet()
 	{
@@ -205,11 +206,21 @@
 
 	private void ApplyOptions()
 	{
-		if ( !AppSettings.TryApply() )
+		if ( HasPendingVideoChanges && !SettingsAvailable )
+		{
+			ShowApplyError( RenderSettingsUnavailableMessage );
 			return;
+		}
+
+		if ( !AppSettings.TryApply() )
+		{
+			ShowApplyError( "Settings could not be applied." );
+			return;
+		}
 
 		openingSettingsSnapshot = AppSettings.Capture();
 		isCloseConfirmationOpen = false;
+		applyErrorMessage = "";
 		revision++;
 		StateHasChanged();
 	}
@@ -257,7 +268,7 @@
 		if ( !applied )
 			return;
 
-		AppSettings.Apply();
+		applyErrorMessage = "";
 		revision++;
 		StateHasChanged();
 	}
@@ -266,6 +277,25 @@
 	{
 		openingSettingsSnapshot = AppSettings.Capture();
 		isCloseConfirmationOpen = false;
+		applyErrorMessage = "";
+	}
+
+	private bool HasPendingVideoChanges =>
+		openingSettingsSnapshot is not null &&
+		(
+			AppSettings.Data.FullscreenMode != openingSettingsSnapshot.FullscreenMode ||
+			AppSettings.Data.VSync != openingSettingsSnapshot.VSync ||
+			AppSettings.Data.UpscalerMode != openingSettingsSnapshot.UpscalerMode ||
+			AppSettings.Data.Fsr3Quality != openingSettingsSnapshot.Fsr3Quality ||
+			MathF.Abs( AppSettings.Data.MotionBlurScale - openingSettingsSnapshot.MotionBlurScale ) >= 0.001f
+		);
+
+	private void ShowApplyError( string message )
+	{
+		applyErrorMessage = message;
+		GameController.Instance?.ShowLocalPopup( "Could not apply", message, PopupKind.Warning, true, 4f, false );
+		revision++;
+		StateHasChanged();
 	}
 
 	private static string GetToggleButtonClasses( bool enabled )

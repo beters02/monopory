@@ -82,7 +82,23 @@
 
 .options-footer {
 	display: flex;
+	align-items: center;
 	gap: 10px;
+}
+
+.options-apply-error {
+	flex: 1;
+	min-width: 0;
+	padding: 8px 10px;
+
+	background-color: $monopoly-danger-soft;
+	border: 2px solid $monopoly-danger-line;
+	border-radius: $monopoly-radius-control;
+
+	color: $monopoly-text;
+	font-size: $monopoly-font-small;
+	font-weight: 800;
+	line-height: 15px;
 }
 
 .options-category-section {

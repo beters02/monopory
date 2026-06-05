@@ -153,45 +153,30 @@ public class AppSettings : Component
 
 	public static bool TrySetVSync( bool enabled )
 	{
-		if ( Settings is null )
-			return false;
-
 		Data.VSync = enabled;
 		return true;
 	}
 
 	public static bool TrySetMotionBlur( float scale )
 	{
-		if ( Settings is null )
-			return false;
-
 		Data.MotionBlurScale = scale;
 		return true;
 	}
 
 	public static bool TrySetFullscreenMode( FullscreenMode mode )
 	{
-		if ( Settings is null )
-			return false;
-
 		Data.FullscreenMode = mode;
 		return true;
 	}
 
 	public static bool TrySetFsr3Quality( Fsr3UpscalerQuality quality )
 	{
-		if ( Settings is null )
-			return false;
-
 		Data.Fsr3Quality = quality;
 		return true;
 	}
 
 	public static bool TrySetUpscaler( UpscalerMode mode )
 	{
-		if ( Settings is null )
-			return false;
-
 		Data.UpscalerMode = mode;
 		return true;
 	}
