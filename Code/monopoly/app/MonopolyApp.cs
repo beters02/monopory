@@ -19,7 +19,8 @@ public class MonopolyApp : Component
 	{
 #if STANDALONE
         IsStandalone = true;
-        Sandbox.Services.RentRushService.TestInit();
+        if ( AchievementServices.IsEnabled )
+            Sandbox.Services.RentRushService.TestInit();
 #endif
 
         var debugConvarParsed = bool.TryParse(ConsoleSystem.GetValue( DebugConVar.Name ), out bool debugConvar);
@@ -30,7 +31,8 @@ public class MonopolyApp : Component
         Log.Info($"IsStandalone: {IsStandalone}");
 
 #if STANDALONE
-        _ = InitializeAchievementsBackendAsync();
+        if ( AchievementServices.IsEnabled )
+            _ = InitializeAchievementsBackendAsync();
 #endif
 	}
 
@@ -38,6 +40,12 @@ public class MonopolyApp : Component
     private static void ConnectAchievementsBackend( Connection connection )
     {
 #if STANDALONE
+        if ( !AchievementServices.IsEnabled )
+        {
+            Log.Info( "Achievements service is disabled." );
+            return;
+        }
+
         _ = InitializeAchievementsBackendAsync( true );
 #else
         Log.Warning( "Achievements backend connection is only available in standalone builds." );
@@ -48,6 +56,12 @@ public class MonopolyApp : Component
     private static void PrintAchievementsAuthDiagnostics( Connection connection )
     {
 #if STANDALONE
+        if ( !AchievementServices.IsEnabled )
+        {
+            Log.Info( "Achievements service is disabled." );
+            return;
+        }
+
         Log.Info( Sandbox.Services.RentRushService.GetDeviceAuthDiagnostics() );
 #else
         Log.Warning( "Achievements auth diagnostics are only available in standalone builds." );
@@ -57,6 +71,9 @@ public class MonopolyApp : Component
 #if STANDALONE
     private static async Task InitializeAchievementsBackendAsync( bool force = false )
     {
+        if ( !AchievementServices.IsEnabled )
+            return;
+
         if ( string.IsNullOrWhiteSpace( AchievementsBackendUrlConVar.Value ) )
         {
             if ( force )
@@ -147,7 +164,8 @@ public class MonopolyApp : Component
     protected override void OnUpdate()
     {
 #if STANDALONE
-        if ( !string.IsNullOrWhiteSpace( AchievementsBackendUrlConVar.Value ) &&
+        if ( AchievementServices.IsEnabled &&
+            !string.IsNullOrWhiteSpace( AchievementsBackendUrlConVar.Value ) &&
             !achievementsBackendInitialized &&
             !achievementsBackendInitializationInFlight )
         {
