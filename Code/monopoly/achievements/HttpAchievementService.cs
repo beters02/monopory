@@ -18,6 +18,8 @@ public sealed class HttpAchievementService : IAchievementService, ICosmeticUnloc
 			BaseAddress = new Uri( baseUrl.TrimEnd( '/' ) + "/" )
 		};
 
+
+
 		this.bearerToken = bearerToken ?? "";
 		this.authenticatedPlayerId = authenticatedPlayerId;
 	}

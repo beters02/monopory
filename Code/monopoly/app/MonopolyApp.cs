@@ -3,8 +3,22 @@ using System.Threading.Tasks;
 using System.IO;
 using System.Text.Json;
 
+
 public class MonopolyApp : Component
 {
+
+    public class GameClosedAttribute : EventAttribute
+    {
+        public GameClosedAttribute() : base( "scene.stop" ) { }
+    }
+
+    private enum AchievementsBackendState
+    {
+        Disabled,
+        Connecting,
+        Connected,
+        Failed
+    }
 
     private class SecretsJsonObject
     {
@@ -47,6 +61,7 @@ public class MonopolyApp : Component
     private static bool achievementsBackendInitializationInFlight;
     private static string lastAchievementsBackendUrl = "";
     private static long authenticatedAchievementsPlayerId;
+    private static AchievementsBackendState achievementsBackendState = AchievementsBackendState.Disabled;
 //do endif
 
 	protected override void OnAwake()
@@ -56,6 +71,7 @@ public class MonopolyApp : Component
         Sandbox.Services.RentRushService.TestInit();
         Log.Info( $"Application AppId: {Application.AppId}" );
         TryApplyAchievementSecrets( false );
+        AchievementServices.SetReconnectHandler( ReconnectAchievementsBackendAsync );
 //do endif
 
         var debugConvarParsed = bool.TryParse(ConsoleSystem.GetValue( "debug" ), out bool debugConvar);
@@ -69,6 +85,14 @@ public class MonopolyApp : Component
         _ = InitializeAchievementsBackendAsync();
 //do endif
 	}
+
+	[GameClosed]
+    public void OnGameClosed()
+    {
+        Log.Info("Game Closed");
+        // editor play session stopped
+        Networking.Disconnect();
+    }
 
     [ConCmd( "achievements_connect_backend" )]
     private static void ConnectAchievementsBackend( Connection connection )
@@ -86,6 +110,7 @@ public class MonopolyApp : Component
     private static void PrintAchievementsAuthDiagnostics( Connection connection )
     {
 //do if standalone
+        Log.Info( $"achievementsBackendState={achievementsBackendState} initialized={achievementsBackendInitialized} inFlight={achievementsBackendInitializationInFlight} url={AchievementsBackendUrl} playerId={authenticatedAchievementsPlayerId} hasToken={!string.IsNullOrWhiteSpace( AchievementsAccessToken )}" );
         Log.Info( Sandbox.Services.RentRushService.GetDeviceAuthDiagnostics() );
 //do else
 /*
@@ -149,6 +174,10 @@ public class MonopolyApp : Component
     private static void ApplyOtherAchievementDebugVariables()
     {
         AchievementsAccessToken = "";
+        authenticatedAchievementsPlayerId = 0;
+        achievementsBackendInitialized = false;
+        achievementsBackendState = AchievementsBackendState.Disabled;
+        AchievementServices.UseLocal();
         AchievementsSteamworksAuthEnabled = true;
     }
 
@@ -181,6 +210,7 @@ public class MonopolyApp : Component
         {
             if ( force )
                 Log.Warning( "Set achievements_backend_url before connecting achievements backend." );
+            achievementsBackendState = AchievementsBackendState.Disabled;
             return;
         }
 
@@ -192,8 +222,18 @@ public class MonopolyApp : Component
 
         try
         {
+            if ( force )
+            {
+                AchievementsAccessToken = "";
+                authenticatedAchievementsPlayerId = 0;
+                achievementsBackendInitialized = false;
+                AchievementServices.UseLocal();
+            }
+
             achievementsBackendInitializationInFlight = true;
+            achievementsBackendState = AchievementsBackendState.Connecting;
             lastAchievementsBackendUrl = AchievementsBackendUrl;
+            Log.Info( $"Achievements backend connecting. url={AchievementsBackendUrl} force={force}." );
 
             var token = AchievementsAccessToken;
             var playerId = authenticatedAchievementsPlayerId;
@@ -215,6 +255,7 @@ public class MonopolyApp : Component
             if ( string.IsNullOrWhiteSpace( token ) )
             {
                 achievementsBackendInitialized = false;
+                achievementsBackendState = AchievementsBackendState.Failed;
                 Log.Warning( "Achievements backend auth did not return a token; backend was not enabled." );
                 return;
             }
@@ -223,17 +264,25 @@ public class MonopolyApp : Component
             authenticatedAchievementsPlayerId = playerId;
             AchievementServices.UseBackend( AchievementsBackendUrl, token, playerId );
             achievementsBackendInitialized = true;
+            achievementsBackendState = AchievementsBackendState.Connected;
             Log.Info( $"Achievements backend enabled. playerId={playerId}." );
         }
         catch ( Exception exception )
         {
             achievementsBackendInitialized = false;
+            achievementsBackendState = AchievementsBackendState.Failed;
+            AchievementServices.UseLocal();
             Log.Warning( $"Failed to initialize achievements backend: {exception.Message}" );
         }
         finally
         {
             achievementsBackendInitializationInFlight = false;
         }
+    }
+
+    private static Task ReconnectAchievementsBackendAsync()
+    {
+        return InitializeAchievementsBackendAsync( true );
     }
 
     private static uint GetSteamAppId()

@@ -3,10 +3,12 @@ using Sandbox.Engine.Settings;
 using Sandbox.Network;
 using Sandbox.Rendering;
 using System;
+using System.Threading.Tasks;
 
 public sealed class MenuController : Component
 {
 	public MatchConfig Config { get; set; } = new();
+	private bool isOpeningLobby;
 
 	protected override void OnStart()
 	{
@@ -17,15 +19,26 @@ public sealed class MenuController : Component
 
 	public bool TryOpenLobby()
 	{
-		NetworkSession.ClearRejoinWindow();
-		//if ( Networking.IsActive )
-		//	Networking.Disconnect();
+		if ( isOpeningLobby )
+			return false;
 
-		var hostedConfig = MatchBootstrap.CloneConfig( Config );
-		MatchBootstrap.PrepareLobby( hostedConfig );
+		_ = OpenLobbyAsync();
+		return true;
+	}
 
-		if (!Networking.IsActive)
+	private async Task OpenLobbyAsync()
+	{
+		isOpeningLobby = true;
+
+		try
 		{
+			await ResetNetworkingBeforeHostingAsync();
+
+			NetworkSession.ClearRejoinWindow();
+
+			var hostedConfig = MatchBootstrap.CloneConfig( Config );
+			MatchBootstrap.PrepareLobby( hostedConfig );
+
 			Networking.CreateLobby( new LobbyConfig
 			{
 				Name = "Monopory Lobby",
@@ -33,11 +46,36 @@ public sealed class MenuController : Component
 				Privacy = LobbyPrivacy.FriendsOnly,
 				DestroyWhenHostLeaves = false
 			} );
-		}
-		
 
-		LoadLobbyScene();
-		return true;
+			LoadLobbyScene();
+		}
+		catch ( Exception exception )
+		{
+			Log.Warning( $"Failed to open lobby: {exception.Message}" );
+		}
+		finally
+		{
+			isOpeningLobby = false;
+		}
+	}
+
+	private static async Task ResetNetworkingBeforeHostingAsync()
+	{
+		NetworkSession.ClearRejoinWindow();
+
+		if ( !Networking.IsActive )
+			return;
+
+		Log.Info( "Disconnecting existing network session before hosting lobby." );
+		Networking.Disconnect();
+
+		var deadline = Time.Now + 2f;
+		while ( Networking.IsActive && Time.Now < deadline )
+		{
+			await System.Threading.Tasks.Task.Delay( 100 );
+		}
+
+		await System.Threading.Tasks.Task.Delay( 250 );
 	}
 
 	private void HandleLaunchArguments()
