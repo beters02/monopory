@@ -80,7 +80,16 @@ public sealed class GameCommandManager : Component
 
 	internal static void RunCommand( IGameCommand command, Func<CommandResult> callback )
 	{
-		LogCommandResult( command, callback() );
+		try
+		{
+			LogCommandResult( command, callback() );
+		}
+		catch ( Exception exception )
+		{
+			var message = $"{command.Name} command threw: {exception.Message}";
+			Log.Error( message );
+			WriteStandaloneConsoleLine( message, "err" );
+		}
 	}
 
 	internal static bool CanUseCheatCommand( Connection caller )
@@ -119,12 +128,39 @@ public sealed class GameCommandManager : Component
 	{
 		if ( result is null )
 		{
-			Log.Warning( $"{command.Name} command failed: no command result." );
+			var message = $"{command.Name} command failed: no command result.";
+			Log.Warning( message );
+			WriteStandaloneConsoleLine( message, "wrn" );
 			return;
 		}
 
 		if ( !result.Ok )
-			Log.Warning( $"{command.Name} command failed: {result.Message}" );
+		{
+			var message = $"{command.Name} command failed: {result.Message}";
+			Log.Warning( message );
+			WriteStandaloneConsoleLine( message, "wrn" );
+			return;
+		}
+
+		if ( string.IsNullOrWhiteSpace( result.Message ) )
+		{
+			var message = $"{command.Name} command succeeded.";
+			Log.Info( message );
+			WriteStandaloneConsoleLine( message, "msg" );
+			return;
+		}
+
+		var successMessage = $"{command.Name}: {result.Message}";
+		Log.Info( successMessage );
+		WriteStandaloneConsoleLine( successMessage, "msg" );
+	}
+
+	private static void WriteStandaloneConsoleLine( string message, string kind )
+	{
+		if ( MonopolyApp.IsStandalone )
+			return;
+
+		Sandbox.ui.components.StandaloneConsole.WriteLine( message, kind );
 	}
 
 	private void HandlePreviouslyExistingCommands()

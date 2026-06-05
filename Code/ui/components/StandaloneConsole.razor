@@ -258,6 +258,19 @@
 		}
 	}
 
+	public static void WriteLine( string message, string kind = "msg" )
+	{
+		if ( string.IsNullOrWhiteSpace( message ) )
+			return;
+
+		foreach ( var line in SplitLogLines( message ) )
+			PendingLogEntries.Enqueue( new ConsoleEntry( line, kind, DateTime.Now ) );
+
+		while ( PendingLogEntries.Count > 1000 && PendingLogEntries.TryDequeue( out _ ) )
+		{
+		}
+	}
+
 	private static string GetLogKind( string level )
 	{
 		if ( string.Equals( level, "ERROR", StringComparison.OrdinalIgnoreCase ) ||
