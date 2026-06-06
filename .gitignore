@@ -23,6 +23,7 @@ code/Properties/*
 *.los
 *.vpk
 *launchSettings.json
+!AchievementsService/Properties/*
 *.sln
 *.slnx
 !monopory.slnx
