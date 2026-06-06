@@ -2,7 +2,6 @@
 @using Sandbox
 @using Sandbox.UI
 @using System
-@using System.Text.RegularExpressions
 @inherits PanelComponent
 
 <root class="@GetRootClasses()">
@@ -57,8 +56,9 @@
 	public float HideAfterSeconds { get; set; } = 5f;
 	private readonly record struct ChatEntry( int Id, string Sender, string Message );
 	private readonly record struct MessageSegment( string Text, bool IsMention );
+	private readonly record struct MentionMatch( int Start, int NameEnd, int End, string Name );
 	private readonly List<ChatEntry> ChatEntries = new();
-	private static readonly Regex MentionRegex = new( @"@\S+", RegexOptions.Compiled );
+	private static readonly char[] MentionTrailingCharacters = ['.', ',', '!', '?', ':', ';', ')', ']', '}'];
 	private ConsoleCommandTextEntry ChatInput = null!;
 	private Panel MessagesPanel = null!;
 	private bool IsComposing;
@@ -210,9 +210,6 @@
 			return Array.Empty<object>();
 
 		var prefix = value[(mentionStart + 1)..];
-		if ( prefix.Contains( ' ' ) )
-			return Array.Empty<object>();
-
 		var beforeMention = value[..mentionStart];
 		return GetMentionablePlayerNames()
 			.Where( name => name.StartsWith( prefix, StringComparison.OrdinalIgnoreCase ) )
@@ -234,7 +231,7 @@
 		return game.Players
 			.Where( player => player is not null && player.IsAssigned )
 			.Select( player => (player.PlayerName ?? "").Trim() )
-			.Where( name => !string.IsNullOrWhiteSpace( name ) && !name.Contains( ' ' ) )
+			.Where( name => !string.IsNullOrWhiteSpace( name ) )
 			.Distinct( StringComparer.OrdinalIgnoreCase );
 	}
 
@@ -264,31 +261,62 @@
 		var segments = new List<MessageSegment>();
 		var index = 0;
 
-		foreach ( Match match in MentionRegex.Matches( message ) )
+		var mentionableNames = GetMentionablePlayerNames()
+			.OrderByDescending( name => name.Length )
+			.ToList();
+
+		foreach ( var match in FindMentionMatches( message, mentionableNames ) )
 		{
-			if ( match.Index > index )
-				segments.Add( new MessageSegment( message[index..match.Index], false ) );
+			if ( match.Start > index )
+				segments.Add( new MessageSegment( message[index..match.Start], false ) );
 
-			var mentionToken = match.Value;
-			var mentionName = mentionToken[1..].TrimEnd( '.', ',', '!', '?', ':', ';', ')', ']', '}' );
-			var trailing = mentionToken[(mentionName.Length + 1)..];
-			var isMention = GetMentionablePlayerNames().Any( name => string.Equals( name, mentionName, StringComparison.OrdinalIgnoreCase ) );
+			segments.Add( new MessageSegment( message[match.Start..match.NameEnd], true ) );
 
-			if ( isMention )
-				segments.Add( new MessageSegment( $"@{mentionName}", true ) );
-			else
-				segments.Add( new MessageSegment( mentionToken, false ) );
-
+			var trailing = message[match.NameEnd..match.End];
 			if ( trailing.Length > 0 )
 				segments.Add( new MessageSegment( trailing, false ) );
 
-			index = match.Index + match.Length;
+			index = match.End;
 		}
 
 		if ( index < message.Length )
 			segments.Add( new MessageSegment( message[index..], false ) );
 
 		return segments;
+	}
+
+	private static IEnumerable<MentionMatch> FindMentionMatches( string message, IReadOnlyList<string> mentionableNames )
+	{
+		if ( string.IsNullOrWhiteSpace( message ) || mentionableNames.Count == 0 )
+			yield break;
+
+		for ( var index = 0; index < message.Length; index++ )
+		{
+			if ( message[index] != '@' || (index > 0 && !char.IsWhiteSpace( message[index - 1] )) )
+				continue;
+
+			foreach ( var name in mentionableNames )
+			{
+				var nameStart = index + 1;
+				if ( nameStart + name.Length > message.Length )
+					continue;
+
+				if ( !message.AsSpan( nameStart, name.Length ).Equals( name, StringComparison.OrdinalIgnoreCase ) )
+					continue;
+
+				var nameEnd = nameStart + name.Length;
+				var end = nameEnd;
+				if ( end < message.Length && MentionTrailingCharacters.Contains( message[end] ) )
+					end++;
+
+				if ( end < message.Length && !char.IsWhiteSpace( message[end] ) )
+					continue;
+
+				yield return new MentionMatch( index, nameEnd, end, name );
+				index = end - 1;
+				break;
+			}
+		}
 	}
 
 	private void Touch()

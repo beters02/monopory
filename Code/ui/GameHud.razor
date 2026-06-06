@@ -75,7 +75,7 @@
 					<TradePanel GameRef="@GameRef"></TradePanel>
 				</div>
 				
-				@if ( !IsAnyMenuOpen )
+				@if ( !IsAnyMenuOpen || GameRef.ForceHiddenUiVisible )
 				{
 					<SelectedSpacePanel GameRef="@GameRef"></SelectedSpacePanel>
 				}
@@ -421,6 +421,7 @@
 		hash.Add( IsMatchSettingsMenuOpen );
 		hash.Add( IsGambleScreenActive );
 		hash.Add( IsHudVisible() );
+		hash.Add( GameRef?.ForceHiddenUiVisible ?? false );
 		hash.Add( AppSettings.SettingsAvailable );
 		hash.Add( AppSettings.GetFullscreenMode() );
 		hash.Add( AppSettings.GetVSyncEnabled() );

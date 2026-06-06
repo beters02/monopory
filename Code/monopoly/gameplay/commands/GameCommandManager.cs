@@ -420,6 +420,55 @@ public static class DisplayStatsLogCommand
 	}
 }
 
+public static class DisplayHiddenUiCommand
+{
+	public const string Name = "display_hidden_ui";
+
+	[ConCmd( Name )]
+	public static void Execute( Connection connection, bool visible = true )
+	{
+		GameCommandManager.RunCommand( Name, () => SetHiddenUiVisible( connection, visible ) );
+	}
+
+	internal static CommandResult SetHiddenUiVisible( Connection connection, bool visible )
+	{
+		if ( !GameCommandManager.CanUseHostCheatCommand( connection ) )
+			return CommandResult.Fail( "display_hidden_ui can only be used by the host with sv_cheats enabled." );
+
+		var game = GameController.Instance;
+		if ( game is null )
+			return CommandResult.Fail( "No active game." );
+
+		if ( !Networking.IsHost )
+			return CommandResult.Fail( "Only the host can change hidden UI visibility." );
+
+		game.SetForceHiddenUiVisible( visible );
+		return CommandResult.Success( visible ? "Hidden UI debug visibility enabled." : "Hidden UI debug visibility disabled." );
+	}
+}
+
+public static class DisplayAllUiCommand
+{
+	public const string Name = "display_all_ui";
+
+	[ConCmd( Name )]
+	public static void Execute( Connection connection, bool visible = true )
+	{
+		GameCommandManager.RunCommand( Name, () => DisplayHiddenUiCommand.SetHiddenUiVisible( connection, visible ) );
+	}
+}
+
+public static class DisplayMakeUiVisibleCommand
+{
+	public const string Name = "display_make_ui_visible";
+
+	[ConCmd( Name )]
+	public static void Execute( Connection connection, bool visible = true )
+	{
+		GameCommandManager.RunCommand( Name, () => DisplayHiddenUiCommand.SetHiddenUiVisible( connection, visible ) );
+	}
+}
+
 public static class ChangeMoneyCommand
 {
 	public const string Name = "change_money";

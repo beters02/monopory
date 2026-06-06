@@ -5,7 +5,7 @@
 @inherits Panel
 
 <root>
-	@if ( IsAuctionActive )
+	@if ( IsAuctionVisible )
 	{
 		<div class="auction-backdrop">
 			<div class="auction-modal">
@@ -77,13 +77,25 @@
 	private PlayerState LocalPlayer => GameRef?.LocalPlayer;
 
 	private SpaceDef AuctionSpace =>
-		GameRef?.Board?.GetSpaceDef( GameRef.AuctionSpaceIndex );
+		GameRef?.Board?.GetSpaceDef( AuctionSpaceIndex );
 
 	private int AuctionSpaceIndex =>
-		GameRef?.AuctionSpaceIndex ?? -1;
+		GameRef?.AuctionSpaceIndex >= 0 ? GameRef.AuctionSpaceIndex : DebugAuctionSpaceIndex;
 
 	private bool IsAuctionActive =>
-		GameRef?.Phase == GamePhase.Auctioning && AuctionSpace is not null;
+		GameRef?.Phase == GamePhase.Auctioning &&
+		GameRef.AuctionSpaceIndex >= 0 &&
+		AuctionSpace is not null;
+
+	private bool IsAuctionVisible =>
+		IsAuctionActive ||
+		(GameRef?.ForceHiddenUiVisible == true && AuctionSpace is not null);
+
+	private int DebugAuctionSpaceIndex =>
+		GameRef?.Board?.SpaceDefs?
+			.Where( def => def is not null && HudUi.IsPurchasableSpace( def ) )
+			.OrderBy( def => def.Index )
+			.FirstOrDefault()?.Index ?? -1;
 
 	private bool IsAuctionProperty =>
 		AuctionSpace is not null &&
@@ -117,9 +129,10 @@
 		!IsAuctionActive ? 0 : Math.Max( 0, (int)MathF.Ceiling( GameRef.AuctionEndsAt - Time.Now ) );
 
 	private string AuctionRemainingLabel =>
-		$"Ends in {AuctionRemainingSeconds}s";
+		IsAuctionActive ? $"Ends in {AuctionRemainingSeconds}s" : "Preview mode";
 
 	private string AuctionLeaderLabel =>
+		!IsAuctionActive ? "No live auction" :
 		GameRef?.AuctionHighBidderIndex >= 0
 			? $"High bid: {GetPlayerName( GameRef.AuctionHighBidderIndex )}"
 			: "No bids yet";
@@ -172,6 +185,7 @@
 			GameRef?.AuctionSpaceIndex ?? -1,
 			GameRef?.AuctionCurrentBid ?? 0,
 			GameRef?.AuctionHighBidderIndex ?? -1,
+			GameRef?.ForceHiddenUiVisible ?? false,
 			AuctionRemainingSeconds,
 			LocalPlayer?.Money ?? 0
 		);

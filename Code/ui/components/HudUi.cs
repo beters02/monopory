@@ -89,6 +89,9 @@ public static class HudUi
 
 	public static string BuildHideableHudClass( GameController GameRef )
 	{
+		if ( GameRef.ForceHiddenUiVisible )
+			return "hideable-hud-panels";
+
 		var classes = GameRef.IsGameHudVisible()
 			? "hideable-hud-panels"
 			: "hideable-hud-panels invisible";
@@ -98,6 +101,9 @@ public static class HudUi
 
 	public static string BuildTranslucentHideableHudClass( GameController GameRef )
 	{
+		if ( GameRef.ForceHiddenUiVisible )
+			return "translucent-hideable-hud-panels";
+
 		var classes = GameRef.IsGameHudVisible()
 			? "translucent-hideable-hud-panels"
 			: "translucent-hideable-hud-panels invisible";
