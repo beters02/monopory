@@ -13,22 +13,40 @@ public sealed partial class GameController : Component
 		if ( !Networking.IsHost || player is null || !player.IsAssigned || player.OwnerId == 0 )
 			return;
 
-		_ = ReportAchievementEventAsync( player, eventType, amount, value );
+		ReceiveAchievementEvent(
+			player.OwnerId,
+			eventType,
+			Math.Max( amount, 1 ),
+			value ?? "",
+			BuildAchievementEventId( player, eventType ),
+			CurrentAchievementMatchId,
+			GetUnixNow()
+		);
 	}
 
-	private async Task ReportAchievementEventAsync( PlayerState player, string eventType, int amount, string value )
+	[Rpc.Broadcast]
+	private void ReceiveAchievementEvent( long steamId, string eventType, int amount, string value, string eventId, string sourceMatchId, long occurredAtUnixSeconds )
+	{
+		var localSteamId = GetLocalSteamId();
+		if ( !localSteamId.HasValue || steamId == 0 || steamId != localSteamId.Value )
+			return;
+
+		_ = ReportAchievementEventAsync( steamId, eventType, amount, value, eventId, sourceMatchId, occurredAtUnixSeconds );
+	}
+
+	private async Task ReportAchievementEventAsync( long steamId, string eventType, int amount, string value, string eventId, string sourceMatchId, long occurredAtUnixSeconds )
 	{
 		try
 		{
 			await AchievementServices.Achievements.ReportEventAsync( new AchievementEvent
 			{
-				EventId = BuildAchievementEventId( player, eventType ),
-				SteamId = player.OwnerId,
+				EventId = eventId,
+				SteamId = steamId,
 				Type = eventType,
 				Amount = Math.Max( amount, 1 ),
 				Value = value ?? "",
-				SourceMatchId = CurrentAchievementMatchId,
-				OccurredAtUnixSeconds = GetUnixNow()
+				SourceMatchId = sourceMatchId ?? "",
+				OccurredAtUnixSeconds = occurredAtUnixSeconds
 			} );
 		}
 		catch ( Exception exception )

@@ -67,63 +67,6 @@ public sealed class AchievementEvent
 	public long OccurredAtUnixSeconds { get; init; }
 }
 
-public sealed class DeviceSessionRequest
-{
-	public string DeviceId { get; init; } = "";
-	public string Secret { get; init; } = "";
-	public string DisplayName { get; init; } = "";
-}
-
-public sealed class DeviceSessionResponse
-{
-	public string AccessToken { get; init; } = "";
-	public DateTimeOffset ExpiresAt { get; init; }
-	public long PlayerId { get; init; }
-	public string DeviceId { get; init; } = "";
-}
-
-public sealed class SboxSessionRequest
-{
-	public long SteamId { get; init; }
-	public string Token { get; init; } = "";
-	public string DisplayName { get; init; } = "";
-}
-
-public sealed class SboxSessionResponse
-{
-	public string AccessToken { get; init; } = "";
-	public DateTimeOffset ExpiresAt { get; init; }
-	public long PlayerId { get; init; }
-}
-
-public sealed class SteamworksSessionRequest
-{
-	public long SteamId { get; init; }
-	public string Ticket { get; init; } = "";
-	public string DisplayName { get; init; } = "";
-}
-
-public sealed class SteamworksSessionResponse
-{
-	public string AccessToken { get; init; } = "";
-	public DateTimeOffset ExpiresAt { get; init; }
-	public long PlayerId { get; init; }
-}
-
-public sealed class ForkboxSessionRequest
-{
-	public long SteamId { get; init; }
-	public string Token { get; init; } = "";
-	public string DisplayName { get; init; } = "";
-}
-
-public sealed class ForkboxSessionResponse
-{
-	public string AccessToken { get; init; } = "";
-	public DateTimeOffset ExpiresAt { get; init; }
-	public long PlayerId { get; init; }
-}
-
 public sealed class CosmeticDefinition
 {
 	public string Id { get; init; } = "";

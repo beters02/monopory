@@ -5,6 +5,7 @@ public sealed class LocalAuthoritativeAchievementService : IAchievementService, 
 {
 	private readonly Dictionary<long, Dictionary<string, AchievementProgress>> progressBySteamId = new();
 	private readonly HashSet<string> processedEventIds = new( StringComparer.OrdinalIgnoreCase );
+	private readonly HashSet<long> loadedSteamStateForSteamIds = new();
 	private readonly ISteamAchievementBridge steamBridge;
 
 	public LocalAuthoritativeAchievementService( ISteamAchievementBridge steamBridge = null )
@@ -12,9 +13,13 @@ public sealed class LocalAuthoritativeAchievementService : IAchievementService, 
 		this.steamBridge = steamBridge ?? new NoOpSteamAchievementBridge();
 	}
 
-	public Task<PlayerAchievementState> GetMyStateAsync()
+	public async Task<PlayerAchievementState> GetMyStateAsync()
 	{
-		return Task.FromResult( GetCachedState( GetLocalSteamId() ?? 0 ) );
+		var steamId = GetLocalSteamId() ?? 0;
+		if ( steamId != 0 )
+			await LoadSteamStateAsync( steamId );
+
+		return GetCachedState( steamId );
 	}
 
 	public Task<PlayerAchievementState> GetPublicStateAsync( long steamId )
@@ -144,6 +149,27 @@ public sealed class LocalAuthoritativeAchievementService : IAchievementService, 
 		}
 
 		return progress;
+	}
+
+	private async Task LoadSteamStateAsync( long steamId )
+	{
+		if ( !loadedSteamStateForSteamIds.Add( steamId ) )
+			return;
+
+		var unlockedApiNames = await steamBridge.GetUnlockedSteamAchievementApiNamesAsync();
+		if ( unlockedApiNames is null || unlockedApiNames.Count == 0 )
+			return;
+
+		var progress = GetOrCreateProgress( steamId );
+		foreach ( var definition in AchievementCatalog.All )
+		{
+			if ( string.IsNullOrWhiteSpace( definition.SteamApiName ) || !unlockedApiNames.Contains( definition.SteamApiName ) )
+				continue;
+
+			var achievementProgress = progress[definition.Id];
+			achievementProgress.Current = Math.Max( achievementProgress.Current, achievementProgress.Target );
+			achievementProgress.UnlockedAt ??= DateTimeOffset.UtcNow;
+		}
 	}
 
 	private static int CalculateNextProgress( AchievementDefinition definition, int current, AchievementEvent achievementEvent )
