@@ -28,7 +28,7 @@ public sealed partial class GameController : Component
 		return total;
 	}
 
-	private void BankruptPlayer( int playerIndex, PlayerState creditor, bool advanceTurnIfCurrent = false )
+	private void BankruptPlayer( int playerIndex, PlayerState creditor, bool advanceTurnIfCurrent = false, int debtAmount = 0 )
 	{
 		if ( playerIndex < 0 )
 			return;
@@ -37,8 +37,9 @@ public sealed partial class GameController : Component
 		if ( player is null || player.IsBankrupt )
 			return;
 
+		var creditorIndex = creditor is null ? -1 : GetPlayerIndex( creditor );
+
 		player.IsBankrupt = true;
-		player.Money = 0;
 		player.IsInJail = false;
 		player.JailTurnsRemaining = 0;
 		ReturnHeldTradableCardsToDeck( player );
@@ -48,12 +49,7 @@ public sealed partial class GameController : Component
 		if ( PendingForcedPaymentPlayerIndex == playerIndex )
 			ClearPendingForcedPayment();
 
-		foreach ( var spaceIndex in GetOwnedPropertyIndexes( playerIndex ) )
-		{
-			PropertyOwners.Remove( spaceIndex );
-			PropertyImprovements.Remove( spaceIndex );
-			MortgagedProperties.Remove( spaceIndex );
-		}
+		ResolveBankruptedPlayerAssets( playerIndex, player, creditor, creditorIndex, debtAmount );
 
 		foreach ( var trade in GetTrades() )
 		{
@@ -90,6 +86,85 @@ public sealed partial class GameController : Component
 		}
 
 		CheckForGameOver();
+	}
+
+	private void ResolveBankruptedPlayerAssets( int playerIndex, PlayerState player, PlayerState creditor, int creditorIndex, int debtAmount )
+	{
+		if ( player is null )
+			return;
+
+		if ( creditor is not null && creditorIndex >= 0 && !creditor.IsBankrupt )
+		{
+			switch ( Config?.PlayerBankruptedPlayerMode ?? PlayerBankruptedPlayerMode.GivePropertiesToBankrupter )
+			{
+				case PlayerBankruptedPlayerMode.MakePropertiesUnowned:
+					MakeBankruptedPlayerPropertiesUnowned( playerIndex );
+					PayBankruptedPlayerDebtFromBank( player, creditor, debtAmount );
+					return;
+
+				case PlayerBankruptedPlayerMode.GivePropertiesToBankrupter:
+				default:
+					GiveBankruptedPlayerAssetsToCreditor( playerIndex, player, creditor, creditorIndex );
+					return;
+			}
+		}
+
+		MakeBankruptedPlayerPropertiesUnowned( playerIndex );
+		player.Money = 0;
+	}
+
+	private void GiveBankruptedPlayerAssetsToCreditor( int playerIndex, PlayerState player, PlayerState creditor, int creditorIndex )
+	{
+		var ownedProperties = GetOwnedPropertyIndexes( playerIndex );
+		var ownedSetsBeforeTransfer = CaptureOwnedSetKeys( creditorIndex );
+		var soldImprovementValue = 0;
+
+		foreach ( var spaceIndex in ownedProperties )
+		{
+			soldImprovementValue += GetImprovementCount( spaceIndex ) * GetImprovementSellValue( spaceIndex );
+			PropertyImprovements.Remove( spaceIndex );
+			PropertyOwners[spaceIndex] = creditorIndex;
+			ReportPropertyAcquiredAchievements( creditorIndex, Board?.GetSpaceDef( spaceIndex ) );
+		}
+
+		player.Money += soldImprovementValue;
+
+		var transferredMoney = Math.Max( player.Money, 0 );
+		if ( transferredMoney > 0 )
+		{
+			creditor.Money += transferredMoney;
+			ShowMoneyReceivedPopup( creditor, transferredMoney, player.PlayerName );
+		}
+
+		player.Money = 0;
+		ShowNewlyOwnedSetPopups( ownedSetsBeforeTransfer, creditorIndex );
+
+		if ( ownedProperties.Count > 0 )
+			SendTableChatMessage( "Bankruptcy transfer", $"{creditor.PlayerName} received {ownedProperties.Count} properties from {player.PlayerName}." );
+	}
+
+	private void MakeBankruptedPlayerPropertiesUnowned( int playerIndex )
+	{
+		foreach ( var spaceIndex in GetOwnedPropertyIndexes( playerIndex ) )
+		{
+			PropertyOwners.Remove( spaceIndex );
+			PropertyImprovements.Remove( spaceIndex );
+			MortgagedProperties.Remove( spaceIndex );
+		}
+	}
+
+	private void PayBankruptedPlayerDebtFromBank( PlayerState player, PlayerState creditor, int debtAmount )
+	{
+		var payment = debtAmount > 0 ? debtAmount : Math.Max( player?.Money ?? 0, 0 );
+		if ( payment > 0 && creditor is not null )
+		{
+			creditor.Money += payment;
+			ShowMoneyReceivedPopup( creditor, payment, "the bank" );
+			SendTableChatMessage( "Bankruptcy payment", $"{creditor.PlayerName} received the full ${payment} payment after {player.PlayerName} went bankrupt." );
+		}
+
+		if ( player is not null )
+			player.Money = 0;
 	}
 
 	public bool TryBankruptAndAbandonPlayer( PlayerState player )

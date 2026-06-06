@@ -73,7 +73,7 @@ public sealed partial class GameController : Component
 		}
 
 		if ( HasPendingForcedPaymentForPlayer( skippedPlayerIndex ) )
-			BankruptPlayer( skippedPlayerIndex, Players.ElementAtOrDefault( PendingForcedPaymentReceiverIndex ) );
+			BankruptPlayer( skippedPlayerIndex, Players.ElementAtOrDefault( PendingForcedPaymentReceiverIndex ), debtAmount: PendingForcedPaymentAmount );
 
 		skippedPlayer.TurnTimeoutCount = Math.Max( skippedPlayer.TurnTimeoutCount + 1, 1 );
 		ClearSelectedSpaceForPlayer( skippedPlayer );

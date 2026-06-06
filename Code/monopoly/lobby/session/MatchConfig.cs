@@ -13,6 +13,12 @@ public enum UnownedUnaffordableLandingMode
 	Decision
 }
 
+public enum PlayerBankruptedPlayerMode
+{
+	GivePropertiesToBankrupter,
+	MakePropertiesUnowned
+}
+
 [AttributeUsage( AttributeTargets.Property )]
 public sealed class MatchConfigOptionAttribute : Attribute
 {
@@ -65,6 +71,9 @@ public sealed class MatchConfig
 
 	[MatchConfigOption( "Economy", "Snake Eyes Bonus Money", Description = "Bonus awarded when a player rolls snake eyes.", Order = 23, Min = 0, Max = 5000, Step = 50 )]
 	public int SnakeEyesBonusMoney { get; set; } = 0;
+
+	[MatchConfigOption( "Economy", "Player Bankrupted Player Mode", Description = "What happens to properties when one player bankrupts another.", Order = 24 )]
+	public PlayerBankruptedPlayerMode PlayerBankruptedPlayerMode { get; set; } = PlayerBankruptedPlayerMode.GivePropertiesToBankrupter;
 
 	[MatchConfigOption( "Turn Rules", "Doubles Goes Again", Description = "Lets players take another turn after rolling doubles.", Order = 30 )]
 	public bool DoublesGoesAgain { get; set; } = true;
