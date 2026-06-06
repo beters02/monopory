@@ -6,23 +6,25 @@
 @inherits Panel
 
 <root>
-	@if ( PropertyHudCards.Count > 0 )
+	@if ( PropertyHudPlayers.Count > 0 )
 	{
 		<Sandbox.ui.components.HudPanel.HudPanel Variant="property-hud-card">
 			<ChildContent>
 				<div class="property-player-list">
-				@foreach ( var card in PropertyHudCards )
+				@foreach ( var player in PropertyHudPlayers )
 				{
-					<Sandbox.ui.components.HudPanel.HudPanel Variant="@GetPropertyPanelClasses( card )" style="@GetPlayerCardStyle( card.Color )">
+					var playerIndex = GameRef.GetPlayerIndex( player );
+
+					<Sandbox.ui.components.HudPanel.HudPanel Variant="@GetPropertyPanelClasses( playerIndex )" style="@GetPlayerCardStyle( player )">
 						<ChildContent>
 							<div class="property-player-name-row">
-								<div class="property-player-name">@card.PlayerName</div>
-								<div class="property-player-chip" style="@GetPlayerChipStyle( card.Color )"></div>
+								<div class="property-player-name">@player.PlayerName</div>
+								<div class="property-player-chip" style="@GetPlayerChipStyle( player )"></div>
 							</div>
-							<div class="property-player-money">$@card.Money</div>
-							@if ( card.IsDisconnected && card.RejoinSeconds > 0 )
+							<div class="property-player-money">$@player.Money</div>
+							@if ( player.IsDisconnected && !player.IsBankrupt )
 							{
-								<div class="property-player-money">Rejoin: @($"{card.RejoinSeconds}s")</div>
+								<div class="property-player-money">Rejoin: @Math.Max( 0, (int)MathF.Ceiling( player.AbandonEndsAt - Time.Now ) )s</div>
 							}
 						</ChildContent>
 					</Sandbox.ui.components.HudPanel.HudPanel>
@@ -90,8 +92,6 @@
 @code
 {
 	[Parameter] public GameController GameRef { get; set; }
-	private const bool EnableTestPlayerHudCards = true;
-	private const int TestPlayerHudCardCount = 12;
 	private Panel PropertyManagerContentPanel = null!;
 	private int InitialTurnOrderStartIndex = -1;
 
@@ -125,46 +125,6 @@
 						: index + GameRef.MaxPlayers - startIndex;
 				} )
 				.ToList();
-		}
-	}
-
-	private List<PropertyHudCard> PropertyHudCards
-	{
-		get
-		{
-			var cards = PropertyHudPlayers
-				.Select( player =>
-				{
-					var playerIndex = GameRef.GetPlayerIndex( player );
-					return new PropertyHudCard
-					{
-						PlayerIndex = playerIndex,
-						PlayerName = player.PlayerName,
-						Money = player.Money,
-						Color = GetPlayerColor( player ),
-						IsLocalPlayer = GameRef?.LocalPlayerIndex == playerIndex,
-						IsCurrentPlayer = GameRef?.CurrentPlayerIndex == playerIndex,
-						IsDisconnected = player.IsDisconnected && !player.IsBankrupt,
-						RejoinSeconds = Math.Max( 0, (int)MathF.Ceiling( player.AbandonEndsAt - Time.Now ) )
-					};
-				} )
-				.ToList();
-
-			if ( EnableTestPlayerHudCards && GameRef?.MatchState == MatchLifecycleState.InGame )
-			{
-				for ( var i = cards.Count; i < TestPlayerHudCardCount; i++ )
-				{
-					cards.Add( new PropertyHudCard
-					{
-						PlayerIndex = i,
-						PlayerName = $"Test Player {i + 1}",
-						Money = Math.Max( GameRef?.Config?.StartingMoney ?? 1500, 0 ),
-						Color = GetPlayerColor( i ),
-					} );
-				}
-			}
-
-			return cards;
 		}
 	}
 
@@ -260,26 +220,28 @@
 
 	private void SelectPropertySpace( int spaceIndex ) => GameRef?.SelectSpace( spaceIndex );
 
-	private string GetPropertyPanelClasses( PropertyHudCard card )
+	private string GetPropertyPanelClasses( int playerIndex )
 	{
-		var classes = $"property-player-panel player-{card.PlayerIndex}";
+		var classes = $"property-player-panel player-{playerIndex}";
 
-		if ( card.IsLocalPlayer )
+		if ( GameRef?.LocalPlayerIndex == playerIndex )
 			classes += " local-player";
 
-		if ( card.IsCurrentPlayer )
+		if ( GameRef?.CurrentPlayerIndex == playerIndex )
 			classes += " current-player";
 
 		return classes;
 	}
 
-	private string GetPlayerCardStyle( Color color )
+	private string GetPlayerCardStyle( PlayerState player )
 	{
+		var color = GetPlayerColor( player );
 		return $"border-color: {ToCssColor( color )};";
 	}
 
-	private string GetPlayerChipStyle( Color color )
+	private string GetPlayerChipStyle( PlayerState player )
 	{
+		var color = GetPlayerColor( player );
 		return $"background-color: {ToCssColor( color )};";
 	}
 
@@ -289,14 +251,6 @@
 			return Color.White;
 
 		var colorIndex = player.ColorSlot >= 0 ? player.ColorSlot : GameRef.GetPlayerIndex( player );
-		return GameRef.Theme.GetPlayerColor( colorIndex );
-	}
-
-	private Color GetPlayerColor( int colorIndex )
-	{
-		if ( GameRef?.Theme is null )
-			return Color.White;
-
 		return GameRef.Theme.GetPlayerColor( colorIndex );
 	}
 
@@ -368,16 +322,5 @@
 		public List<string> CardIds { get; init; } = new();
 	}
 
-	private sealed class PropertyHudCard
-	{
-		public int PlayerIndex { get; init; } = -1;
-		public string PlayerName { get; init; } = "";
-		public int Money { get; init; }
-		public Color Color { get; init; } = Color.White;
-		public bool IsLocalPlayer { get; init; }
-		public bool IsCurrentPlayer { get; init; }
-		public bool IsDisconnected { get; init; }
-		public int RejoinSeconds { get; init; }
-	}
 }
 
