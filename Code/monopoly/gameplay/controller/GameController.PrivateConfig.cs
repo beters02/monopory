@@ -7,6 +7,7 @@ public sealed partial class GameController : Component
 	{
 		double div = Config.TurnTimeLimitSeconds / MaxTurnReminders;
 		SecondsBetweenTurnReminders = (int) Math.Ceiling(div);
+		BankruptedPieceMaterial?.Preload();
 	}
     
     // Jail
@@ -65,5 +66,6 @@ public sealed partial class GameController : Component
 
 	// Tokens
 	public bool RestrictPieceThrowToCurrentTurn { get; set; } = true;
+	public GameMaterial BankruptedPieceMaterial { get; set; } = "materials/pieces/piece_bankrupt.vmat";
 
 }

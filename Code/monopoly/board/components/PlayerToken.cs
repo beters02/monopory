@@ -30,6 +30,9 @@ public sealed class PlayerToken : Component
 	private ModelRenderer markerRenderer;
 	private GameObject markerObject;
 	private HighlightOutline markerHighlight;
+	private bool hasOriginalPieceMaterialOverrides;
+	private Material originalModelMaterialOverride;
+	private Material originalSkinnedMaterialOverride;
 	private bool walkingAnim;
 	private bool hasAppliedWalkingAnim;
 	private bool requestedWalking;
@@ -453,6 +456,34 @@ public sealed class PlayerToken : Component
 		renderHost.LocalScale = selectedPiece.LocalVisualScale;
 		renderHost.LocalPosition = selectedPiece.LocalVisualOffset;
 		HeightOffset = selectedPiece.HeightOffset;
+	}
+
+	public void ApplyPieceMaterialOverride( Material material )
+	{
+		var visualObject = GameObject.Children.FirstOrDefault( child => string.Equals( child?.Name, "Visual", StringComparison.OrdinalIgnoreCase ) );
+		var renderHost = visualObject?.Children.FirstOrDefault() ?? visualObject;
+		if ( renderHost is null )
+			return;
+
+		var modelRenderer = renderHost.Components.Get<ModelRenderer>();
+		var skinnedRenderer = renderHost.Components.Get<SkinnedModelRenderer>();
+		RememberOriginalPieceMaterialOverrides( modelRenderer, skinnedRenderer );
+
+		if ( modelRenderer is not null )
+			modelRenderer.MaterialOverride = material ?? originalModelMaterialOverride;
+
+		if ( skinnedRenderer is not null )
+			skinnedRenderer.MaterialOverride = material ?? originalSkinnedMaterialOverride;
+	}
+
+	private void RememberOriginalPieceMaterialOverrides( ModelRenderer modelRenderer, SkinnedModelRenderer skinnedRenderer )
+	{
+		if ( hasOriginalPieceMaterialOverrides )
+			return;
+
+		originalModelMaterialOverride = modelRenderer?.MaterialOverride;
+		originalSkinnedMaterialOverride = skinnedRenderer?.MaterialOverride;
+		hasOriginalPieceMaterialOverrides = true;
 	}
 
 	public void ApplyPlayerColor( Color color )
