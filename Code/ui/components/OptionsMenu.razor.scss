@@ -81,14 +81,21 @@
 }
 
 .options-footer {
+	width: 100%;
+	flex-shrink: 0;
+
 	display: flex;
+	flex-direction: row;
 	align-items: center;
+	justify-content: flex-end;
 	gap: 10px;
 }
 
 .options-apply-error {
-	flex: 1;
+	width: 100%;
 	min-width: 0;
+	min-height: 34px;
+	flex-shrink: 0;
 	padding: 8px 10px;
 
 	background-color: $monopoly-danger-soft;
@@ -99,6 +106,20 @@
 	font-size: $monopoly-font-small;
 	font-weight: 800;
 	line-height: 15px;
+
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+}
+
+.options-apply-error .label {
+	width: 100%;
+	min-width: 0;
+
+	text-align: left;
+	white-space: normal;
+	text-overflow: clip;
+	overflow: visible;
 }
 
 .options-category-section {
@@ -519,10 +540,6 @@
 .options-panel .monopoly-button.blocked-action-button.options-toggle-button:hover,
 .options-panel .monopoly-button.blocked-action-button.options-choice-button:hover {
 	background-color: $monopoly-ink-hover;
-}
-
-.options-footer {
-	justify-content: flex-end;
 }
 
 .options-empty-state {

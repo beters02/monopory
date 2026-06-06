@@ -18,6 +18,11 @@
 					<CloseButton Variant="options-close-button" Title="Close" OnClick="@Close"></CloseButton>
 				</div>
 
+				@if ( !string.IsNullOrWhiteSpace( applyErrorMessage ) )
+				{
+					<div class="options-apply-error">@applyErrorMessage</div>
+				}
+
 				<div class="options-scroll-shell">
 					<div class="options-scroll-panel monopory-scroll-y" @ref="OptionsScrollPanel">
 						@foreach ( var category in AppSettingsSchema.Categories )
@@ -94,10 +99,6 @@
 				</div>
 
 				<div class="options-footer">
-					@if ( !string.IsNullOrWhiteSpace( applyErrorMessage ) )
-					{
-						<div class="options-apply-error">@applyErrorMessage</div>
-					}
 					<GameButton Variant="options-apply-button" OnClick="@ApplyOptions">Apply</GameButton>
 				</div>
 			</div>
@@ -293,7 +294,7 @@
 	private void ShowApplyError( string message )
 	{
 		applyErrorMessage = message;
-		GameController.Instance?.ShowLocalPopup( "Could not apply", message, PopupKind.Warning, true, 4f, false );
+		Log.Warning( $"Could not apply options: {message}" );
 		revision++;
 		StateHasChanged();
 	}

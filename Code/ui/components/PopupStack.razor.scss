@@ -159,6 +159,16 @@
 	opacity: 0.82;
 }
 
+.popup-title .label,
+.popup-message .label {
+	width: 100%;
+	min-width: 0;
+
+	white-space: normal;
+	text-overflow: clip;
+	overflow: visible;
+}
+
 .popup-dismiss {
 	position: relative;
 	z-index: 2;
