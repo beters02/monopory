@@ -107,9 +107,16 @@
 
 .game-popup.confirmation .popup-content {
 	gap: 6px;
+	flex-shrink: 0;
 }
 
 .game-popup.confirmation .popup-title {
+	font-size: 20px;
+	line-height: 24px;
+	min-height: 24px;
+}
+
+.game-popup.confirmation .popup-title .label {
 	font-size: 20px;
 	line-height: 24px;
 }
@@ -118,7 +125,13 @@
 	font-size: 14px;
 	line-height: 20px;
 	font-weight: 700;
+	min-height: 20px;
 	opacity: 0.72;
+}
+
+.game-popup.confirmation .popup-message .label {
+	font-size: 14px;
+	line-height: 20px;
 }
 
 .game-popup.info {
@@ -147,12 +160,16 @@
 }
 
 .popup-title {
+	width: 100%;
+	min-width: 0;
 	font-size: 17px;
 	font-weight: 900;
 	line-height: 20px;
 }
 
 .popup-message {
+	width: 100%;
+	min-width: 0;
 	font-size: 14px;
 	font-weight: 700;
 	line-height: 18px;
@@ -164,9 +181,24 @@
 	width: 100%;
 	min-width: 0;
 
+	color: $monopoly-ink;
+	font-family: $monopoly-font-family;
+	font-weight: 700;
 	white-space: normal;
-	text-overflow: clip;
 	overflow: visible;
+	flex-shrink: 1;
+}
+
+.popup-title .label {
+	font-size: 17px;
+	font-weight: 900;
+	line-height: 20px;
+}
+
+.popup-message .label {
+	font-size: 14px;
+	line-height: 18px;
+	opacity: 0.82;
 }
 
 .popup-dismiss {
