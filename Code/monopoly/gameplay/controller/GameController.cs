@@ -62,6 +62,7 @@ public sealed partial class GameController : Component, Component.INetworkListen
 	[Sync] public int PendingRollPlayerIndex { get; set; } = -1;
 	[Sync] public int PendingRollExecutionKind { get; set; } = -1;
 	[Sync] public int PendingRollTotal { get; set; }
+	[Sync] public bool PendingRollStatsRecorded { get; set; }
 	[Sync] public bool PendingRollSuppressDoublesExtraTurn { get; set; }
 	[Sync] public bool PendingRollIsJailAttempt { get; set; }
 	[Sync] public float PendingRollStartedAt { get; set; }
@@ -75,6 +76,7 @@ public sealed partial class GameController : Component, Component.INetworkListen
 	[Sync] public NetDictionary<int, string> TradeViewers { get; set; } = new();
 	[Sync] public NetDictionary<int, string> TokenPhysicsStates { get; set; } = new();
 	[Sync] public NetDictionary<int, string> ChatMessages { get; set; } = new();
+	[Sync] public NetDictionary<int, int> StatsLogDiceFaceCounts { get; set; } = new();
 	[Property] public Board Board { get; set; }
 
 	public PlayerState CurrentPlayer =>

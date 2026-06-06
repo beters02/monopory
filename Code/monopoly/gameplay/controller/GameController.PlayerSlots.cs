@@ -299,6 +299,7 @@ public sealed partial class GameController : Component
 		PendingTrades.Clear();
 		TradeViewers.Clear();
 		TokenPhysicsStates.Clear();
+		StatsLogDiceFaceCounts.Clear();
 
 		foreach ( var player in Players )
 		{

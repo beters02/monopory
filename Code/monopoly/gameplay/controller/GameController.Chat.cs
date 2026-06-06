@@ -21,6 +21,9 @@ public sealed partial class GameController
 		if ( message.Length > MaxChatMessageLength )
 			message = message[..MaxChatMessageLength];
 
+		if ( TryHandleChatCommand( message ) )
+			return;
+
 		var sender = GetPlayerForConnection( Rpc.Caller );
 		message = NormalizeMentionSpacing( message );
 		var senderName = (sender?.PlayerName ?? "").Trim();
@@ -32,6 +35,17 @@ public sealed partial class GameController
 
 		AppendChatMessage( senderName, message );
 		PlayChatMessageSounds( Rpc.Caller.SteamId, message );
+	}
+
+	private bool TryHandleChatCommand( string message )
+	{
+		if ( string.Equals( message, DisplayStatsLogCommand.Name, StringComparison.OrdinalIgnoreCase ) )
+		{
+			DisplayStatsLog();
+			return true;
+		}
+
+		return false;
 	}
 
 	private void AppendChatMessage( string senderName, string message )

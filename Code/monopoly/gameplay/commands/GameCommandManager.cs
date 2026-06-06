@@ -397,6 +397,29 @@ public static class RollTwoDiceCommand
 	}
 }
 
+public static class DisplayStatsLogCommand
+{
+	public const string Name = "display_stats_log";
+
+	[ConCmd( Name )]
+	public static void Execute( Connection connection )
+	{
+		GameCommandManager.RunCommand( Name, () =>
+		{
+			var game = GameController.Instance;
+			if ( game is null )
+				return CommandResult.Fail( "No active game." );
+
+			if ( Networking.IsHost )
+				game.DisplayStatsLog();
+			else
+				game.RequestDisplayStatsLog();
+
+			return CommandResult.Success( game.BuildStatsLogText() );
+		} );
+	}
+}
+
 public static class ChangeMoneyCommand
 {
 	public const string Name = "change_money";

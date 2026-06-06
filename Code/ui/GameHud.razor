@@ -95,11 +95,13 @@
 	private bool IsMatchSettingsMenuOpen;
 	public static bool IsMenuBlockingHud { get; private set; }
 
-	private bool IsHudVisible() => GameRef.IsGameHudVisible();
+	private bool IsHudVisible() => GameRef?.IsGameHudVisible() == true;
 
 	private List<GamePopup> Popups => GameRef?.Popups.ToList() ?? new();
 
-	public static bool IsAnyMenuOpen => Instance.IsEscapeMenuOpen || Instance.IsOptionsMenuOpen || Instance.IsMatchSettingsMenuOpen;
+	public static bool IsAnyMenuOpen =>
+		Instance is not null &&
+		(Instance.IsEscapeMenuOpen || Instance.IsOptionsMenuOpen || Instance.IsMatchSettingsMenuOpen);
 	private bool IsGambleScreenActive => GameRef?.IsGambleScreenActive == true;
 
 	protected override void OnStart()
@@ -112,7 +114,8 @@
 	protected override void OnUpdate()
 	{
 		base.OnUpdate();
-		IsMenuBlockingHud = IsAnyMenuOpen;
+		Instance = this;
+		IsMenuBlockingHud = IsAnyLocalMenuOpen();
 
 		if ( GameRef is null || GameRef.MatchState == MatchLifecycleState.GameOver )
 		{
@@ -155,7 +158,12 @@
 		}
 
 		UpdateInputs();
-		IsMenuBlockingHud = IsAnyMenuOpen;
+		IsMenuBlockingHud = IsAnyLocalMenuOpen();
+	}
+
+	private bool IsAnyLocalMenuOpen()
+	{
+		return IsEscapeMenuOpen || IsOptionsMenuOpen || IsMatchSettingsMenuOpen;
 	}
 
 	private void UpdateInputs()
@@ -182,6 +190,7 @@
 
 		if ( Input.Pressed( "EditorMenu" ) )
 		{
+			Log.Info("Pressed pressed");
 			ToggleEscapeMenu();
 			return;
 		}

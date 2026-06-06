@@ -117,6 +117,12 @@ public sealed partial class GameController : Component
 	}
 
 	[Rpc.Host]
+	public void RequestDisplayStatsLog()
+	{
+		DisplayStatsLog();
+	}
+
+	[Rpc.Host]
 	public void RequestEndTurn()
 	{
 		if ( !CanCurrentPlayerAct( Rpc.Caller ) )

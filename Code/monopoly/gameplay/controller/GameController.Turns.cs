@@ -249,6 +249,7 @@ public sealed partial class GameController : Component
 
 	private async Task CompletePendingJailRollAsync( int total, bool rolledDoubles )
 	{
+		RecordPendingDiceRollForStats();
 		ReportDiceRollAchievements( CurrentPlayer, rolledDoubles );
 		ApplySnakeEyesBonus( CurrentPlayer );
 
@@ -366,6 +367,7 @@ public sealed partial class GameController : Component
 			? (RollExecutionKind)PendingRollExecutionKind
 			: RollExecutionKind.Physical;
 
+		RecordPendingDiceRollForStats();
 		ApplySnakeEyesBonus( CurrentPlayer );
 		ReportDiceRollAchievements( CurrentPlayer, rolledDoubles );
 
@@ -390,6 +392,7 @@ public sealed partial class GameController : Component
 		PendingRollPlayerIndex = playerIndex;
 		PendingRollExecutionKind = (int)executionKind;
 		PendingRollTotal = 0;
+		PendingRollStatsRecorded = false;
 		PendingRollSuppressDoublesExtraTurn = suppressDoublesExtraTurn;
 		PendingRollIsJailAttempt = isJailAttempt;
 		PendingRollStartedAt = Time.Now;
@@ -400,6 +403,7 @@ public sealed partial class GameController : Component
 		PendingRollPlayerIndex = -1;
 		PendingRollExecutionKind = -1;
 		PendingRollTotal = 0;
+		PendingRollStatsRecorded = false;
 		PendingRollSuppressDoublesExtraTurn = false;
 		PendingRollIsJailAttempt = false;
 		PendingRollStartedAt = 0f;

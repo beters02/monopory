@@ -4,7 +4,7 @@ using Sandbox.Services;
 
 public class AuthTest : Component
 {
-	protected override void OnAwake()
+	/*protected override void OnAwake()
 	{
 		base.OnAwake();
 
@@ -15,5 +15,5 @@ public class AuthTest : Component
     {
         var token = await Auth.GetToken("sbox-network-storage");
         Log.Info(token);
-    }
+    }*/
 }
