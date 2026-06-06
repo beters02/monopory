@@ -86,7 +86,17 @@
 	{
 		var popup = renderedPopup.Popup;
 		var closingClass = renderedPopup.IsClosing ? " closing" : "";
-		return $"game-popup {popup.Kind.ToString().ToLower()}{closingClass}";
+		var lineClass = popup.Kind == PopupKind.Confirmation ? $" confirmation-lines-{GetEstimatedConfirmationMessageLines( popup )}" : "";
+		return $"game-popup {popup.Kind.ToString().ToLower()}{lineClass}{closingClass}";
+	}
+
+	private static int GetEstimatedConfirmationMessageLines( GamePopup popup )
+	{
+		var message = popup?.Message ?? "";
+		var explicitLines = Math.Max( 1, message.Count( character => character == '\n' ) + 1 );
+		var longestLine = message.Replace( "\r", "" ).Split( '\n' ).DefaultIfEmpty( "" ).Max( line => line.Length );
+		var wrappedLines = Math.Max( 1, (int)MathF.Ceiling( longestLine / 42f ) );
+		return Math.Clamp( Math.Max( explicitLines, wrappedLines ), 1, 5 );
 	}
 
 	private void Dismiss( int popupId )

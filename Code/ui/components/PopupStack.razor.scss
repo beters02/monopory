@@ -92,22 +92,26 @@
 }
 
 .game-popup.confirmation {
+	position: relative;
 	width: 100%;
-	min-height: 170px;
-	padding: 22px 24px 20px 24px;
+	min-height: 148px;
+	padding: 22px 24px 84px 24px;
 	border-left-color: $monopoly-gold;
 	box-shadow: $monopoly-panel-shadow;
 
 	display: flex;
 	flex-direction: column;
 	align-items: stretch;
-	justify-content: space-between;
+	justify-content: flex-start;
 	gap: 22px;
 }
 
 .game-popup.confirmation .popup-content {
+	position: absolute;
+	top: 22px;
+	left: 24px;
+	right: 24px;
 	gap: 6px;
-	flex-shrink: 0;
 }
 
 .game-popup.confirmation .popup-title {
@@ -127,11 +131,60 @@
 	font-weight: 700;
 	min-height: 20px;
 	opacity: 0.72;
+	white-space: normal;
 }
 
 .game-popup.confirmation .popup-message .label {
 	font-size: 14px;
 	line-height: 20px;
+}
+
+.game-popup.confirmation.confirmation-lines-2 {
+	min-height: 168px;
+}
+
+.game-popup.confirmation.confirmation-lines-3 {
+	min-height: 188px;
+}
+
+.game-popup.confirmation.confirmation-lines-4 {
+	min-height: 208px;
+}
+
+.game-popup.confirmation.confirmation-lines-5 {
+	min-height: 228px;
+}
+
+.game-popup.confirmation.confirmation-lines-2 .popup-message {
+	min-height: 40px;
+}
+
+.game-popup.confirmation.confirmation-lines-2 .popup-content {
+	min-height: 70px;
+}
+
+.game-popup.confirmation.confirmation-lines-3 .popup-message {
+	min-height: 60px;
+}
+
+.game-popup.confirmation.confirmation-lines-3 .popup-content {
+	min-height: 90px;
+}
+
+.game-popup.confirmation.confirmation-lines-4 .popup-message {
+	min-height: 80px;
+}
+
+.game-popup.confirmation.confirmation-lines-4 .popup-content {
+	min-height: 110px;
+}
+
+.game-popup.confirmation.confirmation-lines-5 .popup-message {
+	min-height: 100px;
+}
+
+.game-popup.confirmation.confirmation-lines-5 .popup-content {
+	min-height: 130px;
 }
 
 .game-popup.info {
@@ -174,6 +227,7 @@
 	font-weight: 700;
 	line-height: 18px;
 	opacity: 0.82;
+	white-space: normal;
 }
 
 .popup-title .label,
@@ -216,10 +270,15 @@
 }
 
 .popup-confirmation-actions {
+	position: absolute;
+	left: 24px;
+	right: 24px;
+	bottom: 20px;
+
 	display: flex;
 	justify-content: flex-end;
 	gap: 12px;
-	margin-top: 4px;
+	margin-top: 0;
 	flex-shrink: 0;
 
 	pointer-events: all;

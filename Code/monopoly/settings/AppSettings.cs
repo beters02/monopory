@@ -13,8 +13,8 @@ public enum FullscreenMode
 
 public class AppSettingsData
 {
-	public FullscreenMode FullscreenMode { get; set; } = FullscreenMode.FullscreenBorderless;
-	public bool VSync { get; set; } = true;
+	public FullscreenMode FullscreenMode { get; set; } = FullscreenMode.FullscreenExclusive;
+	public bool VSync { get; set; } = false;
 	public UpscalerMode UpscalerMode { get; set; } = UpscalerMode.Off;
 	public Fsr3UpscalerQuality Fsr3Quality { get; set; } = Fsr3UpscalerQuality.Performance;
 	public float MotionBlurScale { get; set; } = 0f;
