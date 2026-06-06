@@ -105,7 +105,7 @@ public sealed partial class LobbyController
 			var player = new LobbyPlayer
 			{
 				OwnerId = ownerId,
-				Name = connection?.DisplayName ?? GetKnownNameForOwner( ownerId ),
+				Name = connection is not null ? GetConnectionPlayerName( connection ) : GetKnownNameForOwner( ownerId ),
 				IsLocal = localSteamId.HasValue && ownerId == localSteamId.Value,
 				SelectedPieceId = GetSelectedPieceForOwner( ownerId ),
 				IsReady = ReadyPlayers.TryGetValue( GetReadyKey( ownerId ), out var ready ) && ready,
@@ -235,6 +235,12 @@ public sealed partial class LobbyController
 			return name;
 
 		return "Player";
+	}
+
+	private static string GetConnectionPlayerName( Connection connection )
+	{
+		var name = connection?.Name ?? "";
+		return string.IsNullOrWhiteSpace( name ) ? "Player" : name;
 	}
 
 	private bool IsMarkedDisconnected( long ownerId )

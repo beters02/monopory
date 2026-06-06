@@ -102,7 +102,7 @@ public class MonopolyApp : Component
                         AchievementsBackendUrlConVar.Value,
                         GetSteamAppId(),
                         AchievementsSteamworksTicketIdentityConVar.Value,
-                        Connection.Local?.DisplayName ?? ""
+                        GetLocalPlayerName()
                     );
                     token = steamworksSession?.AccessToken ?? "";
                     playerId = steamworksSession?.PlayerId ?? 0;
@@ -114,7 +114,7 @@ public class MonopolyApp : Component
                     var sboxSession = await Sandbox.Services.RentRushService.AuthenticateAchievementsBackendWithSboxAsync(
                         AchievementsBackendUrlConVar.Value,
                         AchievementsAuthServiceNameConVar.Value,
-                        Connection.Local?.DisplayName ?? ""
+                        GetLocalPlayerName()
                     );
                     token = sboxSession?.AccessToken ?? "";
                     playerId = sboxSession?.PlayerId ?? 0;
@@ -125,7 +125,7 @@ public class MonopolyApp : Component
                     Log.Warning( "s&box achievements auth was not available; falling back to local device identity." );
                     var deviceSession = await Sandbox.Services.RentRushService.AuthenticateAchievementsBackendWithDeviceAsync(
                         AchievementsBackendUrlConVar.Value,
-                        Connection.Local?.DisplayName ?? ""
+                        GetLocalPlayerName()
                     );
                     token = deviceSession?.AccessToken ?? "";
                     playerId = deviceSession?.PlayerId ?? 0;
@@ -157,6 +157,12 @@ public class MonopolyApp : Component
         return uint.TryParse( AchievementsSteamAppIdConVar.Value, out var appId ) && appId != 0
             ? appId
             : Sandbox.Services.RentRushService.DefaultSteamAppId;
+    }
+
+    private static string GetLocalPlayerName()
+    {
+        var name = Connection.Local?.Name ?? "";
+        return string.IsNullOrWhiteSpace( name ) ? "Player" : name;
     }
 
 #endif

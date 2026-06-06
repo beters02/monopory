@@ -69,7 +69,7 @@ public sealed partial class LobbyController : Component
 		foreach ( var connection in connectedBySteamId.Values )
 		{
 			var key = GetReadyKey( connection.SteamId );
-			KnownPlayerNames[key] = connection.DisplayName ?? "Player";
+			KnownPlayerNames[key] = GetConnectionPlayerName( connection );
 			if ( DisconnectedPlayers.ContainsKey( key ) )
 				DisconnectedPlayers.Remove( key );
 		}

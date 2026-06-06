@@ -55,7 +55,7 @@ public sealed partial class GameController
 			PhysicalDiceStartedAt = 0f;
 		}
 
-		Log.Warning( $"Became network host after {previousHost?.DisplayName ?? "previous host"} left. Recovering game state." );
+		Log.Warning( $"Became network host after {GetConnectionPlayerName( previousHost, "previous host" )} left. Recovering game state." );
 		IsRecoveringHostState = true;
 		SendGlobalPopupToAll( "Host changed", "Recovering game state after the host left.", PopupKind.Warning, true, 4f );
 		RecoverGameplayState( true );
@@ -73,7 +73,7 @@ public sealed partial class GameController
 			return;
 
 		PreferredHostDisconnected = !connected;
-		Log.Info( $"Preferred host {connection.DisplayName} {eventName}." );
+		Log.Info( $"Preferred host {GetConnectionPlayerName( connection )} {eventName}." );
 	}
 
 	private void UpdateHostRecoveryWatchdog()

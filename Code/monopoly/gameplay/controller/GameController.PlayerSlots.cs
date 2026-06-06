@@ -322,13 +322,13 @@ public sealed partial class GameController : Component
 
 		if ( emptySlot is null )
 		{
-			Log.Warning( $"No available player slot for {connection.DisplayName}" );
+			Log.Warning( $"No available player slot for {GetConnectionPlayerName( connection )}" );
 			return;
 		}
 
 		emptySlot.SteamId = connection.SteamId;
 		emptySlot.OwnerId = connection.SteamId;
-		emptySlot.PlayerName = connection.DisplayName;
+		emptySlot.PlayerName = GetConnectionPlayerName( connection );
 		emptySlot.IsReady = false;
 		ResetPlayerForGame( emptySlot );
 		emptySlot.SelectedPieceId = PieceCatalog.DefaultPieceId;
@@ -337,7 +337,13 @@ public sealed partial class GameController : Component
 		if ( PreferredHostOwnerId == 0 )
 			PreferredHostOwnerId = connection.SteamId;
 
-		Log.Info( $"Assigned {connection.DisplayName} to player slot {Players.IndexOf( emptySlot )}" );
+		Log.Info( $"Assigned {emptySlot.PlayerName} to player slot {Players.IndexOf( emptySlot )}" );
+	}
+
+	private static string GetConnectionPlayerName( Connection connection, string fallback = "Player" )
+	{
+		var name = connection?.Name ?? "";
+		return string.IsNullOrWhiteSpace( name ) ? fallback : name;
 	}
 
 	private void HandleDisconnectedPlayerSlot( PlayerState player )
