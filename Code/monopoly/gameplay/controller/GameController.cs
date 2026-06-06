@@ -170,7 +170,6 @@ public sealed partial class GameController : Component, Component.INetworkListen
 		instance = this;
 		GameAssets.PrewarmUiAssets();
 		SteamInviteBridge.Register( Scene );
-		//RemoveSerializedRuntimeChildren();
 		RefreshReplicatedPlayerSlots();
 
 		if ( Theme is null )
