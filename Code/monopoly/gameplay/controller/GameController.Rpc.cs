@@ -223,19 +223,29 @@ public sealed partial class GameController : Component
 
 	private void PlaySoundToConnection( Connection connection, GameSound sound, float delaySec = 0f )
 	{
-		if ( !Networking.IsHost || connection is null )
+		if ( !Networking.IsHost || connection is null || sound is null || !sound.IsAssigned )
 			return;
 
 		using ( Rpc.FilterInclude( connection ) )
 		{
-			if ( delaySec != 0f )
-			{
-				_ = PlayDelayedSound( sound, delaySec );
-				return;
-			}
-
-			sound.Play();
+			PlaySoundLocal( sound.Path, delaySec );
 		}
+	}
+
+	[Rpc.Broadcast]
+	private void PlaySoundLocal( string soundPath, float delaySec = 0f )
+	{
+		var sound = new GameSound( soundPath );
+		if ( !sound.IsAssigned )
+			return;
+
+		if ( delaySec > 0f )
+		{
+			_ = PlayDelayedSound( sound, delaySec );
+			return;
+		}
+
+		sound.Play();
 	}
 
 	private async Task PlayDelayedSound( GameSound sound, float delaySec )

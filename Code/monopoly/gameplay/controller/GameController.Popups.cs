@@ -273,7 +273,8 @@ public sealed partial class GameController : Component
 			);
 		}
 
-		PlayTradeNotificationSound( notifyPlayer, TradeDeniedSound );
+		PlayTradeNotificationSound( sender, TradeDeniedSound );
+		PlayTradeNotificationSound( receiver, TradeDeniedSound );
 	}
 
 	private void ShowTradeNegotiationReceivedNotification( TradeRequest trade )
