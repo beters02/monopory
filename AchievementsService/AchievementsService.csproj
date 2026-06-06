@@ -8,4 +8,7 @@
 	<ItemGroup>
 		<PackageReference Include="Npgsql" Version="9.0.3" />
 	</ItemGroup>
+	<ItemGroup>
+		<Compile Include="..\Code\monopoly\achievements\AchievementCatalogShared.cs" Link="AchievementCatalogShared.cs" />
+	</ItemGroup>
 </Project>

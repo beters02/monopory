@@ -114,9 +114,16 @@ public sealed class HttpAchievementService : IAchievementService, ICosmeticUnloc
 
 	public async Task ReportEventAsync( AchievementEvent achievementEvent )
 	{
+		var playerId = ResolvePlayerId( achievementEvent?.SteamId ?? 0 );
+		PlayerAchievementState previousState = null;
+		var hadCachedState = playerId != 0 && cachedStates.TryGetValue( playerId, out previousState );
 		var state = await SendAsync<PlayerAchievementState>( HttpMethod.Post, "me/achievement-events", true, RewriteEventForAuthenticatedPlayer( achievementEvent ) );
 		if ( state is not null )
+		{
 			CacheState( state );
+			if ( hadCachedState )
+				ShowNewUnlockPopups( previousState, state );
+		}
 	}
 
 	public async Task<bool> CanUseCosmeticAsync( long steamId, string cosmeticId )
@@ -220,6 +227,36 @@ public sealed class HttpAchievementService : IAchievementService, ICosmeticUnloc
 			return true;
 
 		return state?.UnlockedCosmeticIds?.Contains( cosmetic.Id, StringComparer.OrdinalIgnoreCase ) == true;
+	}
+
+	private static void ShowNewUnlockPopups( PlayerAchievementState previousState, PlayerAchievementState nextState )
+	{
+		if ( previousState is null || nextState is null )
+			return;
+
+		var previouslyUnlocked = previousState.Achievements
+			.Where( progress => progress.IsUnlocked )
+			.Select( progress => progress.AchievementId )
+			.ToHashSet( StringComparer.OrdinalIgnoreCase );
+
+		foreach ( var progress in nextState.Achievements.Where( progress => progress.IsUnlocked ) )
+		{
+			if ( previouslyUnlocked.Contains( progress.AchievementId ) )
+				continue;
+
+			var definition = AchievementCatalog.GetById( progress.AchievementId );
+			if ( definition is null )
+				continue;
+
+			GameController.Instance?.ShowLocalPopup(
+				"Achievement unlocked",
+				definition.Title,
+				PopupKind.Success,
+				true,
+				4f,
+				true
+			);
+		}
 	}
 }
 

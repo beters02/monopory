@@ -37,8 +37,8 @@ public sealed class SteamworksAchievementBridge : ISteamAchievementBridge
 	public Task PublishUnlockedAchievementAsync( AchievementDefinition achievement )
 	{
 //do if standalone
-		// Intentionally left behind the bridge until Steam achievements are created in Steamworks.
-		// The internal achievement id already maps to SteamApiName for a future SetAchievement/StoreStats call.
+		// Backend-only achievements V1 intentionally does not publish to Steam.
+		// SteamApiName stays in the catalog so SetAchievement/StoreStats can be added here later.
 //do endif
 		return Task.CompletedTask;
 	}

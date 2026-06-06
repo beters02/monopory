@@ -271,6 +271,7 @@ public class MonopolyApp : Component
             AchievementsAccessToken = token;
             authenticatedAchievementsPlayerId = playerId;
             AchievementServices.UseBackend( AchievementsBackendUrl, token, playerId );
+            await WarmAchievementStateCacheAsync();
             achievementsBackendInitialized = true;
             achievementsBackendState = AchievementsBackendState.Connected;
             Log.Info( $"Achievements backend enabled. playerId={playerId}." );
@@ -291,6 +292,19 @@ public class MonopolyApp : Component
     private static Task ReconnectAchievementsBackendAsync()
     {
         return InitializeAchievementsBackendAsync( true );
+    }
+
+    private static async Task WarmAchievementStateCacheAsync()
+    {
+        try
+        {
+            var state = await AchievementServices.Achievements.GetMyStateAsync();
+            Log.Info( $"Achievements backend state cached. achievements={state?.Achievements?.Count ?? 0} unlocks={state?.UnlockedCosmeticIds?.Count ?? 0}." );
+        }
+        catch ( Exception exception )
+        {
+            Log.Warning( $"Achievements backend connected, but initial state fetch failed: {exception.Message}" );
+        }
     }
 
     private static uint GetSteamAppId()

@@ -106,19 +106,47 @@
 						<div class="piece-customize-header">
 							<div class="piece-customize-header-text">
 								<div class="match-config-kicker">Lobby</div>
-								<div class="piece-customize-title">Customize Piece</div>
+								<div class="piece-customize-title">Customize</div>
 							</div>
 							<CloseButton Variant="match-config-close-button" Title="Close" OnClick="@CloseCustomizeMenu"></CloseButton>
 						</div>
 						<div class="piece-customize-scroll-shell">
 							<div class="piece-customize-grid monopory-scroll-y" @ref="PieceCustomizeScrollPanel">
+								<div class="piece-customize-section-title">Pieces</div>
 								@foreach ( var piece in AvailablePieces )
 								{
 									<div class="@GetPieceCardClasses( piece )">
 										<div class="piece-customize-card-title">@piece.Label</div>
 										<div class="piece-customize-card-copy">@piece.Description</div>
-										<GameButton Variant="@GetPieceSelectButtonClasses( piece )" OnClick="@(() => SelectPiece( piece.Id ))">
-											@(IsSelectedPiece( piece ) ? "Selected" : "Select")
+										@if ( !CanUsePiece( piece ) )
+										{
+											<div class="piece-customize-card-lock">@GetUnlockRequirement( piece.RequiredAchievementId )</div>
+										}
+										<GameButton Variant="@GetPieceSelectButtonClasses( piece )"
+											CanClick="@CanUsePiece( piece )"
+											BlockedPopupTitle="Locked"
+											BlockedPopupMessage="@GetUnlockRequirement( piece.RequiredAchievementId )"
+											OnClick="@(() => SelectPiece( piece.Id ))">
+											@(IsSelectedPiece( piece ) ? "Selected" : CanUsePiece( piece ) ? "Select" : "Locked")
+										</GameButton>
+									</div>
+								}
+								<div class="piece-customize-section-title">Dice</div>
+								@foreach ( var diceSkin in AvailableDiceSkins )
+								{
+									<div class="@GetDiceSkinCardClasses( diceSkin )">
+										<div class="piece-customize-card-title">@diceSkin.Label</div>
+										<div class="piece-customize-card-copy">@diceSkin.Description</div>
+										@if ( !CanUseDiceSkin( diceSkin ) )
+										{
+											<div class="piece-customize-card-lock">@GetUnlockRequirement( diceSkin.RequiredAchievementId )</div>
+										}
+										<GameButton Variant="@GetDiceSkinSelectButtonClasses( diceSkin )"
+											CanClick="@CanUseDiceSkin( diceSkin )"
+											BlockedPopupTitle="Locked"
+											BlockedPopupMessage="@GetUnlockRequirement( diceSkin.RequiredAchievementId )"
+											OnClick="@(() => SelectDiceSkin( diceSkin.Id ))">
+											@(IsSelectedDiceSkin( diceSkin ) ? "Selected" : CanUseDiceSkin( diceSkin ) ? "Select" : "Locked")
 										</GameButton>
 									</div>
 								}
@@ -127,6 +155,42 @@
 						</div>
 						<div class="piece-customize-footer">
 							<GameButton Variant="match-config-secondary-button" OnClick="@CloseCustomizeMenu">Done</GameButton>
+						</div>
+					</div>
+				</div>
+			</div>
+		}
+		@if ( IsAchievementsMenuOpen )
+		{
+			<div class="piece-customize-root open">
+				<div class="piece-customize-screen">
+					<div class="piece-customize-panel">
+						<div class="piece-customize-header">
+							<div class="piece-customize-header-text">
+								<div class="match-config-kicker">Profile</div>
+								<div class="piece-customize-title">Achievements</div>
+							</div>
+							<CloseButton Variant="match-config-close-button" Title="Close" OnClick="@CloseAchievementsMenu"></CloseButton>
+						</div>
+						<div class="piece-customize-scroll-shell">
+							<div class="achievements-list monopory-scroll-y" @ref="AchievementsScrollPanel">
+								@foreach ( var achievement in AchievementCatalog.All )
+								{
+									<div class="@GetAchievementCardClasses( achievement )">
+										<div class="achievement-card-main">
+											<div class="piece-customize-card-title">@achievement.Title</div>
+											<div class="piece-customize-card-copy">@achievement.Description</div>
+										</div>
+										<div class="achievement-progress">
+											@GetAchievementProgressText( achievement )
+										</div>
+									</div>
+								}
+							</div>
+							<MonoScrollbar Target="@AchievementsScrollPanel"></MonoScrollbar>
+						</div>
+						<div class="piece-customize-footer">
+							<GameButton Variant="match-config-secondary-button" OnClick="@CloseAchievementsMenu">Done</GameButton>
 						</div>
 					</div>
 				</div>
@@ -170,6 +234,7 @@
 					<div class="lobby-action-row lobby-action-row-bottom">
 						<GameButton Variant="flow-secondary-button flow-back-button" OnClick="@BackToMenu">Back</GameButton>
 						<GameButton Variant="flow-secondary-button flow-utility-button" OnClick="@InviteFriends">Invite</GameButton>
+						<GameButton Variant="flow-secondary-button flow-utility-button" OnClick="@OpenAchievementsMenu">Achievements</GameButton>
 						<GameButton Variant="@ConfigButtonClasses" CanClick="@CanOpenConfig" OnClick="@OpenConfigMenu" BlockedPopupTitle="Host only" BlockedPopupMessage="Only the host can change lobby game settings.">Match Settings</GameButton>
 					</div>
 				</div>
@@ -191,14 +256,19 @@
 	private bool IsOptionsMenuOpen;
 	private bool IsConfigMenuOpen;
 	private bool IsCustomizeMenuOpen;
+	private bool IsAchievementsMenuOpen;
 	private Panel MatchConfigScrollPanel = null!;
 	private Panel PieceCustomizeScrollPanel = null!;
+	private Panel AchievementsScrollPanel = null!;
 	private bool CanOpenConfig => Lobby is not null;
 	private bool CanEditConfig => Lobby?.IsLocalEffectiveHost == true;
 	private IReadOnlyList<PieceDefinition> AvailablePieces => PieceCatalog.All;
+	private IReadOnlyList<DiceSkinDefinition> AvailableDiceSkins => DiceSkinCatalog.All;
 	private MatchConfig EditableConfig;
 	private string LoadedConfigSnapshot = "";
 	private int configRevision;
+	private int achievementRevision;
+	private bool achievementRefreshInFlight;
 	private IReadOnlyList<string> ConfigGroups => MatchConfigSchema.Options.Select( option => option.Group ).Distinct().ToList();
 
 	protected override void OnUpdate()
@@ -266,8 +336,10 @@
 		hash.Add( IsOptionsMenuOpen );
 		hash.Add( IsConfigMenuOpen );
 		hash.Add( IsCustomizeMenuOpen );
+		hash.Add( IsAchievementsMenuOpen );
 		hash.Add( Lobby?.HostedConfigSnapshot ?? "" );
 		hash.Add( configRevision );
+		hash.Add( achievementRevision );
 		hash.Add( AppSettings.SettingsAvailable );
 		hash.Add( AppSettings.GetFullscreenMode() );
 		hash.Add( AppSettings.GetVSyncEnabled() );
@@ -285,6 +357,16 @@
 			hash.Add( player.IsHost );
 			hash.Add( player.AbandonEndsAt );
 			hash.Add( player.SelectedPieceId ?? "" );
+			hash.Add( player.SelectedDiceSkinId ?? "" );
+		}
+
+		var localState = GetLocalAchievementState();
+		foreach ( var progress in localState.Achievements )
+		{
+			hash.Add( progress.AchievementId );
+			hash.Add( progress.Current );
+			hash.Add( progress.Target );
+			hash.Add( progress.UnlockedAt.HasValue );
 		}
 
 		if ( EditableConfig is not null )
@@ -342,6 +424,8 @@
 		IsCustomizeMenuOpen = true;
 		IsConfigMenuOpen = false;
 		IsOptionsMenuOpen = false;
+		IsAchievementsMenuOpen = false;
+		_ = RefreshAchievementStateAsync();
 	}
 
 	private void CloseCustomizeMenu()
@@ -360,11 +444,17 @@
 
 	private string GetPieceCardClasses( PieceDefinition piece )
 	{
-		return IsSelectedPiece( piece ) ? "piece-customize-card selected" : "piece-customize-card";
+		var classes = IsSelectedPiece( piece ) ? "piece-customize-card selected" : "piece-customize-card";
+		if ( !CanUsePiece( piece ) )
+			classes += " locked";
+		return classes;
 	}
 
 	private string GetPieceSelectButtonClasses( PieceDefinition piece )
 	{
+		if ( !CanUsePiece( piece ) )
+			return "match-config-secondary-button blocked-action-button";
+
 		return IsSelectedPiece( piece ) ? "match-config-save-button" : "match-config-secondary-button";
 	}
 
@@ -379,11 +469,78 @@
 			Lobby.RequestSetSelectedPiece( pieceId );
 	}
 
+	private bool IsSelectedDiceSkin( DiceSkinDefinition diceSkin )
+	{
+		if ( diceSkin is null )
+			return false;
+
+		var selectedDiceSkinId = LocalPlayer?.SelectedDiceSkinId ?? DiceSkinCatalog.DefaultDiceSkinId;
+		return string.Equals( selectedDiceSkinId, diceSkin.Id, StringComparison.OrdinalIgnoreCase );
+	}
+
+	private string GetDiceSkinCardClasses( DiceSkinDefinition diceSkin )
+	{
+		var classes = IsSelectedDiceSkin( diceSkin ) ? "piece-customize-card selected" : "piece-customize-card";
+		if ( !CanUseDiceSkin( diceSkin ) )
+			classes += " locked";
+		return classes;
+	}
+
+	private string GetDiceSkinSelectButtonClasses( DiceSkinDefinition diceSkin )
+	{
+		if ( !CanUseDiceSkin( diceSkin ) )
+			return "match-config-secondary-button blocked-action-button";
+
+		return IsSelectedDiceSkin( diceSkin ) ? "match-config-save-button" : "match-config-secondary-button";
+	}
+
+	private void SelectDiceSkin( string diceSkinId )
+	{
+		if ( Lobby is null || LocalPlayer is null )
+			return;
+
+		if ( Networking.IsHost )
+			Lobby.TrySetSelectedDiceSkin( LocalPlayer.OwnerId, diceSkinId );
+		else
+			Lobby.RequestSetSelectedDiceSkin( diceSkinId );
+	}
+
+	private bool CanUsePiece( PieceDefinition piece )
+	{
+		return piece is not null && AchievementServices.Cosmetics.CanUseCosmetic( LocalPlayer?.OwnerId ?? 0, CosmeticCatalog.NormalizePieceCosmeticId( piece.Id ) );
+	}
+
+	private bool CanUseDiceSkin( DiceSkinDefinition diceSkin )
+	{
+		return diceSkin is not null && AchievementServices.Cosmetics.CanUseCosmetic( LocalPlayer?.OwnerId ?? 0, CosmeticCatalog.NormalizeDiceSkinCosmeticId( diceSkin.Id ) );
+	}
+
+	private string GetUnlockRequirement( string achievementId )
+	{
+		var achievement = AchievementCatalog.GetById( achievementId );
+		return achievement is null ? "Locked" : $"Unlock: {achievement.Title}";
+	}
+
+	private void OpenAchievementsMenu()
+	{
+		IsAchievementsMenuOpen = true;
+		IsConfigMenuOpen = false;
+		IsCustomizeMenuOpen = false;
+		IsOptionsMenuOpen = false;
+		_ = RefreshAchievementStateAsync();
+	}
+
+	private void CloseAchievementsMenu()
+	{
+		IsAchievementsMenuOpen = false;
+	}
+
 	private void OpenOptionsMenu()
 	{
 		IsOptionsMenuOpen = true;
 		IsConfigMenuOpen = false;
 		IsCustomizeMenuOpen = false;
+		IsAchievementsMenuOpen = false;
 	}
 
 	private void CloseOptionsMenu()
@@ -399,7 +556,64 @@
 		IsConfigMenuOpen = true;
 		IsOptionsMenuOpen = false;
 		IsCustomizeMenuOpen = false;
+		IsAchievementsMenuOpen = false;
 		EnsureEditableConfigCurrent( true );
+	}
+
+	private PlayerAchievementState GetLocalAchievementState()
+	{
+		return AchievementServices.Achievements.GetCachedState( LocalPlayer?.OwnerId ?? 0 );
+	}
+
+	private async Task RefreshAchievementStateAsync()
+	{
+		if ( achievementRefreshInFlight )
+			return;
+
+		try
+		{
+			achievementRefreshInFlight = true;
+			await AchievementServices.Achievements.GetMyStateAsync();
+			achievementRevision++;
+		}
+		catch ( Exception exception )
+		{
+			Log.Warning( $"Failed to refresh achievement state: {exception.Message}" );
+		}
+		finally
+		{
+			achievementRefreshInFlight = false;
+		}
+	}
+
+	private string GetAchievementCardClasses( AchievementDefinition achievement )
+	{
+		return IsAchievementUnlocked( achievement ) ? "achievement-card unlocked" : "achievement-card";
+	}
+
+	private bool IsAchievementUnlocked( AchievementDefinition achievement )
+	{
+		return GetAchievementProgress( achievement )?.IsUnlocked == true;
+	}
+
+	private AchievementProgress GetAchievementProgress( AchievementDefinition achievement )
+	{
+		if ( achievement is null )
+			return null;
+
+		return GetLocalAchievementState().Achievements.FirstOrDefault( progress => string.Equals( progress.AchievementId, achievement.Id, StringComparison.OrdinalIgnoreCase ) );
+	}
+
+	private string GetAchievementProgressText( AchievementDefinition achievement )
+	{
+		var progress = GetAchievementProgress( achievement );
+		if ( progress is null )
+			return "0 / 1";
+
+		if ( progress.IsUnlocked )
+			return "Unlocked";
+
+		return $"{Math.Clamp( progress.Current, 0, progress.Target )} / {progress.Target}";
 	}
 
 	private void CloseConfigMenu()

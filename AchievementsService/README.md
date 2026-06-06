@@ -1,18 +1,20 @@
 # Rent Rush Achievements Service
 
-Authoritative achievement and cosmetic unlock API for the game.
+Authoritative achievement and cosmetic unlock API for the game. Postgres is the intended source of truth for shipped achievement progress, unlock timestamps, cosmetic unlocks, and cosmetic selections.
 
 ## Current State
 
 - Uses Postgres when `ConnectionStrings:AchievementsPostgres`, `Achievements:PostgresConnectionString`, or `ACHIEVEMENTS_POSTGRES` is configured.
 - Falls back to an in-memory repository when no Postgres connection string is configured.
 - If a Postgres connection string is configured but Postgres is unreachable during local startup, the service logs a warning and falls back to in-memory storage for that process.
+- Achievement definitions are shared with the game client through `Code/monopoly/achievements/AchievementCatalogShared.cs`.
 - `/auth/forkbox/session` validates a `Forkbox.Steamworks.SteamUser` auth token and returns a short-lived bearer token.
 - `/auth/steamworks/session` remains as a compatibility alias for older local scripts.
 - `/auth/sbox/session` validates a Facepunch s&box auth token and returns a short-lived bearer token.
 - The game currently tries Forkbox SteamUser first, then s&box auth with `Sandbox.Services.Auth.GetToken("sbox-network-storage")`.
 - `/auth/device/session` remains as a local fallback when s&box auth is unavailable.
 - External Steamworks DLL/client tickets are no longer required for internal achievements.
+- Steam achievement API names are retained as future metadata only. V1 does not call Steam `SetAchievement`, `StoreStats`, or stats APIs.
 
 ## Endpoints
 

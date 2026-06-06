@@ -656,14 +656,18 @@ public sealed record CosmeticDefinition( string Id, string RequiredAchievementId
 
 public static class AchievementDefinitions
 {
-	public static readonly IReadOnlyList<AchievementDefinition> All =
-	[
-		new() { Id = "first_win", SteamApiName = "ACH_FIRST_WIN", Title = "First Victory", Description = "Win your first match.", CriteriaEventType = "match_won", Target = 1, RewardIds = ["piece.detective_man"] },
-		new() { Id = "property_collector", SteamApiName = "ACH_PROPERTY_COLLECTOR", Title = "Property Collector", Description = "Acquire 10 properties across matches.", CriteriaEventType = "property_acquired", Target = 10, RewardIds = ["dice.gold"] },
-		new() { Id = "doubles_trouble", SteamApiName = "ACH_DOUBLES_TROUBLE", Title = "Doubles Trouble", Description = "Roll doubles 10 times.", CriteriaEventType = "rolled_doubles", Target = 10 },
-		new() { Id = "snake_eyes", SteamApiName = "ACH_SNAKE_EYES", Title = "Snake Eyes", Description = "Roll double ones.", CriteriaEventType = "rolled_snake_eyes", Target = 1, RewardIds = ["dice.midnight"] },
-		new() { Id = "jailbird", SteamApiName = "ACH_JAILBIRD", Title = "Jailbird", Description = "Get sent to jail 5 times.", CriteriaEventType = "sent_to_jail", Target = 5 }
-	];
+	public static readonly IReadOnlyList<AchievementDefinition> All = SharedAchievementCatalog.All
+		.Select( definition => new AchievementDefinition
+		{
+			Id = definition.Id,
+			SteamApiName = definition.SteamApiName,
+			Title = definition.Title,
+			Description = definition.Description,
+			CriteriaEventType = definition.EventType,
+			Target = definition.Target,
+			RewardIds = definition.RewardIds.ToArray()
+		} )
+		.ToList();
 }
 
 public static class CosmeticDefinitions
@@ -671,10 +675,10 @@ public static class CosmeticDefinitions
 	public static readonly IReadOnlyList<CosmeticDefinition> All =
 	[
 		new( "piece.officer_woman", "" ),
-		new( "piece.detective_man", "first_win" ),
+		new( "piece.detective_man", AchievementIds.FirstWin ),
 		new( "dice.classic", "" ),
-		new( "dice.gold", "property_collector" ),
-		new( "dice.midnight", "snake_eyes" )
+		new( "dice.gold", AchievementIds.PropertyCollector ),
+		new( "dice.midnight", AchievementIds.SnakeEyes )
 	];
 }
 

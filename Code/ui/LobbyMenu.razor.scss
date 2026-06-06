@@ -170,6 +170,10 @@
 	box-shadow: 0 0 0 2px $monopoly-selected-ring-soft;
 }
 
+.piece-customize-card.locked {
+	opacity: 0.72;
+}
+
 .piece-customize-card-title {
 	color: $monopoly-text;
 	font-size: 18px;
@@ -183,6 +187,73 @@
 	font-weight: 800;
 	line-height: 18px;
 	min-height: 36px;
+}
+
+.piece-customize-card-lock {
+	color: $monopoly-gold-soft;
+	font-size: 12px;
+	font-weight: 900;
+	line-height: 16px;
+	text-transform: uppercase;
+}
+
+.piece-customize-section-title {
+	flex: 0 0 100%;
+	max-width: 100%;
+	min-width: 100%;
+	color: $monopoly-gold-soft;
+	font-size: $monopoly-font-panel-title;
+	font-weight: 900;
+	line-height: 24px;
+	text-transform: uppercase;
+}
+
+.achievements-list {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	padding-right: 18px;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	overflow-x: hidden;
+	overflow-y: scroll;
+}
+
+.achievement-card {
+	padding: 12px;
+	background-color: $monopoly-surface-soft;
+	border: 1px solid $monopoly-panel-line;
+	border-radius: $monopoly-radius-control;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	flex-shrink: 0;
+}
+
+.achievement-card.unlocked {
+	border-color: $monopoly-gold;
+	box-shadow: 0 0 0 2px $monopoly-selected-ring-soft;
+}
+
+.achievement-card-main {
+	flex: 1;
+	min-width: 0;
+}
+
+.achievement-progress {
+	min-width: 112px;
+	padding: 8px 10px;
+	background-color: $monopoly-surface-medium;
+	border: 1px solid $monopoly-panel-line;
+	border-radius: $monopoly-radius-control;
+	color: $monopoly-text;
+	font-size: 13px;
+	font-weight: 900;
+	text-align: center;
 }
 
 .piece-customize-footer {
