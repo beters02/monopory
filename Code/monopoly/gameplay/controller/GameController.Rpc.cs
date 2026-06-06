@@ -71,6 +71,12 @@ public sealed partial class GameController : Component
 	}
 
 	[Rpc.Host]
+	public void RequestDeclareBankruptcy()
+	{
+		TryDeclareBankruptcy( GetPlayerForConnection( Rpc.Caller ) );
+	}
+
+	[Rpc.Host]
 	public void RequestRollDice(int amount = -1, float throwStrength = 0.5f)
 	{
 		if ( !CanCurrentPlayerAct( Rpc.Caller ) )

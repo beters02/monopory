@@ -92,7 +92,7 @@
 	[Parameter] public Action OnCloseMatchSettings { get; set; }
 	[Parameter] public Action OnReturnToLobby { get; set; }
 	[Parameter] public Action OnLeaveLobby { get; set; }
-	[Parameter] public Action OnBankruptAndAbandon { get; set; }
+	[Parameter] public Action OnDeclareBankruptcy { get; set; }
 	[Parameter] public Action OnExitGame { get; set; }
 
 	private string WinnerName =>
@@ -112,7 +112,7 @@
 	private void CloseMatchSettings() => OnCloseMatchSettings?.Invoke();
 	private void ReturnToLobby() => OnReturnToLobby?.Invoke();
 	private void LeaveLobby() => OnLeaveLobby?.Invoke();
-	private void BankruptAndAbandon() => OnBankruptAndAbandon?.Invoke();
+	private void BankruptAndAbandon() => OnDeclareBankruptcy?.Invoke();
 	private void ExitGame() => OnExitGame?.Invoke();
 
 	protected override int BuildHash()

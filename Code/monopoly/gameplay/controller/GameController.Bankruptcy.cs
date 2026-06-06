@@ -179,6 +179,24 @@ public sealed partial class GameController : Component
 		return true;
 	}
 
+	public bool TryDeclareBankruptcy( PlayerState player )
+	{
+		if ( !Networking.IsHost )
+			return false;
+
+		if ( player is null || !player.IsAssigned || player.IsBankrupt )
+			return false;
+
+		var playerIndex = Players.IndexOf( player );
+		if ( playerIndex < 0 )
+			return false;
+
+		player.IsDisconnected = false;
+		player.AbandonEndsAt = 0f;
+		BankruptPlayer( playerIndex, null, true );
+		return true;
+	}
+
 	private void CheckForGameOver()
 	{
 		if ( MatchState != MatchLifecycleState.InGame )
