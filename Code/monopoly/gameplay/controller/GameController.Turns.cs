@@ -762,6 +762,13 @@ public sealed partial class GameController : Component
 
 	private void SetPostActionPhase()
 	{
+		if ( HasPendingForcedPayment )
+		{
+			Phase = GamePhase.TurnEnded;
+			StartTurnTimer();
+			return;
+		}
+
 		if ( CurrentTurnGetsExtraRoll )
 		{
 			//ClearSelectedSpaceForPlayer( CurrentPlayer );

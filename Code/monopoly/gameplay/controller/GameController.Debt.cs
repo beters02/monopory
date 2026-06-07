@@ -166,6 +166,10 @@ public sealed partial class GameController : Component
 		ClearPendingForcedPayment();
 
 		Log.Info( $"{player.PlayerName} paid their pending ${amount} debt." );
+
+		if ( Phase == GamePhase.TurnEnded && player == CurrentPlayer )
+			SetPostActionPhase();
+
 		return true;
 	}
 

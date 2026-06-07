@@ -8817,6 +8817,7 @@
             "Mins": "-200,-200,-200",
             "Maxs": "200,200,200"
           },
+          "Color": "1,1,1,1",
           "FalloffExponent": 1,
           "OnComponentDestroy": null,
           "OnComponentDisabled": null,
@@ -8835,6 +8836,7 @@
             "Mins": "-1000,-1000,-1000",
             "Maxs": "1000,1000,1000"
           },
+          "Color": "1,1,1,1",
           "FalloffExponent": 1,
           "OnComponentDestroy": null,
           "OnComponentDisabled": null,
@@ -9382,14 +9384,14 @@
       "CustomBounds": false
     },
     "GameObjectSystems": {
-      "Sandbox.Clutter.ClutterGridSystem": {
-        "Storage": {
-          "$blob": "7664decd-7b1f-4214-a5a2-850285e10057"
-        }
-      },
       "Sandbox.SelectionSetsSystem": {
         "Data": {
           "SelectionSets": []
+        }
+      },
+      "Sandbox.Clutter.ClutterGridSystem": {
+        "Storage": {
+          "$blob": "7664decd-7b1f-4214-a5a2-850285e10057"
         }
       }
     }

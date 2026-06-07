@@ -42,8 +42,11 @@ public sealed partial class GameController : Component
 		var originB = center + Vector3.Up * DiceThrowHeight + side * DiceSpawnSpacing * 0.5f;
 		var velocityA = Vector3.Down * dropSpeed + forward * horizontalSpeed + side * (horizontalSpeed * 0.25f);
 		var velocityB = Vector3.Down * (dropSpeed * 0.94f) + forward * (horizontalSpeed * 0.85f) - side * (horizontalSpeed * 0.2f);
-		var rotationA = Rotation.Random;
-		var rotationB = Rotation.Random;
+		var rotationA = GetRandomDiceRotation();
+		var rotationB = GetRandomDiceRotation();
+		if ( rotationA == rotationB )
+			rotationB = GetRandomDiceRotation();
+
 		var spinA = new Vector3( Game.Random.Float( -1f, 1f ), Game.Random.Float( -1f, 1f ), Game.Random.Float( -1f, 1f ) ).Normal * spin;
 		var spinB = new Vector3( Game.Random.Float( -1f, 1f ), Game.Random.Float( -1f, 1f ), Game.Random.Float( -1f, 1f ) ).Normal * spin;
 
@@ -63,6 +66,14 @@ public sealed partial class GameController : Component
 			IsResolvingPhysicalDice = false;
 			PhysicalDiceStartedAt = 0f;
 		}
+	}
+
+	private static Rotation GetRandomDiceRotation()
+	{
+		return Rotation.From(
+			Game.Random.Float( 0f, 360f ),
+			Game.Random.Float( 0f, 360f ),
+			Game.Random.Float( 0f, 360f ) );
 	}
 
 	private async Task<(int DieA, int DieB)> WaitForPhysicalDiceResultAsync()
