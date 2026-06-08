@@ -45,6 +45,7 @@ public sealed partial class GameController : Component
 		ReturnHeldTradableCardsToDeck( player );
 		player.ConsecutiveDoubles = 0;
 		player.SkipsNextTurn = false;
+		player.IsReturningFromVacationCashBreak = false;
 
 		if ( PendingForcedPaymentPlayerIndex == playerIndex )
 			ClearPendingForcedPayment();

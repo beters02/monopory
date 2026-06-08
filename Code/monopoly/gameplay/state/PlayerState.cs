@@ -14,6 +14,7 @@ public sealed class PlayerState : Component
 	[Sync] public int CommunityChestGetOutOfJailFreeCards { get; set; }
 	[Sync] public int ConsecutiveDoubles { get; set; }
 	[Sync] public bool SkipsNextTurn { get; set; }
+	[Sync] public bool IsReturningFromVacationCashBreak { get; set; }
 	[Sync] public bool IsBankrupt { get; set; }
 	[Sync] public bool IsReady { get; set; }
 	[Sync] public bool IsDisconnected { get; set; }

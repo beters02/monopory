@@ -78,16 +78,22 @@ public sealed class MatchConfig
 	[MatchConfigOption( "Turn Rules", "Doubles Goes Again", Description = "Lets players take another turn after rolling doubles.", Order = 30 )]
 	public bool DoublesGoesAgain { get; set; } = true;
 
-	[MatchConfigOption( "Turn Rules", "Randomize Turn Order", Description = "Shuffles the starting player order at match start.", Order = 31 )]
+	[MatchConfigOption( "Turn Rules", "Doubles Go Again Out Of Vacation Cash Break", Description = "If Doubles Goes Again and Vacation Cash are enabled, a player can get another turn from doubles after their Vacation Cash skipped turn.", Order = 31 )]
+	public bool DoublesGoAgainOutOfVacationCashBreak { get; set; } = true;
+
+	[MatchConfigOption( "Turn Rules", "Doubles Go Again Out Of Jail", Description = "If Doubles Goes Again is enabled, a player can get another turn from doubles on a roll made after leaving jail.", Order = 32 )]
+	public bool DoublesGoAgainOutOfJail { get; set; } = false;
+
+	[MatchConfigOption( "Turn Rules", "Randomize Turn Order", Description = "Shuffles the starting player order at match start.", Order = 33 )]
 	public bool RandomizeTurnOrder { get; set; } = true;
 
-	[MatchConfigOption( "Turn Rules", "Force Jail Fine After Failed Doubles", Description = "After the final failed jail roll, automatically pay the fine to leave jail.", Order = 32 )]
+	[MatchConfigOption( "Turn Rules", "Force Jail Fine After Failed Doubles", Description = "After the final failed jail roll, automatically pay the fine to leave jail.", Order = 34 )]
 	public bool ForceJailFineAfterFailedDoubles { get; set; } = true;
 
-	[MatchConfigOption( "Turn Rules", "Turn Time Limit Seconds", Description = "How long each turn can last before timeout handling kicks in.", Order = 33, Min = 15, Max = 900, Step = 15 )]
+	[MatchConfigOption( "Turn Rules", "Turn Time Limit Seconds", Description = "How long each turn can last before timeout handling kicks in.", Order = 35, Min = 15, Max = 900, Step = 15 )]
 	public int TurnTimeLimitSeconds { get; set; } = 180;
 
-	[MatchConfigOption( "Turn Rules", "Instant Move Button Unlock Minutes", Description = "Elapsed match minutes before the finish-movement button can appear. 0 allows it immediately.", Order = 34, Min = 0, Max = 240, Step = 5 )]
+	[MatchConfigOption( "Turn Rules", "Instant Move Button Unlock Minutes", Description = "Elapsed match minutes before the finish-movement button can appear. 0 allows it immediately.", Order = 36, Min = 0, Max = 240, Step = 5 )]
 	public int InstantMoveButtonUnlockMinutes { get; set; } = 0;
 
 	[MatchConfigOption( "Board Rules", "Vacation Cash", Description = "Awards pooled cash when landing on Free Parking, if enabled.", Order = 40 )]

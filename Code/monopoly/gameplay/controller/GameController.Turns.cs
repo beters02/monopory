@@ -165,7 +165,7 @@ public sealed partial class GameController : Component
 
 		ReleasePlayerFromJail( CurrentPlayer );
 		SendTableChatMessage( "Jail fine paid", $"{CurrentPlayer.PlayerName} paid ${JailFineAmount} to leave Jail." );
-		await RollCurrentPlayerAsync( -1, true, RollExecutionKind.JailRelease );
+		await RollCurrentPlayerAsync( -1, ShouldSuppressDoublesExtraTurnForJailRelease(), RollExecutionKind.JailRelease );
 	}
 
 	public async Task UseGetOutOfJailFreeCardAsync()
@@ -194,7 +194,7 @@ public sealed partial class GameController : Component
 			return;
 		}
 
-		await RollCurrentPlayerAsync( -1, true, RollExecutionKind.JailRelease );
+		await RollCurrentPlayerAsync( -1, ShouldSuppressDoublesExtraTurnForJailRelease(), RollExecutionKind.JailRelease );
 	}
 
 	public async Task TryRollForJailReleaseAsync( int amount = -1, float throwStrength = 0.5f, (int DieA, int DieB)? specifiedDice = null )
@@ -218,7 +218,7 @@ public sealed partial class GameController : Component
 		}
 
 		BeginResolvedAction();
-		BeginPendingRoll( CurrentPlayerIndex, RollExecutionKind.JailRelease, true, true );
+		BeginPendingRoll( CurrentPlayerIndex, RollExecutionKind.JailRelease, ShouldSuppressDoublesExtraTurnForJailRelease(), true );
 
 		int total;
 		bool rolledDoubles = false;
@@ -257,6 +257,12 @@ public sealed partial class GameController : Component
 		{
 			ReleasePlayerFromJail( CurrentPlayer );
 			Log.Info( $"{CurrentPlayer.PlayerName} rolled doubles to leave Jail." );
+			if ( Config?.DoublesGoesAgain == true && Config?.DoublesGoAgainOutOfJail == true && ApplyDoublesRule( true ) )
+			{
+				ClearPendingRollState();
+				return;
+			}
+
 			ClearPendingRollState();
 			await MoveCurrentPlayerAfterRoll( total, RollExecutionKind.JailRelease );
 			return;
@@ -362,10 +368,11 @@ public sealed partial class GameController : Component
 		if ( PendingRollPlayerIndex >= 0 )
 			CurrentPlayerIndex = PendingRollPlayerIndex;
 
-		var suppressDoublesExtraTurn = PendingRollSuppressDoublesExtraTurn;
 		var executionKind = PendingRollExecutionKind >= 0
 			? (RollExecutionKind)PendingRollExecutionKind
 			: RollExecutionKind.Physical;
+		var player = CurrentPlayer;
+		var suppressDoublesExtraTurn = PendingRollSuppressDoublesExtraTurn || ShouldSuppressDoublesExtraTurnForVacationCashBreak( player, executionKind );
 
 		RecordPendingDiceRollForStats();
 		ApplySnakeEyesBonus( CurrentPlayer );
@@ -373,18 +380,40 @@ public sealed partial class GameController : Component
 
 		if ( !suppressDoublesExtraTurn && Config?.DoublesGoesAgain == true && ApplyDoublesRule( rolledDoubles ) )
 		{
+			ClearVacationCashBreakFlag( player );
 			ClearPendingRollState();
 			return;
 		}
 
 		if ( CurrentPlayer is null || CurrentPlayer.IsInJail )
 		{
+			ClearVacationCashBreakFlag( player );
 			ClearPendingRollState();
 			return;
 		}
 
+		ClearVacationCashBreakFlag( player );
 		ClearPendingRollState();
 		await MoveCurrentPlayerAfterRoll( total, executionKind );
+	}
+
+	private bool ShouldSuppressDoublesExtraTurnForJailRelease()
+	{
+		return Config?.DoublesGoAgainOutOfJail != true;
+	}
+
+	private bool ShouldSuppressDoublesExtraTurnForVacationCashBreak( PlayerState player, RollExecutionKind executionKind )
+	{
+		return executionKind != RollExecutionKind.JailRelease &&
+			player?.IsReturningFromVacationCashBreak == true &&
+			Config?.VacationCash == true &&
+			Config?.DoublesGoAgainOutOfVacationCashBreak != true;
+	}
+
+	private static void ClearVacationCashBreakFlag( PlayerState player )
+	{
+		if ( player is not null )
+			player.IsReturningFromVacationCashBreak = false;
 	}
 
 	private void BeginPendingRoll( int playerIndex, RollExecutionKind executionKind, bool suppressDoublesExtraTurn, bool isJailAttempt )

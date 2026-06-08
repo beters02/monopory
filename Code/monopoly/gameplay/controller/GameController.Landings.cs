@@ -193,11 +193,13 @@ public sealed partial class GameController : Component
 		if ( CurrentTurnGetsExtraRoll )
 		{
 			CurrentTurnGetsExtraRoll = false;
+			player.IsReturningFromVacationCashBreak = true;
 			Log.Info( $"{player.PlayerName} collected ${payout} from Free Parking and skipped their extra roll." );
 			return $"Collected ${payout} from Free Parking; extra roll skipped";
 		}
 
 		player.SkipsNextTurn = true;
+		player.IsReturningFromVacationCashBreak = true;
 		Log.Info( $"{player.PlayerName} collected ${payout} from Free Parking and will skip their next turn." );
 		return $"Collected ${payout} from Free Parking; next turn skipped";
 	}

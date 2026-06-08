@@ -228,6 +228,7 @@ public sealed partial class GameController : Component
 		player.CommunityChestGetOutOfJailFreeCards = 0;
 		player.ConsecutiveDoubles = 0;
 		player.SkipsNextTurn = false;
+		player.IsReturningFromVacationCashBreak = false;
 		player.IsBankrupt = false;
 		player.IsDisconnected = false;
 		player.AbandonEndsAt = 0f;
