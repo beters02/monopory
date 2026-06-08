@@ -87,6 +87,9 @@ public sealed class MatchConfig
 	[MatchConfigOption( "Turn Rules", "Turn Time Limit Seconds", Description = "How long each turn can last before timeout handling kicks in.", Order = 33, Min = 15, Max = 900, Step = 15 )]
 	public int TurnTimeLimitSeconds { get; set; } = 180;
 
+	[MatchConfigOption( "Turn Rules", "Instant Move Button Unlock Minutes", Description = "Elapsed match minutes before the finish-movement button can appear. 0 allows it immediately.", Order = 34, Min = 0, Max = 240, Step = 5 )]
+	public int InstantMoveButtonUnlockMinutes { get; set; } = 0;
+
 	[MatchConfigOption( "Board Rules", "Vacation Cash", Description = "Awards pooled cash when landing on Free Parking, if enabled.", Order = 40 )]
 	public bool VacationCash { get; set; } = true;
 

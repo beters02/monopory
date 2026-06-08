@@ -86,6 +86,35 @@ public sealed partial class LobbyController
 		return true;
 	}
 
+	public bool TryForceReadyUp( out string message )
+	{
+		message = "";
+
+		if ( !Networking.IsHost )
+		{
+			message = "Only the host can force ready up.";
+			return false;
+		}
+
+		var ownerIds = GetKnownOwnerIds()
+			.Where( ownerId => ownerId != 0 && HasConnection( ownerId ) && !IsMarkedDisconnected( ownerId ) )
+			.Distinct()
+			.Take( MaxPlayers )
+			.ToList();
+
+		if ( ownerIds.Count == 0 )
+		{
+			message = "No lobby players to ready up.";
+			return false;
+		}
+
+		foreach ( var ownerId in ownerIds )
+			ReadyPlayers[GetReadyKey( ownerId )] = true;
+
+		message = $"Forced {ownerIds.Count} player{(ownerIds.Count == 1 ? "" : "s")} ready.";
+		return true;
+	}
+
 	private List<LobbyPlayer> BuildPlayers()
 	{
 		var players = new List<LobbyPlayer>();

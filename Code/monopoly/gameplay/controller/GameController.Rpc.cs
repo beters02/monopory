@@ -138,6 +138,16 @@ public sealed partial class GameController : Component
 	}
 
 	[Rpc.Host]
+	public void RequestFinishActiveMovement()
+	{
+		var player = GetPlayerForCaller( Rpc.Caller );
+		if ( player is null || CurrentPlayer != player )
+			return;
+
+		FinishActiveMovement( player );
+	}
+
+	[Rpc.Host]
 	public void RequestBuyPendingProperty()
 	{
 		if ( !CanCurrentPlayerAct( Rpc.Caller ) )

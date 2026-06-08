@@ -469,6 +469,37 @@ public static class DisplayMakeUiVisibleCommand
 	}
 }
 
+public static class ForceReadyUpCommand
+{
+	public const string Name = "force_ready_up";
+
+	[ConCmd( Name )]
+	public static void Execute( Connection connection )
+	{
+		GameCommandManager.RunCommand( Name, () =>
+		{
+			if ( !GameCommandManager.CanUseHostCheatCommand( connection ) )
+				return CommandResult.Fail( "force_ready_up can only be used by the host with sv_cheats enabled." );
+
+			var game = GameController.Instance;
+			if ( game is not null )
+			{
+				return game.TryForceReadyUp( out var gameMessage )
+					? CommandResult.Success( gameMessage )
+					: CommandResult.Fail( gameMessage );
+			}
+
+			var lobby = LobbyController.Instance;
+			if ( lobby is null )
+				return CommandResult.Fail( "No active lobby." );
+
+			return lobby.TryForceReadyUp( out var message )
+				? CommandResult.Success( message )
+				: CommandResult.Fail( message );
+		} );
+	}
+}
+
 public static class ChangeMoneyCommand
 {
 	public const string Name = "change_money";

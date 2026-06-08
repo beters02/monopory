@@ -74,6 +74,37 @@ public sealed partial class GameController : Component
 		return true;
 	}
 
+	public bool TryForceReadyUp( out string message )
+	{
+		message = "";
+
+		if ( !Networking.IsHost )
+		{
+			message = "Only the host can force ready up.";
+			return false;
+		}
+
+		if ( MatchState != MatchLifecycleState.Lobby )
+		{
+			message = "Players can only be forced ready in the lobby.";
+			return false;
+		}
+
+		var players = GetLobbyPlayers();
+		if ( players.Count == 0 )
+		{
+			message = "No lobby players to ready up.";
+			return false;
+		}
+
+		foreach ( var player in players )
+			player.IsReady = true;
+
+		message = $"Forced {players.Count} player{(players.Count == 1 ? "" : "s")} ready.";
+		SendTableChatMessage( "Ready up", message );
+		return true;
+	}
+
 	public bool TryPauseGame()
 	{
 		if ( !Networking.IsHost || MatchState != MatchLifecycleState.InGame )

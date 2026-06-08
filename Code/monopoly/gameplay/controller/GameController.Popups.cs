@@ -71,6 +71,21 @@ public sealed partial class GameController : Component
 		}
 	}
 
+	public void SendConfirmationNoticeToPlayer( PlayerState player, string title, string message, string confirmLabel = "OK", string cancelLabel = "Cancel", bool soundEnabled = true )
+	{
+		if ( !Networking.IsHost || player is null )
+			return;
+
+		var connection = GetConnectionForPlayer( player );
+		if ( connection is null )
+			return;
+
+		using ( Rpc.FilterInclude( connection ) )
+		{
+			ShowConfirmationNotice( nextPopupId++, title, message, confirmLabel, cancelLabel, soundEnabled );
+		}
+	}
+
 	public void DismissPopup( int popupId )
 	{
 		popups.RemoveAll( popup => popup.Id == popupId );
@@ -136,6 +151,12 @@ public sealed partial class GameController : Component
 	private void ShowPopup( int popupId, string title, string message, PopupKind kind, bool canDismiss, float lifetime, bool soundEnabled )
 	{
 		ShowPopupLocal( popupId, title, message, kind, canDismiss, lifetime, false, "Confirm", "Cancel", soundEnabled );
+	}
+
+	[Rpc.Broadcast]
+	private void ShowConfirmationNotice( int popupId, string title, string message, string confirmLabel, string cancelLabel, bool soundEnabled )
+	{
+		ShowPopupLocal( popupId, title, message, PopupKind.Confirmation, false, 0f, true, confirmLabel, cancelLabel, soundEnabled );
 	}
 
 	private void ShowPopupLocal( int popupId, string title, string message, PopupKind kind, bool canDismiss, float lifetime, bool isBlocking, string confirmLabel, string cancelLabel, bool soundEnabled )

@@ -582,6 +582,53 @@ public sealed partial class GameController : Component
 		}
 	}
 
+	public bool CanFinishActiveMovement( PlayerState player )
+	{
+		if ( player is null || MatchState != MatchLifecycleState.InGame )
+			return false;
+
+		if ( Phase != GamePhase.ResolvingSpace || ActiveMovementRemainingSteps <= 0 )
+			return false;
+
+		var playerIndex = GetPlayerIndex( player );
+		if ( playerIndex < 0 || ActiveMovementPlayerIndex != playerIndex )
+			return false;
+
+		var unlockMinutes = Math.Max( Config?.InstantMoveButtonUnlockMinutes ?? 0, 0 );
+		var elapsedSeconds = GameStartedAt <= 0f ? 0f : Math.Max( Time.Now - GameStartedAt, 0f );
+		return elapsedSeconds >= unlockMinutes * 60f;
+	}
+
+	public void FinishActiveMovement( PlayerState player )
+	{
+		if ( !Networking.IsHost || !CanFinishActiveMovement( player ) )
+			return;
+
+		var skippedPasses = CountGoPassesDuringMovement( player.SpaceIndex, ActiveMovementRemainingSteps );
+		player.SpaceIndex = ActiveMovementTargetSpaceIndex >= 0
+			? NormalizeSpaceIndex( ActiveMovementTargetSpaceIndex )
+			: NormalizeSpaceIndex( player.SpaceIndex + ActiveMovementRemainingSteps );
+		ActiveMovementGoPassCount += skippedPasses;
+		ActiveMovementRemainingSteps = 0;
+		ActiveMovementLastProgressAt = Time.Now;
+		PlayPlayerTokenStepForPlayer( ActiveMovementPlayerIndex, Board.GetSpacePosition( player.SpaceIndex ) );
+	}
+
+	private int CountGoPassesDuringMovement( int startSpaceIndex, int steps )
+	{
+		var passCount = 0;
+		var spaceIndex = NormalizeSpaceIndex( startSpaceIndex );
+
+		for ( var i = 0; i < steps; i++ )
+		{
+			spaceIndex = NormalizeSpaceIndex( spaceIndex + 1 );
+			if ( spaceIndex == 0 )
+				passCount++;
+		}
+
+		return passCount;
+	}
+
 	private void BeginPendingLanding( int playerIndex, int spaceIndex, int goPassCount )
 	{
 		PendingLandingPlayerIndex = playerIndex;
@@ -769,7 +816,7 @@ public sealed partial class GameController : Component
 			return;
 		}
 
-		if ( CurrentTurnGetsExtraRoll )
+		if ( CurrentTurnGetsExtraRoll && !HasPendingForcedPayment )
 		{
 			//ClearSelectedSpaceForPlayer( CurrentPlayer );
 			PlayTurnSound( CurrentPlayer );

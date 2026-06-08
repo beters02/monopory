@@ -98,6 +98,12 @@
 			</ChildContent>
 		</Sandbox.ui.components.HudPanel.HudPanel>		
 
+		<Sandbox.ui.components.HudPanel.HudPanel Variant="@GetFinishMoveButtonPanelClass()">
+			<ChildContent>
+				<GameButton Variant="@GetFinishMoveButtonClass()" OnClick="@FinishActiveMovement">Finish Move</GameButton>
+			</ChildContent>
+		</Sandbox.ui.components.HudPanel.HudPanel>
+
 		<Sandbox.ui.components.HudPanel.HudPanel Variant="@GetJailButtonPanelClass()">
 			<ChildContent>
 				@if ( CurrentPlayerHasGetOutOfJailFreeCard && !CurrentPlayerMustPayForcedJailFine )
@@ -184,6 +190,9 @@
 		GameRef?.Phase == GamePhase.TurnEnded &&
 		GameRef.HasPendingForcedPayment != true;
 
+	private bool CanFinishActiveMovement =>
+		GameRef?.CanFinishActiveMovement( LocalPlayer ) == true;
+
 	private void SetCameraMode( BoardCameraMode mode )
 	{
 		GameCamera.Instance?.SetMode( mode );
@@ -227,6 +236,24 @@
 	{
 		var str = "status-roll-button";
 		if ( !CanEndTurn )
+			str += " hidden";
+
+		return str;
+	}
+
+	private string GetFinishMoveButtonPanelClass()
+	{
+		var str = "status-roll-button-panel";
+		if ( !CanFinishActiveMovement )
+			str += " hidden";
+
+		return str;
+	}
+
+	private string GetFinishMoveButtonClass()
+	{
+		var str = "status-roll-button";
+		if ( !CanFinishActiveMovement )
 			str += " hidden";
 
 		return str;
@@ -283,6 +310,11 @@
 		GameRef?.RequestEndTurn();
 	}
 
+	private void FinishActiveMovement()
+	{
+		GameRef?.RequestFinishActiveMovement();
+	}
+
 	private string GetEndTurnBlockedMessage()
 	{
 		if ( GameRef?.HasPendingForcedPayment == true )
@@ -314,6 +346,11 @@
 		hash.Add( GameRef?.Config?.CanSkipUnowned ?? false );
 		hash.Add( CurrentTurnRemainingSeconds );
 		hash.Add( GameRef?.HasPendingForcedPayment ?? false );
+		hash.Add( GameRef?.ActiveMovementPlayerIndex ?? -1 );
+		hash.Add( GameRef?.ActiveMovementRemainingSteps ?? 0 );
+		hash.Add( GameRef?.ActiveMovementTargetSpaceIndex ?? -1 );
+		hash.Add( GameRef?.GameStartedAt ?? 0f );
+		hash.Add( GameRef?.Config?.InstantMoveButtonUnlockMinutes ?? 0 );
 		hash.Add( CurrentPlayer?.IsInJail ?? false );
 		hash.Add( CurrentPlayer?.JailTurnsRemaining ?? 0 );
 		hash.Add( CurrentPlayer?.ChanceGetOutOfJailFreeCards ?? 0 );

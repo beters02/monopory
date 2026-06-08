@@ -105,7 +105,10 @@ public sealed partial class GameController : Component
 
 		var player = Players.ElementAtOrDefault( playerIndex );
 		if ( player is not null )
+		{
+			SendConfirmationNoticeToPlayer( player, "Mortgage required", "You need to mortgage properties to continue", "OK", "Cancel" );
 			Log.Info( $"{player.PlayerName} must raise ${amount} before their turn can end." );
+		}
 	}
 
 	private void BeginPendingForcedPaymentToEachPlayer( int playerIndex, int amountPerPlayer )
@@ -125,7 +128,10 @@ public sealed partial class GameController : Component
 
 		var player = Players.ElementAtOrDefault( playerIndex );
 		if ( player is not null )
+		{
+			SendConfirmationNoticeToPlayer( player, "Mortgage required", "You need to mortgage properties to continue", "OK", "Cancel" );
 			Log.Info( $"{player.PlayerName} must raise ${total} to pay each player ${amountPerPlayer}." );
+		}
 	}
 
 	private bool TrySettlePendingForcedPaymentForPlayer( int playerIndex )

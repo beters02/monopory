@@ -3,6 +3,8 @@ using System;
 
 public sealed partial class LobbyController : Component
 {
+	private static LobbyController instance;
+
 	public MatchConfig Config;
 	[Sync] public string HostedConfigSnapshot { get; set; } = "";
 	[Sync] public NetDictionary<string, bool> ReadyPlayers { get; set; } = new();
@@ -30,9 +32,11 @@ public sealed partial class LobbyController : Component
 
 	public bool IsLocalEffectiveHost => GetLocalSteamId() == EffectiveHostOwnerId;
 	public long EffectiveHostOwnerId => ResolveEffectiveHostOwnerId();
+	public static LobbyController Instance => instance;
 
 	protected override void OnStart()
 	{
+		instance = this;
 		GameAssets.PrewarmUiAssets();
 		SteamInviteBridge.Register( Scene );
 
@@ -45,6 +49,8 @@ public sealed partial class LobbyController : Component
 
 	protected override void OnDestroy()
 	{
+		if ( instance == this )
+			instance = null;
 	}
 
 	protected override void OnUpdate()
