@@ -20,6 +20,7 @@
 				ShowImprovementCount="@selection.IsProperty"
 				HasActions="@false"
 				ImprovementLabel="@selection.ImprovementAmountLabel"
+				OwnerName="@selection.OwnerName"
 				DrawnCardText="@selection.DrawnCardText">
 				<OverlayContent>
 					<CloseButton Variant="@GetSpaceCardCloseButtonClasses( selection )" CanClick="@(!selection.IsClosing && selection.CanClose)" OnClick="@CloseSelectedSpace" BlockedPopupTitle="Decision required" BlockedPopupMessage="@selection.CloseBlockedMessage"></CloseButton>
@@ -138,6 +139,7 @@
 			Space = SelectedSpace,
 			SpaceIndex = SelectedSpaceIndex,
 			OwnerIndex = GetSelectedOwnerIndex(),
+			OwnerName = GetSelectedOwnerName(),
 			ColorClass = HudUi.GetPropertyColorClass( SelectedSpace ),
 			DrawnCardText = SelectedDrawnCardText,
 			IsMortgaged = IsSelectedSpaceMortgaged,
@@ -390,6 +392,15 @@
 		return GameRef.GetOwnerIndexForSpace( SelectedSpaceIndex );
 	}
 
+	private string GetSelectedOwnerName()
+	{
+		var ownerIndex = GetSelectedOwnerIndex();
+		if ( ownerIndex < 0 )
+			return "";
+
+		return GameRef?.Players?.ElementAtOrDefault( ownerIndex )?.PlayerName ?? "";
+	}
+
 	private void CloseSelectedSpace()
 	{
 		GameRef?.ClearSelectedSpace();
@@ -496,6 +507,7 @@
 		public SpaceDef Space { get; set; }
 		public int SpaceIndex { get; set; }
 		public int OwnerIndex { get; set; }
+		public string OwnerName { get; set; } = "";
 		public string ColorClass { get; set; } = "";
 		public string DrawnCardText { get; set; } = "";
 		public bool IsMortgaged { get; set; }

@@ -11,7 +11,7 @@
 		<div class="trade-modal-backdrop trade-composer-backdrop">
 			<div class="trade-modal trade-composer-modal">
 				<CloseButton Variant="trade-modal-close" OnClick="@Close"></CloseButton>
-				<div class="trade-modal-title">Create a trade</div>
+				<div class="trade-modal-title">@Title</div>
 
 				<div class="trade-editor">
 					<div class="trade-side">
@@ -92,8 +92,14 @@
 					<div class="trade-swap-column">&lt;-&gt;</div>
 
 					<div class="trade-side">
-						<div class="trade-player-select">
-							@if ( TradeTargetIndexes.Count == 0 )
+						<div class="@ReceiverHeaderClasses">
+							@if ( !CanSelectReceiver )
+							{
+								<div class="trade-target locked">
+									<div class="trade-target-label">@GetPlayerName( EffectiveReceiverPlayerIndex )</div>
+								</div>
+							}
+							else if ( TradeTargetIndexes.Count == 0 )
 							{
 								<div class="trade-target-empty">No other players</div>
 							}
@@ -181,7 +187,7 @@
 					</div>
 				</div>
 
-				<GameButton Variant="trade-send-button" OnClick="@Send">Send trade</GameButton>
+				<GameButton Variant="trade-send-button" OnClick="@Send">@SendLabel</GameButton>
 			</div>
 		</div>
 	}
@@ -198,6 +204,9 @@
 	[Parameter] public HashSet<int> ReceiverPropertyIndexes { get; set; } = new();
 	[Parameter] public HashSet<string> SenderCardIds { get; set; } = new();
 	[Parameter] public HashSet<string> ReceiverCardIds { get; set; } = new();
+	[Parameter] public string Title { get; set; } = "Create a trade";
+	[Parameter] public string SendLabel { get; set; } = "Send trade";
+	[Parameter] public bool CanSelectReceiver { get; set; } = true;
 	[Parameter] public Action OnClose { get; set; }
 	[Parameter] public Action<int> OnSelectReceiver { get; set; }
 	[Parameter] public Action<int> OnAdjustSenderMoney { get; set; }
@@ -235,6 +244,9 @@
 
 	private List<string> ReceiverOwnedCardIds =>
 		GameRef is null || EffectiveReceiverPlayerIndex < 0 ? new() : GameRef.GetOwnedTradableCardIds( EffectiveReceiverPlayerIndex );
+
+	private string ReceiverHeaderClasses =>
+		CanSelectReceiver ? "trade-player-select" : "trade-player-select locked";
 
 	private void Close()
 	{
@@ -340,6 +352,9 @@
 		hash.Add( LocalReceiverPlayerIndex );
 		hash.Add( SenderMoney );
 		hash.Add( ReceiverMoney );
+		hash.Add( Title ?? "" );
+		hash.Add( SendLabel ?? "" );
+		hash.Add( CanSelectReceiver );
 		hash.Add( HudUi.GetPlayersHash( GameRef ) );
 		hash.Add( HudUi.GetPropertyOwnersHash( GameRef ) );
 

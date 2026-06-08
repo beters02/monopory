@@ -235,6 +235,12 @@
 	color: $monopoly-text;
 }
 
+.monopoly-button.trade-icon-button.edit {
+	width: 44px;
+	background-color: $monopoly-surface;
+	color: $monopoly-text;
+}
+
 .monopoly-button.trade-icon-button.deny {
 	background-color: $monopoly-surface;
 }

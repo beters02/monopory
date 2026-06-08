@@ -55,6 +55,41 @@ public sealed partial class GameController : Component
 	}
 
 	[Rpc.Host]
+	public void RequestEditTrade( int tradeId, int senderMoney, int receiverMoney, string senderPropertyIndexes, string receiverPropertyIndexes, string senderCardIds = "", string receiverCardIds = "" )
+	{
+		if ( !CanAcceptGameplayInput() )
+			return;
+
+		if ( !TryGetTrade( tradeId, out var existingTrade ) )
+			return;
+
+		var senderPlayerIndex = GetPlayerIndexForCaller( Rpc.Caller );
+		if ( senderPlayerIndex != existingTrade.SenderPlayerIndex )
+			return;
+
+		var request = new TradeRequest
+		{
+			Id = tradeId,
+			SenderPlayerIndex = existingTrade.SenderPlayerIndex,
+			ReceiverPlayerIndex = existingTrade.ReceiverPlayerIndex,
+			SenderMoney = Math.Max( senderMoney, 0 ),
+			ReceiverMoney = Math.Max( receiverMoney, 0 ),
+			SenderPropertyIndexes = ParseSpaceIndexList( senderPropertyIndexes ),
+			ReceiverPropertyIndexes = ParseSpaceIndexList( receiverPropertyIndexes ),
+			SenderCardIds = ParseTradableCardIdList( senderCardIds ),
+			ReceiverCardIds = ParseTradableCardIdList( receiverCardIds )
+		};
+
+		if ( request.IsEmpty || !IsTradeValid( request ) )
+			return;
+
+		PendingTrades[tradeId] = request.Serialize();
+		TradeViewers.Remove( tradeId );
+		ShowTradeNegotiationReceivedNotification( request );
+		Log.Info( $"{Players[request.SenderPlayerIndex].PlayerName} edited a trade to {Players[request.ReceiverPlayerIndex].PlayerName}." );
+	}
+
+	[Rpc.Host]
 	public void RequestAcceptTrade( int tradeId )
 	{
 		if ( !CanAcceptGameplayInput() )
@@ -100,6 +135,9 @@ public sealed partial class GameController : Component
 
 		foreach ( var cardId in trade.ReceiverCardIds )
 			TransferTradableCard( trade.ReceiverPlayerIndex, trade.SenderPlayerIndex, cardId );
+
+		TrySettlePendingForcedPaymentForPlayer( trade.SenderPlayerIndex );
+		TrySettlePendingForcedPaymentForPlayer( trade.ReceiverPlayerIndex );
 
 		PendingTrades.Remove( tradeId );
 		TradeViewers.Remove( tradeId );
@@ -191,9 +229,6 @@ public sealed partial class GameController : Component
 		var receiver = Players.ElementAtOrDefault( trade.ReceiverPlayerIndex );
 
 		if ( sender is null || receiver is null || !sender.IsAssigned || !receiver.IsAssigned || sender.IsBankrupt || receiver.IsBankrupt )
-			return false;
-
-		if ( HasPendingForcedPaymentForPlayer( trade.SenderPlayerIndex ) || HasPendingForcedPaymentForPlayer( trade.ReceiverPlayerIndex ) )
 			return false;
 
 		if ( trade.SenderPlayerIndex == trade.ReceiverPlayerIndex )

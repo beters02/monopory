@@ -196,6 +196,14 @@
 	background-color: $monopoly-gold-hover;
 }
 
+.trade-composer-modal .trade-player-select.locked .trade-target,
+.trade-composer-modal .trade-target.locked,
+.trade-composer-modal .trade-target.locked:hover {
+	cursor: default;
+	background-color: $monopoly-card-ink-surface-hover;
+	border-color: $monopoly-gold;
+}
+
 .trade-composer-modal .trade-money-row {
 	display: flex;
 	align-items: center;

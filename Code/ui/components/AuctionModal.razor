@@ -45,7 +45,8 @@
 						IsMortgaged="@IsAuctionSpaceMortgaged"
 						ShowImprovementCount="@IsAuctionProperty"
 						HasActions="@false"
-						ImprovementLabel="@AuctionImprovementAmountLabel">
+						ImprovementLabel="@AuctionImprovementAmountLabel"
+						OwnerName="@AuctionOwnerName">
 						<FooterContent>
 							<div>
 								<span>Price</span>
@@ -103,6 +104,15 @@
 
 	private bool IsAuctionSpaceMortgaged =>
 		AuctionSpaceIndex >= 0 && GameRef?.IsMortgaged( AuctionSpaceIndex ) == true;
+
+	private string AuctionOwnerName
+	{
+		get
+		{
+			var ownerIndex = AuctionSpaceIndex < 0 ? -1 : GameRef?.GetOwnerIndexForSpace( AuctionSpaceIndex ) ?? -1;
+			return ownerIndex < 0 ? "" : GameRef?.Players?.ElementAtOrDefault( ownerIndex )?.PlayerName ?? "";
+		}
+	}
 
 	private int AuctionImprovementCount =>
 		AuctionSpaceIndex < 0 ? 0 : GameRef?.GetImprovementCount( AuctionSpaceIndex ) ?? 0;

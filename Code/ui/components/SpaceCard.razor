@@ -111,6 +111,14 @@
 				</div>
 			}
 
+			@if ( !IsShowingDrawnCardText && !string.IsNullOrWhiteSpace( OwnerName ) )
+			{
+				<div class="monopoly-space-card-owner">
+					<span>Owned By:</span>
+					<strong>@OwnerName</strong>
+				</div>
+			}
+
 			@if ( !IsShowingDrawnCardText && HasActions && ChildContent is not null )
 			{
 				<div class="monopoly-space-card-actions">
@@ -137,6 +145,7 @@
 	[Parameter] public bool ShowImprovementCount { get; set; }
 	[Parameter] public bool HasActions { get; set; } = true;
 	[Parameter] public string ImprovementLabel { get; set; } = "";
+	[Parameter] public string OwnerName { get; set; } = "";
 	[Parameter] public string DrawnCardText { get; set; } = "";
 	[Parameter] public RenderFragment OverlayContent { get; set; }
 	[Parameter] public RenderFragment FooterContent { get; set; }

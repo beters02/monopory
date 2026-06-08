@@ -60,6 +60,7 @@
 						}
 						else if ( isSender )
 						{
+							<GameButton Variant="trade-icon-button edit" OnClick="@(() => EditTrade( trade.Id ))">Edit</GameButton>
 							<GameButton Variant="trade-icon-button deny" OnClick="@(() => DenyTrade( trade.Id ))">X</GameButton>
 						}
 					</div>
@@ -78,6 +79,9 @@
 		ReceiverPropertyIndexes="@ComposerReceiverPropertyIndexes"
 		SenderCardIds="@ComposerSenderCardIds"
 		ReceiverCardIds="@ComposerReceiverCardIds"
+		Title="@ComposerTitle"
+		SendLabel="@ComposerSendLabel"
+		CanSelectReceiver="@ComposerCanSelectReceiver"
 		OnClose="@CloseTradeComposer"
 		OnSelectReceiver="@SelectTradeTarget"
 		OnAdjustSenderMoney="@AdjustSenderMoney"
@@ -112,6 +116,7 @@
 	private int ComposerSenderMoney;
 	private int ComposerReceiverMoney;
 	private int NegotiatedTradeId = -1;
+	private int EditedTradeId = -1;
 	private int ViewedTradeId = -1;
 
 	private PlayerState LocalPlayer => GameRef?.LocalPlayer;
@@ -148,6 +153,7 @@
 	{
 		ClearViewedTrade();
 		NegotiatedTradeId = -1;
+		EditedTradeId = -1;
 		IsTradeComposerOpen = true;
 
 		if ( ComposerReceiverPlayerIndex < 0 || !TradeTargetIndexes.Contains( ComposerReceiverPlayerIndex ) )
@@ -170,6 +176,7 @@
 		ComposerSenderMoney = 0;
 		ComposerReceiverMoney = 0;
 		NegotiatedTradeId = -1;
+		EditedTradeId = -1;
 		IsTradeComposerOpen = false;
 	}
 
@@ -244,7 +251,8 @@
 			return;
 
 		var isNegotiation = NegotiatedTradeId >= 0;
-		if ( GameRef.MaxPendingSentTradesPerPlayer > 0 && GameRef.GetTrades().Count( trade => trade.SenderPlayerIndex == GameRef.LocalPlayerIndex ) >= GameRef.MaxPendingSentTradesPerPlayer )
+		var isEdit = EditedTradeId >= 0;
+		if ( !isEdit && GameRef.MaxPendingSentTradesPerPlayer > 0 && GameRef.GetTrades().Count( trade => trade.SenderPlayerIndex == GameRef.LocalPlayerIndex ) >= GameRef.MaxPendingSentTradesPerPlayer )
 		{
 			GameRef.ShowLocalPopup(
 				"Trade limit reached",
@@ -257,16 +265,31 @@
 		if ( isNegotiation )
 			GameRef.RequestDenyTrade( NegotiatedTradeId, true );
 
-		GameRef.RequestCreateTrade(
-			ComposerReceiverPlayerIndex,
-			ComposerSenderMoney,
-			ComposerReceiverMoney,
-			ToCsv( ComposerSenderPropertyIndexes ),
-			ToCsv( ComposerReceiverPropertyIndexes ),
-			ToCsv( ComposerSenderCardIds ),
-			ToCsv( ComposerReceiverCardIds ),
-			isNegotiation
-		);
+		if ( isEdit )
+		{
+			GameRef.RequestEditTrade(
+				EditedTradeId,
+				ComposerSenderMoney,
+				ComposerReceiverMoney,
+				ToCsv( ComposerSenderPropertyIndexes ),
+				ToCsv( ComposerReceiverPropertyIndexes ),
+				ToCsv( ComposerSenderCardIds ),
+				ToCsv( ComposerReceiverCardIds )
+			);
+		}
+		else
+		{
+			GameRef.RequestCreateTrade(
+				ComposerReceiverPlayerIndex,
+				ComposerSenderMoney,
+				ComposerReceiverMoney,
+				ToCsv( ComposerSenderPropertyIndexes ),
+				ToCsv( ComposerReceiverPropertyIndexes ),
+				ToCsv( ComposerSenderCardIds ),
+				ToCsv( ComposerReceiverCardIds ),
+				isNegotiation
+			);
+		}
 
 		ComposerSenderMoney = 0;
 		ComposerReceiverMoney = 0;
@@ -275,6 +298,7 @@
 		ComposerSenderCardIds.Clear();
 		ComposerReceiverCardIds.Clear();
 		NegotiatedTradeId = -1;
+		EditedTradeId = -1;
 		IsTradeComposerOpen = false;
 	}
 
@@ -285,6 +309,7 @@
 
 		ClearViewedTrade();
 		NegotiatedTradeId = tradeId;
+		EditedTradeId = -1;
 		IsTradeComposerOpen = true;
 		ComposerReceiverPlayerIndex = trade.SenderPlayerIndex;
 		ComposerSenderMoney = Math.Clamp( trade.ReceiverMoney, 0, LocalPlayerMoney );
@@ -304,6 +329,39 @@
 			ComposerSenderCardIds.Add( cardId );
 
 		foreach ( var cardId in trade.SenderCardIds.Where( ReceiverOwnedCardIds.Contains ) )
+			ComposerReceiverCardIds.Add( cardId );
+	}
+
+	private void EditTrade( int tradeId )
+	{
+		if ( GameRef is null || !GameRef.TryGetTrade( tradeId, out var trade ) )
+			return;
+
+		if ( trade.SenderPlayerIndex != GameRef.LocalPlayerIndex )
+			return;
+
+		ClearViewedTrade();
+		NegotiatedTradeId = -1;
+		EditedTradeId = tradeId;
+		IsTradeComposerOpen = true;
+		ComposerReceiverPlayerIndex = trade.ReceiverPlayerIndex;
+		ComposerSenderMoney = Math.Clamp( trade.SenderMoney, 0, LocalPlayerMoney );
+		ComposerReceiverMoney = Math.Clamp( trade.ReceiverMoney, 0, GetPlayerMoney( ComposerReceiverPlayerIndex ) );
+		ComposerSenderPropertyIndexes.Clear();
+		ComposerReceiverPropertyIndexes.Clear();
+		ComposerSenderCardIds.Clear();
+		ComposerReceiverCardIds.Clear();
+
+		foreach ( var propertyIndex in trade.SenderPropertyIndexes.Where( LocalOwnedPropertyIndexes.Contains ) )
+			ComposerSenderPropertyIndexes.Add( propertyIndex );
+
+		foreach ( var propertyIndex in trade.ReceiverPropertyIndexes.Where( ReceiverOwnedPropertyIndexes.Contains ) )
+			ComposerReceiverPropertyIndexes.Add( propertyIndex );
+
+		foreach ( var cardId in trade.SenderCardIds.Where( LocalOwnedCardIds.Contains ) )
+			ComposerSenderCardIds.Add( cardId );
+
+		foreach ( var cardId in trade.ReceiverCardIds.Where( ReceiverOwnedCardIds.Contains ) )
 			ComposerReceiverCardIds.Add( cardId );
 	}
 
@@ -368,6 +426,19 @@
 		return string.IsNullOrWhiteSpace( playerName ) ? $"Player {playerIndex + 1}" : playerName;
 	}
 
+	private string ComposerTitle =>
+		EditedTradeId >= 0 ? "Edit trade" :
+		NegotiatedTradeId >= 0 ? "Negotiate trade" :
+		"Create a trade";
+
+	private string ComposerSendLabel =>
+		EditedTradeId >= 0 ? "Save trade" :
+		NegotiatedTradeId >= 0 ? "Send counter" :
+		"Send trade";
+
+	private bool ComposerCanSelectReceiver =>
+		NegotiatedTradeId < 0 && EditedTradeId < 0;
+
 	private int GetPlayerMoney( int playerIndex )
 	{
 		return GameRef?.Players?.ElementAtOrDefault( playerIndex )?.Money ?? 0;
@@ -409,6 +480,7 @@
 		hash.Add( ComposerSenderMoney );
 		hash.Add( ComposerReceiverMoney );
 		hash.Add( NegotiatedTradeId );
+		hash.Add( EditedTradeId );
 		hash.Add( ViewedTradeId );
 
 		foreach ( var index in ComposerSenderPropertyIndexes.OrderBy( x => x ) )
