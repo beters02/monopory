@@ -261,6 +261,11 @@
 		GameRef is not null &&
 		SelectedSpaceIndex == GameRef.PendingPurchaseSpaceIndex;
 
+	private bool IsLocalPlayersTurn =>
+		GameRef is not null &&
+		GameRef.LocalPlayerIndex >= 0 &&
+		GameRef.CurrentPlayerIndex == GameRef.LocalPlayerIndex;
+
 	private bool ShouldBlockSelectedSpaceClose =>
 		GameRef?.CanLeaveCurrentSelectedSpace() == false;
 
@@ -276,6 +281,7 @@
 
 	private bool CanBuySelectedSpace =>
 		IsPurchasable &&
+		IsLocalPlayersTurn &&
 		GameRef?.Phase == GamePhase.WaitingForBuyDecision &&
 		IsSelectedPendingPurchase &&
 		IsUnownedSelectedSpace;
@@ -284,6 +290,7 @@
 		IsOwnedByLocalPlayer;
 
 	private bool CanSkipPendingPropertyDecision =>
+		IsLocalPlayersTurn &&
 		GameRef?.CanSkipPendingPropertyDecision() == true;
 
 	private bool CanAffordSelectedSpace =>
@@ -500,6 +507,8 @@
 		hash.Add( GameRef?.LocalSelectedDrawnCardText ?? "" );
 		hash.Add( GameRef?.Phase ?? 0 );
 		hash.Add( GameRef?.PendingPurchaseSpaceIndex ?? -1 );
+		hash.Add( GameRef?.CurrentPlayerIndex ?? -1 );
+		hash.Add( GameRef?.LocalPlayerIndex ?? -1 );
 		hash.Add( GameRef?.FreeParkingBank ?? 0 );
 		hash.Add( GameRef?.Config?.VacationCash ?? false );
 		hash.Add( GameRef?.Config?.CanSkipUnowned ?? false );
