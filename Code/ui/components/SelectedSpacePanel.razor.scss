@@ -201,7 +201,7 @@
 .selected-space-actions .improvement-buttons .monopoly-button {
 	align-items: center;
 	justify-content: center;
-	gap: 6px;
+	gap: 4px;
 	min-height: 38px;
 	padding: 5px 8px;
 }
@@ -232,7 +232,7 @@
 }
 
 .space-action-symbol {
-	flex: 0 0 12px;
+	flex: 0 0 8px;
 	color: $monopoly-ink;
 	align-items: center;
 	justify-content: center;
