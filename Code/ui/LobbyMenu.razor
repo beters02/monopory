@@ -102,6 +102,7 @@
 						<div class="match-config-footer">
 							@if ( CanEditConfig )
 							{
+								<GameButton Variant="match-config-secondary-button" OnClick="@ResetConfigMenu">Reset to Defaults</GameButton>
 								<GameButton Variant="match-config-save-button" OnClick="@SaveConfigMenu">Save</GameButton>
 							}
 						</div>
@@ -254,6 +255,10 @@
 		? "Only the host can start this game."
 		: LobbyStatusText;
 	private bool HasOtherLobbyPlayers => Players.Any( player => !player.IsLocal );
+	private bool HasUnsavedConfigChanges =>
+		EditableConfig is not null &&
+		CanEditConfig &&
+		(ConfigIntDrafts.Count > 0 || !string.Equals( MatchConfigSchema.Serialize( EditableConfig ), LoadedConfigSnapshot, StringComparison.Ordinal ));
 
 	private bool HasUnreadyPlayers
 	{
@@ -477,6 +482,37 @@
 
 	private void CloseConfigMenu()
 	{
+		if ( HasUnsavedConfigChanges )
+		{
+			ConfirmCloseConfigMenu();
+			return;
+		}
+
+		CloseConfigMenuWithoutConfirmation();
+	}
+
+	private void ConfirmCloseConfigMenu()
+	{
+		DropdownButton.CloseOpenDropdown();
+
+		if ( PopupGame is null )
+		{
+			CloseConfigMenuWithoutConfirmation();
+			return;
+		}
+
+		PopupGame.ShowLocalConfirmation(
+			"Discard changes?",
+			"You have unsaved match settings. Closing now will discard those changes.",
+			CloseConfigMenuWithoutConfirmation,
+			null,
+			"Discard",
+			"Stay",
+			false );
+	}
+
+	private void CloseConfigMenuWithoutConfirmation()
+	{
 		DropdownButton.CloseOpenDropdown();
 		IsConfigMenuOpen = false;
 		EditableConfig = null;
@@ -609,6 +645,39 @@
 	private void NormalizeEditableConfig()
 	{
 		EditableConfig = MatchConfigSchema.Normalize( EditableConfig, Lobby?.Players?.Count ?? 0 );
+	}
+
+	private void ResetConfigMenu()
+	{
+		if ( Lobby is null || !CanEditConfig )
+			return;
+
+		DropdownButton.CloseOpenDropdown();
+
+		if ( PopupGame is null )
+		{
+			ResetConfigMenuWithoutConfirmation();
+			return;
+		}
+
+		PopupGame.ShowLocalConfirmation(
+			"Reset match settings?",
+			"This will replace your current match settings draft with the default values. You will still need to press Save.",
+			ResetConfigMenuWithoutConfirmation,
+			null,
+			"Reset",
+			"Cancel",
+			false );
+	}
+
+	private void ResetConfigMenuWithoutConfirmation()
+	{
+		if ( Lobby is null || !CanEditConfig )
+			return;
+
+		EditableConfig = MatchConfigSchema.Normalize( MatchConfigSchema.CreateDefault(), Lobby.Players?.Count ?? 0 );
+		ConfigIntDrafts.Clear();
+		configRevision++;
 	}
 
 	private void SaveConfigMenu()
