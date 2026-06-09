@@ -52,7 +52,8 @@
 	display: flex;
 	flex-direction: row;
 	align-items: center;
-	max-width: 92%;
+	width: 88%;
+	max-width: 88%;
 	z-index: 5;
 	font-weight: 900;
 	text-transform: uppercase;
@@ -68,30 +69,31 @@
 
 .space-owner-name {
 	flex: 1;
+	min-width: 0;
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
 
 .side-bottom.standard .space-owner-badge {
 	left: 50%;
-	bottom: -1px;
+	bottom: 0;
 	transform: translateX(-50%);
 }
 
 .side-top.standard .space-owner-badge {
 	left: 50%;
-	top: -1px;
+	top: 0;
 	transform: translateX(-50%) rotate(180deg);
 }
 
 .side-left.standard .space-owner-badge {
-	left: -1px;
+	left: 0;
 	top: 50%;
 	transform: translateY(-50%) rotate(90deg);
 }
 
 .side-right.standard .space-owner-badge {
-	right: -1px;
+	right: 0;
 	top: 50%;
 	transform: translateY(-50%) rotate(-90deg);
 }
