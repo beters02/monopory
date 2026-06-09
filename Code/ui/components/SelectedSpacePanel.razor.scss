@@ -153,6 +153,7 @@
 	display: flex;
 	flex-direction: column;
 	gap: 8px;
+	overflow: visible;
 }
 
 .selected-space-actions .space-management {
@@ -186,6 +187,15 @@
 	font-weight: 900;
 	line-height: 14px;
 	text-transform: uppercase;
+	white-space: nowrap;
+	overflow: visible;
+}
+
+.selected-space-actions .mortgage-buttons .monopoly-button {
+	width: 100%;
+	min-height: 36px;
+	align-items: center;
+	justify-content: center;
 }
 
 .selected-space-actions .improvement-buttons .monopoly-button {

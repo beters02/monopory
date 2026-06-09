@@ -5,49 +5,56 @@
 @inherits PanelComponent
 
 <root class="@GetRootClasses()">
-	<div class="chat-overlay-panel">
-		<div class="chat-overlay-messages-shell">
-			<div class="chat-overlay-messages monopory-scroll-y" @ref="MessagesPanel">
-				@foreach ( var entry in ChatEntries )
+	@if ( IsPermanentlyClosed )
+	{
+		<button class="chat-overlay-reopen-button" onclick="@OpenPermanentlyClosedChat">Open chat</button>
+	}
+	else
+	{
+		<div class="chat-overlay-panel">
+			<div class="chat-overlay-messages-shell">
+				<div class="chat-overlay-messages monopory-scroll-y" @ref="MessagesPanel">
+					@foreach ( var entry in ChatEntries )
+					{
+						<div class="chat-overlay-line">
+							<span class="chat-overlay-sender">@entry.Sender:</span>
+							<span class="chat-overlay-message">
+								@foreach ( var segment in BuildMessageSegments( entry.Message ) )
+								{
+									if ( segment.IsMention )
+									{
+										<span class="chat-overlay-mention">@segment.Text</span>
+									}
+									else
+									{
+										@segment.Text
+									}
+								}
+							</span>
+						</div>
+					}
+				</div>
+				<MonoScrollbar Target="@MessagesPanel" Variant="chat-scrollbar"></MonoScrollbar>
+			</div>
+
+			<div class="chat-overlay-input-row" onclick="@HandleInputRowClick">
+				@if ( IsComposing )
 				{
-					<div class="chat-overlay-line">
-						<span class="chat-overlay-sender">@entry.Sender:</span>
-						<span class="chat-overlay-message">
-							@foreach ( var segment in BuildMessageSegments( entry.Message ) )
-							{
-								if ( segment.IsMention )
-								{
-									<span class="chat-overlay-mention">@segment.Text</span>
-								}
-								else
-								{
-									@segment.Text
-								}
-							}
-						</span>
-					</div>
+					<ConsoleCommandTextEntry
+						@ref="ChatInput"
+						class="chat-overlay-input"
+						Placeholder="Type message and press Enter..."
+						OnConsoleCloseRequested="@CancelCompose"
+						onsubmit="@SubmitMessage" />
+					<button class="chat-overlay-send-button" onclick="@SubmitMessage">Send</button>
+				}
+				else
+				{
+					<div class="chat-overlay-input-placeholder">Press Enter to chat...</div>
 				}
 			</div>
-			<MonoScrollbar Target="@MessagesPanel" Variant="chat-scrollbar"></MonoScrollbar>
 		</div>
-
-		<div class="chat-overlay-input-row" onclick="@HandleInputRowClick">
-			@if ( IsComposing )
-			{
-				<ConsoleCommandTextEntry
-					@ref="ChatInput"
-					class="chat-overlay-input"
-					Placeholder="Type message and press Enter..."
-					OnConsoleCloseRequested="@CancelCompose"
-					onsubmit="@SubmitMessage" />
-				<button class="chat-overlay-send-button" onclick="@SubmitMessage">Send</button>
-			}
-			else
-			{
-				<div class="chat-overlay-input-placeholder">Press Enter to chat...</div>
-			}
-		</div>
-	</div>
+	}
 </root>
 
 @code
@@ -62,6 +69,7 @@
 	private ConsoleCommandTextEntry ChatInput = null!;
 	private Panel MessagesPanel = null!;
 	private bool IsComposing;
+	private bool IsPermanentlyClosed;
 	private bool WantsFocus;
 	private int ScrollToBottomFramesRemaining;
 	private float LastInteractionAt;
@@ -88,6 +96,12 @@
 			return;
 		}
 
+		if ( IsChatShortcutPressed() && IsShiftDown() )
+		{
+			TogglePermanentlyClosed();
+			return;
+		}
+
 		if ( IsComposing )
 		{
 			Mouse.Visibility = MouseVisibility.Visible;
@@ -110,7 +124,10 @@
 			return;
 		}
 
-		if ( Input.Keyboard.Pressed( "Enter" ) || Input.Keyboard.Pressed( "KP_ENTER" ) )
+		if ( IsPermanentlyClosed )
+			return;
+
+		if ( IsChatShortcutPressed() )
 			BeginCompose();
 	}
 
@@ -157,10 +174,47 @@
 
 	private void BeginCompose()
 	{
+		IsPermanentlyClosed = false;
 		IsComposing = true;
 		WantsFocus = true;
 		Touch();
 		StateHasChanged();
+	}
+
+	private void TogglePermanentlyClosed()
+	{
+		if ( IsPermanentlyClosed )
+		{
+			OpenPermanentlyClosedChat();
+			return;
+		}
+
+		IsPermanentlyClosed = true;
+		IsComposing = false;
+		WantsFocus = false;
+		ChatInput?.Blur();
+		StateHasChanged();
+	}
+
+	private void OpenPermanentlyClosedChat()
+	{
+		IsPermanentlyClosed = false;
+		Touch();
+		RequestScrollToBottom();
+		StateHasChanged();
+	}
+
+	private static bool IsChatShortcutPressed()
+	{
+		return Input.Keyboard.Pressed( "Enter" ) || Input.Keyboard.Pressed( "KP_ENTER" );
+	}
+
+	private static bool IsShiftDown()
+	{
+		return Input.Down( "Run" ) ||
+			Input.Keyboard.Down( "Shift" ) ||
+			Input.Keyboard.Down( "LeftShift" ) ||
+			Input.Keyboard.Down( "RightShift" );
 	}
 
 	private void HandleInputRowClick()
@@ -335,6 +389,9 @@
 		if ( GameHud.IsMenuBlockingHud )
 			return false;
 
+		if ( IsPermanentlyClosed )
+			return true;
+
 		return IsComposing || (Time.Now - LastInteractionAt) <= HideAfterSeconds;
 	}
 
@@ -345,7 +402,7 @@
 		if (IsVisible())
 		{
 			str += " visible";
-			if ( !GameRef.IsGameHudVisible() )
+			if ( !IsPermanentlyClosed && !GameRef.IsGameHudVisible() )
 				str += " game-hud-invisible";
 		} else
 		{
@@ -359,6 +416,7 @@
 	{
 		var hash = new HashCode();
 		hash.Add( IsComposing );
+		hash.Add( IsPermanentlyClosed );
 		hash.Add( IsVisible() );
 		hash.Add( GameHud.IsMenuBlockingHud );
 		hash.Add( ChatEntries.Count );

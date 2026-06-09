@@ -291,9 +291,10 @@
 	margin: -2px 16px 12px;
 
 	display: flex;
+	flex-direction: column;
 	align-items: center;
 	justify-content: center;
-	gap: 8px;
+	gap: 4px;
 
 	color: $monopoly-ink;
 	font-size: 15px;
@@ -301,37 +302,32 @@
 	line-height: 20px;
 }
 
-.monopoly-space-card-house-icon {
-	width: 22px;
-	height: 22px;
-	object-fit: contain;
-}
-
-.monopoly-space-card-owner {
-	margin: 0 16px 12px;
-	padding: 8px 10px;
-
-	background-color: $monopoly-card-ink-surface;
-	border: 2px solid $monopoly-card-ink-line;
-	border-radius: $monopoly-radius-control;
-	color: $monopoly-ink;
-
+.monopoly-space-card-improvement-count,
+.monopoly-space-card-owner-inline {
+	min-width: 0;
 	display: flex;
 	align-items: center;
-	justify-content: center;
-	gap: 6px;
+	gap: 8px;
+}
 
-	font-size: 13px;
-	font-weight: 900;
+.monopoly-space-card-improvement-count {
+	justify-content: flex-start;
+}
+
+.monopoly-space-card-owner-inline {
+	justify-content: center;
 	text-align: center;
 }
 
-.monopoly-space-card-owner span {
+.monopoly-space-card-improvement-count span,
+.monopoly-space-card-owner-inline span {
+	flex: 0 0 auto;
 	text-transform: uppercase;
 	opacity: 0.72;
 }
 
-.monopoly-space-card-owner strong {
+.monopoly-space-card-improvement-count strong,
+.monopoly-space-card-owner-inline strong {
 	min-width: 0;
 	font-weight: 900;
 	white-space: nowrap;
@@ -639,20 +635,10 @@
 }
 
 .selected-space-card .monopoly-space-card-improvements {
-	margin: 0 14px 16px;
-	font-size: 13px;
-	line-height: 18px;
-}
-
-.selected-space-card .monopoly-space-card-owner {
-	margin: 0 14px 12px;
-	padding: 7px 9px;
+	margin: -2px 14px 10px;
+	gap: 2px;
 	font-size: 12px;
-}
-
-.selected-space-card .monopoly-space-card-house-icon {
-	width: 17px;
-	height: 17px;
+	line-height: 16px;
 }
 
 .selected-space-card .monopoly-space-card-footer {

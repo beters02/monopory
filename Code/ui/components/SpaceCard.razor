@@ -99,8 +99,14 @@
 			@if ( !IsShowingDrawnCardText && ShowImprovementCount )
 			{
 				<div class="monopoly-space-card-improvements">
-					<img class="monopoly-space-card-house-icon" src="ui/house-placeholder.svg" />
-					<span>Current houses: @ImprovementLabel</span>
+					<div class="monopoly-space-card-improvement-count">
+						<span>Houses:</span>
+						<strong>@ImprovementLabel</strong>
+					</div>
+					<div class="monopoly-space-card-owner-inline">
+						<span>Owned By:</span>
+						<strong>@OwnerDisplayName</strong>
+					</div>
 				</div>
 			}
 
@@ -108,14 +114,6 @@
 			{
 				<div class="monopoly-space-card-footer">
 					@FooterContent
-				</div>
-			}
-
-			@if ( !IsShowingDrawnCardText && !string.IsNullOrWhiteSpace( OwnerName ) )
-			{
-				<div class="monopoly-space-card-owner">
-					<span>Owned By:</span>
-					<strong>@OwnerName</strong>
 				</div>
 			}
 
@@ -227,6 +225,9 @@
 
 	private string MortgageValueLabel =>
 		Space.Price > 0 ? $"${Space.Price / 2}" : "-";
+
+	private string OwnerDisplayName =>
+		string.IsNullOrWhiteSpace( OwnerName ) ? "No one" : OwnerName;
 
 	private RailroadDef RailroadData =>
 		Board.Instance?.RailroadData ?? BoardData.CreateRailroadDefs();

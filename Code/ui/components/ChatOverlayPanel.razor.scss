@@ -169,5 +169,37 @@
 	box-shadow: $monopoly-control-shadow;
 }
 
+.chat-overlay-reopen-button {
+	height: 34px;
+	min-width: 96px;
+	padding: 0 14px;
+	margin: 0;
+	border: 2px solid $monopoly-gold;
+	border-radius: $monopoly-radius-control;
+	background-color: $monopoly-panel-strong;
+	color: $monopoly-text;
+	font-family: $monopoly-font-family;
+	font-size: 13px;
+	font-weight: 800;
+	line-height: 18px;
+	text-align: center;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	white-space: nowrap;
+	pointer-events: all;
+	cursor: pointer;
+	box-shadow: $monopoly-control-shadow;
+}
+
+.chat-overlay-reopen-button:hover {
+	background-color: $monopoly-gold;
+	color: $monopoly-ink;
+}
+
+.chat-overlay-reopen-button:active {
+	background-color: $monopoly-gold-soft;
+	transform: translateY(1px);
+}
 
 
