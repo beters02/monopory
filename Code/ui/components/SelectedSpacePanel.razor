@@ -70,13 +70,15 @@
 							<div class="space-buttons improvement-buttons">
 								<GameButton Variant="@GetBuildImprovementButtonClasses( selection )" OnClick="@BuildImprovement">
 									<ChildContent>
-										<span>+</span>
+										<span class="space-action-price">@selection.BuildImprovementPriceLabel</span>
+										<span class="space-action-symbol">+</span>
 										<img class="space-action-house-icon" src="ui/house-placeholder.svg" />
 									</ChildContent>
 								</GameButton>
 								<GameButton Variant="@GetSellImprovementButtonClasses( selection )" OnClick="@SellImprovement">
 									<ChildContent>
-										<span>-</span>
+										<span class="space-action-price">@selection.SellImprovementPriceLabel</span>
+										<span class="space-action-symbol">-</span>
 										<img class="space-action-house-icon" src="ui/house-placeholder.svg" />
 									</ChildContent>
 								</GameButton>
@@ -160,6 +162,8 @@
 			PriceLabel = SelectedSpacePriceLabel,
 			RentLabel = SelectedSpaceRentLabel,
 			HousePriceLabel = SelectedHousePriceLabel,
+			BuildImprovementPriceLabel = BuildImprovementPriceLabel,
+			SellImprovementPriceLabel = SellImprovementPriceLabel,
 			MortgageActionLabel = MortgageActionLabel,
 			CannotAffordBuyMessage = CannotAffordBuyMessage,
 			CloseBlockedMessage = SelectedSpaceCloseBlockedMessage
@@ -217,12 +221,12 @@
 
 	private static string GetBuildImprovementButtonClasses( RenderedSelectedSpace selection )
 	{
-		return selection.CanBuildImprovement ? "improvement-action" : "improvement-action disabled";
+		return selection.CanBuildImprovement ? "improvement-action buy-improvement-action" : "improvement-action buy-improvement-action disabled";
 	}
 
 	private static string GetSellImprovementButtonClasses( RenderedSelectedSpace selection )
 	{
-		return selection.CanSellImprovement ? "improvement-action" : "improvement-action disabled";
+		return selection.CanSellImprovement ? "improvement-action sell-improvement-action" : "improvement-action sell-improvement-action disabled";
 	}
 
 	private static string GetMortgageButtonClasses( RenderedSelectedSpace selection )
@@ -307,6 +311,9 @@
 	private int SelectedImprovementCost =>
 		SelectedSpaceIndex < 0 ? 0 : GameRef?.GetImprovementCost( SelectedSpaceIndex ) ?? 0;
 
+	private int SelectedImprovementSellValue =>
+		SelectedSpaceIndex < 0 ? 0 : GameRef?.GetImprovementSellValue( SelectedSpaceIndex ) ?? 0;
+
 	private int SelectedSpaceRent =>
 		SelectedSpaceIndex < 0 ? 0 : GameRef?.GetRentForSpace( SelectedSpaceIndex ) ?? 0;
 
@@ -333,14 +340,20 @@
 	private string SelectedHousePriceLabel =>
 		SelectedImprovementCost > 0 ? $"${SelectedImprovementCost}" : "-";
 
+	private string BuildImprovementPriceLabel =>
+		SelectedImprovementCost > 0 ? $"-${SelectedImprovementCost}" : "-";
+
+	private string SellImprovementPriceLabel =>
+		SelectedImprovementSellValue > 0 ? $"+${SelectedImprovementSellValue}" : "-";
+
 	private string SelectedImprovementAmountLabel =>
 		SelectedImprovementCount >= 5 ? "Hotel" : SelectedImprovementCount.ToString();
 
 	private string BuildImprovementButtonClasses =>
-		CanBuildSelectedImprovement ? "improvement-action" : "improvement-action disabled";
+		CanBuildSelectedImprovement ? "improvement-action buy-improvement-action" : "improvement-action buy-improvement-action disabled";
 
 	private string SellImprovementButtonClasses =>
-		CanSellSelectedImprovement ? "improvement-action" : "improvement-action disabled";
+		CanSellSelectedImprovement ? "improvement-action sell-improvement-action" : "improvement-action sell-improvement-action disabled";
 
 	private bool CanBuildSelectedImprovement =>
 		GameRef is not null &&
@@ -528,6 +541,8 @@
 		public string PriceLabel { get; set; } = "";
 		public string RentLabel { get; set; } = "";
 		public string HousePriceLabel { get; set; } = "";
+		public string BuildImprovementPriceLabel { get; set; } = "";
+		public string SellImprovementPriceLabel { get; set; } = "";
 		public string MortgageActionLabel { get; set; } = "";
 		public string CannotAffordBuyMessage { get; set; } = "";
 		public string CloseBlockedMessage { get; set; } = "";

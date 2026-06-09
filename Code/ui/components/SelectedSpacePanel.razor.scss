@@ -201,17 +201,60 @@
 .selected-space-actions .improvement-buttons .monopoly-button {
 	align-items: center;
 	justify-content: center;
-	gap: 5px;
+	gap: 6px;
+	min-height: 38px;
+	padding: 5px 8px;
+}
+
+.selected-space-actions .improvement-buttons .buy-improvement-action {
+	background-color: $monopoly-success;
+	color: $monopoly-ink;
+}
+
+.selected-space-actions .improvement-buttons .sell-improvement-action {
+	background-color: $monopoly-danger;
+	color: $monopoly-text;
+}
+
+.space-action-price {
+	flex: 0 0 40px;
+	text-align: right;
+	font-size: 12px;
+	font-weight: 900;
+	line-height: 14px;
 }
 
 .space-action-house-icon {
-	width: 16px;
-	height: 16px;
+	flex: 0 0 26px;
+	width: 27px;
+	height: 27px;
 	object-fit: contain;
+}
+
+.space-action-symbol {
+	flex: 0 0 12px;
+	color: $monopoly-ink;
+	align-items: center;
+	justify-content: center;
+	font-size: 17px;
+	font-weight: 900;
+	line-height: 17px;
+}
+
+.sell-improvement-action .space-action-symbol {
+	color: $monopoly-text;
 }
 
 .selected-space-actions .space-buttons .monopoly-button:hover {
 	background-color: $monopoly-gold-hover;
+}
+
+.selected-space-actions .improvement-buttons .buy-improvement-action:hover {
+	background-color: $monopoly-success;
+}
+
+.selected-space-actions .improvement-buttons .sell-improvement-action:hover {
+	background-color: $monopoly-danger-hover;
 }
 
 .selected-space-actions .space-buttons .monopoly-button.disabled {
