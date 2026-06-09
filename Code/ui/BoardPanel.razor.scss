@@ -47,35 +47,53 @@
 	z-index: 2;
 }
 
-.space-owner-marker {
+.space-owner-badge {
 	position: absolute;
-	border-radius: 50%;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	max-width: 92%;
 	z-index: 5;
-	flex-shrink: 0;
+	font-weight: 900;
+	text-transform: uppercase;
+	white-space: nowrap;
+	overflow: hidden;
 }
 
-.side-bottom.standard .space-owner-marker {
+.space-owner-marker {
+	border-radius: 50%;
+	flex-shrink: 0;
+	margin-right: 4px;
+}
+
+.space-owner-name {
+	flex: 1;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.side-bottom.standard .space-owner-badge {
 	left: 50%;
 	bottom: 8px;
 	transform: translateX(-50%);
 }
 
-.side-top.standard .space-owner-marker {
+.side-top.standard .space-owner-badge {
 	left: 50%;
 	top: 8px;
-	transform: translateX(-50%);
+	transform: translateX(-50%) rotate(180deg);
 }
 
-.side-left.standard .space-owner-marker {
+.side-left.standard .space-owner-badge {
 	left: 8px;
 	top: 50%;
-	transform: translateY(-50%);
+	transform: translateY(-50%) rotate(90deg);
 }
 
-.side-right.standard .space-owner-marker {
+.side-right.standard .space-owner-badge {
 	right: 8px;
 	top: 50%;
-	transform: translateY(-50%);
+	transform: translateY(-50%) rotate(-90deg);
 }
 
 .side-top.standard {

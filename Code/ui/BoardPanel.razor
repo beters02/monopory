@@ -91,7 +91,10 @@
 					}
 					@if ( ShouldShowOwnerMarker( space ) )
 					{
-						<div class="space-owner-marker" style="@GetOwnerMarkerStyle( space )"></div>
+						<div class="space-owner-badge" style="@GetOwnerBadgeStyle( space )">
+							<div class="space-owner-marker" style="@GetOwnerMarkerStyle( space )"></div>
+							<div class="space-owner-name">@GetOwnerName( space )</div>
+						</div>
 					}
 				</div>
 			</div>
@@ -147,6 +150,7 @@
 	[Property] public float CommunityChestIconFontSizePx { get; set; } = 32f;
 	[Property] public float UtilityIconFontSizePx { get; set; } = 28f;
 	[Property] public float OwnerMarkerSizePx { get; set; } = 16f;
+	[Property] public float OwnerNameFontSizePx { get; set; } = 11f;
 	[Property] public float CornerIconFontSizePx { get; set; } = 32f;
 	[Property] public float GoIconFontSizePx { get; set; } = 44f;
 	[Property] public float GoToJailIconFontSizePx { get; set; } = 42f;
@@ -365,6 +369,14 @@
 			GetOwnerIndex( space ) >= 0;
 	}
 
+	private string GetOwnerBadgeStyle( SpaceDef space )
+	{
+		var fontSize = Math.Max( 6f, OwnerNameFontSizePx );
+		var lineHeight = fontSize + 2f;
+
+		return $"font-size: {fontSize}px; line-height: {lineHeight}px; color: {TextColor};";
+	}
+
 	private string GetOwnerMarkerStyle( SpaceDef space )
 	{
 		var ownerColor = GetOwnerColor( space );
@@ -372,6 +384,17 @@
 		var borderWidth = Math.Max( 1f, SpaceBorderThicknessPx * 0.55f );
 
 		return $"width: {size}px; height: {size}px; background-color: {ToCssColor( ownerColor )}; border: {borderWidth}px solid {BorderColor};";
+	}
+
+	private string GetOwnerName( SpaceDef space )
+	{
+		var game = ActiveGame;
+		var ownerIndex = GetOwnerIndex( space );
+		var owner = game?.Players.ElementAtOrDefault( ownerIndex );
+
+		return string.IsNullOrWhiteSpace( owner?.PlayerName )
+			? $"P{ownerIndex + 1}"
+			: owner.PlayerName;
 	}
 
 	private int GetOwnerIndex( SpaceDef space )
@@ -605,6 +628,7 @@
 			{
 				hash.Add( player?.OwnerId ?? 0 );
 				hash.Add( player?.IsAssigned ?? false );
+				hash.Add( player?.PlayerName ?? "" );
 				hash.Add( player?.ColorSlot ?? -1 );
 			}
 		}
@@ -658,6 +682,7 @@
 		hash.Add( CommunityChestIconFontSizePx );
 		hash.Add( UtilityIconFontSizePx );
 		hash.Add( OwnerMarkerSizePx );
+		hash.Add( OwnerNameFontSizePx );
 		hash.Add( CornerIconFontSizePx );
 		hash.Add( GoIconFontSizePx );
 		hash.Add( GoToJailIconFontSizePx );
