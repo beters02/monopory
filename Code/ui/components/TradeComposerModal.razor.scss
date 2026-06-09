@@ -97,6 +97,31 @@
 	border-radius: $monopoly-radius-control;
 }
 
+.trade-composer-modal .trade-side.trade-you-give-side {
+	background-color: rgba(185, 79, 99, 0.42);
+	border-color: rgba(185, 79, 99, 0.82);
+	box-shadow: inset 0 0 0 2px rgba(224, 189, 104, 0.32);
+	overflow: hidden;
+}
+
+.trade-composer-modal .trade-side.trade-you-give-side .trade-player-name,
+.trade-composer-modal .trade-side.trade-you-give-side .trade-property-section-title {
+	color: $monopoly-ink;
+}
+
+.trade-composer-modal .trade-side.trade-you-give-side .trade-money-input {
+	background-color: $monopoly-danger-hover;
+	border-color: $monopoly-ink;
+	color: $monopoly-board;
+}
+
+.trade-composer-modal .trade-side.trade-you-give-side .trade-money-input .placeholder,
+.trade-composer-modal .trade-side.trade-you-give-side .trade-money-input .content-label,
+.trade-composer-modal .trade-side.trade-you-give-side .trade-money-input .label,
+.trade-composer-modal .trade-side.trade-you-give-side .trade-money-input .text {
+	color: $monopoly-board;
+}
+
 .trade-composer-modal .trade-player-name {
 	text-align: left;
 	font-size: $monopoly-font-panel-title;
@@ -335,6 +360,16 @@
 	background-color: $monopoly-success-soft;
 	border: 2px solid $monopoly-card-ink-line;
 	border-radius: $monopoly-radius-control;
+}
+
+.trade-composer-modal .trade-side.trade-you-give-side .trade-giving-section {
+	background-color: rgba(185, 79, 99, 0.66);
+	border-color: rgba(23, 38, 48, 0.86);
+	box-shadow: inset 0 0 0 2px rgba(244, 220, 148, 0.4);
+}
+
+.trade-composer-modal .trade-side.trade-you-give-side .trade-has-section {
+	background-color: rgba(241, 247, 243, 0.22);
 }
 
 .trade-composer-modal .trade-has-section {

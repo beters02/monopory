@@ -96,6 +96,23 @@
 	border-radius: $monopoly-radius-control;
 }
 
+.trade-summary-side.trade-you-give-side {
+	background-color: rgba(185, 79, 99, 0.48);
+	border-color: rgba(185, 79, 99, 0.86);
+	box-shadow: inset 0 0 0 2px rgba(224, 189, 104, 0.32);
+	overflow: hidden;
+}
+
+.trade-summary-side.trade-you-give-side .trade-player-name {
+	color: $monopoly-ink;
+}
+
+.trade-summary-side.trade-you-give-side .trade-money-pill {
+	background-color: $monopoly-danger-hover;
+	border-color: $monopoly-ink;
+	color: $monopoly-board;
+}
+
 .trade-player-name {
 	text-align: left;
 	font-size: $monopoly-font-panel-title;

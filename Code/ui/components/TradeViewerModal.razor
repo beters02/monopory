@@ -13,7 +13,7 @@
 				<div class="trade-modal-title">@GetPlayerName( Trade.SenderPlayerIndex ) -&gt; @GetPlayerName( Trade.ReceiverPlayerIndex )</div>
 
 				<div class="trade-summary-grid">
-					<div class="trade-summary-side">
+					<div class="@GetSummarySideClasses( Trade.SenderPlayerIndex )">
 						<div class="trade-player-name">@GetPlayerName( Trade.SenderPlayerIndex ) gives</div>
 						<div class="trade-money-pill">$@Trade.SenderMoney</div>
 						@foreach ( var propertyIndex in Trade.SenderPropertyIndexes )
@@ -31,7 +31,7 @@
 							<div class="@GetCardChipClasses( cardId )">@GetCardName( cardId )</div>
 						}
 					</div>
-					<div class="trade-summary-side">
+					<div class="@GetSummarySideClasses( Trade.ReceiverPlayerIndex )">
 						<div class="trade-player-name">@GetPlayerName( Trade.ReceiverPlayerIndex ) gives</div>
 						<div class="trade-money-pill">$@Trade.ReceiverMoney</div>
 						@foreach ( var propertyIndex in Trade.ReceiverPropertyIndexes )
@@ -91,6 +91,13 @@
 	private string GetPropertyName( int propertyIndex )
 	{
 		return GameRef?.Board?.GetSpaceDef( propertyIndex )?.DisplayName ?? $"Space {propertyIndex}";
+	}
+
+	private string GetSummarySideClasses( int playerIndex )
+	{
+		return playerIndex == GameRef?.LocalPlayerIndex
+			? "trade-summary-side trade-you-give-side"
+			: "trade-summary-side";
 	}
 
 	private string GetPropertyChipClasses( int propertyIndex )
