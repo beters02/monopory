@@ -18,7 +18,7 @@
 						<div class="trade-money-pill">$@Trade.SenderMoney</div>
 						@foreach ( var propertyIndex in Trade.SenderPropertyIndexes )
 						{
-							<div class="@GetPropertyChipClasses( propertyIndex )" onmousedown="@(() => HandlePropertyMouseDown( propertyIndex ))">
+							<div class="@GetPropertyChipClasses( propertyIndex )" onclick="@(() => SelectPropertySpace( propertyIndex ))">
 								<div class="trade-property-chip-label">@GetPropertyName( propertyIndex )</div>
 								@if ( IsPropertyMortgaged( propertyIndex ) )
 								{
@@ -36,7 +36,7 @@
 						<div class="trade-money-pill">$@Trade.ReceiverMoney</div>
 						@foreach ( var propertyIndex in Trade.ReceiverPropertyIndexes )
 						{
-							<div class="@GetPropertyChipClasses( propertyIndex )" onmousedown="@(() => HandlePropertyMouseDown( propertyIndex ))">
+							<div class="@GetPropertyChipClasses( propertyIndex )" onclick="@(() => SelectPropertySpace( propertyIndex ))">
 								<div class="trade-property-chip-label">@GetPropertyName( propertyIndex )</div>
 								@if ( IsPropertyMortgaged( propertyIndex ) )
 								{
@@ -77,11 +77,7 @@
 	private void AcceptTrade( int tradeId ) => OnAccept?.Invoke( tradeId );
 	private void NegotiateTrade( int tradeId ) => OnNegotiate?.Invoke( tradeId );
 	private void DenyTrade( int tradeId ) => OnDeny?.Invoke( tradeId );
-	private void HandlePropertyMouseDown( int propertyIndex )
-	{
-		if ( Input.Pressed( "attack2" ) )
-			GameRef?.SelectSpace( propertyIndex );
-	}
+	private void SelectPropertySpace( int propertyIndex ) => GameRef?.SelectSpace( propertyIndex );
 
 	private string GetPlayerName( int playerIndex )
 	{
