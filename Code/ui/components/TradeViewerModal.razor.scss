@@ -15,7 +15,7 @@
 	justify-content: center;
 
 	background-color: $monopoly-modal-backdrop;
-	pointer-events: all;
+	pointer-events: none;
 }
 
 .trade-modal {
@@ -36,6 +36,8 @@
 	display: flex;
 	flex-direction: column;
 	gap: $monopoly-panel-gap;
+
+	pointer-events: all;
 }
 
 .trade-view-modal {
