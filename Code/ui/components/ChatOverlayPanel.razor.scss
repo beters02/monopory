@@ -68,13 +68,14 @@
 	bottom: 6px;
 }
 
-.chat-overlay-permanent-close-button {
+.monopoly-button.chat-overlay-permanent-close-button {
 	position: absolute;
 	top: 8px;
 	right: 26px;
 	z-index: 3;
 	width: 22px;
 	height: 22px;
+	min-height: 0;
 	padding: 0;
 	margin: 0;
 	border: 2px solid $monopoly-gold;
@@ -89,9 +90,10 @@
 	justify-content: center;
 	pointer-events: all;
 	cursor: pointer;
+	box-shadow: none;
 }
 
-.chat-overlay-permanent-close-button:hover {
+.monopoly-button.chat-overlay-permanent-close-button:hover {
 	background-color: $monopoly-danger;
 	color: $monopoly-text;
 }
@@ -164,9 +166,13 @@
 	color: $monopoly-text;
 }
 
-.chat-overlay-send-button {
+.monopoly-button.chat-overlay-send-button {
 	height: 34px;
+	min-height: 0;
+	width: 74px;
 	min-width: 74px;
+	max-width: 74px;
+	flex: 0 0 74px;
 	padding: 0 14px;
 	margin: 0;
 	border: 2px solid $monopoly-gold;
@@ -187,20 +193,24 @@
 	box-shadow: $monopoly-control-shadow;
 }
 
-.chat-overlay-send-button:hover {
+.monopoly-button.chat-overlay-send-button:hover {
 	background-color: $monopoly-gold-hover;
 	border-color: $monopoly-gold-hover;
 }
 
-.chat-overlay-send-button:active {
+.monopoly-button.chat-overlay-send-button:active {
 	background-color: $monopoly-gold-soft;
 	transform: translateY(1px);
 	box-shadow: $monopoly-control-shadow;
 }
 
-.chat-overlay-reopen-button {
+.monopoly-button.chat-overlay-reopen-button {
 	height: 34px;
+	min-height: 0;
+	width: 96px;
 	min-width: 96px;
+	max-width: 96px;
+	flex: 0 0 96px;
 	padding: 0 14px;
 	margin: 0;
 	border: 2px solid $monopoly-gold;
@@ -221,12 +231,12 @@
 	box-shadow: $monopoly-control-shadow;
 }
 
-.chat-overlay-reopen-button:hover {
+.monopoly-button.chat-overlay-reopen-button:hover {
 	background-color: $monopoly-gold;
 	color: $monopoly-ink;
 }
 
-.chat-overlay-reopen-button:active {
+.monopoly-button.chat-overlay-reopen-button:active {
 	background-color: $monopoly-gold-soft;
 	transform: translateY(1px);
 }

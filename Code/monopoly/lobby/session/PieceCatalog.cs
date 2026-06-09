@@ -47,6 +47,30 @@ public static class PieceCatalog
 				LocalVisualOffset = new Vector3( 0f, 0f, -1.3f ),
 				HeightOffset = 1.25f
 			},
+			new()
+			{
+				Id = "rock_woman",
+				Label = "Rocker (Woman)",
+				Description = "Stylish rock character token.",
+				RequiredAchievementId = AchievementIds.FirstWin,
+				ModelPath = "models/cutieguys_rock_woman/cutieguys_rock_woman.vmdl",
+				AnimgraphPath = "animgraphs/cutieguys_rock_woman.vanmgrph",
+				LocalVisualScale = new Vector3( 0.2f, 0.2f, 0.2f ),
+				LocalVisualOffset = new Vector3( 0f, 0f, -1.3f ),
+				HeightOffset = 1.25f
+			},
+			new()
+			{
+				Id = "cowboy_man",
+				Label = "Cowboy (Man)",
+				Description = "Meet Fred. He is an alcoholic coyboy.",
+				RequiredAchievementId = AchievementIds.FirstWin,
+				ModelPath = "models/cutieguys_cowboy_man/cutieguys_cowboy_man.vmdl",
+				AnimgraphPath = "animgraphs/cutieguys_cowboy_man.vanmgrph",
+				LocalVisualScale = new Vector3( 0.2f, 0.2f, 0.2f ),
+				LocalVisualOffset = new Vector3( 0f, 0f, -1.3f ),
+				HeightOffset = 1.25f
+			},
 		};
 	}
 

@@ -1,19 +1,20 @@
 @namespace Sandbox.ui.components
 @using Sandbox
 @using Sandbox.UI
+@using Sandbox.ui.components.buttons
 @using System
 @inherits PanelComponent
 
 <root class="@GetRootClasses()">
 	@if ( IsPermanentlyClosed )
 	{
-		<button class="chat-overlay-reopen-button" onclick="@OpenPermanentlyClosedChat">Open chat</button>
+		<GameButton Variant="chat-overlay-reopen-button" OnClick="@OpenPermanentlyClosedChat" SoundEnabled="@false">Open chat</GameButton>
 	}
 	else
 	{
 		<div class="chat-overlay-panel">
 			<div class="chat-overlay-messages-shell">
-				<button class="chat-overlay-permanent-close-button" title="Close chat" onclick="@ClosePermanently">×</button>
+				<GameButton Variant="chat-overlay-permanent-close-button" Title="Close chat" OnClick="@ClosePermanently" SoundEnabled="@false">×</GameButton>
 				<div class="chat-overlay-messages monopory-scroll-y" @ref="MessagesPanel">
 					@foreach ( var entry in ChatEntries )
 					{
@@ -47,7 +48,7 @@
 						Placeholder="Type message and press Enter..."
 						OnConsoleCloseRequested="@CancelCompose"
 						onsubmit="@SubmitMessage" />
-					<button class="chat-overlay-send-button" onclick="@SubmitMessage">Send</button>
+					<GameButton Variant="chat-overlay-send-button" OnClick="@SubmitMessage">Send</GameButton>
 				}
 				else
 				{
@@ -62,6 +63,8 @@
 {
 	[Property] public GameController GameRef { get; set; }
 	public float HideAfterSeconds { get; set; } = 5f;
+	public GameSound OpenChatSound = GameAssets.Sounds.ClickAndOpen;
+	public GameSound CloseChatSound = GameAssets.Sounds.ClickAndClose;
 	private readonly record struct ChatEntry( int Id, string Sender, string Message );
 	private readonly record struct MessageSegment( string Text, bool IsMention );
 	private readonly record struct MentionMatch( int Start, int NameEnd, int End, string Name );
@@ -195,6 +198,7 @@
 
 	private void ClosePermanently()
 	{
+		CloseChatSound.Play();
 		IsPermanentlyClosed = true;
 		IsComposing = false;
 		WantsFocus = false;
@@ -204,6 +208,7 @@
 
 	private void OpenPermanentlyClosedChat()
 	{
+		OpenChatSound.Play();
 		IsPermanentlyClosed = false;
 		Touch();
 		RequestScrollToBottom();
