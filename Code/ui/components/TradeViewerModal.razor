@@ -18,7 +18,13 @@
 						<div class="trade-money-pill">$@Trade.SenderMoney</div>
 						@foreach ( var propertyIndex in Trade.SenderPropertyIndexes )
 						{
-							<div class="@GetPropertyChipClasses( propertyIndex )">@GetPropertyName( propertyIndex )</div>
+							<div class="@GetPropertyChipClasses( propertyIndex )" onmousedown="@(() => HandlePropertyMouseDown( propertyIndex ))">
+								<div class="trade-property-chip-label">@GetPropertyName( propertyIndex )</div>
+								@if ( IsPropertyMortgaged( propertyIndex ) )
+								{
+									<div class="trade-property-mortgage-stamp">Mortgaged</div>
+								}
+							</div>
 						}
 						@foreach ( var cardId in Trade.SenderCardIds )
 						{
@@ -30,7 +36,13 @@
 						<div class="trade-money-pill">$@Trade.ReceiverMoney</div>
 						@foreach ( var propertyIndex in Trade.ReceiverPropertyIndexes )
 						{
-							<div class="@GetPropertyChipClasses( propertyIndex )">@GetPropertyName( propertyIndex )</div>
+							<div class="@GetPropertyChipClasses( propertyIndex )" onmousedown="@(() => HandlePropertyMouseDown( propertyIndex ))">
+								<div class="trade-property-chip-label">@GetPropertyName( propertyIndex )</div>
+								@if ( IsPropertyMortgaged( propertyIndex ) )
+								{
+									<div class="trade-property-mortgage-stamp">Mortgaged</div>
+								}
+							</div>
 						}
 						@foreach ( var cardId in Trade.ReceiverCardIds )
 						{
@@ -65,6 +77,11 @@
 	private void AcceptTrade( int tradeId ) => OnAccept?.Invoke( tradeId );
 	private void NegotiateTrade( int tradeId ) => OnNegotiate?.Invoke( tradeId );
 	private void DenyTrade( int tradeId ) => OnDeny?.Invoke( tradeId );
+	private void HandlePropertyMouseDown( int propertyIndex )
+	{
+		if ( Input.Pressed( "attack2" ) )
+			GameRef?.SelectSpace( propertyIndex );
+	}
 
 	private string GetPlayerName( int playerIndex )
 	{
@@ -79,7 +96,17 @@
 	private string GetPropertyChipClasses( int propertyIndex )
 	{
 		var def = GameRef?.Board?.GetSpaceDef( propertyIndex );
-		return $"trade-property-chip color-{HudUi.GetPropertyColorClass( def )}";
+		var classes = $"trade-property-chip color-{HudUi.GetPropertyColorClass( def )}";
+
+		if ( IsPropertyMortgaged( propertyIndex ) )
+			classes += " mortgaged";
+
+		return classes;
+	}
+
+	private bool IsPropertyMortgaged( int propertyIndex )
+	{
+		return GameRef?.IsMortgaged( propertyIndex ) == true;
 	}
 
 	private string GetCardName( string cardId )
@@ -98,7 +125,8 @@
 			Trade?.Id ?? -1,
 			Trade?.Serialize() ?? "",
 			GameRef?.LocalPlayerIndex ?? -1,
-			HudUi.GetPlayersHash( GameRef )
+			HudUi.GetPlayersHash( GameRef ),
+			HudUi.GetMortgagedPropertiesHash( GameRef )
 		);
 	}
 }

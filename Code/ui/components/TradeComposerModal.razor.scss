@@ -434,6 +434,36 @@
 	overflow: hidden;
 }
 
+.trade-composer-modal .trade-property-chip.mortgaged {
+	filter: saturate(0.28) brightness(0.72);
+}
+
+.trade-composer-modal .trade-property-chip.mortgaged.selected {
+	filter: saturate(0.45) brightness(0.78);
+}
+
+.trade-composer-modal .trade-property-mortgage-stamp {
+	position: absolute;
+	left: -8px;
+	right: -8px;
+	top: 50%;
+	height: 18px;
+	transform: translateY(-50%) rotate(-10deg);
+
+	background-color: $monopoly-card-ink-surface-hover;
+	border-top: 2px solid $monopoly-card-ink-soft;
+	border-bottom: 2px solid $monopoly-card-ink-soft;
+	color: $monopoly-card-ink-soft;
+
+	align-items: center;
+	justify-content: center;
+
+	font-size: 10px;
+	font-weight: 900;
+	text-transform: uppercase;
+	pointer-events: none;
+}
+
 .trade-composer-modal .trade-property-chip.color-brown { background-color: $property-brown; }
 .trade-composer-modal .trade-property-chip.color-light_blue { background-color: $property-light-blue; }
 .trade-composer-modal .trade-property-chip.color-pink { background-color: $property-pink; }

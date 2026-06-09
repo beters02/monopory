@@ -195,9 +195,12 @@
 }
 
 .trade-summary-side .trade-property-chip {
+	position: relative;
 	min-height: $monopoly-control-height-small;
 	margin: 0;
 	padding: 0 10px;
+	cursor: pointer;
+	pointer-events: all;
 
 	border: 2px solid $monopoly-property-border;
 	border-radius: $monopoly-radius-control;
@@ -214,6 +217,44 @@
 	white-space: nowrap;
 	text-overflow: ellipsis;
 	overflow: hidden;
+}
+
+.trade-summary-side .trade-property-chip:hover {
+	box-shadow: 0 0 0 2px $monopoly-gold-soft;
+}
+
+.trade-summary-side .trade-property-chip.mortgaged {
+	filter: saturate(0.28) brightness(0.72);
+}
+
+.trade-summary-side .trade-property-chip .trade-property-chip-label {
+	width: 100%;
+	min-width: 0;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
+}
+
+.trade-summary-side .trade-property-mortgage-stamp {
+	position: absolute;
+	left: -8px;
+	right: -8px;
+	top: 50%;
+	height: 18px;
+	transform: translateY(-50%) rotate(-10deg);
+
+	background-color: $monopoly-card-ink-surface-hover;
+	border-top: 2px solid $monopoly-card-ink-soft;
+	border-bottom: 2px solid $monopoly-card-ink-soft;
+	color: $monopoly-card-ink-soft;
+
+	align-items: center;
+	justify-content: center;
+
+	font-size: 10px;
+	font-weight: 900;
+	text-transform: uppercase;
+	pointer-events: none;
 }
 
 .trade-property-chip.color-brown { background-color: $property-brown; }

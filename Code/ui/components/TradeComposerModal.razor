@@ -34,10 +34,14 @@
 										@foreach ( var propertyIndex in GetGivingPropertyIndexes( true ) )
 										{
 											var property = GameRef.Board.GetSpaceDef( propertyIndex );
-											<GameButton Variant="@GetComposerPropertyClasses( propertyIndex, true )" OnClick="@(() => ToggleSenderProperty( propertyIndex ))">
+											<GameButton Variant="@GetComposerPropertyClasses( propertyIndex, true )" OnClick="@(() => ToggleSenderProperty( propertyIndex ))" OnRightClick="@(() => HandlePropertyRightClick( propertyIndex ))">
 												<ChildContent>
-													<div class="trade-property-selected-mark">+</div>
-													<div class="trade-property-chip-label">@property?.DisplayName</div>
+												<div class="trade-property-selected-mark">+</div>
+												<div class="trade-property-chip-label">@property?.DisplayName</div>
+												@if ( IsPropertyMortgaged( propertyIndex ) )
+												{
+													<div class="trade-property-mortgage-stamp">Mortgaged</div>
+												}
 												</ChildContent>
 											</GameButton>
 										}
@@ -66,10 +70,14 @@
 										@foreach ( var propertyIndex in GetHasPropertyIndexes( true ) )
 										{
 											var property = GameRef.Board.GetSpaceDef( propertyIndex );
-											<GameButton Variant="@GetComposerPropertyClasses( propertyIndex, true )" OnClick="@(() => ToggleSenderProperty( propertyIndex ))">
+											<GameButton Variant="@GetComposerPropertyClasses( propertyIndex, true )" OnClick="@(() => ToggleSenderProperty( propertyIndex ))" OnRightClick="@(() => HandlePropertyRightClick( propertyIndex ))">
 												<ChildContent>
-													<div class="trade-property-selected-mark">+</div>
-													<div class="trade-property-chip-label">@property?.DisplayName</div>
+												<div class="trade-property-selected-mark">+</div>
+												<div class="trade-property-chip-label">@property?.DisplayName</div>
+												@if ( IsPropertyMortgaged( propertyIndex ) )
+												{
+													<div class="trade-property-mortgage-stamp">Mortgaged</div>
+												}
 												</ChildContent>
 											</GameButton>
 										}
@@ -131,10 +139,14 @@
 										@foreach ( var propertyIndex in GetGivingPropertyIndexes( false ) )
 										{
 											var property = GameRef.Board.GetSpaceDef( propertyIndex );
-											<GameButton Variant="@GetComposerPropertyClasses( propertyIndex, false )" OnClick="@(() => ToggleReceiverProperty( propertyIndex ))">
+											<GameButton Variant="@GetComposerPropertyClasses( propertyIndex, false )" OnClick="@(() => ToggleReceiverProperty( propertyIndex ))" OnRightClick="@(() => HandlePropertyRightClick( propertyIndex ))">
 												<ChildContent>
 													<div class="trade-property-selected-mark">+</div>
 													<div class="trade-property-chip-label">@property?.DisplayName</div>
+													@if ( IsPropertyMortgaged( propertyIndex ) )
+													{
+														<div class="trade-property-mortgage-stamp">Mortgaged</div>
+													}
 												</ChildContent>
 											</GameButton>
 										}
@@ -163,10 +175,14 @@
 										@foreach ( var propertyIndex in GetHasPropertyIndexes( false ) )
 										{
 											var property = GameRef.Board.GetSpaceDef( propertyIndex );
-											<GameButton Variant="@GetComposerPropertyClasses( propertyIndex, false )" OnClick="@(() => ToggleReceiverProperty( propertyIndex ))">
+											<GameButton Variant="@GetComposerPropertyClasses( propertyIndex, false )" OnClick="@(() => ToggleReceiverProperty( propertyIndex ))" OnRightClick="@(() => HandlePropertyRightClick( propertyIndex ))">
 												<ChildContent>
 													<div class="trade-property-selected-mark">+</div>
 													<div class="trade-property-chip-label">@property?.DisplayName</div>
+													@if ( IsPropertyMortgaged( propertyIndex ) )
+													{
+														<div class="trade-property-mortgage-stamp">Mortgaged</div>
+													}
 												</ChildContent>
 											</GameButton>
 										}
@@ -308,7 +324,20 @@
 		if ( selected )
 			classes += " selected";
 
+		if ( IsPropertyMortgaged( propertyIndex ) )
+			classes += " mortgaged";
+
 		return classes;
+	}
+
+	private bool IsPropertyMortgaged( int propertyIndex )
+	{
+		return GameRef?.IsMortgaged( propertyIndex ) == true;
+	}
+
+	private void HandlePropertyRightClick( int propertyIndex )
+	{
+		GameRef?.SelectSpace( propertyIndex );
 	}
 
 	private string GetComposerCardClasses( string cardId, bool senderSide )
@@ -357,6 +386,7 @@
 		hash.Add( CanSelectReceiver );
 		hash.Add( HudUi.GetPlayersHash( GameRef ) );
 		hash.Add( HudUi.GetPropertyOwnersHash( GameRef ) );
+		hash.Add( HudUi.GetMortgagedPropertiesHash( GameRef ) );
 
 		foreach ( var index in SenderPropertyIndexes.OrderBy( x => x ) )
 			hash.Add( index );
