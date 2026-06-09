@@ -63,7 +63,7 @@ public static class PieceCatalog
 			{
 				Id = "cowboy_man",
 				Label = "Cowboy (Man)",
-				Description = "Meet Fred. He is an alcoholic coyboy.",
+				Description = "Meet Fred. He is an alcoholic cowboy.",
 				RequiredAchievementId = AchievementIds.FirstWin,
 				ModelPath = "models/cutieguys_cowboy_man/cutieguys_cowboy_man.vmdl",
 				AnimgraphPath = "animgraphs/cutieguys_cowboy_man.vanmgrph",

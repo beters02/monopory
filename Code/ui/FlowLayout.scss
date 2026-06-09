@@ -74,6 +74,20 @@ LobbyMenu {
 		box-shadow: 0 -10px 0 -6px $monopoly-ink, 0 10px 0 -6px $monopoly-ink, -10px 0 0 -6px $monopoly-ink, 10px 0 0 -6px $monopoly-ink;
 	}
 
+	.flow-version-label {
+		position: absolute;
+		left: 24px;
+		bottom: 18px;
+		z-index: 10;
+
+		color: $monopoly-board;
+		font-family: $monopoly-font-family;
+		font-size: 13px;
+		font-weight: 800;
+		opacity: 0.72;
+		text-transform: uppercase;
+	}
+
 	.menu-screen {
 		background-color: $monopoly-ink-soft;
 	}

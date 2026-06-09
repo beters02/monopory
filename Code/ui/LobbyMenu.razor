@@ -149,6 +149,7 @@
 				<div class="flow-settings-icon"></div>
 			</ChildContent>
 		</GameButton>
+		<div class="flow-version-label">Version @GameVersion</div>
 		<div class="flow-panel lobby-panel">
 			<div class="flow-kicker">Lobby</div>
 			<div class="flow-title">Players</div>
@@ -206,6 +207,7 @@
 	private Panel MatchConfigScrollPanel = null!;
 	private Panel PieceCustomizeScrollPanel = null!;
 	private bool CanOpenConfig => Lobby is not null;
+	private string GameVersion => MonopolyApp.GameVersion;
 	private bool CanEditConfig => Lobby?.IsLocalEffectiveHost == true;
 	private IReadOnlyList<PieceDefinition> AvailablePieces => PieceCatalog.All;
 	private MatchConfig EditableConfig;

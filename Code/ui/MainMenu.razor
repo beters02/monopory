@@ -14,6 +14,7 @@
 				<div class="flow-settings-icon"></div>
 			</ChildContent>
 		</GameButton>
+		<div class="flow-version-label">Version @GameVersion</div>
 		<div class="flow-panel menu-panel">
 			<div class="flow-kicker">#game.kicker</div>
 			<div class="flow-title">#game.name</div>
@@ -33,6 +34,8 @@
 @code
 {
 	[Property] public MenuController MenuRef { get; set; }
+
+	private string GameVersion => MonopolyApp.GameVersion;
 
 	private bool IsOptionsMenuOpen;
 	private MenuController Menu => MenuRef ?? Scene?.GetAllComponents<MenuController>().FirstOrDefault();
