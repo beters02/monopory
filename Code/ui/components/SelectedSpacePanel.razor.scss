@@ -201,14 +201,14 @@
 .selected-space-actions .improvement-buttons .monopoly-button {
 	align-items: center;
 	justify-content: center;
-	gap: 4px;
+	gap: 2px;
 	min-height: 38px;
 	padding: 5px 8px;
 }
 
 .selected-space-actions .improvement-buttons .buy-improvement-action {
 	background-color: $monopoly-success;
-	color: $monopoly-ink;
+	color: $monopoly-text;
 }
 
 .selected-space-actions .improvement-buttons .sell-improvement-action {
@@ -217,9 +217,9 @@
 }
 
 .space-action-price {
-	flex: 0 0 40px;
+	flex: 0 0 46px;
 	text-align: right;
-	font-size: 12px;
+	font-size: 14px;
 	font-weight: 900;
 	line-height: 14px;
 }
@@ -232,17 +232,13 @@
 }
 
 .space-action-symbol {
-	flex: 0 0 8px;
-	color: $monopoly-ink;
+	flex: 0 0 5px;
+	color: $monopoly-text;
 	align-items: center;
-	justify-content: center;
+	justify-content: flex-end;
 	font-size: 17px;
 	font-weight: 900;
 	line-height: 17px;
-}
-
-.sell-improvement-action .space-action-symbol {
-	color: $monopoly-text;
 }
 
 .selected-space-actions .space-buttons .monopoly-button:hover {
