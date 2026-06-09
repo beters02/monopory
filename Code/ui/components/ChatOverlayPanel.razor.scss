@@ -68,6 +68,34 @@
 	bottom: 6px;
 }
 
+.chat-overlay-permanent-close-button {
+	position: absolute;
+	top: 8px;
+	right: 26px;
+	z-index: 3;
+	width: 22px;
+	height: 22px;
+	padding: 0;
+	margin: 0;
+	border: 2px solid $monopoly-gold;
+	border-radius: $monopoly-radius-board;
+	background-color: $monopoly-ink-soft;
+	color: $monopoly-text;
+	font-family: $monopoly-font-family;
+	font-size: 16px;
+	font-weight: 900;
+	line-height: 16px;
+	align-items: center;
+	justify-content: center;
+	pointer-events: all;
+	cursor: pointer;
+}
+
+.chat-overlay-permanent-close-button:hover {
+	background-color: $monopoly-danger;
+	color: $monopoly-text;
+}
+
 
 .chat-overlay-line {
 	display: flex;
@@ -201,5 +229,4 @@
 	background-color: $monopoly-gold-soft;
 	transform: translateY(1px);
 }
-
 

@@ -13,6 +13,7 @@
 	{
 		<div class="chat-overlay-panel">
 			<div class="chat-overlay-messages-shell">
+				<button class="chat-overlay-permanent-close-button" title="Close chat" onclick="@ClosePermanently">×</button>
 				<div class="chat-overlay-messages monopory-scroll-y" @ref="MessagesPanel">
 					@foreach ( var entry in ChatEntries )
 					{
@@ -189,6 +190,11 @@
 			return;
 		}
 
+		ClosePermanently();
+	}
+
+	private void ClosePermanently()
+	{
 		IsPermanentlyClosed = true;
 		IsComposing = false;
 		WantsFocus = false;
