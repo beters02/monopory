@@ -50,6 +50,7 @@ public sealed partial class GameController : Component
 		AuctionCurrentBid = 0;
 		AuctionHighBidderIndex = -1;
 		AuctionEndsAt = Time.Now + 15f;
+		PauseTurnTimerForAuction();
 		Phase = GamePhase.Auctioning;
 
 		SendGlobalPopupToAll( "Auction started", $"{def.DisplayName} is up for auction.", PopupKind.Info, true, 4f );
@@ -85,6 +86,7 @@ public sealed partial class GameController : Component
 
 		ClearAuction();
 		SetPostActionPhase();
+		ResumeTurnTimerAfterAuction();
 	}
 
 	private void ClearAuction()
@@ -93,6 +95,20 @@ public sealed partial class GameController : Component
 		AuctionCurrentBid = 0;
 		AuctionHighBidderIndex = -1;
 		AuctionEndsAt = 0f;
+	}
+
+	private void PauseTurnTimerForAuction()
+	{
+		auctionPausedTurnRemainingSeconds = CurrentTurnEndsAt <= 0f ? 0f : Math.Max( 0f, CurrentTurnEndsAt - Time.Now );
+		CurrentTurnEndsAt = 0f;
+	}
+
+	private void ResumeTurnTimerAfterAuction()
+	{
+		if ( CurrentTurnEndsAt <= 0f && auctionPausedTurnRemainingSeconds > 0f && MatchState == MatchLifecycleState.InGame )
+			CurrentTurnEndsAt = Time.Now + auctionPausedTurnRemainingSeconds;
+
+		auctionPausedTurnRemainingSeconds = 0f;
 	}
 
 	public void PlaceAuctionBid( int bidderIndex, int bidAmount )

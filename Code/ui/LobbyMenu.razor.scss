@@ -323,7 +323,8 @@
 .match-config-title,
 .match-config-copy,
 .match-config-value,
-.match-config-stepper-value {
+.match-config-stepper-value,
+.match-config-stepper-input {
 	width: 100%;
 	min-width: 0;
 
@@ -341,7 +342,10 @@
 .match-config-title .label,
 .match-config-copy .label,
 .match-config-value .label,
-.match-config-stepper-value .label {
+.match-config-stepper-value .label,
+.match-config-stepper-input .placeholder,
+.match-config-stepper-input .content-label,
+.match-config-stepper-input .label {
 	width: 100%;
 	min-width: 0;
 
@@ -647,24 +651,56 @@
 	padding: 0;
 }
 
-.match-config-stepper-value {
+.match-config-stepper-value,
+.match-config-stepper-input {
 	min-width: 96px;
 	width: 96px;
+	height: $monopoly-control-height;
 	padding: 10px 12px;
+
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: center;
 
 	background-color: $monopoly-surface-medium;
 	border: 1px solid $monopoly-panel-line;
 	border-radius: $monopoly-radius-control;
 
 	color: $monopoly-text;
+	font-family: $monopoly-font-family;
 	font-size: 16px;
 	font-weight: 900;
+	line-height: 20px;
 	text-align: center;
 	flex-shrink: 0;
+	pointer-events: all;
+	overflow: hidden;
+	white-space: nowrap;
 }
 
-.match-config-stepper-value .label {
+.match-config-stepper-input *,
+.match-config-stepper-value .label,
+.match-config-stepper-input .placeholder,
+.match-config-stepper-input .content-label,
+.match-config-stepper-input .label,
+.match-config-stepper-input .text {
 	text-align: center;
+	color: $monopoly-text;
+	font-size: 16px;
+	font-weight: 900;
+	line-height: 20px;
+	white-space: nowrap;
+	text-overflow: clip;
+	overflow: visible;
+}
+
+.match-config-stepper-input .cursor,
+.match-config-stepper-input .caret {
+	width: 2px;
+	height: 20px;
+	min-width: 2px;
+	background-color: $monopoly-text;
 }
 
 .match-config-readonly-value {

@@ -70,7 +70,18 @@
 															BlockedPopupTitle="Host only"
 															BlockedPopupMessage="Only the host can change lobby game settings."
 															OnClick="@(() => ChangeConfigIntValue( option, -option.Step ))">-</GameButton>
-														<div class="match-config-stepper-value">@GetConfigIntValue( option )</div>
+														@if ( CanEditConfig )
+														{
+															<TextEntry class="match-config-stepper-input"
+																Text="@GetConfigIntTextValue( option )"
+																Placeholder="0"
+																OnTextEdited="@((string value) => SetConfigIntDraftValue( option, value ))"
+																onsubmit="@(() => CommitConfigIntDraftValue( option ))" />
+														}
+														else
+														{
+															<div class="match-config-stepper-value">@GetConfigIntValue( option )</div>
+														}
 														<GameButton Variant="match-config-step-button"
 															CanClick="@CanEditConfig"
 															BlockedPopupTitle="Host only"
@@ -199,6 +210,7 @@
 	private MatchConfig EditableConfig;
 	private string LoadedConfigSnapshot = "";
 	private int configRevision;
+	private readonly Dictionary<string, string> ConfigIntDrafts = new();
 	private IReadOnlyList<string> ConfigGroups => MatchConfigSchema.Options.Select( option => option.Group ).Distinct().ToList();
 
 	protected override void OnUpdate()
@@ -292,7 +304,10 @@
 		if ( EditableConfig is not null )
 		{
 			foreach ( var option in MatchConfigSchema.Options )
+			{
 				hash.Add( MatchConfigSchema.FormatValue( option, MatchConfigSchema.GetOptionValue( option, EditableConfig ) ) );
+				hash.Add( ConfigIntDrafts.TryGetValue( option.Key, out var draft ) ? draft : "" );
+			}
 		}
 
 		return hash.ToHashCode();
@@ -466,6 +481,7 @@
 		IsConfigMenuOpen = false;
 		EditableConfig = null;
 		LoadedConfigSnapshot = "";
+		ConfigIntDrafts.Clear();
 		configRevision++;
 	}
 
@@ -495,6 +511,7 @@
 
 		EditableConfig = Lobby.GetEditableConfig();
 		LoadedConfigSnapshot = latestSnapshot;
+		ConfigIntDrafts.Clear();
 		configRevision++;
 	}
 
@@ -517,16 +534,59 @@
 		return (int)(MatchConfigSchema.GetOptionValue( option, EditableConfig ) ?? 0);
 	}
 
+	private string GetConfigIntTextValue( MatchConfigOption option )
+	{
+		if ( option is not null && ConfigIntDrafts.TryGetValue( option.Key, out var draft ) )
+			return draft;
+
+		return GetConfigIntValue( option ).ToString();
+	}
+
 	private void ChangeConfigIntValue( MatchConfigOption option, int delta )
 	{
 		if ( !CanEditConfig )
 			return;
 
+		CommitConfigIntDraftValue( option );
 		var nextValue = GetConfigIntValue( option ) + delta;
 		nextValue = Math.Clamp( nextValue, option.Min, option.Max );
 		MatchConfigSchema.SetOptionValue( option, EditableConfig, nextValue );
 		NormalizeEditableConfig();
 		configRevision++;
+	}
+
+	private void SetConfigIntDraftValue( MatchConfigOption option, string rawValue )
+	{
+		if ( !CanEditConfig || option is null )
+			return;
+
+		ConfigIntDrafts[option.Key] = rawValue ?? "";
+		configRevision++;
+	}
+
+	private void CommitConfigIntDraftValue( MatchConfigOption option )
+	{
+		if ( !CanEditConfig || option is null )
+			return;
+
+		if ( !ConfigIntDrafts.TryGetValue( option.Key, out var rawValue ) )
+			return;
+
+		if ( int.TryParse( rawValue, out var value ) )
+		{
+			value = Math.Clamp( value, option.Min, option.Max );
+			MatchConfigSchema.SetOptionValue( option, EditableConfig, value );
+			NormalizeEditableConfig();
+		}
+
+		ConfigIntDrafts.Remove( option.Key );
+		configRevision++;
+	}
+
+	private void CommitConfigIntDraftValues()
+	{
+		foreach ( var option in MatchConfigSchema.Options.Where( option => option.Kind == MatchConfigOptionKind.Int ).ToList() )
+			CommitConfigIntDraftValue( option );
 	}
 
 	private string GetConfigEnumValue( MatchConfigOption option )
@@ -556,6 +616,7 @@
 		if ( Lobby is null || EditableConfig is null || !CanEditConfig )
 			return;
 
+		CommitConfigIntDraftValues();
 		NormalizeEditableConfig();
 
 		if ( !Lobby.TrySaveConfig( EditableConfig, out var errorMessage ) )

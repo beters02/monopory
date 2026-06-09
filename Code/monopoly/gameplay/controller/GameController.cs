@@ -150,6 +150,7 @@ public sealed partial class GameController : Component, Component.INetworkListen
 	private readonly List<GameObject> spawnedTokenObjects = new();
 	private float pausedTurnRemainingSeconds;
 	private float pausedAuctionRemainingSeconds;
+	private float auctionPausedTurnRemainingSeconds;
 	private bool isContinuingRecoveredMovement;
 	private bool isRecoveringPendingRoll;
 	private float lastRecoveryAttemptAt;

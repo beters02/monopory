@@ -261,6 +261,7 @@ public sealed partial class GameController : Component
 		StartingPlayerCount = 0;
 		pausedTurnRemainingSeconds = 0f;
 		pausedAuctionRemainingSeconds = 0f;
+		auctionPausedTurnRemainingSeconds = 0f;
 		LocalSelectedDrawnCardText = "";
 		ClearMovementRecoveryState();
 		ClearPendingForcedPayment();

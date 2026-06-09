@@ -228,11 +228,13 @@
 	border-radius: $monopoly-radius-control;
 }
 
-.trade-composer-modal .trade-money-pill {
+.trade-composer-modal .trade-money-input {
 	min-width: 88px;
+	width: 88px;
 	height: $monopoly-control-height-small;
-	padding: 0 12px;
+	padding: 0 10px;
 
+	display: flex;
 	align-items: center;
 	justify-content: center;
 
@@ -241,8 +243,38 @@
 	border-radius: $monopoly-radius-control;
 	color: $monopoly-ink;
 
+	font-family: $monopoly-font-family;
 	font-size: 16px;
 	font-weight: 900;
+	line-height: $monopoly-control-height-small;
+	text-align: center;
+	pointer-events: all;
+	overflow: hidden;
+	white-space: nowrap;
+}
+
+.trade-composer-modal .trade-money-input *,
+.trade-composer-modal .trade-money-input .placeholder,
+.trade-composer-modal .trade-money-input .content-label,
+.trade-composer-modal .trade-money-input .label,
+.trade-composer-modal .trade-money-input .text {
+	width: 100%;
+	color: $monopoly-ink;
+	text-align: center;
+	font-size: 16px;
+	font-weight: 900;
+	line-height: $monopoly-control-height-small;
+	white-space: nowrap;
+	text-overflow: clip;
+	overflow: visible;
+}
+
+.trade-composer-modal .trade-money-input .cursor,
+.trade-composer-modal .trade-money-input .caret {
+	width: 2px;
+	height: 20px;
+	min-width: 2px;
+	background-color: $monopoly-ink;
 }
 
 .trade-composer-modal .trade-swap-column {

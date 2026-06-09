@@ -18,7 +18,11 @@
 						<div class="trade-player-name">@GetPlayerName( GameRef.LocalPlayerIndex )</div>
 						<div class="trade-money-row">
 							<GameButton OnClick="@(() => AdjustSenderMoney( -50 ))">-</GameButton>
-							<div class="trade-money-pill">$@SenderMoney</div>
+							<TextEntry class="trade-money-input"
+								Text="@SenderMoneyText"
+								Placeholder="0"
+								OnTextEdited="@SetSenderMoneyText"
+								onsubmit="@CommitSenderMoneyDraft" />
 							<GameButton OnClick="@(() => AdjustSenderMoney( 50 ))">+</GameButton>
 						</div>
 						<div class="trade-property-sections">
@@ -123,7 +127,11 @@
 						</div>
 						<div class="trade-money-row">
 							<GameButton OnClick="@(() => AdjustReceiverMoney( -50 ))">-</GameButton>
-							<div class="trade-money-pill">$@ReceiverMoney</div>
+							<TextEntry class="trade-money-input"
+								Text="@ReceiverMoneyText"
+								Placeholder="0"
+								OnTextEdited="@SetReceiverMoneyText"
+								onsubmit="@CommitReceiverMoneyDraft" />
 							<GameButton OnClick="@(() => AdjustReceiverMoney( 50 ))">+</GameButton>
 						</div>
 						<div class="trade-property-sections">
@@ -227,6 +235,8 @@
 	[Parameter] public Action<int> OnSelectReceiver { get; set; }
 	[Parameter] public Action<int> OnAdjustSenderMoney { get; set; }
 	[Parameter] public Action<int> OnAdjustReceiverMoney { get; set; }
+	[Parameter] public Action<int> OnSetSenderMoney { get; set; }
+	[Parameter] public Action<int> OnSetReceiverMoney { get; set; }
 	[Parameter] public Action<int> OnToggleSenderProperty { get; set; }
 	[Parameter] public Action<int> OnToggleReceiverProperty { get; set; }
 	[Parameter] public Action<string> OnToggleSenderCard { get; set; }
@@ -238,6 +248,8 @@
 	private Panel ReceiverGivingScrollPanel = null!;
 	private Panel ReceiverHasScrollPanel = null!;
 	private int LocalReceiverPlayerIndex = -1;
+	private string SenderMoneyDraft;
+	private string ReceiverMoneyDraft;
 
 	private int EffectiveReceiverPlayerIndex =>
 		TradeTargetIndexes.Contains( LocalReceiverPlayerIndex ) ? LocalReceiverPlayerIndex : ReceiverPlayerIndex;
@@ -264,24 +276,80 @@
 	private string ReceiverHeaderClasses =>
 		CanSelectReceiver ? "trade-player-select" : "trade-player-select locked";
 
+	private string SenderMoneyText =>
+		SenderMoneyDraft ?? SenderMoney.ToString();
+
+	private string ReceiverMoneyText =>
+		ReceiverMoneyDraft ?? ReceiverMoney.ToString();
+
 	private void Close()
 	{
 		LocalReceiverPlayerIndex = -1;
+		SenderMoneyDraft = null;
+		ReceiverMoneyDraft = null;
 		OnClose?.Invoke();
 	}
 	private void SelectTradeTarget( int playerIndex )
 	{
 		LocalReceiverPlayerIndex = playerIndex;
+		ReceiverMoneyDraft = null;
 		OnSelectReceiver?.Invoke( playerIndex );
 	}
 
-	private void AdjustSenderMoney( int amount ) => OnAdjustSenderMoney?.Invoke( amount );
-	private void AdjustReceiverMoney( int amount ) => OnAdjustReceiverMoney?.Invoke( amount );
+	private void AdjustSenderMoney( int amount )
+	{
+		CommitSenderMoneyDraft();
+		OnAdjustSenderMoney?.Invoke( amount );
+	}
+
+	private void AdjustReceiverMoney( int amount )
+	{
+		CommitReceiverMoneyDraft();
+		OnAdjustReceiverMoney?.Invoke( amount );
+	}
+
+	private void SetSenderMoneyText( string value )
+	{
+		SenderMoneyDraft = value ?? "";
+	}
+
+	private void SetReceiverMoneyText( string value )
+	{
+		ReceiverMoneyDraft = value ?? "";
+	}
+
+	private void CommitSenderMoneyDraft()
+	{
+		if ( SenderMoneyDraft is null )
+			return;
+
+		if ( int.TryParse( SenderMoneyDraft, out var amount ) )
+			OnSetSenderMoney?.Invoke( amount );
+
+		SenderMoneyDraft = null;
+	}
+
+	private void CommitReceiverMoneyDraft()
+	{
+		if ( ReceiverMoneyDraft is null )
+			return;
+
+		if ( int.TryParse( ReceiverMoneyDraft, out var amount ) )
+			OnSetReceiverMoney?.Invoke( amount );
+
+		ReceiverMoneyDraft = null;
+	}
+
 	private void ToggleSenderProperty( int propertyIndex ) => OnToggleSenderProperty?.Invoke( propertyIndex );
 	private void ToggleReceiverProperty( int propertyIndex ) => OnToggleReceiverProperty?.Invoke( propertyIndex );
 	private void ToggleSenderCard( string cardId ) => OnToggleSenderCard?.Invoke( cardId );
 	private void ToggleReceiverCard( string cardId ) => OnToggleReceiverCard?.Invoke( cardId );
-	private void Send() => OnSend?.Invoke();
+	private void Send()
+	{
+		CommitSenderMoneyDraft();
+		CommitReceiverMoneyDraft();
+		OnSend?.Invoke();
+	}
 
 	private List<int> GetGivingPropertyIndexes( bool senderSide )
 	{
@@ -381,6 +449,8 @@
 		hash.Add( LocalReceiverPlayerIndex );
 		hash.Add( SenderMoney );
 		hash.Add( ReceiverMoney );
+		hash.Add( SenderMoneyDraft ?? "" );
+		hash.Add( ReceiverMoneyDraft ?? "" );
 		hash.Add( Title ?? "" );
 		hash.Add( SendLabel ?? "" );
 		hash.Add( CanSelectReceiver );

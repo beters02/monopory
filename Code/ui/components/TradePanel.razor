@@ -86,6 +86,8 @@
 		OnSelectReceiver="@SelectTradeTarget"
 		OnAdjustSenderMoney="@AdjustSenderMoney"
 		OnAdjustReceiverMoney="@AdjustReceiverMoney"
+		OnSetSenderMoney="@SetSenderMoney"
+		OnSetReceiverMoney="@SetReceiverMoney"
 		OnToggleSenderProperty="@ToggleSenderProperty"
 		OnToggleReceiverProperty="@ToggleReceiverProperty"
 		OnToggleSenderCard="@ToggleSenderCard"
@@ -219,6 +221,16 @@
 	private void AdjustReceiverMoney( int amount )
 	{
 		ComposerReceiverMoney = Math.Clamp( ComposerReceiverMoney + amount, 0, GetPlayerMoney( ComposerReceiverPlayerIndex ) );
+	}
+
+	private void SetSenderMoney( int amount )
+	{
+		ComposerSenderMoney = Math.Clamp( amount, 0, LocalPlayerMoney );
+	}
+
+	private void SetReceiverMoney( int amount )
+	{
+		ComposerReceiverMoney = Math.Clamp( amount, 0, GetPlayerMoney( ComposerReceiverPlayerIndex ) );
 	}
 
 	private void ToggleSenderProperty( int propertyIndex )
