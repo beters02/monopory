@@ -63,6 +63,7 @@ public sealed partial class GameController : Component
 		}
 		finally
 		{
+			SetHudIsVisibleAll( true );
 			IsResolvingPhysicalDice = false;
 			PhysicalDiceStartedAt = 0f;
 		}

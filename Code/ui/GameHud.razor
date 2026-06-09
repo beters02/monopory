@@ -316,7 +316,7 @@
 		if ( GameRef.MatchState == MatchLifecycleState.GameOver )
 			return false;
 
-		if ( Networking.IsHost && Connection.All.Count <= 1 )
+		if ( Networking.IsHost && GameRef.GetLobbyPlayers().Count <= 1 )
 			return false;
 
 		return Networking.IsActive;

@@ -442,6 +442,11 @@ public sealed partial class GameController : Component
 
 	private async Task RecoverPendingRollAsync()
 	{
+		await RecoverPendingRollAsync( true );
+	}
+
+	private async Task RecoverPendingRollAsync( bool waitForPhysicalDiceResult )
+	{
 		if ( PendingRollPlayerIndex < 0 )
 			return;
 
@@ -455,7 +460,9 @@ public sealed partial class GameController : Component
 		}
 		else
 		{
-			var (dieA, dieB) = await WaitForPhysicalDiceResultAsync();
+			var (dieA, dieB) = waitForPhysicalDiceResult
+				? await WaitForPhysicalDiceResultAsync()
+				: GetFallbackDiceResult();
 			LastDieA = dieA;
 			LastDieB = dieB;
 			total = LastDieA + LastDieB;

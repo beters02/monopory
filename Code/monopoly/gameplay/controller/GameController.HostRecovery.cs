@@ -12,8 +12,10 @@ public sealed partial class GameController
 		if ( caller is null || caller == Connection.Local )
 			return true;
 
-		return PreferredHostOwnerId != 0 && caller.SteamId == PreferredHostOwnerId;
+		return caller.SteamId == EffectiveHostOwnerId;
 	}
+
+	public long EffectiveHostOwnerId => ResolveEffectiveHostOwnerId();
 
 	private void EnsurePreferredHostOwnerId()
 	{
@@ -22,6 +24,24 @@ public sealed partial class GameController
 
 		PreferredHostOwnerId = Connection.Local?.SteamId ?? Connection.Host?.SteamId ?? 0L;
 		PreferredHostDisconnected = false;
+	}
+
+	private long ResolveEffectiveHostOwnerId()
+	{
+		var preferredHost = PreferredHostOwnerId;
+		if ( preferredHost != 0 && HasConnection( preferredHost ) )
+			return preferredHost;
+
+		var hostConnection = Connection.Host ?? Connection.Local;
+		return hostConnection?.SteamId ?? 0L;
+	}
+
+	private static bool HasConnection( long steamId )
+	{
+		if ( steamId == 0 )
+			return false;
+
+		return Connection.All.Any( connection => connection is not null && connection.SteamId == steamId );
 	}
 
 	void Component.INetworkListener.OnConnected( Connection connection )
@@ -47,6 +67,8 @@ public sealed partial class GameController
 		EnsurePreferredHostOwnerId();
 		if ( previousHost is not null && previousHost.SteamId == PreferredHostOwnerId )
 			PreferredHostDisconnected = true;
+
+		SetHudIsVisibleAll( true );
 
 		if ( IsResolvingPhysicalDice && PendingRollPlayerIndex < 0 )
 		{
@@ -85,11 +107,25 @@ public sealed partial class GameController
 		if ( Phase != GamePhase.ResolvingSpace )
 			return;
 
+		var pendingRollStale = PendingRollPlayerIndex >= 0 &&
+			(PendingRollStartedAt <= 0f || Time.Now - PendingRollStartedAt > DiceSettleTimeout + ResolvingSpaceRecoveryDelay);
+
+		if ( pendingRollStale )
+		{
+			Log.Warning( "Recovering stale pending roll." );
+			IsResolvingPhysicalDice = false;
+			PhysicalDiceStartedAt = 0f;
+			SetHudIsVisibleAll( true );
+			RecoverGameplayState( true );
+			return;
+		}
+
 		if ( IsResolvingPhysicalDice && PendingRollPlayerIndex >= 0 && PhysicalDiceStartedAt > 0f && Time.Now - PhysicalDiceStartedAt > DiceSettleTimeout + ResolvingSpaceRecoveryDelay )
 		{
 			Log.Warning( "Recovering stale physical dice roll." );
 			IsResolvingPhysicalDice = false;
 			PhysicalDiceStartedAt = 0f;
+			SetHudIsVisibleAll( true );
 			RecoverGameplayState( true );
 			return;
 		}
@@ -99,6 +135,7 @@ public sealed partial class GameController
 			Log.Warning( "Recovering stale physical dice resolution." );
 			IsResolvingPhysicalDice = false;
 			PhysicalDiceStartedAt = 0f;
+			SetHudIsVisibleAll( true );
 		}
 
 		if ( IsResolvingPhysicalDice && PendingRollPlayerIndex < 0 )
@@ -125,6 +162,8 @@ public sealed partial class GameController
 
 		if ( Phase != GamePhase.ResolvingSpace && !force )
 			return;
+
+		SetHudIsVisibleAll( true );
 
 		if ( PendingRollPlayerIndex >= 0 )
 		{
@@ -166,10 +205,11 @@ public sealed partial class GameController
 	{
 		try
 		{
-			await RecoverPendingRollAsync();
+			await RecoverPendingRollAsync( false );
 		}
 		finally
 		{
+			SetHudIsVisibleAll( true );
 			isRecoveringPendingRoll = false;
 			UpdateHostRecoveryStateFlag();
 		}

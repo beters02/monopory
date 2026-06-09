@@ -99,11 +99,13 @@ public sealed class GameCommandManager : Component
 
 	internal static bool CanUseHostCheatCommand( Connection caller )
 	{
-		/*return Networking.IsHost &&
-			(caller is null || caller == Connection.Local) &&
-			Game.CheatsEnabled;*/
+		if ( Networking.IsHost && (caller is null || caller == Connection.Local) )
+			return true;
 
-		return CanUseCheatCommand(caller);
+		if ( GameController.Instance?.IsEffectiveHostCaller( caller ) == true )
+			return true;
+
+		return Game.CheatsEnabled;
 	}
 
 	internal static bool HasUnresolvedPendingBuyDecision( GameController game, PlayerState player )

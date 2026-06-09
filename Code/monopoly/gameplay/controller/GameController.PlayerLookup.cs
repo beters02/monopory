@@ -24,7 +24,7 @@ public sealed partial class GameController : Component
 		get
 		{
 			var localSteamId = GetLocalSteamId();
-			return localSteamId.HasValue && PreferredHostOwnerId != 0 && localSteamId.Value == PreferredHostOwnerId;
+			return localSteamId.HasValue && localSteamId.Value == EffectiveHostOwnerId;
 		}
 	}
 
