@@ -124,12 +124,13 @@
 	color: $monopoly-text;
 	flex: 1;
 	min-width: 0;
-	white-space: normal;
+	white-space: pre-wrap;
 }
 
 .chat-overlay-mention {
 	color: $monopoly-gold;
 	font-weight: 800;
+	white-space: pre-wrap;
 }
 
 .chat-overlay-input-row {
@@ -229,4 +230,3 @@
 	background-color: $monopoly-gold-soft;
 	transform: translateY(1px);
 }
-

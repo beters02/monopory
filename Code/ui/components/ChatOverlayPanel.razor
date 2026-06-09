@@ -277,7 +277,7 @@
 			.Select( name => (object)new TextEntry.AutocompleteEntry
 			{
 				Title = $"@{name}",
-				Value = $"{beforeMention}@{name}"
+				Value = $"{beforeMention}@{name} "
 			} )
 			.ToArray();
 	}
@@ -330,13 +330,17 @@
 			if ( match.Start > index )
 				segments.Add( new MessageSegment( message[index..match.Start], false ) );
 
-			segments.Add( new MessageSegment( message[match.Start..match.NameEnd], true ) );
+			var mentionEnd = match.NameEnd;
+			if ( mentionEnd < message.Length && char.IsWhiteSpace( message[mentionEnd] ) )
+				mentionEnd++;
 
-			var trailing = message[match.NameEnd..match.End];
+			segments.Add( new MessageSegment( message[match.Start..mentionEnd], true ) );
+
+			var trailing = mentionEnd < match.End ? message[mentionEnd..match.End] : "";
 			if ( trailing.Length > 0 )
 				segments.Add( new MessageSegment( trailing, false ) );
 
-			index = match.End;
+			index = Math.Max( match.End, mentionEnd );
 		}
 
 		if ( index < message.Length )

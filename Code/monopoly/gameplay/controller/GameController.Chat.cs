@@ -13,7 +13,7 @@ public sealed partial class GameController
 		if ( Rpc.Caller is null )
 			return;
 
-		var message = (rawMessage ?? "").Trim();
+		var message = (rawMessage ?? "").Replace( '\u00A0', ' ' ).Trim();
 		if ( string.IsNullOrWhiteSpace( message ) )
 			return;
 
@@ -115,7 +115,7 @@ public sealed partial class GameController
 		if ( string.IsNullOrWhiteSpace( message ) )
 			return message ?? "";
 
-		var mentions = FindPlayerMentions( message ).ToList();
+		var mentions = FindPlayerMentions( message, true, true ).ToList();
 		if ( mentions.Count == 0 )
 			return message;
 
@@ -132,7 +132,7 @@ public sealed partial class GameController
 		return normalized;
 	}
 
-	private IEnumerable<PlayerMention> FindPlayerMentions( string message )
+	private IEnumerable<PlayerMention> FindPlayerMentions( string message, bool allowMissingTrailingSpace = false, bool forceMentionBoundary = false )
 	{
 		if ( string.IsNullOrWhiteSpace( message ) || Players is null )
 			yield break;
@@ -156,7 +156,14 @@ public sealed partial class GameController
 			if ( message[index] != '@' || (index > 0 && !char.IsWhiteSpace( message[index - 1] )) )
 				continue;
 
-			foreach ( var entry in mentionablePlayers )
+			var entriesToSearch = forceMentionBoundary
+				? mentionablePlayers
+					.OrderByDescending( entry => entry.Name.Contains( ' ' ) )
+					.ThenBy( entry => entry.Name.Length )
+					.ToList()
+				: mentionablePlayers;
+
+			foreach ( var entry in entriesToSearch )
 			{
 				var nameStart = index + 1;
 				if ( nameStart + entry.Name.Length > message.Length )
@@ -170,7 +177,7 @@ public sealed partial class GameController
 				if ( end < message.Length && MentionTrailingCharacters.Contains( message[end] ) )
 					end++;
 
-				if ( end < message.Length && !char.IsWhiteSpace( message[end] ) )
+				if ( end < message.Length && !char.IsWhiteSpace( message[end] ) && !allowMissingTrailingSpace )
 					continue;
 
 				yield return new PlayerMention( index, end, entry.Player );
