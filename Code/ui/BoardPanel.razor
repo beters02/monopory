@@ -89,6 +89,10 @@
 					{
 						<div class="corner-free-parking-bank">$@GetFreeParkingBank()</div>
 					}
+					@if ( ShouldShowMortgageStamp( space ) )
+					{
+						<div class="space-mortgage-stamp">Mortgaged</div>
+					}
 					@if ( ShouldShowOwnerMarker( space ) )
 					{
 						<div class="space-owner-badge" style="@GetOwnerBadgeStyle( space )">
@@ -369,6 +373,12 @@
 			GetOwnerIndex( space ) >= 0;
 	}
 
+	private bool ShouldShowMortgageStamp( SpaceDef space )
+	{
+		return IsPurchasableSpace( space ) &&
+			ActiveGame?.IsMortgaged( space.Index ) == true;
+	}
+
 	private string GetOwnerBadgeStyle( SpaceDef space )
 	{
 		var fontSize = Math.Max( 6f, OwnerNameFontSizePx );
@@ -621,6 +631,7 @@
 		hash.Add( game?.Config?.VacationCash ?? false );
 		hash.Add( game?.FreeParkingBank ?? 0 );
 		hash.Add( Sandbox.ui.components.HudUi.GetPropertyOwnersHash( game ) );
+		hash.Add( Sandbox.ui.components.HudUi.GetMortgagedPropertiesHash( game ) );
 
 		if ( game?.Players is not null )
 		{

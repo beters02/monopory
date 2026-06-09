@@ -74,26 +74,67 @@
 
 .side-bottom.standard .space-owner-badge {
 	left: 50%;
-	bottom: 8px;
+	bottom: -5px;
 	transform: translateX(-50%);
 }
 
 .side-top.standard .space-owner-badge {
 	left: 50%;
-	top: 8px;
+	top: -5px;
 	transform: translateX(-50%) rotate(180deg);
 }
 
 .side-left.standard .space-owner-badge {
-	left: 8px;
+	left: -5px;
 	top: 50%;
 	transform: translateY(-50%) rotate(90deg);
 }
 
 .side-right.standard .space-owner-badge {
-	right: 8px;
+	right: -5px;
 	top: 50%;
 	transform: translateY(-50%) rotate(-90deg);
+}
+
+.space-mortgage-stamp {
+	position: absolute;
+	left: -14px;
+	right: -14px;
+	top: 50%;
+	height: 22px;
+	z-index: 4;
+
+	background-color: $monopoly-card-ink-surface-hover;
+	border-top: 2px solid $monopoly-card-ink-soft;
+	border-bottom: 2px solid $monopoly-card-ink-soft;
+	color: $monopoly-card-ink-soft;
+
+	align-items: center;
+	justify-content: center;
+
+	font-size: 12px;
+	font-weight: 900;
+	line-height: 14px;
+	letter-spacing: 0;
+	text-transform: uppercase;
+
+	transform: translateY(-50%) rotate(-13deg);
+}
+
+.side-left.standard .space-mortgage-stamp {
+	left: -22px;
+	right: -22px;
+	transform: translateY(-50%) rotate(77deg);
+}
+
+.side-top.standard .space-mortgage-stamp {
+	transform: translateY(-50%) rotate(167deg);
+}
+
+.side-right.standard .space-mortgage-stamp {
+	left: -22px;
+	right: -22px;
+	transform: translateY(-50%) rotate(-103deg);
 }
 
 .side-top.standard {
