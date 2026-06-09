@@ -661,7 +661,7 @@
 	display: flex;
 	flex-direction: row;
 	align-items: center;
-	justify-content: center;
+	justify-content: flex-start;
 
 	background-color: $monopoly-surface-medium;
 	border: 1px solid $monopoly-panel-line;
@@ -672,20 +672,19 @@
 	font-size: 16px;
 	font-weight: 900;
 	line-height: 20px;
-	text-align: center;
+	text-align: left;
 	flex-shrink: 0;
 	pointer-events: all;
 	overflow: hidden;
 	white-space: nowrap;
 }
 
-.match-config-stepper-input *,
 .match-config-stepper-value .label,
 .match-config-stepper-input .placeholder,
 .match-config-stepper-input .content-label,
 .match-config-stepper-input .label,
 .match-config-stepper-input .text {
-	text-align: center;
+	text-align: left;
 	color: $monopoly-text;
 	font-size: 16px;
 	font-weight: 900;

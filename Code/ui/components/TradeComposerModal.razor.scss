@@ -232,11 +232,11 @@
 	min-width: 88px;
 	width: 88px;
 	height: $monopoly-control-height-small;
-	padding: 0 10px;
+	padding: 0 12px;
 
 	display: flex;
 	align-items: center;
-	justify-content: center;
+	justify-content: flex-start;
 
 	background-color: $monopoly-gold;
 	border: 2px solid $monopoly-ink;
@@ -247,20 +247,19 @@
 	font-size: 16px;
 	font-weight: 900;
 	line-height: $monopoly-control-height-small;
-	text-align: center;
+	text-align: left;
 	pointer-events: all;
 	overflow: hidden;
 	white-space: nowrap;
 }
 
-.trade-composer-modal .trade-money-input *,
 .trade-composer-modal .trade-money-input .placeholder,
 .trade-composer-modal .trade-money-input .content-label,
 .trade-composer-modal .trade-money-input .label,
 .trade-composer-modal .trade-money-input .text {
 	width: 100%;
 	color: $monopoly-ink;
-	text-align: center;
+	text-align: left;
 	font-size: 16px;
 	font-weight: 900;
 	line-height: $monopoly-control-height-small;
