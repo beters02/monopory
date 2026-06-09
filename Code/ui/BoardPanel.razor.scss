@@ -47,6 +47,37 @@
 	z-index: 2;
 }
 
+.space-owner-marker {
+	position: absolute;
+	border-radius: 50%;
+	z-index: 5;
+	flex-shrink: 0;
+}
+
+.side-bottom.standard .space-owner-marker {
+	left: 50%;
+	bottom: 8px;
+	transform: translateX(-50%);
+}
+
+.side-top.standard .space-owner-marker {
+	left: 50%;
+	top: 8px;
+	transform: translateX(-50%);
+}
+
+.side-left.standard .space-owner-marker {
+	left: 8px;
+	top: 50%;
+	transform: translateY(-50%);
+}
+
+.side-right.standard .space-owner-marker {
+	right: 8px;
+	top: 50%;
+	transform: translateY(-50%);
+}
+
 .side-top.standard {
 	.space-inner {
 		flex-direction: column-reverse;

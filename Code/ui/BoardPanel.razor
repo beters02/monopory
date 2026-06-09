@@ -89,6 +89,10 @@
 					{
 						<div class="corner-free-parking-bank">$@GetFreeParkingBank()</div>
 					}
+					@if ( ShouldShowOwnerMarker( space ) )
+					{
+						<div class="space-owner-marker" style="@GetOwnerMarkerStyle( space )"></div>
+					}
 				</div>
 			</div>
 		}
@@ -142,6 +146,7 @@
 	[Property] public float ChanceIconFontSizePx { get; set; } = 58f;
 	[Property] public float CommunityChestIconFontSizePx { get; set; } = 32f;
 	[Property] public float UtilityIconFontSizePx { get; set; } = 28f;
+	[Property] public float OwnerMarkerSizePx { get; set; } = 16f;
 	[Property] public float CornerIconFontSizePx { get; set; } = 32f;
 	[Property] public float GoIconFontSizePx { get; set; } = 44f;
 	[Property] public float GoToJailIconFontSizePx { get; set; } = 42f;
@@ -354,6 +359,57 @@
 		return space.Type != SpaceType.Property;
 	}
 
+	private bool ShouldShowOwnerMarker( SpaceDef space )
+	{
+		return IsPurchasableSpace( space ) &&
+			GetOwnerIndex( space ) >= 0;
+	}
+
+	private string GetOwnerMarkerStyle( SpaceDef space )
+	{
+		var ownerColor = GetOwnerColor( space );
+		var size = Math.Max( 4f, OwnerMarkerSizePx );
+		var borderWidth = Math.Max( 1f, SpaceBorderThicknessPx * 0.55f );
+
+		return $"width: {size}px; height: {size}px; background-color: {ToCssColor( ownerColor )}; border: {borderWidth}px solid {BorderColor};";
+	}
+
+	private int GetOwnerIndex( SpaceDef space )
+	{
+		return space is null
+			? -1
+			: ActiveGame?.GetOwnerIndexForSpace( space.Index ) ?? -1;
+	}
+
+	private Color GetOwnerColor( SpaceDef space )
+	{
+		var game = ActiveGame;
+		var ownerIndex = GetOwnerIndex( space );
+		var owner = game?.Players.ElementAtOrDefault( ownerIndex );
+
+		if ( game?.Theme is null || owner is null )
+			return Color.White;
+
+		var colorIndex = owner.ColorSlot >= 0 ? owner.ColorSlot : ownerIndex;
+		return game.Theme.GetPlayerColor( colorIndex );
+	}
+
+	private static bool IsPurchasableSpace( SpaceDef space )
+	{
+		return space is not null &&
+			space.Price > 0 &&
+			(space.Type == SpaceType.Property || space.Type == SpaceType.Railroad || space.Type == SpaceType.Utility);
+	}
+
+	private static string ToCssColor( Color color )
+	{
+		var r = (int)(Math.Clamp( color.r, 0f, 1f ) * 255f);
+		var g = (int)(Math.Clamp( color.g, 0f, 1f ) * 255f);
+		var b = (int)(Math.Clamp( color.b, 0f, 1f ) * 255f);
+		var a = Math.Clamp( color.a, 0f, 1f );
+		return $"rgba({r},{g},{b},{a:0.###})";
+	}
+
 	private static bool ShouldOverlayTitleOnIcon( SpaceDef space )
 	{
 		return space.Type is SpaceType.Chance or SpaceType.CommunityChest;
@@ -541,6 +597,18 @@
 		var hash = new HashCode();
 		hash.Add( game?.Config?.VacationCash ?? false );
 		hash.Add( game?.FreeParkingBank ?? 0 );
+		hash.Add( Sandbox.ui.components.HudUi.GetPropertyOwnersHash( game ) );
+
+		if ( game?.Players is not null )
+		{
+			foreach ( var player in game.Players )
+			{
+				hash.Add( player?.OwnerId ?? 0 );
+				hash.Add( player?.IsAssigned ?? false );
+				hash.Add( player?.ColorSlot ?? -1 );
+			}
+		}
+
 		return hash.ToHashCode();
 	}
 
@@ -589,6 +657,7 @@
 		hash.Add( ChanceIconFontSizePx );
 		hash.Add( CommunityChestIconFontSizePx );
 		hash.Add( UtilityIconFontSizePx );
+		hash.Add( OwnerMarkerSizePx );
 		hash.Add( CornerIconFontSizePx );
 		hash.Add( GoIconFontSizePx );
 		hash.Add( GoToJailIconFontSizePx );
