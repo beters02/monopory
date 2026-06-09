@@ -72,8 +72,9 @@
 				
 				<div class="@HudUi.BuildTranslucentHideableHudClass( GameRef )">
 					<PropertyOwnershipPanel GameRef="@GameRef"></PropertyOwnershipPanel>
-					<TradePanel GameRef="@GameRef"></TradePanel>
 				</div>
+
+				<TradePanel GameRef="@GameRef"></TradePanel>
 				
 				@if ( !IsAnyMenuOpen || GameRef.ForceHiddenUiVisible )
 				{
