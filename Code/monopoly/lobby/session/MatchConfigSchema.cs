@@ -30,9 +30,18 @@ public sealed class MatchConfigOption
 
 public static class MatchConfigSchema
 {
-	private static readonly IReadOnlyList<MatchConfigOption> options = BuildOptions();
+	private static IReadOnlyList<MatchConfigOption> options;
 
-	public static IReadOnlyList<MatchConfigOption> Options => options;
+	public static IReadOnlyList<MatchConfigOption> Options
+	{
+		get
+		{
+			if ( options is null || options.Count == 0 )
+				options = BuildOptions();
+
+			return options;
+		}
+	}
 
 	public static MatchConfig CreateDefault()
 	{
@@ -72,8 +81,13 @@ public static class MatchConfigSchema
 			TrySetOptionValue( option, config, normalizedValue );
 		}
 
-		config.MinPlayers = Math.Clamp( config.MinPlayers, 1, Math.Max( 1, config.MaxPlayers ) );
-		config.MaxPlayers = Math.Max( config.MaxPlayers, Math.Max( config.MinPlayers, connectedPlayerCount ) );
+		var minPlayersOption = Options.FirstOrDefault( option => string.Equals( option.Key, nameof( MatchConfig.MinPlayers ), StringComparison.Ordinal ) );
+		var maxPlayersOption = Options.FirstOrDefault( option => string.Equals( option.Key, nameof( MatchConfig.MaxPlayers ), StringComparison.Ordinal ) );
+		var minPlayersMin = minPlayersOption?.Min ?? 1;
+		var maxPlayersMax = maxPlayersOption?.Max ?? int.MaxValue;
+
+		config.MinPlayers = Math.Clamp( config.MinPlayers, minPlayersMin, Math.Min( config.MaxPlayers, maxPlayersMax ) );
+		config.MaxPlayers = Math.Clamp( config.MaxPlayers, Math.Min( Math.Max( config.MinPlayers, connectedPlayerCount ), maxPlayersMax ), maxPlayersMax );
 		return config;
 	}
 
@@ -179,36 +193,68 @@ public static class MatchConfigSchema
 
 	private static IReadOnlyList<MatchConfigOption> BuildOptions()
 	{
-		return new[]
-		{
-			IntOption( "MinPlayers", "Lobby", "Min Players", "Minimum ready players required before the host can start.", 0, 1, 6, 1, config => config.MinPlayers, ( config, value ) => config.MinPlayers = value, false ),
-			IntOption( "MaxPlayers", "Lobby", "Max Players", "Maximum seats allowed in the hosted lobby.", 1, 1, 6, 1, config => config.MaxPlayers, ( config, value ) => config.MaxPlayers = value, false ),
-			BoolOption( "OnlyHostStartsGame", "Lobby", "Only Host Starts Game", "If enabled, only the host can launch the match.", 2, config => config.OnlyHostStartsGame, ( config, value ) => config.OnlyHostStartsGame = value ),
-			IntOption( "AbandonTimeoutSeconds", "Lobby", "Abandon Timeout Seconds", "How long disconnected players can rejoin before they are abandoned and removed.", 3, 15, 1800, 15, config => config.AbandonTimeoutSeconds, ( config, value ) => config.AbandonTimeoutSeconds = value ),
-			BoolOption( "AutosaveEnabled", "Lobby", "Autosave Enabled", "Automatically saves the match at stable recovery points.", 4, config => config.AutosaveEnabled, ( config, value ) => config.AutosaveEnabled = value, false ),
-			BoolOption( "AutosaveOnStableActions", "Lobby", "Autosave On Stable Actions", "Autosaves after safe turn, trade, property, and bankruptcy transitions.", 5, config => config.AutosaveOnStableActions, ( config, value ) => config.AutosaveOnStableActions = value, false ),
-			EnumOption( "LandedUnownedCanAffordMode", "Property Rules", "Affordable Unowned Landing", "What happens when a player can afford an unowned property.", 10, config => config.LandedUnownedCanAffordMode, ( config, value ) => config.LandedUnownedCanAffordMode = value ),
-			EnumOption( "LandedUnownedCantAffordMode", "Property Rules", "Unaffordable Unowned Landing", "What happens when a player cannot afford an unowned property.", 11, config => config.LandedUnownedCantAffordMode, ( config, value ) => config.LandedUnownedCantAffordMode = value ),
-			BoolOption( "CanSkipUnowned", "Property Rules", "Can Skip Unowned", "Allows players to ignore an unowned property instead of buying or auctioning it.", 12, config => config.CanSkipUnowned, ( config, value ) => config.CanSkipUnowned = value ),
-			IntOption( "StartingMoney", "Economy", "Starting Money", "Cash each player begins the game with.", 20, 0, 10000, 100, config => config.StartingMoney, ( config, value ) => config.StartingMoney = value ),
-			IntOption( "LandOnGoMoney", "Economy", "Land On GO Additional Money", "Additional bonus paid on top of Pass GO Money when a move ends on GO.", 21, 0, 5000, 50, config => config.LandOnGoMoney, ( config, value ) => config.LandOnGoMoney = value ),
-			IntOption( "PassGoMoney", "Economy", "Pass GO Money", "Bonus for passing GO during movement.", 22, 0, 5000, 50, config => config.PassGoMoney, ( config, value ) => config.PassGoMoney = value ),
-			IntOption( "SnakeEyesBonusMoney", "Economy", "Snake Eyes Bonus Money", "Bonus awarded when a player rolls snake eyes.", 23, 0, 5000, 50, config => config.SnakeEyesBonusMoney, ( config, value ) => config.SnakeEyesBonusMoney = value ),
-			EnumOption( "PlayerBankruptedPlayerMode", "Economy", "Player Bankrupted Player Mode", "What happens to properties when one player bankrupts another.", 24, config => config.PlayerBankruptedPlayerMode, ( config, value ) => config.PlayerBankruptedPlayerMode = value ),
-			BoolOption( "DoublesGoesAgain", "Turn Rules", "Doubles Goes Again", "Lets players take another turn after rolling doubles.", 30, config => config.DoublesGoesAgain, ( config, value ) => config.DoublesGoesAgain = value ),
-			BoolOption( "DoublesGoAgainOutOfVacationCashBreak", "Turn Rules", "Doubles Go Again Out Of Vacation Cash Break", "If Doubles Goes Again and Vacation Cash are enabled, a player can get another turn from doubles after their Vacation Cash skipped turn.", 31, config => config.DoublesGoAgainOutOfVacationCashBreak, ( config, value ) => config.DoublesGoAgainOutOfVacationCashBreak = value ),
-			BoolOption( "DoublesGoAgainOutOfJail", "Turn Rules", "Doubles Go Again Out Of Jail", "If Doubles Goes Again is enabled, a player can get another turn from doubles on a roll made after leaving jail.", 32, config => config.DoublesGoAgainOutOfJail, ( config, value ) => config.DoublesGoAgainOutOfJail = value ),
-			BoolOption( "RandomizeTurnOrder", "Turn Rules", "Randomize Turn Order", "Shuffles the starting player order at match start.", 33, config => config.RandomizeTurnOrder, ( config, value ) => config.RandomizeTurnOrder = value ),
-			BoolOption( "ForceJailFineAfterFailedDoubles", "Turn Rules", "Force Jail Fine After Failed Doubles", "After the final failed jail roll, automatically pay the fine to leave jail.", 34, config => config.ForceJailFineAfterFailedDoubles, ( config, value ) => config.ForceJailFineAfterFailedDoubles = value ),
-			IntOption( "TurnTimeLimitSeconds", "Turn Rules", "Turn Time Limit Seconds", "How long each turn can last before timeout handling kicks in.", 35, 15, 900, 15, config => config.TurnTimeLimitSeconds, ( config, value ) => config.TurnTimeLimitSeconds = value ),
-			IntOption( "InstantMoveButtonUnlockMinutes", "Turn Rules", "Instant Move Button Unlock Minutes", "Elapsed match minutes before the finish-movement button can appear. 0 allows it immediately.", 36, 0, 240, 5, config => config.InstantMoveButtonUnlockMinutes, ( config, value ) => config.InstantMoveButtonUnlockMinutes = value ),
-			BoolOption( "VacationCash", "Board Rules", "Vacation Cash", "Awards pooled cash when landing on Free Parking, if enabled.", 40, config => config.VacationCash, ( config, value ) => config.VacationCash = value ),
-			BoolOption( "DontCollectRentWhileInPrison", "Board Rules", "No Rent While In Prison", "Prevents jailed players from collecting rent.", 41, config => config.DontCollectRentWhileInPrison, ( config, value ) => config.DontCollectRentWhileInPrison = value ),
-			BoolOption( "EvenBuild", "Board Rules", "Even Build", "Requires houses to be built evenly across a color set.", 42, config => config.EvenBuild, ( config, value ) => config.EvenBuild = value )
-		}
+		var configType = Game.TypeLibrary.GetType<MatchConfig>();
+		if ( configType is null )
+			return Array.Empty<MatchConfigOption>();
+
+		return configType.Members
+			.OfType<PropertyDescription>()
+			.Select( BuildOption )
+			.Where( option => option is not null )
 			.OrderBy( option => option.Order )
 			.ThenBy( option => option.Label )
 			.ToList();
+	}
+
+	private static MatchConfigOption BuildOption( PropertyDescription property )
+	{
+		var attribute = property.GetCustomAttribute<MatchConfigOptionAttribute>();
+		if ( attribute is null )
+			return null;
+
+		var propertyType = property.PropertyType;
+		var kind =
+			propertyType == typeof( bool ) ? MatchConfigOptionKind.Bool :
+			propertyType == typeof( int ) ? MatchConfigOptionKind.Int :
+			propertyType.IsEnum ? MatchConfigOptionKind.Enum :
+			throw new InvalidOperationException( $"Unsupported MatchConfig option type '{propertyType.Name}' for '{property.Name}'." );
+
+		return new MatchConfigOption
+		{
+			Key = property.Name,
+			Group = attribute.Group,
+			Label = attribute.Label,
+			Description = attribute.Description,
+			IsVisible = attribute.IsVisible,
+			Order = attribute.Order,
+			Min = attribute.Min,
+			Max = attribute.Max,
+			Step = Math.Max( attribute.Step, 1 ),
+			Kind = kind,
+			ValueType = propertyType,
+			EnumNames = propertyType.IsEnum ? Enum.GetNames( propertyType ) : Array.Empty<string>(),
+			Getter = config => property.GetValue( config ),
+			Setter = ( config, value ) => property.SetValue( config, ConvertOptionValue( propertyType, value ) )
+		};
+	}
+
+	private static object ConvertOptionValue( Type valueType, object value )
+	{
+		if ( valueType == typeof( bool ) )
+			return Convert.ToBoolean( value, CultureInfo.InvariantCulture );
+
+		if ( valueType == typeof( int ) )
+			return Convert.ToInt32( value, CultureInfo.InvariantCulture );
+
+		if ( valueType.IsEnum )
+		{
+			if ( value is not null && valueType.IsInstanceOfType( value ) )
+				return value;
+
+			return Enum.Parse( valueType, value?.ToString() ?? "", true );
+		}
+
+		return value;
 	}
 
 	private static bool TryGetOptionValue( MatchConfigOption option, MatchConfig config, out object value )
@@ -250,71 +296,6 @@ public static class MatchConfigSchema
 	private static object GetOptionValueOrDefault( MatchConfigOption option, MatchConfig config )
 	{
 		return TryGetOptionValue( option, config, out var value ) ? value : null;
-	}
-
-	private static MatchConfigOption BoolOption( string key, string group, string label, string description, int order, Func<MatchConfig, bool> getter, Action<MatchConfig, bool> setter, bool isVisible = true )
-	{
-		return new MatchConfigOption
-		{
-			Key = key,
-			Group = group,
-			Label = label,
-			Description = description,
-			IsVisible = isVisible,
-			Order = order,
-			Kind = MatchConfigOptionKind.Bool,
-			ValueType = typeof( bool ),
-			Getter = config => getter( config ),
-			Setter = ( config, value ) => setter( config, Convert.ToBoolean( value, CultureInfo.InvariantCulture ) )
-		};
-	}
-
-	private static MatchConfigOption IntOption( string key, string group, string label, string description, int order, int min, int max, int step, Func<MatchConfig, int> getter, Action<MatchConfig, int> setter, bool isVisible = true )
-	{
-		return new MatchConfigOption
-		{
-			Key = key,
-			Group = group,
-			Label = label,
-			Description = description,
-			IsVisible = isVisible,
-			Order = order,
-			Min = min,
-			Max = max,
-			Step = Math.Max( step, 1 ),
-			Kind = MatchConfigOptionKind.Int,
-			ValueType = typeof( int ),
-			Getter = config => getter( config ),
-			Setter = ( config, value ) => setter( config, Convert.ToInt32( value, CultureInfo.InvariantCulture ) )
-		};
-	}
-
-	private static MatchConfigOption EnumOption<TEnum>( string key, string group, string label, string description, int order, Func<MatchConfig, TEnum> getter, Action<MatchConfig, TEnum> setter, bool isVisible = true ) where TEnum : struct, Enum
-	{
-		return new MatchConfigOption
-		{
-			Key = key,
-			Group = group,
-			Label = label,
-			Description = description,
-			IsVisible = isVisible,
-			Order = order,
-			Kind = MatchConfigOptionKind.Enum,
-			ValueType = typeof( TEnum ),
-			EnumNames = Enum.GetNames<TEnum>(),
-			Getter = config => getter( config ),
-			Setter = ( config, value ) =>
-			{
-				if ( value is TEnum typedValue )
-				{
-					setter( config, typedValue );
-					return;
-				}
-
-				if ( Enum.TryParse<TEnum>( value?.ToString() ?? "", true, out var parsedValue ) )
-					setter( config, parsedValue );
-			}
-		};
 	}
 
 }

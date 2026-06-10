@@ -52,10 +52,10 @@ public sealed class MatchConfig
 	[MatchConfigOption( "Lobby", "Abandon Timeout Seconds", Description = "How long disconnected players can rejoin before they are abandoned and removed.", Order = 3, Min = 15, Max = 1800, Step = 15 )]
 	public int AbandonTimeoutSeconds { get; set; } = 180;
 
-	[MatchConfigOption( "Lobby", "Autosave Enabled", Description = "Automatically saves the match at stable recovery points.", Order = 4 )]
+	[MatchConfigOption( "Lobby", "Autosave Enabled", Description = "Automatically saves the match at stable recovery points.", Order = 4, IsVisible = false )]
 	public bool AutosaveEnabled { get; set; } = true;
 
-	[MatchConfigOption( "Lobby", "Autosave On Stable Actions", Description = "Autosaves after safe turn, trade, property, and bankruptcy transitions.", Order = 5 )]
+	[MatchConfigOption( "Lobby", "Autosave On Stable Actions", Description = "Autosaves after safe turn, trade, property, and bankruptcy transitions.", Order = 5, IsVisible = false )]
 	public bool AutosaveOnStableActions { get; set; } = true;
 
 	[MatchConfigOption( "Property Rules", "Affordable Unowned Landing", Description = "What happens when a player can afford an unowned property.", Order = 10 )]
