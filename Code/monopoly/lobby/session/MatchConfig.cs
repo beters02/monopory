@@ -40,7 +40,7 @@ public sealed class MatchConfigOptionAttribute : Attribute
 
 public sealed class MatchConfig
 {
-	[MatchConfigOption( "Lobby", "Min Players", Description = "Minimum ready players required before the host can start.", Order = 0, Min = 1, Max = 6, Step = 1 )]
+	[MatchConfigOption( "Lobby", "Min Players", Description = "Minimum ready players required before the host can start.", Order = 0, Min = 1, Max = 12, Step = 1 )]
 	public int MinPlayers { get; set; } = 1;
 
 	[MatchConfigOption( "Lobby", "Max Players", Description = "Maximum seats allowed in the hosted lobby.", Order = 1, Min = 1, Max = 12, Step = 1 )]
