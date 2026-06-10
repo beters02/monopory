@@ -383,8 +383,16 @@
 	{
 		var fontSize = Math.Max( 6f, OwnerNameFontSizePx );
 		var lineHeight = fontSize + 2f;
+		var style = $"font-size: {fontSize}px; line-height: {lineHeight}px; color: {TextColor};";
 
-		return $"font-size: {fontSize}px; line-height: {lineHeight}px; color: {TextColor};";
+		if ( GetSideClass( space.Index ) is "side-left" or "side-right" )
+		{
+			var rect = BoardMath.GetSpaceRect( space.Index, this );
+			var width = rect.Width > 0f ? (rect.Height / rect.Width) * 100f : 100f;
+			style += $" width: {width}%;";
+		}
+
+		return style;
 	}
 
 	private string GetOwnerMarkerStyle( SpaceDef space )
