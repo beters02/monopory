@@ -47,9 +47,7 @@ public static class GameSaveService
 		}
 
 		return saves
-			.OrderByDescending( save => save.IsLastLoadedRestorePoint )
-			.ThenBy( save => save.GameIdentifier )
-			.ThenByDescending( save => ParseTimestamp( save.UpdatedAtUtc ) )
+			.OrderByDescending( save => ParseTimestamp( save.UpdatedAtUtc ) )
 			.ToList();
 	}
 
