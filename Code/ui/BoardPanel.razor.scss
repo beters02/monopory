@@ -85,15 +85,17 @@
 }
 
 .side-left.standard .space-owner-badge {
-	left: 0;
-	top: 100%;
-	transform: translateY(-50%) rotate(90deg);
+	transform: rotate(90deg);
+	transform-origin: left top;
+	top: 2px;
+	right: 98px;
 }
 
 .side-right.standard .space-owner-badge {
-	right: 0;
-	top: 100%;
-	transform: translateY(-50%) rotate(-90deg);
+	transform: rotate(-90deg);
+	transform-origin: right top;
+	left: 98px;
+	top: -2px;
 }
 
 .space-mortgage-stamp {

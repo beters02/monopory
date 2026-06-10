@@ -385,11 +385,17 @@
 		var lineHeight = fontSize + 2f;
 		var style = $"font-size: {fontSize}px; line-height: {lineHeight}px; color: {TextColor};";
 
-		if ( GetSideClass( space.Index ) is "side-left" or "side-right" )
+		var side = GetSideClass( space.Index );
+		if ( side is "side-left" or "side-right" )
 		{
 			var rect = BoardMath.GetSpaceRect( space.Index, this );
 			var width = rect.Width > 0f ? (rect.Height / rect.Width) * 100f : 100f;
 			style += $" width: {width}%;";
+
+			if ( side == "side-left" )
+				style += $" left: {lineHeight}px;";
+			else
+				style += $" right: {lineHeight}px;";
 		}
 
 		return style;
