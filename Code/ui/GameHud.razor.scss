@@ -84,6 +84,149 @@ GameHud {
 		pointer-events: none;
 	}
 
+	.manual-save-name-screen {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		z-index: 155;
+
+		background-color: $monopoly-modal-backdrop;
+		backdrop-filter: blur( 8px );
+
+		display: flex;
+		align-items: center;
+		justify-content: center;
+
+		pointer-events: all;
+	}
+
+	.manual-save-name-panel {
+		width: 520px;
+		max-width: 86%;
+		padding: $monopoly-panel-padding;
+
+		background-color: $monopoly-board;
+		border: 4px solid $monopoly-ink;
+		border-radius: $monopoly-radius-board;
+		box-shadow: $monopoly-panel-shadow;
+
+		color: $monopoly-ink;
+		font-family: $monopoly-font-family;
+
+		display: flex;
+		flex-direction: column;
+		gap: $monopoly-panel-gap;
+	}
+
+	.manual-save-name-header {
+		display: flex;
+		align-items: flex-start;
+		justify-content: space-between;
+		gap: 16px;
+	}
+
+	.manual-save-name-kicker {
+		color: $monopoly-danger;
+		font-size: $monopoly-font-kicker;
+		font-weight: 900;
+		text-transform: uppercase;
+	}
+
+	.manual-save-name-title {
+		font-size: $monopoly-font-title;
+		font-weight: 900;
+		line-height: $monopoly-font-title-line;
+	}
+
+	.manual-save-name-copy {
+		font-size: $monopoly-font-button-large;
+		font-weight: 700;
+		line-height: 21px;
+		opacity: 0.78;
+	}
+
+	.manual-save-name-input {
+		height: $monopoly-control-height;
+		padding: 10px 12px;
+
+		background-color: $monopoly-board-surface-strong;
+		border: 3px solid $monopoly-ink;
+		border-radius: $monopoly-radius-control;
+
+		color: $monopoly-ink;
+		font-family: $monopoly-font-family;
+		font-size: 16px;
+		font-weight: 900;
+		line-height: 20px;
+		pointer-events: all;
+	}
+
+	.manual-save-name-input .placeholder,
+	.manual-save-name-input .content-label,
+	.manual-save-name-input .label,
+	.manual-save-name-input .text {
+		color: $monopoly-ink;
+		font-size: 16px;
+		font-weight: 900;
+		line-height: 20px;
+	}
+
+	.manual-save-name-input .placeholder {
+		opacity: 0.52;
+	}
+
+	.manual-save-name-input .cursor,
+	.manual-save-name-input .caret {
+		width: 2px;
+		height: 20px;
+		min-width: 2px;
+		background-color: $monopoly-ink;
+	}
+
+	.manual-save-name-actions {
+		margin-top: 8px;
+
+		display: flex;
+		justify-content: flex-end;
+		gap: 10px;
+	}
+
+	.manual-save-name-actions .monopoly-button,
+	.manual-save-name-close-button {
+		margin-top: 0;
+		min-width: 130px;
+		height: $monopoly-control-height;
+
+		border: 3px solid $monopoly-ink;
+		border-radius: $monopoly-radius-control;
+		text-transform: uppercase;
+	}
+
+	.manual-save-name-close-button {
+		min-width: 44px;
+		width: 44px;
+	}
+
+	.manual-save-name-primary-button {
+		background-color: $monopoly-gold;
+		color: $monopoly-ink;
+	}
+
+	.manual-save-name-primary-button:hover {
+		background-color: $monopoly-gold-hover;
+	}
+
+	.manual-save-name-secondary-button {
+		background-color: $monopoly-ink;
+		color: $monopoly-board;
+	}
+
+	.manual-save-name-secondary-button:hover {
+		background-color: $monopoly-ink-hover;
+	}
+
 	.host-recovery-screen {
 		position: absolute;
 		top: 0;

@@ -48,6 +48,35 @@
 				<PopupStack Popups="@Popups" OnDismiss="@DismissPopup" OnConfirmDecision="@HandleConfirmationDecision"></PopupStack>
 			</div>
 
+			@if ( IsManualSaveNameMenuOpen )
+			{
+				<div class="manual-save-name-screen">
+					<div class="manual-save-name-panel">
+						<div class="manual-save-name-header">
+							<div>
+								<div class="manual-save-name-kicker">Save Game</div>
+								<div class="manual-save-name-title">Name Manual Save</div>
+							</div>
+							<CloseButton Variant="manual-save-name-close-button" Title="Close" OnClick="@CloseManualSaveNameMenu"></CloseButton>
+						</div>
+						<div class="manual-save-name-copy">Give this restore point a name that will make sense when you come back later.</div>
+						<TextEntry class="manual-save-name-input"
+							Text="@ManualSaveNameDraft"
+							Placeholder="Manual save name"
+							OnTextEdited="@SetManualSaveNameDraft"
+							onsubmit="@ConfirmNamedManualSave" />
+						<div class="manual-save-name-actions">
+							<GameButton Variant="manual-save-name-secondary-button" OnClick="@CloseManualSaveNameMenu">Cancel</GameButton>
+							<GameButton Variant="manual-save-name-primary-button"
+								CanClick="@CanConfirmManualSaveName"
+								BlockedPopupTitle="Name required"
+								BlockedPopupMessage="Enter a name before creating this manual save."
+								OnClick="@ConfirmNamedManualSave">Save</GameButton>
+						</div>
+					</div>
+				</div>
+			}
+
 			@if ( GameRef.IsRecoveringHostState )
 			{
 				<div class="host-recovery-screen">
@@ -95,6 +124,8 @@
 	private bool IsEscapeMenuOpen;
 	private bool IsOptionsMenuOpen;
 	private bool IsMatchSettingsMenuOpen;
+	private bool IsManualSaveNameMenuOpen;
+	private string ManualSaveNameDraft = "";
 	public static bool IsMenuBlockingHud { get; private set; }
 
 	private bool IsHudVisible() => GameRef?.IsGameHudVisible() == true;
@@ -103,8 +134,9 @@
 
 	public static bool IsAnyMenuOpen =>
 		Instance is not null &&
-		(Instance.IsEscapeMenuOpen || Instance.IsOptionsMenuOpen || Instance.IsMatchSettingsMenuOpen);
+		(Instance.IsEscapeMenuOpen || Instance.IsOptionsMenuOpen || Instance.IsMatchSettingsMenuOpen || Instance.IsManualSaveNameMenuOpen);
 	private bool IsGambleScreenActive => GameRef?.IsGambleScreenActive == true;
+	private bool CanConfirmManualSaveName => !string.IsNullOrWhiteSpace( ManualSaveNameDraft );
 
 	protected override void OnStart()
 	{
@@ -124,6 +156,7 @@
 			IsEscapeMenuOpen = false;
 			IsOptionsMenuOpen = false;
 			IsMatchSettingsMenuOpen = false;
+			IsManualSaveNameMenuOpen = false;
 			IsMenuBlockingHud = false;
 			if ( GameRef is null )
 				return;
@@ -141,12 +174,13 @@
 			IsEscapeMenuOpen = false;
 			IsOptionsMenuOpen = false;
 			IsMatchSettingsMenuOpen = false;
+			IsManualSaveNameMenuOpen = false;
 			IsMenuBlockingHud = false;
 			Mouse.Visibility = MouseVisibility.Visible;
 			return;
 		}
 
-		if ( IsEscapeMenuOpen || IsOptionsMenuOpen || IsMatchSettingsMenuOpen )
+		if ( IsEscapeMenuOpen || IsOptionsMenuOpen || IsMatchSettingsMenuOpen || IsManualSaveNameMenuOpen )
 			Mouse.Visibility = MouseVisibility.Visible;
 
 		if ( StandaloneConsole.IsConsoleOpen )
@@ -155,6 +189,7 @@
 			IsEscapeMenuOpen = false;
 			IsOptionsMenuOpen = false;
 			IsMatchSettingsMenuOpen = false;
+			IsManualSaveNameMenuOpen = false;
 			IsMenuBlockingHud = false;
 			return;
 		}
@@ -165,7 +200,7 @@
 
 	private bool IsAnyLocalMenuOpen()
 	{
-		return IsEscapeMenuOpen || IsOptionsMenuOpen || IsMatchSettingsMenuOpen;
+		return IsEscapeMenuOpen || IsOptionsMenuOpen || IsMatchSettingsMenuOpen || IsManualSaveNameMenuOpen;
 	}
 
 	private void UpdateInputs()
@@ -210,6 +245,12 @@
 			return;
 		}
 
+		if ( IsManualSaveNameMenuOpen )
+		{
+			IsManualSaveNameMenuOpen = false;
+			return;
+		}
+
 		IsEscapeMenuOpen = !IsEscapeMenuOpen;
 	}
 
@@ -240,6 +281,7 @@
 		IsEscapeMenuOpen = false;
 		IsOptionsMenuOpen = false;
 		IsMatchSettingsMenuOpen = false;
+		IsManualSaveNameMenuOpen = false;
 	}
 
 	private void ResumeGame()
@@ -387,22 +429,49 @@
 				"Save game?",
 				"Do you want to overwrite your last save or create a new one?",
 				OverwriteCurrentManualSave,
-				SaveNewManualGame,
+				OpenManualSaveNameMenu,
 				"Overwrite",
 				"Create New"
 			);
 			return;
 		}
 
-		SaveNewManualGame();
+		OpenManualSaveNameMenu();
 	}
 
-	private void SaveNewManualGame()
+	private void OpenManualSaveNameMenu()
 	{
 		if ( GameRef is null || !Networking.IsHost )
 			return;
 
-		if ( GameRef.TrySaveGame( $"Manual Save {DateTime.Now:yyyy-MM-dd HH-mm}", false, out var message ) )
+		ManualSaveNameDraft = $"Manual Save {DateTime.Now:yyyy-MM-dd HH-mm}";
+		IsManualSaveNameMenuOpen = true;
+		IsEscapeMenuOpen = false;
+		IsOptionsMenuOpen = false;
+		IsMatchSettingsMenuOpen = false;
+	}
+
+	private void CloseManualSaveNameMenu()
+	{
+		IsManualSaveNameMenuOpen = false;
+		ManualSaveNameDraft = "";
+	}
+
+	private void SetManualSaveNameDraft( string value )
+	{
+		ManualSaveNameDraft = value ?? "";
+	}
+
+	private void ConfirmNamedManualSave()
+	{
+		if ( GameRef is null || !Networking.IsHost || !CanConfirmManualSaveName )
+			return;
+
+		var saveName = ManualSaveNameDraft.Trim();
+		IsManualSaveNameMenuOpen = false;
+		ManualSaveNameDraft = "";
+
+		if ( GameRef.TrySaveGame( saveName, false, out var message ) )
 			GameRef.ShowLocalPopup( "Game saved", message, PopupKind.Success, true, 3f, false );
 		else
 			GameRef.ShowLocalPopup( "Could not save", message, PopupKind.Warning, true, 4f, false );
@@ -462,6 +531,8 @@
 		hash.Add( IsEscapeMenuOpen );
 		hash.Add( IsOptionsMenuOpen );
 		hash.Add( IsMatchSettingsMenuOpen );
+		hash.Add( IsManualSaveNameMenuOpen );
+		hash.Add( ManualSaveNameDraft );
 		hash.Add( IsGambleScreenActive );
 		hash.Add( IsHudVisible() );
 		hash.Add( GameRef?.ForceHiddenUiVisible ?? false );
