@@ -6,6 +6,7 @@ using Sandbox.UI;
 
 public sealed partial class GameController : Component
 {
+	private static readonly Regex SpaceCardTextTokenRegex = new( @"\{space_(\d+)\}", RegexOptions.IgnoreCase | RegexOptions.Compiled );
 	private readonly List<CardDef> chanceDrawPile = new();
 	private readonly List<CardDef> communityChestDrawPile = new();
 
@@ -15,14 +16,16 @@ public sealed partial class GameController : Component
 		if ( player is null || card is null )
 			return card is null ? $"No {deck} card drawn" : "Card landing missing player";
 
+		var cardTitle = GetCardTitle( card );
+		var cardDescription = GetCardDescription( card );
 		string cardDisplayText = GetCardDisplayText( card );
 		ShowCardForPlayerWhoLanded( player, cardDisplayText );
 		SendCardDrawPopupToOtherPlayers( player, card );
 		var cardResult = ApplyCard( player, card );
 		Log.Info(
-			$"{player.PlayerName} drew {deck}: title=\"{card.Title}\", text=\"{card.Description}\", " +
+			$"{player.PlayerName} drew {deck}: title=\"{cardTitle}\", text=\"{cardDescription}\", " +
 			$"action={card.Action}, result={cardResult}" );
-		return $"Drew {deck}: {card.Title}; {cardResult}";
+		return $"Drew {deck}: {cardTitle}; {cardResult}";
 	}
 
 	private void SendCardDrawPopupToOtherPlayers( PlayerState drawingPlayer, CardDef card )
@@ -35,8 +38,8 @@ public sealed partial class GameController : Component
 		{
 			SendPopupToPlayer(
 				playerIndex,
-				card.Title,
-				card.Description,
+				GetCardTitle( card ),
+				GetCardDescription( card ),
 				PopupKind.Info,
 				true,
 				6f
@@ -44,18 +47,49 @@ public sealed partial class GameController : Component
 		}
 	}
 
-	private static string GetCardDisplayText( CardDef card )
+	private string GetCardTitle( CardDef card )
+	{
+		return ResolveCardTextTokens( card?.Title );
+	}
+
+	private string GetCardDescription( CardDef card )
+	{
+		return ResolveCardTextTokens( card?.Description );
+	}
+
+	private string GetCardDisplayText( CardDef card )
 	{
 		if ( card is null )
 			return "";
 
-		if ( string.IsNullOrWhiteSpace( card.Title ) )
-			return card.Description ?? "";
+		var title = GetCardTitle( card );
+		var description = GetCardDescription( card );
+		if ( string.IsNullOrWhiteSpace( title ) )
+			return description;
 
-		if ( string.IsNullOrWhiteSpace( card.Description ) )
-			return card.Title;
+		if ( string.IsNullOrWhiteSpace( description ) )
+			return title;
 
-		return $"{card.Title}. {card.Description}";
+		return $"{title}. {description}";
+	}
+
+	private string ResolveCardTextTokens( string text )
+	{
+		if ( string.IsNullOrWhiteSpace( text ) || Board?.SpaceDefs is null || Board.SpaceDefs.Count == 0 )
+			return text ?? "";
+
+		return SpaceCardTextTokenRegex.Replace( text, match =>
+		{
+			if ( !int.TryParse( match.Groups[1].Value, out var spaceIndex ) )
+				return match.Value;
+
+			spaceIndex = NormalizeSpaceIndex( spaceIndex );
+			var spaceName = Board.SpaceDefs.ElementAtOrDefault( spaceIndex )?.DisplayName;
+			if ( string.IsNullOrWhiteSpace( spaceName ) )
+				return match.Value;
+
+			return Regex.Replace( spaceName, @"\s+", " " ).Trim();
+		} );
 	}
 
 	private CardDef DrawCard( CardDeck deck )
@@ -209,15 +243,16 @@ public sealed partial class GameController : Component
 			case CardAction.CollectFromBank:
 				var collectedAmount = Math.Max( card.Amount, 0 );
 				player.Money += collectedAmount;
-				ShowMoneyReceivedPopup( player, collectedAmount, string.IsNullOrWhiteSpace( card.Title ) ? "the bank" : card.Title );
+				var collectCardTitle = GetCardTitle( card );
+				ShowMoneyReceivedPopup( player, collectedAmount, string.IsNullOrWhiteSpace( collectCardTitle ) ? "the bank" : collectCardTitle );
 				TrySettlePendingForcedPaymentForPlayer( GetPlayerIndex( player ) );
-				Log.Info( $"{player.PlayerName} collected ${card.Amount} from {card.Title}." );
+				Log.Info( $"{player.PlayerName} collected ${card.Amount} from {collectCardTitle}." );
 				return $"Collected ${collectedAmount} from bank";
 
 			case CardAction.PayBank:
 				if ( PayBank( player, card.Amount, true, BankPaymentSource.ChanceOrCommunityChest ) )
 				{
-					Log.Info( $"{player.PlayerName} paid ${card.Amount} from {card.Title}." );
+					Log.Info( $"{player.PlayerName} paid ${card.Amount} from {GetCardTitle( card )}." );
 					return $"Paid ${card.Amount} to bank";
 				}
 				return $"Bank payment unresolved for ${card.Amount}";

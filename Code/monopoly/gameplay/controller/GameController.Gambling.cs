@@ -31,10 +31,11 @@ public sealed partial class GameController : Component
 
 		var randomBetAmount = Game.Random.Int( GambleMinBetAmount, GambleMaxBetAmount );
 		var betAmount = Math.Min( randomBetAmount, Math.Max( player.Money, 0 ) );
+		var cardTitle = GetCardTitle( card );
 		BeginGambleScreen(
 			playerIndex,
 			GambleType.CoinFlip,
-			string.IsNullOrWhiteSpace( card.Title ) ? "Coin Flip" : card.Title,
+			string.IsNullOrWhiteSpace( cardTitle ) ? "Coin Flip" : cardTitle,
 			betAmount > 0
 				? $"{player.PlayerName} is flipping for ${betAmount}. Win side pays ${betAmount}; lose side costs ${betAmount}."
 				: $"{player.PlayerName} was forced into a coin flip, but has no cash to bet.",
