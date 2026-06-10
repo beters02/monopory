@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 public class MonopolyApp : Component
 {
 
-    public static string GameVersion = "0.0.94";
+    public static string GameVersion = "0.0.941";
     public static bool IsStandalone = false;
     public static bool IsDebugEnabled = false;
     public static bool GameLaunchedWithDebugConvar = false;
