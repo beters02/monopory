@@ -1,10 +1,12 @@
 using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.RegularExpressions;
 using Sandbox;
 
 public sealed class Board : Component
 {
+	private static readonly Regex SpaceCardTextTokenRegex = new( @"\{space_(\d+)\}", RegexOptions.IgnoreCase | RegexOptions.Compiled );
 	private static Board instance;
 	public static Board Instance => instance;
 	private GameController GameRef;
@@ -253,6 +255,43 @@ public sealed class Board : Component
 	{
 		ChanceCards = CardData.CreateChanceCards();
 		CommunityChestCards = CardData.CreateCommunityChestCards();
+
+		ResolveCardTextTokens( ChanceCards );
+		ResolveCardTextTokens( CommunityChestCards );
+	}
+
+	private void ResolveCardTextTokens( IEnumerable<CardDef> cards )
+	{
+		if ( cards is null )
+			return;
+
+		foreach ( var card in cards )
+		{
+			if ( card is null )
+				continue;
+
+			card.Title = ResolveCardTextTokens( card.Title );
+			card.Description = ResolveCardTextTokens( card.Description );
+		}
+	}
+
+	private string ResolveCardTextTokens( string text )
+	{
+		if ( string.IsNullOrWhiteSpace( text ) || SpaceDefs is null || SpaceDefs.Count == 0 )
+			return text ?? "";
+
+		return SpaceCardTextTokenRegex.Replace( text, match =>
+		{
+			if ( !int.TryParse( match.Groups[1].Value, out var spaceIndex ) )
+				return match.Value;
+
+			spaceIndex = GameController.NormalizeSpaceIndex( spaceIndex );
+			var spaceName = SpaceDefs.ElementAtOrDefault( spaceIndex )?.DisplayName;
+			if ( string.IsNullOrWhiteSpace( spaceName ) )
+				return match.Value;
+
+			return Regex.Replace( spaceName, @"\s+", " " ).Trim();
+		} );
 	}
 
 
