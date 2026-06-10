@@ -16,6 +16,7 @@ public sealed class MatchConfigOption
 	public string Group { get; init; }
 	public string Label { get; init; }
 	public string Description { get; init; } = "";
+	public bool IsVisible { get; init; } = true;
 	public int Order { get; init; }
 	public int Min { get; init; } = int.MinValue;
 	public int Max { get; init; } = int.MaxValue;
@@ -180,12 +181,12 @@ public static class MatchConfigSchema
 	{
 		return new[]
 		{
-			IntOption( "MinPlayers", "Lobby", "Min Players", "Minimum ready players required before the host can start.", 0, 1, 6, 1, config => config.MinPlayers, ( config, value ) => config.MinPlayers = value ),
-			IntOption( "MaxPlayers", "Lobby", "Max Players", "Maximum seats allowed in the hosted lobby.", 1, 1, 6, 1, config => config.MaxPlayers, ( config, value ) => config.MaxPlayers = value ),
+			IntOption( "MinPlayers", "Lobby", "Min Players", "Minimum ready players required before the host can start.", 0, 1, 6, 1, config => config.MinPlayers, ( config, value ) => config.MinPlayers = value, false ),
+			IntOption( "MaxPlayers", "Lobby", "Max Players", "Maximum seats allowed in the hosted lobby.", 1, 1, 6, 1, config => config.MaxPlayers, ( config, value ) => config.MaxPlayers = value, false ),
 			BoolOption( "OnlyHostStartsGame", "Lobby", "Only Host Starts Game", "If enabled, only the host can launch the match.", 2, config => config.OnlyHostStartsGame, ( config, value ) => config.OnlyHostStartsGame = value ),
 			IntOption( "AbandonTimeoutSeconds", "Lobby", "Abandon Timeout Seconds", "How long disconnected players can rejoin before they are abandoned and removed.", 3, 15, 1800, 15, config => config.AbandonTimeoutSeconds, ( config, value ) => config.AbandonTimeoutSeconds = value ),
-			BoolOption( "AutosaveEnabled", "Lobby", "Autosave Enabled", "Automatically saves the match at stable recovery points.", 4, config => config.AutosaveEnabled, ( config, value ) => config.AutosaveEnabled = value ),
-			BoolOption( "AutosaveOnStableActions", "Lobby", "Autosave On Stable Actions", "Autosaves after safe turn, trade, property, and bankruptcy transitions.", 5, config => config.AutosaveOnStableActions, ( config, value ) => config.AutosaveOnStableActions = value ),
+			BoolOption( "AutosaveEnabled", "Lobby", "Autosave Enabled", "Automatically saves the match at stable recovery points.", 4, config => config.AutosaveEnabled, ( config, value ) => config.AutosaveEnabled = value, false ),
+			BoolOption( "AutosaveOnStableActions", "Lobby", "Autosave On Stable Actions", "Autosaves after safe turn, trade, property, and bankruptcy transitions.", 5, config => config.AutosaveOnStableActions, ( config, value ) => config.AutosaveOnStableActions = value, false ),
 			EnumOption( "LandedUnownedCanAffordMode", "Property Rules", "Affordable Unowned Landing", "What happens when a player can afford an unowned property.", 10, config => config.LandedUnownedCanAffordMode, ( config, value ) => config.LandedUnownedCanAffordMode = value ),
 			EnumOption( "LandedUnownedCantAffordMode", "Property Rules", "Unaffordable Unowned Landing", "What happens when a player cannot afford an unowned property.", 11, config => config.LandedUnownedCantAffordMode, ( config, value ) => config.LandedUnownedCantAffordMode = value ),
 			BoolOption( "CanSkipUnowned", "Property Rules", "Can Skip Unowned", "Allows players to ignore an unowned property instead of buying or auctioning it.", 12, config => config.CanSkipUnowned, ( config, value ) => config.CanSkipUnowned = value ),
@@ -251,7 +252,7 @@ public static class MatchConfigSchema
 		return TryGetOptionValue( option, config, out var value ) ? value : null;
 	}
 
-	private static MatchConfigOption BoolOption( string key, string group, string label, string description, int order, Func<MatchConfig, bool> getter, Action<MatchConfig, bool> setter )
+	private static MatchConfigOption BoolOption( string key, string group, string label, string description, int order, Func<MatchConfig, bool> getter, Action<MatchConfig, bool> setter, bool isVisible = true )
 	{
 		return new MatchConfigOption
 		{
@@ -259,6 +260,7 @@ public static class MatchConfigSchema
 			Group = group,
 			Label = label,
 			Description = description,
+			IsVisible = isVisible,
 			Order = order,
 			Kind = MatchConfigOptionKind.Bool,
 			ValueType = typeof( bool ),
@@ -267,7 +269,7 @@ public static class MatchConfigSchema
 		};
 	}
 
-	private static MatchConfigOption IntOption( string key, string group, string label, string description, int order, int min, int max, int step, Func<MatchConfig, int> getter, Action<MatchConfig, int> setter )
+	private static MatchConfigOption IntOption( string key, string group, string label, string description, int order, int min, int max, int step, Func<MatchConfig, int> getter, Action<MatchConfig, int> setter, bool isVisible = true )
 	{
 		return new MatchConfigOption
 		{
@@ -275,6 +277,7 @@ public static class MatchConfigSchema
 			Group = group,
 			Label = label,
 			Description = description,
+			IsVisible = isVisible,
 			Order = order,
 			Min = min,
 			Max = max,
@@ -286,7 +289,7 @@ public static class MatchConfigSchema
 		};
 	}
 
-	private static MatchConfigOption EnumOption<TEnum>( string key, string group, string label, string description, int order, Func<MatchConfig, TEnum> getter, Action<MatchConfig, TEnum> setter ) where TEnum : struct, Enum
+	private static MatchConfigOption EnumOption<TEnum>( string key, string group, string label, string description, int order, Func<MatchConfig, TEnum> getter, Action<MatchConfig, TEnum> setter, bool isVisible = true ) where TEnum : struct, Enum
 	{
 		return new MatchConfigOption
 		{
@@ -294,6 +297,7 @@ public static class MatchConfigSchema
 			Group = group,
 			Label = label,
 			Description = description,
+			IsVisible = isVisible,
 			Order = order,
 			Kind = MatchConfigOptionKind.Enum,
 			ValueType = typeof( TEnum ),

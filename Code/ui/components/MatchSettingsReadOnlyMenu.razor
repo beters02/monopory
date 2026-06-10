@@ -58,7 +58,7 @@
 	[Parameter] public Action OnClose { get; set; }
 
 	private Panel MatchConfigScrollPanel = null!;
-	private IReadOnlyList<string> ConfigGroups => MatchConfigSchema.Options.Select( option => option.Group ).Distinct().ToList();
+	private IReadOnlyList<string> ConfigGroups => MatchConfigSchema.Options.Where( option => option.IsVisible ).Select( option => option.Group ).Distinct().ToList();
 
 	private void Close()
 	{
@@ -67,7 +67,7 @@
 
 	private IEnumerable<MatchConfigOption> GetConfigOptionsForGroup( string group )
 	{
-		return MatchConfigSchema.Options.Where( option => string.Equals( option.Group, group, StringComparison.Ordinal ) );
+		return MatchConfigSchema.Options.Where( option => option.IsVisible && string.Equals( option.Group, group, StringComparison.Ordinal ) );
 	}
 
 	private string GetConfigDisplayValue( MatchConfigOption option )

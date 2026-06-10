@@ -13,6 +13,8 @@ public sealed partial class LobbyController : Component
 	[Sync] public NetDictionary<string, string> SelectedPieces { get; set; } = new();
 	[Sync] public NetDictionary<string, string> SelectedDiceSkins { get; set; } = new();
 	[Sync] public long PreferredHostOwnerId { get; set; }
+	[Sync] public string StagedLoadedSaveName { get; set; } = "";
+	[Sync] public string StagedLoadedGameIdentifier { get; set; } = "";
 	private string lastAppliedHostedConfigSnapshot = "";
 
 	public int MinPlayers => Math.Max( Config?.MinPlayers ?? 1, 1 );
@@ -29,6 +31,7 @@ public sealed partial class LobbyController : Component
 
 	public bool CanLocalPlayerStartGame =>
 		CanStartGame && (!OnlyHostStartsGame || IsLocalEffectiveHost);
+	public bool HasStagedLoadedGame => !string.IsNullOrWhiteSpace( StagedLoadedSaveName );
 
 	public bool IsLocalEffectiveHost => GetLocalSteamId() == EffectiveHostOwnerId;
 	public long EffectiveHostOwnerId => ResolveEffectiveHostOwnerId();

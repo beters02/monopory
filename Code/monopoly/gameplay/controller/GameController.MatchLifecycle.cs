@@ -31,8 +31,9 @@ public sealed partial class GameController : Component
 			return false;
 
 		var activePlayers = GetLobbyPlayers();
-		currentGameIdentifier = GameSaveService.CreateGameIdentifier( activePlayers.Select( player => player.PlayerName ).ToList() );
+		CurrentGameIdentifier = GameSaveService.CreateGameIdentifier( activePlayers.Select( player => player.PlayerName ).ToList() );
 		loadedSourceSaveId = "";
+		currentManualSaveId = "";
 		hasLoadedRestorePoint = false;
 		ResetGameState( false );
 		StartingPlayerCount = activePlayers.Count;

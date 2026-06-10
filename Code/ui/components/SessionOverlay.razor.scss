@@ -49,6 +49,7 @@
 
 .escape-menu-panel {
 	width: 460px;
+	position: relative;
 }
 
 .lobby-panel {
@@ -149,6 +150,18 @@
 
 .escape-menu-actions {
 	flex-direction: column;
+}
+
+.session-game-identifier {
+	position: absolute;
+	right: 14px;
+	bottom: 10px;
+
+	color: $monopoly-text-muted;
+	font-size: 11px;
+	font-weight: 900;
+	text-transform: uppercase;
+	opacity: 0.75;
 }
 
 .lobby-list {

@@ -4,12 +4,14 @@ using System;
 public sealed partial class GameController : Component
 {
 	private string loadedSourceSaveId = "";
+	private string currentManualSaveId = "";
 	private bool hasLoadedRestorePoint;
-	private string currentGameIdentifier = "";
 	private float lastAutosaveAt;
 	private string lastAutosaveFingerprint = "";
 
 	public bool HasLoadedRestorePoint => hasLoadedRestorePoint && !string.IsNullOrWhiteSpace( loadedSourceSaveId );
+	public bool HasCurrentManualSave => !string.IsNullOrWhiteSpace( currentManualSaveId );
+	[Sync] public string CurrentGameIdentifier { get; private set; } = "";
 
 	public bool TrySaveGame( string slotName, bool isAutosave, out string message )
 	{
@@ -41,6 +43,9 @@ public sealed partial class GameController : Component
 			message = "Could not write save file.";
 			return false;
 		}
+
+		if ( saveType == GameSaveType.Manual )
+			currentManualSaveId = save.Summary.SaveId;
 
 		message = isAutosave ? "Autosaved game." : $"Saved game: {save.Summary.DisplayName}.";
 		return true;
@@ -80,7 +85,7 @@ public sealed partial class GameController : Component
 		return true;
 	}
 
-	public bool TryOverwriteLastLoadedSave( out string message )
+	public bool TryOverwriteCurrentManualSave( out string message )
 	{
 		message = "";
 
@@ -90,9 +95,9 @@ public sealed partial class GameController : Component
 			return false;
 		}
 
-		var saveId = !string.IsNullOrWhiteSpace( loadedSourceSaveId )
-			? loadedSourceSaveId
-			: GameSaveService.GetLastLoadedSaveId();
+		var saveId = !string.IsNullOrWhiteSpace( currentManualSaveId )
+			? currentManualSaveId
+			: loadedSourceSaveId;
 
 		if ( string.IsNullOrWhiteSpace( saveId ) )
 		{
@@ -117,6 +122,7 @@ public sealed partial class GameController : Component
 			return false;
 		}
 
+		currentManualSaveId = replacement.Summary.SaveId;
 		message = $"Overwrote save: {replacement.Summary.DisplayName}.";
 		return true;
 	}
@@ -131,10 +137,11 @@ public sealed partial class GameController : Component
 		StartPrivateConfig();
 		ApplyLoadedSnapshot( bootstrap.LoadedGame, bootstrap.LoadedSeatAssignments );
 		loadedSourceSaveId = bootstrap.LoadedSourceSaveId ?? bootstrap.LoadedGame.Summary?.SaveId ?? "";
+		currentManualSaveId = loadedSourceSaveId;
 		hasLoadedRestorePoint = !string.IsNullOrWhiteSpace( loadedSourceSaveId );
-		currentGameIdentifier = bootstrap.LoadedGame.Summary?.GameIdentifier;
-		if ( string.IsNullOrWhiteSpace( currentGameIdentifier ) )
-			currentGameIdentifier = GameSaveService.CreateGameIdentifier( bootstrap.LoadedGame.Summary?.PlayerNames );
+		CurrentGameIdentifier = bootstrap.LoadedGame.Summary?.GameIdentifier;
+		if ( string.IsNullOrWhiteSpace( CurrentGameIdentifier ) )
+			CurrentGameIdentifier = GameSaveService.CreateGameIdentifier( bootstrap.LoadedGame.Summary?.PlayerNames );
 		GameSaveService.SetLastLoadedSaveId( loadedSourceSaveId );
 		MatchBootstrap.Clear();
 		SendGlobalPopupToAll( "Game loaded", "The saved game is live.", PopupKind.Success, true, 4f );
@@ -181,14 +188,14 @@ public sealed partial class GameController : Component
 			: slotName.Trim();
 
 		var snapshot = CaptureSaveSnapshot();
-		if ( string.IsNullOrWhiteSpace( currentGameIdentifier ) )
-			currentGameIdentifier = GameSaveService.CreateGameIdentifier( snapshot.Players.Where( player => player.OwnerId != 0 ).Select( player => player.PlayerName ).ToList() );
+		if ( string.IsNullOrWhiteSpace( CurrentGameIdentifier ) )
+			CurrentGameIdentifier = GameSaveService.CreateGameIdentifier( snapshot.Players.Where( player => player.OwnerId != 0 ).Select( player => player.PlayerName ).ToList() );
 
 		var summary = new GameSaveSummary
 		{
 			DisplayName = displayName,
 			SaveType = saveType,
-			GameIdentifier = currentGameIdentifier,
+			GameIdentifier = CurrentGameIdentifier,
 			SourceSaveId = HasLoadedRestorePoint ? loadedSourceSaveId : "",
 			SchemaVersion = GameSaveService.CurrentSchemaVersion,
 			GameVersion = MonopolyApp.GameVersion,

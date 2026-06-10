@@ -58,6 +58,10 @@
 					<GameButton Variant="session-danger-button" OnClick="@LeaveLobby">Leave Lobby</GameButton>
 					<GameButton Variant="session-danger-button" OnClick="@ExitGame">Exit Game</GameButton>
 				</div>
+				@if ( !string.IsNullOrWhiteSpace( GameIdentifier ) )
+				{
+					<div class="session-game-identifier">Game @GameIdentifier</div>
+				}
 			</div>
 		</div>
 	}
@@ -104,6 +108,7 @@
 
 	private string WinnerName =>
 		GameRef?.Winner?.PlayerName ?? "No One";
+	private string GameIdentifier => GameRef?.CurrentGameIdentifier ?? "";
 	private bool CanUseHostControls =>
 		Networking.IsHost || GameRef?.IsLocalEffectiveHost == true;
 	private bool CanBankruptAndAbandon =>
@@ -136,6 +141,7 @@
 		hash.Add( IsOptionsMenuOpen );
 		hash.Add( IsMatchSettingsMenuOpen );
 		hash.Add( GameRef?.HasLoadedRestorePoint ?? false );
+		hash.Add( GameIdentifier );
 		return hash.ToHashCode();
 	}
 }

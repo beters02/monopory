@@ -7,6 +7,12 @@ public sealed partial class LobbyController
 		if ( !Networking.IsHost || !CanStartGame || !IsLocalEffectiveHost )
 			return false;
 
+		if ( MatchBootstrap.Current?.HasLoadedGame == true )
+		{
+			LoadGameScene();
+			return true;
+		}
+
 		var startingPlayers = BuildPlayers();
 		MatchBootstrap.PrepareGame( GetGameConfig(), startingPlayers );
 		LoadGameScene();
@@ -67,6 +73,7 @@ public sealed partial class LobbyController
 		if ( !Networking.IsHost || !IsEffectiveHostCaller( Rpc.Caller ) )
 			return;
 
+		ClearStagedLoadedGame();
 		LoadMenuScene();
 	}
 

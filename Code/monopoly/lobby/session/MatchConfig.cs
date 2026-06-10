@@ -25,6 +25,7 @@ public sealed class MatchConfigOptionAttribute : Attribute
 	public string Group { get; }
 	public string Label { get; }
 	public string Description { get; set; } = "";
+	public bool IsVisible { get; set; } = true;
 	public int Order { get; set; }
 	public int Min { get; set; } = int.MinValue;
 	public int Max { get; set; } = int.MaxValue;

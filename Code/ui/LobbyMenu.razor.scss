@@ -490,6 +490,119 @@
 	flex-shrink: 0;
 }
 
+.save-card {
+	min-height: 142px;
+	padding: 14px;
+
+	background-color: $monopoly-surface-medium;
+	border: 1px solid $monopoly-panel-line;
+	border-radius: $monopoly-radius-control;
+
+	display: flex;
+	align-items: stretch;
+	justify-content: space-between;
+	gap: 14px;
+	flex-shrink: 0;
+}
+
+.save-card.selected {
+	border-color: $monopoly-gold;
+	box-shadow: 0 0 0 2px $monopoly-selected-ring-soft;
+}
+
+.save-card.last-loaded {
+	background-color: $monopoly-surface-strong;
+}
+
+.save-card-main {
+	flex: 1;
+	min-width: 0;
+
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.save-card-header {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 10px;
+}
+
+.save-card-title {
+	color: $monopoly-text;
+	font-size: 20px;
+	font-weight: 900;
+	line-height: 24px;
+}
+
+.save-card-badge {
+	min-height: 26px;
+	padding: 5px 8px;
+
+	background-color: $monopoly-gold;
+	border-radius: $monopoly-radius-board;
+	color: $monopoly-ink;
+
+	font-size: 11px;
+	font-weight: 900;
+	text-transform: uppercase;
+	white-space: nowrap;
+}
+
+.save-card-grid {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+
+.save-card-field {
+	flex: 1 1 45%;
+	min-width: 220px;
+	padding: 8px 10px;
+
+	background-color: $monopoly-surface-soft;
+	border: 1px solid $monopoly-panel-line;
+	border-radius: $monopoly-radius-board;
+
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+
+.save-card-label {
+	color: $monopoly-gold-soft;
+	font-size: 11px;
+	font-weight: 900;
+	line-height: 14px;
+	text-transform: uppercase;
+}
+
+.save-card-value {
+	color: $monopoly-text;
+	font-size: 13px;
+	font-weight: 800;
+	line-height: 17px;
+}
+
+.save-card-actions {
+	width: 108px;
+	min-width: 108px;
+
+	display: flex;
+	align-items: flex-start;
+	justify-content: flex-end;
+}
+
+.match-config-panel .monopoly-button.save-card-select-button {
+	width: 92px;
+	min-width: 92px;
+	height: 34px;
+	padding: 0 10px;
+	font-size: 12px;
+}
+
 .match-config-text {
 	flex: 1;
 	min-width: 0;

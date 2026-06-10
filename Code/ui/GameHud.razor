@@ -382,12 +382,12 @@
 		if ( GameRef is null || !Networking.IsHost )
 			return;
 
-		if ( GameRef.HasLoadedRestorePoint )
+		if ( GameRef.HasCurrentManualSave )
 		{
 			GameRef.ShowLocalConfirmation(
 				"Save game?",
 				"Do you want to overwrite your last save or create a new one?",
-				OverwriteLastLoadedSave,
+				OverwriteCurrentManualSave,
 				SaveNewManualGame,
 				"Overwrite",
 				"Create New"
@@ -433,12 +433,12 @@
 			GameRef.ShowLocalPopup( "Could not reload", message, PopupKind.Warning, true, 4f, false );
 	}
 
-	private void OverwriteLastLoadedSave()
+	private void OverwriteCurrentManualSave()
 	{
 		if ( GameRef is null || !Networking.IsHost )
 			return;
 
-		if ( GameRef.TryOverwriteLastLoadedSave( out var message ) )
+		if ( GameRef.TryOverwriteCurrentManualSave( out var message ) )
 			GameRef.ShowLocalPopup( "Save overwritten", message, PopupKind.Success, true, 3f, false );
 		else
 			GameRef.ShowLocalPopup( "Could not overwrite", message, PopupKind.Warning, true, 4f, false );

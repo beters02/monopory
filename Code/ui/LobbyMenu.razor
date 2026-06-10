@@ -152,15 +152,37 @@
 								{
 									@foreach ( var save in SaveSummaries )
 									{
-										<div class="@GetSaveRowClasses( save )" onclick="@(() => SelectSave( save.SaveId ))">
-											<div class="match-config-text">
-												<div class="match-config-name">@save.DisplayName</div>
-												<div class="match-config-value">@GetSaveDetail( save )</div>
-												<div class="match-config-value">@GetSavePlayers( save )</div>
+										<div class="@GetSaveRowClasses( save )" onclick="@(() => ToggleSaveSelection( save.SaveId ))">
+											<div class="save-card-main">
+												<div class="save-card-header">
+													<div class="save-card-title">@save.DisplayName</div>
+													@if ( save.IsLastLoadedRestorePoint )
+													{
+														<div class="save-card-badge">Last Loaded Restore Point</div>
+													}
+												</div>
+												<div class="save-card-grid">
+													<div class="save-card-field">
+														<div class="save-card-label">Game Identifier</div>
+														<div class="save-card-value">@GetSaveGameIdentifier( save )</div>
+													</div>
+													<div class="save-card-field">
+														<div class="save-card-label">Updated</div>
+														<div class="save-card-value">@GetSaveUpdatedAt( save )</div>
+													</div>
+													<div class="save-card-field">
+														<div class="save-card-label">Turn</div>
+														<div class="save-card-value">@GetSaveTurnSummary( save )</div>
+													</div>
+													<div class="save-card-field">
+														<div class="save-card-label">Players</div>
+														<div class="save-card-value">@GetSavePlayers( save )</div>
+													</div>
+												</div>
 											</div>
-											<div class="match-config-control">
-												<GameButton Variant="@GetSaveSelectButtonClasses( save )" OnClick="@(() => SelectSave( save.SaveId ))">
-													@(IsSaveSelected( save ) ? "Selected" : GetSaveTypeLabel( save ))
+											<div class="save-card-actions">
+												<GameButton Variant="@GetSaveSelectButtonClasses( save )" OnClick="@(() => ToggleSaveSelection( save.SaveId ))">
+													@(IsSaveSelected( save ) ? "Selected" : "Select")
 												</GameButton>
 											</div>
 										</div>
@@ -272,7 +294,7 @@
 				<div class="flow-actions">
 					<div class="lobby-action-row lobby-action-row-top">
 						<GameButton Variant="@ReadyButtonClasses" OnClick="@ToggleReady">@ReadyButtonLabel</GameButton>
-						<GameButton Variant="@StartButtonClasses" CanClick="@CanClickStartGame" OnClick="@StartGame" BlockedPopupTitle="Cannot start game" BlockedPopupMessage="@StartBlockedMessage">Start Game</GameButton>
+						<GameButton Variant="@StartButtonClasses" CanClick="@CanClickStartGame" OnClick="@StartGame" BlockedPopupTitle="Cannot start game" BlockedPopupMessage="@StartBlockedMessage">@StartButtonLabel</GameButton>
 						<GameButton Variant="flow-secondary-button flow-utility-button" OnClick="@CustomizePiece">Customize</GameButton>
 					</div>
 					<div class="lobby-action-row lobby-action-row-bottom">
@@ -318,7 +340,7 @@
 	private List<LoadedSeatAssignment> LoadSeatAssignments = new();
 	private bool IsManualSaveTab = true;
 	private readonly Dictionary<string, string> ConfigIntDrafts = new();
-	private IReadOnlyList<string> ConfigGroups => MatchConfigSchema.Options.Select( option => option.Group ).Distinct().ToList();
+	private IReadOnlyList<string> ConfigGroups => MatchConfigSchema.Options.Where( option => option.IsVisible ).Select( option => option.Group ).Distinct().ToList();
 
 	protected override void OnUpdate()
 	{
@@ -336,6 +358,12 @@
 			if ( Lobby is null )
 				return "Lobby controller missing.";
 
+			if ( Lobby.HasStagedLoadedGame )
+			{
+				var gameId = string.IsNullOrWhiteSpace( Lobby.StagedLoadedGameIdentifier ) ? "" : $" ({Lobby.StagedLoadedGameIdentifier})";
+				return $"Loaded save staged: {Lobby.StagedLoadedSaveName}{gameId}. Ready up, then start loaded game.";
+			}
+
 			if ( Players.Count < Lobby.MinPlayers )
 				return $"Waiting for {Lobby.MinPlayers - Players.Count} more player(s).";
 
@@ -350,6 +378,7 @@
 	}
 
 	private string ReadyButtonLabel => LocalPlayer?.IsReady == true ? "Unready" : "Ready";
+	private string StartButtonLabel => Lobby?.HasStagedLoadedGame == true ? "Start Loaded Game" : "Start Game";
 	private string ReadyButtonClasses => LocalPlayer?.IsReady == true ? "flow-secondary-button ready" : "flow-primary-button";
 	private string StartButtonClasses => CanClickStartGame ? "flow-primary-button" : "flow-primary-button blocked-action-button";
 	private string ConfigButtonClasses => "flow-secondary-button flow-utility-button flow-config-button";
@@ -393,6 +422,8 @@
 		hash.Add( IsCustomizeMenuOpen );
 		hash.Add( IsLoadMenuOpen );
 		hash.Add( Lobby?.HostedConfigSnapshot ?? "" );
+		hash.Add( Lobby?.StagedLoadedSaveName ?? "" );
+		hash.Add( Lobby?.StagedLoadedGameIdentifier ?? "" );
 		hash.Add( configRevision );
 		hash.Add( saveRevision );
 		hash.Add( SelectedSaveId ?? "" );
@@ -670,9 +701,9 @@
 
 	private bool CanLoadSelectedSave => CanEditConfig && !string.IsNullOrWhiteSpace( SelectedSaveId );
 
-	private void SelectSave( string saveId )
+	private void ToggleSaveSelection( string saveId )
 	{
-		SelectedSaveId = saveId ?? "";
+		SelectedSaveId = string.Equals( SelectedSaveId, saveId, StringComparison.Ordinal ) ? "" : saveId ?? "";
 		LoadSelectedSaveMetadata();
 		saveRevision++;
 	}
@@ -690,39 +721,32 @@
 
 	private string GetSaveRowClasses( GameSaveSummary save )
 	{
-		var classes = IsSaveSelected( save ) ? "match-config-row selected" : "match-config-row";
+		var classes = IsSaveSelected( save ) ? "save-card selected" : "save-card";
 		if ( save?.IsLastLoadedRestorePoint == true )
-			classes += " ready";
+			classes += " last-loaded";
 		return classes;
 	}
 
 	private string GetSaveSelectButtonClasses( GameSaveSummary save )
 	{
-		return IsSaveSelected( save ) ? "match-config-save-button" : "match-config-secondary-button";
+		return IsSaveSelected( save ) ? "match-config-save-button save-card-select-button" : "match-config-secondary-button save-card-select-button";
 	}
 
-	private static string GetSaveTypeLabel( GameSaveSummary save )
+	private static string GetSaveGameIdentifier( GameSaveSummary save )
 	{
-		if ( save?.IsLastLoadedRestorePoint == true )
-			return "Last Loaded Restore Point";
-
-		return save?.SaveType switch
-		{
-			GameSaveType.Autosave => "Autosave",
-			_ => "Manual Save"
-		};
+		return string.IsNullOrWhiteSpace( save?.GameIdentifier ) ? "Unknown game" : save.GameIdentifier;
 	}
 
-	private static string GetSaveDetail( GameSaveSummary save )
+	private static string GetSaveUpdatedAt( GameSaveSummary save )
 	{
-		var label = GetSaveTypeLabel( save );
-		var updated = DateTimeOffset.TryParse( save?.UpdatedAtUtc, out var parsed )
+		return DateTimeOffset.TryParse( save?.UpdatedAtUtc, out var parsed )
 			? parsed.ToLocalTime().ToString( "g" )
 			: "Unknown time";
+	}
 
-		var turn = string.IsNullOrWhiteSpace( save?.TurnSummary ) ? "No turn summary" : save.TurnSummary;
-		var gameId = string.IsNullOrWhiteSpace( save?.GameIdentifier ) ? "Unknown game" : save.GameIdentifier;
-		return $"{label} - {gameId} - {updated} - {turn}";
+	private static string GetSaveTurnSummary( GameSaveSummary save )
+	{
+		return string.IsNullOrWhiteSpace( save?.TurnSummary ) ? "No turn summary" : save.TurnSummary;
 	}
 
 	private static string GetSavePlayers( GameSaveSummary save )
@@ -841,8 +865,8 @@
 		}
 
 		PopupGame.ShowLocalConfirmation(
-			"Load saved game?",
-			$"This will start {save.DisplayName}. Missing saved players will stay disconnected so they can rejoin or time out.",
+			"Load save into lobby?",
+			$"This will stage {save.DisplayName} in the lobby. Missing saved players will stay disconnected when the game starts.",
 			LoadSelectedSave,
 			null,
 			"Load",
@@ -857,8 +881,15 @@
 
 		var save = SaveSummaries.FirstOrDefault( save => string.Equals( save.SaveId, SelectedSaveId, StringComparison.Ordinal ) );
 		var assignments = LoadSeatAssignments.Count > 0 ? LoadSeatAssignments.ToList() : Lobby.BuildDefaultSeatAssignments( save ).ToList();
-		if ( !Lobby.TryLoadSavedGame( save, assignments, out var message ) )
+		if ( Lobby.TryLoadSavedGame( save, assignments, out var message ) )
+		{
+			CloseLoadMenu();
+			ShowLocalPopup( "Save staged", message, PopupKind.Success, true, 4f, false );
+		}
+		else
+		{
 			ShowLocalPopup( "Could not load", message, PopupKind.Warning, true, 4f, false );
+		}
 	}
 
 	private void CloseConfigMenu()
@@ -904,7 +935,7 @@
 
 	private IEnumerable<MatchConfigOption> GetConfigOptionsForGroup( string group )
 	{
-		return MatchConfigSchema.Options.Where( option => string.Equals( option.Group, group, StringComparison.Ordinal ) );
+		return MatchConfigSchema.Options.Where( option => option.IsVisible && string.Equals( option.Group, group, StringComparison.Ordinal ) );
 	}
 
 	private static string GetConfigOptionTitle( MatchConfigOption option )

@@ -29,8 +29,21 @@ public sealed partial class LobbyController
 		var resolvedAssignments = ResolveSeatAssignments( save, assignments );
 		MatchBootstrap.PrepareLoadedGame( save, resolvedAssignments, save.Summary.SaveId );
 		GameSaveService.SetLastLoadedSaveId( save.Summary.SaveId );
-		LoadGameScene();
+		StagedLoadedSaveName = save.Summary.DisplayName;
+		StagedLoadedGameIdentifier = save.Summary.GameIdentifier;
+		message = $"Loaded {save.Summary.DisplayName} into the lobby. Press Start Game when everyone is ready.";
 		return true;
+	}
+
+	private void ClearStagedLoadedGame()
+	{
+		if ( !Networking.IsHost )
+			return;
+
+		StagedLoadedSaveName = "";
+		StagedLoadedGameIdentifier = "";
+		if ( MatchBootstrap.Current?.HasLoadedGame == true )
+			MatchBootstrap.Clear();
 	}
 
 	public IReadOnlyList<LoadedSeatAssignment> BuildDefaultSeatAssignments( GameSaveSummary saveSummary )
