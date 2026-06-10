@@ -19,7 +19,7 @@ public sealed partial class GameController : Component
 		SendCardDrawPopupToOtherPlayers( player, card );
 		var cardResult = ApplyCard( player, card );
 		Log.Info(
-			$"{player.PlayerName} drew {deck}: title=\"{card.Title}\", text=\"{card.Description}\", " +
+			$"{player.PlayerName} drew {deck}: title=\"{ResolveCardText( card.Title )}\", text=\"{ResolveCardText( card.Description )}\", " +
 			$"action={card.Action}, result={cardResult}" );
 		return $"Drew {deck}: {card.Title}; {cardResult}";
 	}
@@ -34,8 +34,8 @@ public sealed partial class GameController : Component
 		{
 			SendPopupToPlayer(
 				playerIndex,
-				card.Title,
-				card.Description,
+				ResolveCardText( card.Title ),
+				ResolveCardText( card.Description ),
 				PopupKind.Info,
 				true,
 				6f
@@ -43,18 +43,47 @@ public sealed partial class GameController : Component
 		}
 	}
 
-	private static string GetCardDisplayText( CardDef card )
+	private string GetCardDisplayText( CardDef card )
 	{
 		if ( card is null )
 			return "";
 
-		if ( string.IsNullOrWhiteSpace( card.Title ) )
-			return card.Description ?? "";
+		var title = ResolveCardText( card.Title );
+		var description = ResolveCardText( card.Description );
 
-		if ( string.IsNullOrWhiteSpace( card.Description ) )
-			return card.Title;
+		if ( string.IsNullOrWhiteSpace( title ) )
+			return description ?? "";
 
-		return $"{card.Title}. {card.Description}";
+		if ( string.IsNullOrWhiteSpace( description ) )
+			return title;
+
+		return $"{title}. {description}";
+	}
+
+	private string ResolveCardText( string text )
+	{
+		if ( string.IsNullOrWhiteSpace( text ) )
+			return text ?? "";
+
+		return text
+			.Replace( "{pass_go_money}", GetPassGoMoney().ToString() )
+			.Replace( "{land_on_go_money}", GetLandOnGoMoney().ToString() )
+			.Replace( "{go_landing_money}", GetGoLandingMoney().ToString() );
+	}
+
+	private int GetPassGoMoney()
+	{
+		return Math.Max( Config?.PassGoMoney ?? 200, 0 );
+	}
+
+	private int GetLandOnGoMoney()
+	{
+		return Math.Max( Config?.LandOnGoMoney ?? 200, 0 );
+	}
+
+	private int GetGoLandingMoney()
+	{
+		return GetPassGoMoney() + GetLandOnGoMoney();
 	}
 
 	private CardDef DrawCard( CardDeck deck )

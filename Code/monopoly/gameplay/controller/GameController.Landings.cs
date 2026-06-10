@@ -234,8 +234,8 @@ public sealed partial class GameController : Component
 
 		goPassCount = Math.Max( goPassCount, 0 );
 
-		var passGoMoney = Math.Max( Config?.PassGoMoney ?? 200, 0 );
-		var landingAdditionalMoney = landedOnGo ? Math.Max( Config?.LandOnGoMoney ?? 200, 0 ) : 0;
+		var passGoMoney = GetPassGoMoney();
+		var landingAdditionalMoney = landedOnGo ? GetLandOnGoMoney() : 0;
 		var amount = (passGoMoney * goPassCount) + landingAdditionalMoney;
 
 		if ( amount <= 0 )
