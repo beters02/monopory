@@ -391,11 +391,6 @@
 			var rect = BoardMath.GetSpaceRect( space.Index, this );
 			var width = rect.Width > 0f ? (rect.Height / rect.Width) * 100f : 100f;
 			style += $" width: {width}%;";
-
-			if ( side == "side-left" )
-				style += $" left: {lineHeight}px;";
-			else
-				style += $" right: {lineHeight}px;";
 		}
 
 		return style;
