@@ -87,6 +87,7 @@ public sealed partial class GameController : Component
 		ClearAuction();
 		SetPostActionPhase();
 		ResumeTurnTimerAfterAuction();
+		TryAutosaveStablePoint( "Auction ended" );
 	}
 
 	private void ClearAuction()

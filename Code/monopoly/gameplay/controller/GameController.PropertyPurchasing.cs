@@ -144,6 +144,7 @@ public sealed partial class GameController : Component
 		ShowNewlyOwnedSetPopups( ownedSetsBeforePurchase, playerIndex );
 		Log.Info( $"{player.PlayerName} bought {def.DisplayName} for ${def.Price}." );
 		message = $"{player.PlayerName} bought {def.DisplayName}.";
+		TryAutosaveStablePoint( "Property purchased" );
 		return true;
 	}
 
@@ -237,6 +238,7 @@ public sealed partial class GameController : Component
 		ShowNewlyOwnedSetPopups( ownedSetsBeforePurchase, playerIndex );
 
 		message = $"{player.PlayerName} bought {propertiesToBuy.Count} properties for ${totalPrice}.";
+		TryAutosaveStablePoint( "Property set purchased" );
 		return true;
 	}
 
@@ -276,6 +278,7 @@ public sealed partial class GameController : Component
 
 		PendingPurchaseSpaceIndex = -1;
 		SetPostActionPhase();
+		TryAutosaveStablePoint( "Property purchased" );
 	}
 
 	[Button( "Skip Pending Property" )]
@@ -297,6 +300,7 @@ public sealed partial class GameController : Component
 
 		PendingPurchaseSpaceIndex = -1;
 		SetPostActionPhase();
+		TryAutosaveStablePoint( "Property skipped" );
 	}
 
 	private void BuyUnownedPropertyForPlayer( PlayerState player, SpaceDef def, int ownerIndex )

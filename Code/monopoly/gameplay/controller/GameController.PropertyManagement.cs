@@ -29,6 +29,7 @@ public sealed partial class GameController : Component
 		SendPopupToPlayer( player, "Improvement purchased", $"You built on {spaceName} for ${cost}.", PopupKind.Success, true, 4f );
 		SendTableChatMessage( "Improvement purchased", $"{player.PlayerName} built on {spaceName} for ${cost}." );
 		Log.Info( $"{player.PlayerName} built on {spaceName} for ${cost}." );
+		TryAutosaveStablePoint( "Improvement purchased" );
 	}
 
 	[Rpc.Host]
@@ -58,6 +59,7 @@ public sealed partial class GameController : Component
 		SendPopupToPlayer( player, "Improvement sold", $"You sold an improvement on {soldSpaceName} for ${refund}.", PopupKind.Warning, true, 4f );
 		SendTableChatMessage( "Improvement sold", $"{player.PlayerName} sold an improvement on {soldSpaceName} for ${refund}." );
 		Log.Info( $"{player.PlayerName} sold an improvement on {soldSpaceName} for ${refund}." );
+		TryAutosaveStablePoint( "Improvement sold" );
 	}
 
 	[Rpc.Host]
@@ -82,6 +84,7 @@ public sealed partial class GameController : Component
 		SendPopupToPlayer( player, "Property sold", $"You mortgaged {mortgagedSpaceName} for ${value}.", PopupKind.Warning, true, 4f );
 		SendTableChatMessage( "Property sold", $"{player.PlayerName} mortgaged {mortgagedSpaceName} for ${value}." );
 		Log.Info( $"{player.PlayerName} mortgaged {mortgagedSpaceName} for ${value}." );
+		TryAutosaveStablePoint( "Property mortgaged" );
 	}
 
 	[Rpc.Host]
@@ -106,5 +109,6 @@ public sealed partial class GameController : Component
 		SendPopupToPlayer( player, "Property purchased", $"You unmortgaged {unmortgagedSpaceName} for ${cost}.", PopupKind.Success, true, 4f );
 		SendTableChatMessage( "Property purchased", $"{player.PlayerName} unmortgaged {unmortgagedSpaceName} for ${cost}." );
 		Log.Info( $"{player.PlayerName} unmortgaged {unmortgagedSpaceName} for ${cost}." );
+		TryAutosaveStablePoint( "Property unmortgaged" );
 	}
 }

@@ -45,6 +45,11 @@
 				<div class="session-actions escape-menu-actions">
 					<GameButton Variant="session-primary-button" OnClick="@CloseMenu">Return To Game</GameButton>
 					<GameButton Variant="session-utility-button" OnClick="@OpenMatchSettings">Match Settings</GameButton>
+					@if ( CanUseHostControls )
+					{
+						<GameButton Variant="session-utility-button" OnClick="@SaveGame">Save Game</GameButton>
+						<GameButton Variant="session-utility-button" OnClick="@ReloadLastLoadedSave">Reload Last Loaded Save</GameButton>
+					}
 					<GameButton Variant="session-utility-button" OnClick="@OpenOptions">Options</GameButton>
 					@if ( CanBankruptAndAbandon )
 					{
@@ -94,6 +99,8 @@
 	[Parameter] public Action OnLeaveLobby { get; set; }
 	[Parameter] public Action OnDeclareBankruptcy { get; set; }
 	[Parameter] public Action OnExitGame { get; set; }
+	[Parameter] public Action OnSaveGame { get; set; }
+	[Parameter] public Action OnReloadLastLoadedSave { get; set; }
 
 	private string WinnerName =>
 		GameRef?.Winner?.PlayerName ?? "No One";
@@ -114,18 +121,21 @@
 	private void LeaveLobby() => OnLeaveLobby?.Invoke();
 	private void BankruptAndAbandon() => OnDeclareBankruptcy?.Invoke();
 	private void ExitGame() => OnExitGame?.Invoke();
+	private void SaveGame() => OnSaveGame?.Invoke();
+	private void ReloadLastLoadedSave() => OnReloadLastLoadedSave?.Invoke();
 
 	protected override int BuildHash()
 	{
-		return HashCode.Combine(
-			GameRef?.MatchState ?? 0,
-			GameRef?.WinnerPlayerIndex ?? -1,
-			WinnerName,
-			CanUseHostControls,
-			CanBankruptAndAbandon,
-			IsEscapeMenuOpen,
-			IsOptionsMenuOpen,
-			IsMatchSettingsMenuOpen
-		);
+		var hash = new HashCode();
+		hash.Add( GameRef?.MatchState ?? 0 );
+		hash.Add( GameRef?.WinnerPlayerIndex ?? -1 );
+		hash.Add( WinnerName );
+		hash.Add( CanUseHostControls );
+		hash.Add( CanBankruptAndAbandon );
+		hash.Add( IsEscapeMenuOpen );
+		hash.Add( IsOptionsMenuOpen );
+		hash.Add( IsMatchSettingsMenuOpen );
+		hash.Add( GameRef?.HasLoadedRestorePoint ?? false );
+		return hash.ToHashCode();
 	}
 }

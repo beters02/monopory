@@ -87,6 +87,7 @@ public sealed partial class GameController : Component
 		}
 
 		CheckForGameOver();
+		TryAutosaveStablePoint( "Bankruptcy" );
 	}
 
 	private void ResolveBankruptedPlayerAssets( int playerIndex, PlayerState player, PlayerState creditor, int creditorIndex, int debtAmount )
@@ -229,5 +230,6 @@ public sealed partial class GameController : Component
 		ReportWinnerAchievements();
 		SendGlobalPopupToAll( "Game over", $"{winnerName} won the game.", PopupKind.Success, true, 8f );
 		Log.Info( $"Game over. Winner: {winnerName}." );
+		TryAutosaveStablePoint( "Game over" );
 	}
 }

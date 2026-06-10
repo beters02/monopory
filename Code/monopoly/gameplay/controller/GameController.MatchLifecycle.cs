@@ -31,6 +31,9 @@ public sealed partial class GameController : Component
 			return false;
 
 		var activePlayers = GetLobbyPlayers();
+		currentGameIdentifier = GameSaveService.CreateGameIdentifier( activePlayers.Select( player => player.PlayerName ).ToList() );
+		loadedSourceSaveId = "";
+		hasLoadedRestorePoint = false;
 		ResetGameState( false );
 		StartingPlayerCount = activePlayers.Count;
 
@@ -59,6 +62,7 @@ public sealed partial class GameController : Component
 
 		ReportMatchStartedAchievements();
 		SendGlobalPopupToAll( "Game started", "The first turn is live.", PopupKind.Success, true, 4f );
+		TryAutosaveStablePoint( "Game started" );
 		return true;
 	}
 
@@ -142,6 +146,7 @@ public sealed partial class GameController : Component
 		if ( !Networking.IsHost )
 			return false;
 
+		TryAutosaveStablePoint( "Returned to lobby" );
 		ClearSpawnedTokens();
 		ResetGameState( false );
 		SyncLobbyConnections();

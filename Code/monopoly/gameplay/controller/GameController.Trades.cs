@@ -147,6 +147,7 @@ public sealed partial class GameController : Component
 		ShowNewlyOwnedSetPopups( ownedSetsBeforeTrade, trade.SenderPlayerIndex, trade.ReceiverPlayerIndex );
 
 		Log.Info( $"{receiver.PlayerName} accepted a trade from {sender.PlayerName}." );
+		TryAutosaveStablePoint( "Trade accepted" );
 	}
 
 	[Rpc.Host]
@@ -166,6 +167,7 @@ public sealed partial class GameController : Component
 			ShowTradeDeniedNotification( trade, callerIndex );
 		PendingTrades.Remove( tradeId );
 		TradeViewers.Remove( tradeId );
+		TryAutosaveStablePoint( "Trade removed" );
 	}
 
 	[Rpc.Host]

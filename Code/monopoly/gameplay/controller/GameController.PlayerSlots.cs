@@ -361,6 +361,8 @@ public sealed partial class GameController : Component
 			else
 				AdvanceTurn();
 		}
+
+		TryAutosaveStablePoint( "Player abandoned" );
 	}
 
 	private void RemoveTradesForPlayer( int playerIndex )

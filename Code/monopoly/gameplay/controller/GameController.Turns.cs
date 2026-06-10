@@ -829,6 +829,7 @@ public sealed partial class GameController : Component
 			CurrentTurnGetsExtraRoll = false;
 			PlayTurnSound( CurrentPlayer );
 			StartTurnTimer();
+			TryAutosaveStablePoint( "Extra roll" );
 			return;
 		}
 
@@ -887,6 +888,7 @@ public sealed partial class GameController : Component
 		CompleteTurn();
 		Phase = GamePhase.WaitingToRoll;
 		StartTurnTimer();
+		TryAutosaveStablePoint( "Turn ended" );
 	}
 
 	private void AdvanceTurn()
@@ -922,6 +924,7 @@ public sealed partial class GameController : Component
 				BeginTurnForCurrentPlayer();
 				Phase = GamePhase.WaitingToRoll;
 				StartTurnTimer();
+				TryAutosaveStablePoint( "Turn advanced" );
 				return;
 			}
 		}
@@ -936,6 +939,7 @@ public sealed partial class GameController : Component
 				BeginTurnForCurrentPlayer();
 				Phase = GamePhase.WaitingToRoll;
 				StartTurnTimer();
+				TryAutosaveStablePoint( "Turn advanced" );
 				return;
 			}
 		}

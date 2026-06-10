@@ -229,6 +229,12 @@ public sealed partial class GameController : Component, Component.INetworkListen
 		if ( bootstrap?.AutoStartGame != true )
 			return;
 
+		if ( bootstrap.HasLoadedGame )
+		{
+			if ( TryStartLoadedGameFromBootstrap() )
+				return;
+		}
+
 		var expectedPlayerCount = Math.Max( bootstrap.StartingPlayerCount, MinPlayers );
 		if ( GetLobbyPlayers().Count < expectedPlayerCount )
 			return;
