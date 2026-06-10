@@ -5,11 +5,14 @@ using System.Text.RegularExpressions;
 public static class GameSaveService
 {
 	public const int CurrentSchemaVersion = 1;
+	public const double DefaultAutosaveRetentionHours = 48;
 	private const string SaveDirectory = "saves";
 	private const string ManualSaveDirectory = "saves/manual";
 	private const string AutosaveDirectory = "saves/autosaves";
 	private const string LastLoadedFileName = "saves/last-loaded-save.txt";
 	private const string AutosavePrefix = "autosave";
+
+	public static TimeSpan AutosaveRetention { get; set; } = TimeSpan.FromHours( DefaultAutosaveRetentionHours );
 
 	public static IReadOnlyList<GameSaveSummary> ListSaves()
 	{
@@ -19,6 +22,7 @@ public static class GameSaveService
 	public static IReadOnlyList<GameSaveSummary> ListSaves( GameSaveType? saveType )
 	{
 		EnsureSaveDirectory();
+		DeleteExpiredAutosaves();
 
 		var lastLoadedSaveId = GetLastLoadedSaveId();
 		var saves = new List<GameSaveSummary>();
@@ -82,6 +86,7 @@ public static class GameSaveService
 			return false;
 
 		EnsureSaveDirectory();
+		DeleteExpiredAutosaves();
 
 		save.Summary.SaveType = type;
 		save.Summary.SchemaVersion = CurrentSchemaVersion;
@@ -223,6 +228,38 @@ public static class GameSaveService
 		FileSystem.Data.CreateDirectory( SaveDirectory );
 		FileSystem.Data.CreateDirectory( ManualSaveDirectory );
 		FileSystem.Data.CreateDirectory( AutosaveDirectory );
+	}
+
+	private static void DeleteExpiredAutosaves()
+	{
+		if ( AutosaveRetention <= TimeSpan.Zero )
+			return;
+
+		foreach ( var fileName in FileSystem.Data.FindFile( AutosaveDirectory, "*.json" ) )
+		{
+			var path = $"{AutosaveDirectory}/{fileName}";
+			try
+			{
+				var save = FileSystem.Data.ReadJson<GameSaveFile>( path );
+				if ( save?.Summary is null || save.Summary.SaveType != GameSaveType.Autosave )
+					continue;
+
+				var timestamp = ParseTimestamp( save.Summary.UpdatedAtUtc );
+				if ( timestamp == DateTimeOffset.MinValue )
+					timestamp = ParseTimestamp( save.Summary.CreatedAtUtc );
+
+				if ( timestamp == DateTimeOffset.MinValue || DateTimeOffset.UtcNow - timestamp <= AutosaveRetention )
+					continue;
+
+				FileSystem.Data.DeleteFile( path );
+				if ( string.Equals( save.Summary.SaveId, GetLastLoadedSaveId(), StringComparison.Ordinal ) )
+					SetLastLoadedSaveId( "" );
+			}
+			catch ( Exception ex )
+			{
+				Log.Warning( $"Could not inspect autosave '{path}' for retention cleanup: {ex.Message}" );
+			}
+		}
 	}
 
 	private static IEnumerable<string> GetSavePaths( GameSaveType? saveType )

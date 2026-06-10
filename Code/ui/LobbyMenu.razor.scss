@@ -358,6 +358,7 @@
 .match-config-toggle-button,
 .match-config-step-button,
 .match-config-save-button,
+.match-config-danger-button,
 .match-config-secondary-button {
 	height: $monopoly-control-height;
 	min-width: 96px;
@@ -407,6 +408,17 @@
 
 .match-config-save-button:hover {
 	background-color: $monopoly-gold-hover;
+}
+
+.match-config-danger-button {
+	min-width: 132px;
+	background-color: $monopoly-danger;
+	border: 1px solid $monopoly-danger;
+	color: $monopoly-text;
+}
+
+.match-config-danger-button:hover {
+	background-color: $monopoly-danger-hover;
 }
 
 .match-config-panel .monopoly-button.disabled.match-config-close-button:hover,
@@ -587,19 +599,103 @@
 }
 
 .save-card-actions {
-	width: 108px;
-	min-width: 108px;
+	width: 96px;
+	min-width: 96px;
 
 	display: flex;
+	flex-direction: column;
 	align-items: flex-start;
 	justify-content: flex-end;
+	gap: 8px;
 }
 
-.match-config-panel .monopoly-button.save-card-select-button {
+.match-config-panel .monopoly-button.save-card-select-button,
+.match-config-panel .monopoly-button.save-card-delete-button {
 	width: 92px;
 	min-width: 92px;
 	height: 34px;
 	padding: 0 10px;
+	font-size: 12px;
+}
+
+.load-seat-popup-panel {
+	width: 760px;
+	max-width: 88%;
+	height: 76%;
+	max-height: 76%;
+	padding: $monopoly-panel-padding;
+
+	background-color: $monopoly-panel-strong;
+	border: 3px solid $monopoly-panel-line;
+	border-radius: $monopoly-radius-panel;
+	box-shadow: $monopoly-panel-shadow-strong;
+
+	color: $monopoly-text;
+	font-family: $monopoly-font-family;
+
+	display: flex;
+	flex-direction: column;
+	gap: $monopoly-panel-gap;
+	overflow: hidden;
+}
+
+.load-seat-scroll {
+	flex: 1;
+	min-height: 0;
+	padding-right: 8px;
+
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+
+	overflow-x: hidden;
+	overflow-y: scroll;
+}
+
+.saved-seat-card {
+	min-height: 124px;
+	padding: 14px;
+
+	background-color: $monopoly-surface-soft;
+	border: 1px solid $monopoly-panel-line;
+	border-radius: $monopoly-radius-control;
+
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	flex-shrink: 0;
+}
+
+.saved-seat-main {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.saved-seat-title {
+	color: $monopoly-text;
+	font-size: 19px;
+	font-weight: 900;
+	line-height: 23px;
+}
+
+.saved-seat-detail {
+	color: $monopoly-text-muted;
+	font-size: 13px;
+	font-weight: 800;
+	line-height: 18px;
+}
+
+.saved-seat-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+
+.load-seat-popup-panel .saved-seat-actions .monopoly-button {
+	height: 36px;
+	min-width: 132px;
+	padding: 0 12px;
 	font-size: 12px;
 }
 

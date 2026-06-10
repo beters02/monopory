@@ -114,116 +114,144 @@
 		{
 			<div class="match-config-root open">
 				<div class="match-config-screen">
-					<div class="match-config-panel">
-						<div class="match-config-header">
-							<div class="match-config-header-text">
-								<div class="match-config-kicker">Lobby</div>
-								<div class="match-config-title">Load Game</div>
-							</div>
-							<CloseButton Variant="match-config-close-button" Title="Close" OnClick="@CloseLoadMenu"></CloseButton>
-						</div>
-
-						<div class="match-config-scroll-shell">
-							<div class="match-config-scroll monopory-scroll-y" @ref="LoadGameScrollPanel">
-								<div class="match-config-copy">Manual saves are stable restore points. Autosaves are stored separately and never overwrite a manual save.</div>
-								<div class="match-config-section">
-									<div class="match-config-section-title">Save Type</div>
-									<div class="match-config-section-options">
-										<div class="match-config-row">
-											<div class="match-config-text">
-												<div class="match-config-name">@ActiveSaveTabTitle</div>
-												<div class="match-config-value">@ActiveSaveTabDescription</div>
-											</div>
-											<div class="match-config-control">
-												<GameButton Variant="@GetSaveTabButtonClasses( true )" OnClick="@(() => SetSaveTab( true ))">Manual Saves</GameButton>
-												<GameButton Variant="@GetSaveTabButtonClasses( false )" OnClick="@(() => SetSaveTab( false ))">Autosaves</GameButton>
-											</div>
-										</div>
-									</div>
+					@if ( IsLoadSeatMenuOpen )
+					{
+						<div class="load-seat-popup-panel">
+							<div class="match-config-header">
+								<div class="match-config-header-text">
+									<div class="match-config-kicker">Load Game</div>
+									<div class="match-config-title">Saved Seats</div>
 								</div>
-								@if ( SaveSummaries.Count == 0 )
+								<CloseButton Variant="match-config-close-button" Title="Close" OnClick="@CloseLoadSeatMenu"></CloseButton>
+							</div>
+
+							<div class="match-config-copy">Choose who should sit in each saved player seat before staging this save in the lobby.</div>
+
+							<div class="load-seat-scroll monopory-scroll-y">
+								@if ( SelectedSaveFile?.Snapshot?.Players is null || SelectedSaveFile.Snapshot.Players.Count == 0 )
 								{
 									<div class="match-config-section">
-										<div class="match-config-section-title">No @ActiveSaveTabTitle Found</div>
-										<div class="match-config-value">@EmptySaveTabMessage</div>
+										<div class="match-config-section-title">No Saved Seats</div>
+										<div class="match-config-value">This save has no saved player seats.</div>
 									</div>
 								}
 								else
 								{
-									@foreach ( var save in SaveSummaries )
+									@foreach ( var savedPlayer in SelectedSaveFile.Snapshot.Players.Where( player => player.OwnerId != 0 ).OrderBy( player => player.SeatIndex ) )
 									{
-										<div class="@GetSaveRowClasses( save )" onclick="@(() => ToggleSaveSelection( save.SaveId ))">
-											<div class="save-card-main">
-												<div class="save-card-header">
-													<div class="save-card-title">@save.DisplayName</div>
-													@if ( save.IsLastLoadedRestorePoint )
-													{
-														<div class="save-card-badge">Last Loaded Restore Point</div>
-													}
-												</div>
-												<div class="save-card-grid">
-													<div class="save-card-field">
-														<div class="save-card-label">Game Identifier</div>
-														<div class="save-card-value">@GetSaveGameIdentifier( save )</div>
-													</div>
-													<div class="save-card-field">
-														<div class="save-card-label">Updated</div>
-														<div class="save-card-value">@GetSaveUpdatedAt( save )</div>
-													</div>
-													<div class="save-card-field">
-														<div class="save-card-label">Turn</div>
-														<div class="save-card-value">@GetSaveTurnSummary( save )</div>
-													</div>
-													<div class="save-card-field">
-														<div class="save-card-label">Players</div>
-														<div class="save-card-value">@GetSavePlayers( save )</div>
-													</div>
-												</div>
+										<div class="saved-seat-card">
+											<div class="saved-seat-main">
+												<div class="saved-seat-title">@savedPlayer.PlayerName</div>
+												<div class="saved-seat-detail">@GetSeatAssignmentDetail( savedPlayer )</div>
 											</div>
-											<div class="save-card-actions">
-												<GameButton Variant="@GetSaveSelectButtonClasses( save )" OnClick="@(() => ToggleSaveSelection( save.SaveId ))">
-													@(IsSaveSelected( save ) ? "Selected" : "Select")
-												</GameButton>
+											<div class="saved-seat-actions">
+												<GameButton Variant="@GetKeepDisconnectedButtonClasses( savedPlayer )" OnClick="@(() => KeepSeatDisconnected( savedPlayer.SeatIndex ))">Keep Disconnected</GameButton>
+												@foreach ( var player in GetAssignablePlayersForSeat( savedPlayer.SeatIndex ) )
+												{
+													<GameButton Variant="@GetAssignPlayerButtonClasses( savedPlayer.SeatIndex, player.OwnerId )" OnClick="@(() => AssignSeatToPlayer( savedPlayer.SeatIndex, player ))">@player.Name</GameButton>
+												}
 											</div>
 										</div>
 									}
 								}
-								@if ( SelectedSaveFile?.Snapshot?.Players?.Count > 0 )
-								{
+							</div>
+
+							<div class="match-config-footer">
+								<GameButton Variant="match-config-secondary-button" OnClick="@CloseLoadSeatMenu">Cancel</GameButton>
+								<GameButton Variant="match-config-save-button" OnClick="@ConfirmLoadSelectedSaveFinal">Continue</GameButton>
+							</div>
+						</div>
+					}
+					else
+					{
+						<div class="match-config-panel">
+							<div class="match-config-header">
+								<div class="match-config-header-text">
+									<div class="match-config-kicker">Lobby</div>
+									<div class="match-config-title">Load Game</div>
+								</div>
+								<CloseButton Variant="match-config-close-button" Title="Close" OnClick="@CloseLoadMenu"></CloseButton>
+							</div>
+
+							<div class="match-config-scroll-shell">
+								<div class="match-config-scroll monopory-scroll-y" @ref="LoadGameScrollPanel">
+									<div class="match-config-copy">Manual saves are stable restore points. Autosaves are stored separately and never overwrite a manual save.</div>
 									<div class="match-config-section">
-										<div class="match-config-section-title">Saved Seats</div>
+										<div class="match-config-section-title">Save Type</div>
 										<div class="match-config-section-options">
-											@foreach ( var savedPlayer in SelectedSaveFile.Snapshot.Players.Where( player => player.OwnerId != 0 ).OrderBy( player => player.SeatIndex ) )
-											{
-												<div class="match-config-row">
-													<div class="match-config-text">
-														<div class="match-config-name">@savedPlayer.PlayerName</div>
-														<div class="match-config-value">@GetSeatAssignmentDetail( savedPlayer )</div>
-													</div>
-													<div class="match-config-control">
-														<GameButton Variant="@GetKeepDisconnectedButtonClasses( savedPlayer )" OnClick="@(() => KeepSeatDisconnected( savedPlayer.SeatIndex ))">Keep Disconnected</GameButton>
-														@foreach ( var player in GetAssignablePlayersForSeat( savedPlayer.SeatIndex ) )
-														{
-															<GameButton Variant="@GetAssignPlayerButtonClasses( savedPlayer.SeatIndex, player.OwnerId )" OnClick="@(() => AssignSeatToPlayer( savedPlayer.SeatIndex, player ))">@player.Name</GameButton>
-														}
-													</div>
+											<div class="match-config-row">
+												<div class="match-config-text">
+													<div class="match-config-name">@ActiveSaveTabTitle</div>
+													<div class="match-config-value">@ActiveSaveTabDescription</div>
 												</div>
-											}
+												<div class="match-config-control">
+													<GameButton Variant="@GetSaveTabButtonClasses( true )" OnClick="@(() => SetSaveTab( true ))">Manual Saves</GameButton>
+													<GameButton Variant="@GetSaveTabButtonClasses( false )" OnClick="@(() => SetSaveTab( false ))">Autosaves</GameButton>
+												</div>
+											</div>
 										</div>
 									</div>
+									@if ( SaveSummaries.Count == 0 )
+									{
+										<div class="match-config-section">
+											<div class="match-config-section-title">No @ActiveSaveTabTitle Found</div>
+											<div class="match-config-value">@EmptySaveTabMessage</div>
+										</div>
+									}
+									else
+									{
+										@foreach ( var save in SaveSummaries )
+										{
+											<div class="@GetSaveRowClasses( save )">
+												<div class="save-card-main">
+													<div class="save-card-header">
+														<div class="save-card-title">@save.DisplayName</div>
+														@if ( save.IsLastLoadedRestorePoint )
+														{
+															<div class="save-card-badge">Last Loaded Restore Point</div>
+														}
+													</div>
+													<div class="save-card-grid">
+														<div class="save-card-field">
+															<div class="save-card-label">Game Identifier</div>
+															<div class="save-card-value">@GetSaveGameIdentifier( save )</div>
+														</div>
+														<div class="save-card-field">
+															<div class="save-card-label">Updated</div>
+															<div class="save-card-value">@GetSaveUpdatedAt( save )</div>
+														</div>
+														<div class="save-card-field">
+															<div class="save-card-label">Turn</div>
+															<div class="save-card-value">@GetSaveTurnSummary( save )</div>
+														</div>
+														<div class="save-card-field">
+															<div class="save-card-label">Players</div>
+															<div class="save-card-value">@GetSavePlayers( save )</div>
+														</div>
+													</div>
+												</div>
+												<div class="save-card-actions">
+													<GameButton Variant="@GetSaveSelectButtonClasses( save )" OnClick="@(() => ToggleSaveSelection( save.SaveId ))">
+														@(IsSaveSelected( save ) ? "Selected" : "Select")
+													</GameButton>
+													<GameButton Variant="match-config-danger-button save-card-delete-button" OnClick="@(() => ConfirmDeleteSave( save ))">Delete</GameButton>
+												</div>
+											</div>
+										}
+									}
+								</div>
+								<MonoScrollbar Target="@LoadGameScrollPanel"></MonoScrollbar>
+							</div>
+
+							<div class="match-config-footer">
+								@if ( CanEditConfig )
+								{
+									<GameButton Variant="match-config-secondary-button" OnClick="@RefreshSaves">Refresh</GameButton>
+									<GameButton Variant="match-config-save-button" CanClick="@CanLoadSelectedSave" OnClick="@ConfirmLoadSelectedSave" BlockedPopupTitle="No save selected" BlockedPopupMessage="Choose a save before loading.">Load Selected</GameButton>
 								}
 							</div>
-							<MonoScrollbar Target="@LoadGameScrollPanel"></MonoScrollbar>
 						</div>
-
-						<div class="match-config-footer">
-							@if ( CanEditConfig )
-							{
-								<GameButton Variant="match-config-secondary-button" OnClick="@RefreshSaves">Refresh</GameButton>
-								<GameButton Variant="match-config-save-button" CanClick="@CanLoadSelectedSave" OnClick="@ConfirmLoadSelectedSave" BlockedPopupTitle="No save selected" BlockedPopupMessage="Choose a save before loading.">Load Selected</GameButton>
-							}
-						</div>
-					</div>
+					}
 				</div>
 			</div>
 		}
@@ -323,6 +351,7 @@
 	private bool IsConfigMenuOpen;
 	private bool IsCustomizeMenuOpen;
 	private bool IsLoadMenuOpen;
+	private bool IsLoadSeatMenuOpen;
 	private Panel MatchConfigScrollPanel = null!;
 	private Panel PieceCustomizeScrollPanel = null!;
 	private Panel LoadGameScrollPanel = null!;
@@ -421,6 +450,7 @@
 		hash.Add( IsConfigMenuOpen );
 		hash.Add( IsCustomizeMenuOpen );
 		hash.Add( IsLoadMenuOpen );
+		hash.Add( IsLoadSeatMenuOpen );
 		hash.Add( Lobby?.HostedConfigSnapshot ?? "" );
 		hash.Add( Lobby?.StagedLoadedSaveName ?? "" );
 		hash.Add( Lobby?.StagedLoadedGameIdentifier ?? "" );
@@ -580,6 +610,7 @@
 		IsConfigMenuOpen = false;
 		IsOptionsMenuOpen = false;
 		IsLoadMenuOpen = false;
+		IsLoadSeatMenuOpen = false;
 	}
 
 	private void CloseCustomizeMenu()
@@ -623,6 +654,7 @@
 		IsConfigMenuOpen = false;
 		IsCustomizeMenuOpen = false;
 		IsLoadMenuOpen = false;
+		IsLoadSeatMenuOpen = false;
 	}
 
 	private void CloseOptionsMenu()
@@ -639,6 +671,7 @@
 		IsOptionsMenuOpen = false;
 		IsCustomizeMenuOpen = false;
 		IsLoadMenuOpen = false;
+		IsLoadSeatMenuOpen = false;
 		EnsureEditableConfigCurrent( true );
 	}
 
@@ -651,12 +684,17 @@
 		IsOptionsMenuOpen = false;
 		IsConfigMenuOpen = false;
 		IsCustomizeMenuOpen = false;
+		IsLoadSeatMenuOpen = false;
+		SelectedSaveId = "";
+		SelectedSaveFile = null;
+		LoadSeatAssignments.Clear();
 		RefreshSaves();
 	}
 
 	private void CloseLoadMenu()
 	{
 		IsLoadMenuOpen = false;
+		IsLoadSeatMenuOpen = false;
 		SelectedSaveId = "";
 		SelectedSaveFile = null;
 		LoadSeatAssignments.Clear();
@@ -666,8 +704,11 @@
 	private void RefreshSaves()
 	{
 		SaveSummaries = GameSaveService.ListSaves( ActiveSaveType ).ToList();
-		if ( !SaveSummaries.Any( save => string.Equals( save.SaveId, SelectedSaveId, StringComparison.Ordinal ) ) )
-			SelectedSaveId = SaveSummaries.FirstOrDefault()?.SaveId ?? "";
+		if ( !string.IsNullOrWhiteSpace( SelectedSaveId ) && !SaveSummaries.Any( save => string.Equals( save.SaveId, SelectedSaveId, StringComparison.Ordinal ) ) )
+		{
+			SelectedSaveId = "";
+			IsLoadSeatMenuOpen = false;
+		}
 
 		LoadSelectedSaveMetadata();
 		saveRevision++;
@@ -691,6 +732,7 @@
 		SelectedSaveId = "";
 		SelectedSaveFile = null;
 		LoadSeatAssignments.Clear();
+		IsLoadSeatMenuOpen = false;
 		RefreshSaves();
 	}
 
@@ -704,6 +746,7 @@
 	private void ToggleSaveSelection( string saveId )
 	{
 		SelectedSaveId = string.Equals( SelectedSaveId, saveId, StringComparison.Ordinal ) ? "" : saveId ?? "";
+		IsLoadSeatMenuOpen = false;
 		LoadSelectedSaveMetadata();
 		saveRevision++;
 	}
@@ -730,6 +773,51 @@
 	private string GetSaveSelectButtonClasses( GameSaveSummary save )
 	{
 		return IsSaveSelected( save ) ? "match-config-save-button save-card-select-button" : "match-config-secondary-button save-card-select-button";
+	}
+
+	private void ConfirmDeleteSave( GameSaveSummary save )
+	{
+		if ( save is null || string.IsNullOrWhiteSpace( save.SaveId ) )
+			return;
+
+		if ( PopupGame is null )
+		{
+			DeleteSave( save.SaveId );
+			return;
+		}
+
+		PopupGame.ShowLocalConfirmation(
+			"Delete save?",
+			$"Delete {save.DisplayName}? This cannot be undone.",
+			() => DeleteSave( save.SaveId ),
+			null,
+			"Delete",
+			"Cancel",
+			false );
+	}
+
+	private void DeleteSave( string saveId )
+	{
+		if ( string.IsNullOrWhiteSpace( saveId ) )
+			return;
+
+		if ( GameSaveService.DeleteSave( saveId ) )
+		{
+			if ( string.Equals( SelectedSaveId, saveId, StringComparison.Ordinal ) )
+			{
+				SelectedSaveId = "";
+				SelectedSaveFile = null;
+				LoadSeatAssignments.Clear();
+				IsLoadSeatMenuOpen = false;
+			}
+
+			RefreshSaves();
+			ShowLocalPopup( "Save deleted", "The save file has been deleted.", PopupKind.Success, true, 3f, false );
+		}
+		else
+		{
+			ShowLocalPopup( "Could not delete", "That save file could not be deleted.", PopupKind.Warning, true, 4f, false );
+		}
 	}
 
 	private static string GetSaveGameIdentifier( GameSaveSummary save )
@@ -857,6 +945,24 @@
 			ShowLocalPopup( "Could not load", "Choose a save before loading.", PopupKind.Warning, true, 3f, false );
 			return;
 		}
+
+		IsLoadSeatMenuOpen = true;
+		saveRevision++;
+	}
+
+	private void CloseLoadSeatMenu()
+	{
+		IsLoadSeatMenuOpen = false;
+		saveRevision++;
+	}
+
+	private void ConfirmLoadSelectedSaveFinal()
+	{
+		IsLoadSeatMenuOpen = false;
+
+		var save = SaveSummaries.FirstOrDefault( save => string.Equals( save.SaveId, SelectedSaveId, StringComparison.Ordinal ) );
+		if ( save is null )
+			return;
 
 		if ( PopupGame is null )
 		{

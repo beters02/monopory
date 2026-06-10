@@ -44,13 +44,12 @@
 				</div>
 				<div class="session-actions escape-menu-actions">
 					<GameButton Variant="session-primary-button" OnClick="@CloseMenu">Return To Game</GameButton>
+					<GameButton Variant="session-utility-button" OnClick="@OpenOptions">Options</GameButton>
 					<GameButton Variant="session-utility-button" OnClick="@OpenMatchSettings">Match Settings</GameButton>
 					@if ( CanUseHostControls )
 					{
 						<GameButton Variant="session-utility-button" OnClick="@SaveGame">Save Game</GameButton>
-						<GameButton Variant="session-utility-button" OnClick="@ReloadLastLoadedSave">Reload Last Loaded Save</GameButton>
 					}
-					<GameButton Variant="session-utility-button" OnClick="@OpenOptions">Options</GameButton>
 					@if ( CanBankruptAndAbandon )
 					{
 						<GameButton Variant="session-danger-button" OnClick="@BankruptAndAbandon">Bankrupt</GameButton>
@@ -58,11 +57,11 @@
 					<GameButton Variant="session-danger-button" OnClick="@LeaveLobby">Leave Lobby</GameButton>
 					<GameButton Variant="session-danger-button" OnClick="@ExitGame">Exit Game</GameButton>
 				</div>
-				@if ( !string.IsNullOrWhiteSpace( GameIdentifier ) )
-				{
-					<div class="session-game-identifier">Game @GameIdentifier</div>
-				}
 			</div>
+			@if ( !string.IsNullOrWhiteSpace( GameIdentifier ) )
+			{
+				<div class="session-game-identifier">Game @GameIdentifier</div>
+			}
 		</div>
 	}
 
@@ -104,7 +103,6 @@
 	[Parameter] public Action OnDeclareBankruptcy { get; set; }
 	[Parameter] public Action OnExitGame { get; set; }
 	[Parameter] public Action OnSaveGame { get; set; }
-	[Parameter] public Action OnReloadLastLoadedSave { get; set; }
 
 	private string WinnerName =>
 		GameRef?.Winner?.PlayerName ?? "No One";
@@ -127,7 +125,6 @@
 	private void BankruptAndAbandon() => OnDeclareBankruptcy?.Invoke();
 	private void ExitGame() => OnExitGame?.Invoke();
 	private void SaveGame() => OnSaveGame?.Invoke();
-	private void ReloadLastLoadedSave() => OnReloadLastLoadedSave?.Invoke();
 
 	protected override int BuildHash()
 	{

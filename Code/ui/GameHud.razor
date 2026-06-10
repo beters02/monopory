@@ -41,8 +41,7 @@
 				OnLeaveLobby="@ConfirmLeaveLobby"
 				OnDeclareBankruptcy="@ConfirmDeclareBankruptcy"
 				OnExitGame="@ConfirmExitGame"
-				OnSaveGame="@SaveGame"
-				OnReloadLastLoadedSave="@ConfirmReloadLastLoadedSave">
+				OnSaveGame="@SaveGame">
 			</SessionOverlay>
 
 			<div class="popup-hud-layer">
@@ -407,30 +406,6 @@
 			GameRef.ShowLocalPopup( "Game saved", message, PopupKind.Success, true, 3f, false );
 		else
 			GameRef.ShowLocalPopup( "Could not save", message, PopupKind.Warning, true, 4f, false );
-	}
-
-	private void ConfirmReloadLastLoadedSave()
-	{
-		if ( GameRef is null || !Networking.IsHost )
-			return;
-
-		GameRef.ShowLocalConfirmation(
-			"Reload last loaded save?",
-			"This returns the table to the original loaded restore point. Autosaves from this session will be ignored.",
-			ReloadLastLoadedSave,
-			null,
-			"Reload",
-			"Cancel"
-		);
-	}
-
-	private void ReloadLastLoadedSave()
-	{
-		if ( GameRef is null || !Networking.IsHost )
-			return;
-
-		if ( !GameRef.TryReloadLastLoadedSave( out var message ) )
-			GameRef.ShowLocalPopup( "Could not reload", message, PopupKind.Warning, true, 4f, false );
 	}
 
 	private void OverwriteCurrentManualSave()
