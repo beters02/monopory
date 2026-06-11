@@ -26,7 +26,7 @@ public sealed partial class GameController : Component
 		PropertyImprovements[spaceIndex] = count + 1;
 
 		var spaceName = Board.GetSpaceDef( spaceIndex )?.DisplayName ?? "property";
-		SendPopupToPlayer( player, "Improvement purchased", $"You built on {spaceName} for ${cost}.", PopupKind.Success, true, 4f );
+		SendGlobalPopupToAll( "Improvement purchased", $"{player.PlayerName} built on {spaceName} for ${cost}.", PopupKind.Success, true, 4f );
 		SendTableChatMessage( "Improvement purchased", $"{player.PlayerName} built on {spaceName} for ${cost}." );
 		Log.Info( $"{player.PlayerName} built on {spaceName} for ${cost}." );
 		TryAutosaveStablePoint( "Improvement purchased" );
