@@ -6,18 +6,20 @@
 @using System.Linq;
 @inherits Panel
 
-@if ( IsOpen && Config is not null )
-{
-	<div class="match-config-root match-config-readonly-root open">
-		<div class="match-config-screen">
-			<div class="match-config-panel">
-				<div class="match-config-header">
-					<div class="match-config-header-text">
-						<div class="match-config-kicker">Match</div>
-						<div class="match-config-title">Match Settings</div>
-					</div>
-					<CloseButton Variant="match-config-close-button" Title="Close" OnClick="@Close"></CloseButton>
-				</div>
+<OptionsPanel
+	IsOpen="@(IsOpen && Config is not null)"
+	Kicker="Match"
+	Title="Match Settings"
+	OnClose="@Close"
+	RootVariant="match-config-root match-config-readonly-root"
+	ScreenVariant="match-config-screen"
+	PanelVariant="match-config-panel"
+	HeaderVariant="match-config-header"
+	HeaderTextVariant="match-config-header-text"
+	KickerVariant="match-config-kicker"
+	TitleVariant="match-config-title"
+	CloseButtonVariant="match-config-close-button">
+	<ChildContent>
 
 				<div class="match-config-scroll-shell">
 					<div class="match-config-scroll monopory-scroll-y" @ref="MatchConfigScrollPanel">
@@ -46,10 +48,8 @@
 					</div>
 					<MonoScrollbar Target="@MatchConfigScrollPanel"></MonoScrollbar>
 				</div>
-			</div>
-		</div>
-	</div>
-}
+	</ChildContent>
+</OptionsPanel>
 
 @code
 {

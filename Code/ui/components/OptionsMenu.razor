@@ -5,18 +5,20 @@
 @using System;
 @inherits Panel
 
-<root class="@RootClasses">
-	@if ( IsOpen )
-	{
-		<div class="@OptionsScreenClasses">
-			<div class="options-panel">
-				<div class="options-header">
-					<div class="options-header-text">
-						<div class="options-kicker">Settings</div>
-						<div class="options-title">Options</div>
-					</div>
-					<CloseButton Variant="options-close-button" Title="Close" OnClick="@Close"></CloseButton>
-				</div>
+<OptionsPanel
+	IsOpen="@IsOpen"
+	Kicker="Settings"
+	Title="Options"
+	OnClose="@Close"
+	RootVariant="options-menu-root"
+	ScreenVariant="@OptionsScreenVariant"
+	PanelVariant="options-menu-panel"
+	HeaderVariant="options-header"
+	HeaderTextVariant="options-header-text"
+	KickerVariant="options-kicker"
+	TitleVariant="options-title"
+	CloseButtonVariant="options-close-button">
+	<ChildContent>
 
 				@if ( !string.IsNullOrWhiteSpace( applyErrorMessage ) )
 				{
@@ -102,7 +104,8 @@
 				<div class="options-footer">
 					<GameButton Variant="options-apply-button" OnClick="@ApplyOptions">Apply</GameButton>
 				</div>
-			</div>
+	</ChildContent>
+	<OverlayContent>
 			<ConfirmationDialog
 				IsOpen="@IsCloseConfirmationOpen"
 				Title="Unsaved settings"
@@ -112,9 +115,8 @@
 				OnConfirm="@ConfirmCloseWithoutSaving"
 				OnCancel="@CancelCloseWithoutSaving">
 			</ConfirmationDialog>
-		</div>
-	}
-</root>
+	</OverlayContent>
+</OptionsPanel>
 
 @code
 {
@@ -128,8 +130,7 @@
 	private AppSettingsData openingSettingsSnapshot;
 	private string applyErrorMessage = "";
 
-	private string RootClasses => IsOpen ? "options-menu-root open" : "options-menu-root";
-	private string OptionsScreenClasses => UseBlurBackdrop ? "options-screen blur-backdrop" : "options-screen";
+	private string OptionsScreenVariant => UseBlurBackdrop ? "options-screen blur-backdrop" : "options-screen";
 	private bool IsCloseConfirmationOpen => IsOpen && isCloseConfirmationOpen;
 	private bool HasUnsavedChanges => openingSettingsSnapshot is not null && !AppSettings.Matches( openingSettingsSnapshot );
 	private bool SettingsAvailable => AppSettings.SettingsAvailable;

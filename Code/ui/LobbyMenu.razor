@@ -10,18 +10,20 @@
 	<PopupStack Popups="@PopupList" OnDismiss="@DismissPopup" OnConfirmDecision="@HandleConfirmationDecision"></PopupStack>
 	<div class="flow-screen lobby-screen">
 		<OptionsMenu IsOpen="@IsOptionsMenuOpen" OnClose="@CloseOptionsMenu"></OptionsMenu>
-		@if ( IsConfigMenuOpen && EditableConfig is not null )
-		{
-			<div class="match-config-root open">
-				<div class="match-config-screen">
-					<div class="match-config-panel">
-						<div class="match-config-header">
-							<div class="match-config-header-text">
-								<div class="match-config-kicker">Lobby</div>
-								<div class="match-config-title">Game Configuration</div>
-							</div>
-							<CloseButton Variant="match-config-close-button" Title="Close" OnClick="@CloseConfigMenu"></CloseButton>
-						</div>
+		<OptionsPanel
+			IsOpen="@(IsConfigMenuOpen && EditableConfig is not null)"
+			Kicker="Lobby"
+			Title="Game Configuration"
+			OnClose="@CloseConfigMenu"
+			RootVariant="match-config-root"
+			ScreenVariant="match-config-screen"
+			PanelVariant="match-config-panel"
+			HeaderVariant="match-config-header"
+			HeaderTextVariant="match-config-header-text"
+			KickerVariant="match-config-kicker"
+			TitleVariant="match-config-title"
+			CloseButtonVariant="match-config-close-button">
+			<ChildContent>
 
 						<div class="match-config-scroll-shell">
 							<div class="match-config-scroll monopory-scroll-y" @ref="MatchConfigScrollPanel">
@@ -106,24 +108,22 @@
 								<GameButton Variant="match-config-save-button" OnClick="@SaveConfigMenu">Save</GameButton>
 							}
 						</div>
-					</div>
-				</div>
-			</div>
-		}
-		@if ( IsLoadMenuOpen )
-		{
-			<div class="match-config-root open">
-				<div class="match-config-screen">
-					@if ( IsLoadSeatMenuOpen )
-					{
-						<div class="load-seat-popup-panel">
-							<div class="match-config-header">
-								<div class="match-config-header-text">
-									<div class="match-config-kicker">Load Game</div>
-									<div class="match-config-title">Saved Seats</div>
-								</div>
-								<CloseButton Variant="match-config-close-button" Title="Close" OnClick="@CloseLoadSeatMenu"></CloseButton>
-							</div>
+			</ChildContent>
+		</OptionsPanel>
+		<OptionsPanel
+			IsOpen="@(IsLoadMenuOpen && IsLoadSeatMenuOpen)"
+			Kicker="Load Game"
+			Title="Saved Seats"
+			OnClose="@CloseLoadSeatMenu"
+			RootVariant="match-config-root"
+			ScreenVariant="match-config-screen"
+			PanelVariant="compact-panel load-seat-popup-panel"
+			HeaderVariant="match-config-header"
+			HeaderTextVariant="match-config-header-text"
+			KickerVariant="match-config-kicker"
+			TitleVariant="match-config-title"
+			CloseButtonVariant="match-config-close-button">
+			<ChildContent>
 
 							<div class="match-config-copy">Choose who should sit in each saved player seat before staging this save in the lobby.</div>
 
@@ -160,18 +160,22 @@
 								<GameButton Variant="match-config-secondary-button" OnClick="@CloseLoadSeatMenu">Cancel</GameButton>
 								<GameButton Variant="match-config-save-button" OnClick="@ConfirmLoadSelectedSaveFinal">Continue</GameButton>
 							</div>
-						</div>
-					}
-					else
-					{
-						<div class="match-config-panel">
-							<div class="match-config-header">
-								<div class="match-config-header-text">
-									<div class="match-config-kicker">Lobby</div>
-									<div class="match-config-title">Load Game</div>
-								</div>
-								<CloseButton Variant="match-config-close-button" Title="Close" OnClick="@CloseLoadMenu"></CloseButton>
-							</div>
+			</ChildContent>
+		</OptionsPanel>
+		<OptionsPanel
+			IsOpen="@(IsLoadMenuOpen && !IsLoadSeatMenuOpen)"
+			Kicker="Lobby"
+			Title="Load Game"
+			OnClose="@CloseLoadMenu"
+			RootVariant="match-config-root"
+			ScreenVariant="match-config-screen"
+			PanelVariant="match-config-panel"
+			HeaderVariant="match-config-header"
+			HeaderTextVariant="match-config-header-text"
+			KickerVariant="match-config-kicker"
+			TitleVariant="match-config-title"
+			CloseButtonVariant="match-config-close-button">
+			<ChildContent>
 
 							<div class="match-config-scroll-shell">
 								<div class="match-config-scroll monopory-scroll-y" @ref="LoadGameScrollPanel">
@@ -250,23 +254,22 @@
 									<GameButton Variant="match-config-save-button" CanClick="@CanLoadSelectedSave" OnClick="@ConfirmLoadSelectedSave" BlockedPopupTitle="No save selected" BlockedPopupMessage="Choose a save before loading.">Load Selected</GameButton>
 								}
 							</div>
-						</div>
-					}
-				</div>
-			</div>
-		}
-		@if ( IsCustomizeMenuOpen )
-		{
-			<div class="piece-customize-root open">
-				<div class="piece-customize-screen">
-					<div class="piece-customize-panel">
-						<div class="piece-customize-header">
-							<div class="piece-customize-header-text">
-								<div class="match-config-kicker">Lobby</div>
-								<div class="piece-customize-title">Customize Piece</div>
-							</div>
-							<CloseButton Variant="match-config-close-button" Title="Close" OnClick="@CloseCustomizeMenu"></CloseButton>
-						</div>
+			</ChildContent>
+		</OptionsPanel>
+		<OptionsPanel
+			IsOpen="@IsCustomizeMenuOpen"
+			Kicker="Lobby"
+			Title="Customize Piece"
+			OnClose="@CloseCustomizeMenu"
+			RootVariant="piece-customize-root"
+			ScreenVariant="piece-customize-screen"
+			PanelVariant="piece-customize-panel"
+			HeaderVariant="piece-customize-header"
+			HeaderTextVariant="piece-customize-header-text"
+			KickerVariant="match-config-kicker"
+			TitleVariant="piece-customize-title"
+			CloseButtonVariant="match-config-close-button">
+			<ChildContent>
 						<div class="piece-customize-scroll-shell">
 							<div class="piece-customize-grid monopory-scroll-y" @ref="PieceCustomizeScrollPanel">
 								@foreach ( var piece in AvailablePieces )
@@ -285,10 +288,8 @@
 						<div class="piece-customize-footer">
 							<GameButton Variant="match-config-secondary-button" OnClick="@CloseCustomizeMenu">Done</GameButton>
 						</div>
-					</div>
-				</div>
-			</div>
-		}
+			</ChildContent>
+		</OptionsPanel>
 		<GameButton Variant="flow-settings-button" Title="Options" OnClick="@OpenOptionsMenu">
 			<ChildContent>
 				<div class="flow-settings-icon"></div>

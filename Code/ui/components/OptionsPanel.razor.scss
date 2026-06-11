@@ -1,0 +1,127 @@
+@import "../GameTheme.scss";
+@import "buttons/CloseButton.razor.scss";
+
+.options-panel-root {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	pointer-events: none;
+}
+
+.options-panel-root.open {
+	pointer-events: all;
+}
+
+.options-panel-screen {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+
+	background-color: $monopoly-ink;
+
+	display: flex;
+	align-items: center;
+	justify-content: center;
+
+	pointer-events: all;
+}
+
+.options-panel-screen.blur-backdrop {
+	background-color: $monopoly-modal-backdrop;
+	backdrop-filter: blur( 8px );
+}
+
+.options-panel {
+	width: 820px;
+	max-width: 92%;
+	height: 88%;
+	max-height: 88%;
+	padding: $monopoly-panel-padding;
+
+	background-color: $monopoly-panel-strong;
+	border: 3px solid $monopoly-panel-line;
+	border-radius: $monopoly-radius-panel;
+	box-shadow: $monopoly-panel-shadow-strong;
+
+	color: $monopoly-text;
+	font-family: $monopoly-font-family;
+
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	gap: $monopoly-panel-gap;
+	overflow: hidden;
+}
+
+.options-panel.options-menu-panel {
+	height: 86%;
+	max-height: 86%;
+}
+
+.options-panel.compact-panel {
+	width: 760px;
+	max-width: 88%;
+	height: 76%;
+	max-height: 76%;
+}
+
+.options-panel-header {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 14px;
+	flex-shrink: 0;
+}
+
+.options-panel-header-text {
+	flex: 1;
+	min-width: 0;
+
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 2px;
+}
+
+.options-panel-kicker {
+	width: 100%;
+	min-width: 0;
+
+	color: $monopoly-gold-soft;
+	font-size: $monopoly-font-kicker;
+	font-weight: 900;
+	text-transform: uppercase;
+	text-align: left;
+	white-space: normal;
+	text-overflow: clip;
+	overflow: visible;
+}
+
+.options-panel-title {
+	width: 100%;
+	min-width: 0;
+
+	color: $monopoly-text;
+	font-size: $monopoly-font-title;
+	font-weight: 900;
+	line-height: $monopoly-font-title-line;
+	text-align: left;
+	white-space: normal;
+	text-overflow: clip;
+	overflow: visible;
+}
+
+.options-panel-kicker .label,
+.options-panel-title .label {
+	width: 100%;
+	min-width: 0;
+
+	text-align: left;
+	white-space: normal;
+	text-overflow: clip;
+	overflow: visible;
+}
