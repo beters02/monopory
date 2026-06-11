@@ -1,0 +1,39 @@
+@using Sandbox;
+@using Sandbox.UI;
+@inherits Panel
+
+<root class="options-panel-subsection-list">
+	@foreach ( var subsection in Subsections )
+	{
+		<div class="options-panel-subsection">
+			@if ( !string.IsNullOrWhiteSpace( subsection.Title ) )
+			{
+				<div class="options-panel-subsection-title">@subsection.Title</div>
+			}
+			@if ( subsection.HasItems )
+			{
+				<div class="@SubsectionOptionsClasses">
+					@ChildContent( subsection )
+				</div>
+			}
+			else
+			{
+				<div class="options-panel-empty-state">
+					<div class="options-panel-empty-title">@subsection.EmptyTitle</div>
+					<div class="options-panel-empty-copy">@subsection.EmptyMessage</div>
+				</div>
+			}
+		</div>
+	}
+</root>
+
+@code
+{
+	[Parameter] public IReadOnlyList<OptionsPanelSubsection> Subsections { get; set; } = new List<OptionsPanelSubsection>();
+	[Parameter] public string SubsectionOptionsVariant { get; set; } = "";
+	[Parameter] public new RenderFragment<OptionsPanelSubsection> ChildContent { get; set; }
+
+	private string SubsectionOptionsClasses => string.IsNullOrWhiteSpace( SubsectionOptionsVariant )
+		? "options-panel-subsection-options"
+		: $"options-panel-subsection-options {SubsectionOptionsVariant}";
+}

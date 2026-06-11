@@ -13,46 +13,50 @@
 		}
 		<OptionsPanelBody ScrollContentVariant="reverse">
 			<ChildContent Context="scrollPanel">
-				<OptionsPanelSectionList Sections="@AppSettingSections" SectionOptionsVariant="reverse">
+				<OptionsPanelSectionList Sections="@AppSettingSections">
 					<ChildContent Context="section">
-						@foreach ( var option in GetOptionsForSection( section.Key, section.Title ).Reverse() )
-						{
-							<OptionsPanelRow Title="@option.Label" Value="@GetOptionStatusText( option )">
-								<ChildContent>
-									@if ( option.Kind == AppSettingOptionKind.Bool )
-									{
-										<GameButton Variant="@GetToggleButtonClasses( GetBoolValue( option ) )" CanClick="@IsOptionAvailable( option )" OnClick="@(() => ToggleBoolOption( option ))" BlockedPopupTitle="Unavailable" BlockedPopupMessage="@UnavailableMessage">
-											@(GetBoolValue( option ) ? "On" : "Off")
-										</GameButton>
-									}
-									else if ( option.Kind == AppSettingOptionKind.Enum )
-									{
-										<DropdownButton
-											Value="@GetEnumValue( option )"
-											Items="@option.EnumNames"
-											ScrollTarget="@scrollPanel"
-											CanClick="@IsOptionAvailable( option )"
-											OnSelected="@((string value) => SetEnumValue( option, value ))"
-											BlockedPopupTitle="Unavailable"
-											BlockedPopupMessage="@UnavailableMessage">
-										</DropdownButton>
-									}
-									else if ( option.Kind == AppSettingOptionKind.Int )
-									{
-										<SliderControl
-											class="options-slider"
-											Value="@GetIntValue( option )"
-											OnValueChanged="@((float value) => SetIntValue( option, value ))"
-											Min="@option.IntMin"
-											Max="@option.IntMax"
-											Step="@option.IntStep"
-											ShowTextEntry="@true"
-											NumberFormat="0">
-										</SliderControl>
-									}
-								</ChildContent>
-							</OptionsPanelRow>
-						}
+						<OptionsPanelSubsectionList Subsections="@section.Subsections" SubsectionOptionsVariant="reverse">
+							<ChildContent Context="subsection">
+								@foreach ( var option in GetOptionsForSection( section.Key, subsection.Key ).Reverse() )
+								{
+									<OptionsPanelRow Title="@option.Label" Value="@GetOptionStatusText( option )">
+										<ChildContent>
+											@if ( option.Kind == AppSettingOptionKind.Bool )
+											{
+												<GameButton Variant="@GetToggleButtonClasses( GetBoolValue( option ) )" CanClick="@IsOptionAvailable( option )" OnClick="@(() => ToggleBoolOption( option ))" BlockedPopupTitle="Unavailable" BlockedPopupMessage="@UnavailableMessage">
+													@(GetBoolValue( option ) ? "On" : "Off")
+												</GameButton>
+											}
+											else if ( option.Kind == AppSettingOptionKind.Enum )
+											{
+												<DropdownButton
+													Value="@GetEnumValue( option )"
+													Items="@option.EnumNames"
+													ScrollTarget="@scrollPanel"
+													CanClick="@IsOptionAvailable( option )"
+													OnSelected="@((string value) => SetEnumValue( option, value ))"
+													BlockedPopupTitle="Unavailable"
+													BlockedPopupMessage="@UnavailableMessage">
+												</DropdownButton>
+											}
+											else if ( option.Kind == AppSettingOptionKind.Int )
+											{
+												<SliderControl
+													class="options-slider"
+													Value="@GetIntValue( option )"
+													OnValueChanged="@((float value) => SetIntValue( option, value ))"
+													Min="@option.IntMin"
+													Max="@option.IntMax"
+													Step="@option.IntStep"
+													ShowTextEntry="@true"
+													NumberFormat="0">
+												</SliderControl>
+											}
+										</ChildContent>
+									</OptionsPanelRow>
+								}
+							</ChildContent>
+						</OptionsPanelSubsectionList>
 					</ChildContent>
 				</OptionsPanelSectionList>
 			</ChildContent>
@@ -126,19 +130,26 @@
 				continue;
 			}
 
-			foreach ( var sectionName in categorySections )
+			var subsections = categorySections.Select( sectionName => new OptionsPanelSubsection
 			{
-				sections.Add( new OptionsPanelSection
-				{
-					Key = category.Key,
-					Kicker = category.Label,
-					Title = sectionName,
-					Copy = category.Description,
-					EmptyTitle = sectionName,
-					EmptyMessage = "No settings are wired into this section yet.",
-					HasItems = GetOptionsForSection( category.Key, sectionName ).Any()
-				} );
-			}
+				Key = sectionName,
+				Title = sectionName,
+				EmptyTitle = sectionName,
+				EmptyMessage = "No settings are wired into this section yet.",
+				HasItems = GetOptionsForSection( category.Key, sectionName ).Any()
+			} ).ToList();
+
+			sections.Add( new OptionsPanelSection
+			{
+				Key = category.Key,
+				Kicker = category.Label,
+				Title = category.Label,
+				Copy = category.Description,
+				EmptyTitle = category.Label,
+				EmptyMessage = "No settings are wired into this section yet.",
+				HasItems = subsections.Count > 0,
+				Subsections = subsections
+			} );
 		}
 
 		return sections;
