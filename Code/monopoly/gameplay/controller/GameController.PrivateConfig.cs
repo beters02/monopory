@@ -58,7 +58,7 @@ public sealed partial class GameController : Component
 	public GameSound TradeNegotiationReceivedSound = GameAssets.Sounds.TradeNegotiated; // retro 9
 
 	// Turns
-	private int MaxTurnReminders { get; set; } = 3;
+	private int MaxTurnReminders { get; set; } = 4;
 	private int SecondsBetweenTurnReminders { get; set; }
 
 	// Popups
