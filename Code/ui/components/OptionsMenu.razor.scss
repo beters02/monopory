@@ -323,10 +323,6 @@
 	pointer-events: none;
 }
 
-.options-row > * {
-	pointer-events: all;
-}
-
 .options-text {
 	flex: 1;
 	min-width: 0;
@@ -349,10 +345,6 @@
 	z-index: 10;
 
 	pointer-events: none;
-}
-
-.options-control > * {
-	pointer-events: all;
 }
 
 .options-row .dropdown-button {
@@ -409,12 +401,10 @@
 }
 
 .options-panel .dropdown-menu {
-	padding: 4px;
 	background-color: rgba(12, 22, 30, 0.98);
 	border: 1px solid $monopoly-gold-glow;
 	border-radius: $monopoly-radius-control;
 	box-shadow: $monopoly-panel-shadow-strong;
-	gap: 4px;
 	overflow: hidden;
 }
 

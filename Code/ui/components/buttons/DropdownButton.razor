@@ -23,7 +23,7 @@
 	@if ( IsOpen )
 	{
 		<div class="dropdown-dismiss-layer" onclick="@(() => CloseOpenDropdown( InstanceId ))"></div>
-		<div class="dropdown-menu" style="@MenuStyle" @ref="MenuPanel">
+		<div class="dropdown-menu" @ref="MenuPanel">
 			@foreach ( var item in Items )
 			{
 				<GameButton Variant="@GetItemClasses( item )" OnClick="@(() => SelectItem( item ))" SoundEnabled="@SoundEnabled">
@@ -67,7 +67,7 @@
 
 	private bool IsOpen => ActiveInstanceId == InstanceId;
 	private string RootClasses => IsOpen ? "dropdown-button open" : "dropdown-button";
-	private string MenuStyle => $"height: {GetMenuHeight()}px; min-height: {GetMenuHeight()}px;";
+	//private string MenuStyle => $"height: {GetMenuHeight()}px; min-height: {GetMenuHeight()}px;";
 	private string ButtonClasses => string.IsNullOrWhiteSpace( Variant )
 		? "dropdown-toggle"
 		: $"dropdown-toggle {Variant}";
@@ -248,7 +248,7 @@
 		hash.Add( Value ?? "" );
 		hash.Add( Placeholder ?? "" );
 		hash.Add( CanClick );
-		hash.Add( MenuStyle );
+		//hash.Add( MenuStyle );
 
 		foreach ( var item in Items )
 		{
