@@ -42,9 +42,10 @@
 	[Parameter] public string HeaderTextVariant { get; set; } = "";
 	[Parameter] public string KickerVariant { get; set; } = "";
 	[Parameter] public string TitleVariant { get; set; } = "";
-	[Parameter] public string CloseButtonVariant { get; set; } = "match-config-close-button";
+	[Parameter] public string CloseButtonVariant { get; set; } = "options-panel-close-button";
 	[Parameter] public new RenderFragment ChildContent { get; set; }
 	[Parameter] public RenderFragment OverlayContent { get; set; }
+
 	private string RootClasses => BuildClass( "options-panel-root", RootVariant, IsOpen ? "open" : "" );
 	private string ScreenClasses => BuildClass( "options-panel-screen", ScreenVariant );
 	private string PanelClasses => BuildClass( "options-panel", PanelVariant );
@@ -52,6 +53,7 @@
 	private string HeaderTextClasses => BuildClass( "options-panel-header-text", HeaderTextVariant );
 	private string KickerClasses => BuildClass( "options-panel-kicker", KickerVariant );
 	private string TitleClasses => BuildClass( "options-panel-title", TitleVariant );
+
 	private static string BuildClass( params string[] classes )
 	{
 		return string.Join( " ", classes.Where( value => !string.IsNullOrWhiteSpace( value ) ) );

@@ -516,6 +516,7 @@
 	justify-content: space-between;
 	gap: 14px;
 	flex-shrink: 0;
+	pointer-events: none;
 }
 
 .save-card.selected {
@@ -608,10 +609,17 @@
 	align-items: flex-start;
 	justify-content: flex-end;
 	gap: 8px;
+	pointer-events: none;
+}
+
+.save-card-actions .monopoly-button {
+	pointer-events: all;
 }
 
 .match-config-panel .monopoly-button.save-card-select-button,
-.match-config-panel .monopoly-button.save-card-delete-button {
+.match-config-panel .monopoly-button.save-card-delete-button,
+.options-panel .monopoly-button.save-card-select-button,
+.options-panel .monopoly-button.save-card-delete-button {
 	width: 92px;
 	min-width: 92px;
 	height: 34px;
@@ -665,6 +673,7 @@
 	flex-direction: column;
 	gap: 12px;
 	flex-shrink: 0;
+	pointer-events: none;
 }
 
 .saved-seat-main {
@@ -691,6 +700,11 @@
 	display: flex;
 	flex-wrap: wrap;
 	gap: 8px;
+	pointer-events: none;
+}
+
+.saved-seat-actions .monopoly-button {
+	pointer-events: all;
 }
 
 .load-seat-popup-panel .saved-seat-actions .monopoly-button {

@@ -1,0 +1,61 @@
+@typeparam TItem
+@using Sandbox;
+@using Sandbox.UI;
+@inherits Panel
+@foreach ( var section in Sections )
+{
+	<div class="options-panel-section">
+		@if ( section.HeaderContent is not null )
+		{
+			@section.HeaderContent
+		}
+		else if ( !string.IsNullOrWhiteSpace( section.Title ) )
+		{
+			@if ( !string.IsNullOrWhiteSpace( section.Kicker ) || !string.IsNullOrWhiteSpace( section.Copy ) )
+			{
+				<div class="options-panel-section-heading">
+					@if ( !string.IsNullOrWhiteSpace( section.Kicker ) )
+					{
+						<div class="options-panel-section-kicker">@section.Kicker</div>
+					}
+					<div class="options-panel-section-title">@section.Title</div>
+					@if ( !string.IsNullOrWhiteSpace( section.Copy ) )
+					{
+						<div class="options-panel-section-copy">@section.Copy</div>
+					}
+				</div>
+			}
+			else
+			{
+			<div class="options-panel-section-title">@section.Title</div>
+			}
+		}
+		@if ( section.Items is not null && section.Items.Count > 0 )
+		{
+			<div class="@SectionOptionsClasses">
+				@foreach ( var item in section.Items )
+				{
+					@ChildContent( item )
+				}
+			</div>
+		}
+		else
+		{
+			<div class="options-panel-empty-state">
+				<div class="options-panel-empty-title">@section.EmptyTitle</div>
+				<div class="options-panel-empty-copy">@section.EmptyMessage</div>
+			</div>
+		}
+	</div>
+}
+
+@code
+{
+	[Parameter] public IReadOnlyList<OptionsPanelSection<TItem>> Sections { get; set; } = new List<OptionsPanelSection<TItem>>();
+	[Parameter] public string SectionOptionsVariant { get; set; } = "";
+	[Parameter] public new RenderFragment<TItem> ChildContent { get; set; }
+
+	private string SectionOptionsClasses => string.IsNullOrWhiteSpace( SectionOptionsVariant )
+		? "options-panel-section-options"
+		: $"options-panel-section-options {SectionOptionsVariant}";
+}

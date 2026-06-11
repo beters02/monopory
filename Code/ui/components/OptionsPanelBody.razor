@@ -1,0 +1,48 @@
+@using Sandbox;
+@using Sandbox.UI;
+@using System;
+@using System.Linq;
+@inherits Panel
+<div class="@BodyClasses">
+	<div class="@ScrollShellClasses">
+		<div class="@ScrollPanelClasses" @ref="ScrollPanel">
+			@if ( !string.IsNullOrWhiteSpace( Copy ) )
+			{
+				<div class="options-panel-copy">@Copy</div>
+			}
+			@if ( ChildContent is not null )
+			{
+				@ChildContent( ScrollPanel )
+			}
+		</div>
+		<MonoScrollbar Target="@ScrollPanel"></MonoScrollbar>
+	</div>
+	@if ( Footer is not null )
+	{
+		<div class="@FooterClasses">
+			@Footer
+		</div>
+	}
+</div>
+
+@code
+{
+	[Parameter] public string Copy { get; set; } = "";
+	[Parameter] public string Variant { get; set; } = "";
+	[Parameter] public string ScrollPanelVariant { get; set; } = "";
+	[Parameter] public string ScrollContentVariant { get; set; } = "";
+	[Parameter] public string FooterVariant { get; set; } = "";
+	[Parameter] public new RenderFragment<Panel> ChildContent { get; set; }
+	[Parameter] public RenderFragment Footer { get; set; }
+
+	private Panel ScrollPanel = null!;
+	private string BodyClasses => BuildClass( "options-panel-body", Variant );
+	private string ScrollShellClasses => BuildClass( "options-panel-scroll-shell" );
+	private string ScrollPanelClasses => BuildClass( "options-panel-scroll monopory-scroll-y", ScrollPanelVariant, ScrollContentVariant );
+	private string FooterClasses => BuildClass( "options-panel-footer", FooterVariant );
+
+	private static string BuildClass( params string[] classes )
+	{
+		return string.Join( " ", classes.Where( value => !string.IsNullOrWhiteSpace( value ) ) );
+	}
+}

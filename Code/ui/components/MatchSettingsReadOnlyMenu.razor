@@ -6,48 +6,21 @@
 @using System.Linq;
 @inherits Panel
 
-<OptionsPanel
-	IsOpen="@(IsOpen && Config is not null)"
-	Kicker="Match"
-	Title="Match Settings"
-	OnClose="@Close"
-	RootVariant="match-config-root match-config-readonly-root"
-	ScreenVariant="match-config-screen"
-	PanelVariant="match-config-panel"
-	HeaderVariant="match-config-header"
-	HeaderTextVariant="match-config-header-text"
-	KickerVariant="match-config-kicker"
-	TitleVariant="match-config-title"
-	CloseButtonVariant="match-config-close-button">
+<OptionsPanel IsOpen="@(IsOpen && Config is not null)" Kicker="Match" Title="Match Settings" OnClose="@Close" RootVariant="match-config-readonly-root">
 	<ChildContent>
-
-				<div class="match-config-scroll-shell">
-					<div class="match-config-scroll monopory-scroll-y" @ref="MatchConfigScrollPanel">
-						<div class="match-config-copy">Current match settings are read-only during a live game.</div>
-
-						@foreach ( var group in ConfigGroups )
-						{
-							<div class="match-config-section">
-								<div class="match-config-section-title">@group</div>
-								<div class="match-config-section-options">
-									@foreach ( var option in GetConfigOptionsForGroup( group ) )
-									{
-										<div class="match-config-row">
-											<div class="match-config-text">
-												<div class="match-config-name">@option.Label</div>
-												<div class="match-config-value">@option.Description</div>
-											</div>
-											<div class="match-config-control">
-												<div class="match-config-readonly-value">@GetConfigDisplayValue( option )</div>
-											</div>
-										</div>
-									}
-								</div>
-							</div>
-						}
-					</div>
-					<MonoScrollbar Target="@MatchConfigScrollPanel"></MonoScrollbar>
-				</div>
+		<OptionsPanelBody Copy="Current match settings are read-only during a live game.">
+			<ChildContent Context="_">
+				<OptionsPanelSectionList TItem="MatchConfigOption" Sections="@ConfigSections">
+					<ChildContent Context="option">
+						<OptionsPanelRow Title="@option.Label" Value="@option.Description">
+							<ChildContent>
+								<div class="options-panel-readonly-value">@GetConfigDisplayValue( option )</div>
+							</ChildContent>
+						</OptionsPanelRow>
+					</ChildContent>
+				</OptionsPanelSectionList>
+			</ChildContent>
+		</OptionsPanelBody>
 	</ChildContent>
 </OptionsPanel>
 
@@ -57,7 +30,13 @@
 	[Parameter] public MatchConfig Config { get; set; }
 	[Parameter] public Action OnClose { get; set; }
 
-	private Panel MatchConfigScrollPanel = null!;
+	private IReadOnlyList<OptionsPanelSection<MatchConfigOption>> ConfigSections =>
+		ConfigGroups.Select( group => new OptionsPanelSection<MatchConfigOption>
+		{
+			Title = group,
+			Items = GetConfigOptionsForGroup( group ).ToList()
+		} ).ToList();
+
 	private IReadOnlyList<string> ConfigGroups => MatchConfigSchema.Options.Where( option => option.IsVisible ).Select( option => option.Group ).Distinct().ToList();
 
 	private void Close()
