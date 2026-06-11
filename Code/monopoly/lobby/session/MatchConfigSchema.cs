@@ -248,7 +248,7 @@ public static class MatchConfigSchema
 
 		if ( valueType.IsEnum )
 		{
-			if ( value is not null && valueType.IsInstanceOfType( value ) )
+			if ( value is not null && value.GetType() == valueType )
 				return value;
 
 			return Enum.Parse( valueType, value?.ToString() ?? "", true );
