@@ -6,17 +6,20 @@
 @using System.Linq;
 @inherits Panel
 
-<OptionsPanel IsOpen="@(IsOpen && Config is not null)" Kicker="Match" Title="Match Settings" OnClose="@Close" RootVariant="match-config-readonly-root">
+<OptionsPanel IsOpen="@(IsOpen && Config is not null)" Kicker="Match" Title="Match Settings" OnClose="@Close" RootVariant="options-panel-readonly-root">
 	<ChildContent>
 		<OptionsPanelBody Copy="Current match settings are read-only during a live game.">
 			<ChildContent Context="_">
-				<OptionsPanelSectionList TItem="MatchConfigOption" Sections="@ConfigSections">
-					<ChildContent Context="option">
-						<OptionsPanelRow Title="@option.Label" Value="@option.Description">
-							<ChildContent>
-								<div class="options-panel-readonly-value">@GetConfigDisplayValue( option )</div>
-							</ChildContent>
-						</OptionsPanelRow>
+				<OptionsPanelSectionList Sections="@ConfigSections">
+					<ChildContent Context="section">
+						@foreach ( var option in GetConfigOptionsForGroup( section.Key ) )
+						{
+							<OptionsPanelRow Title="@option.Label" Value="@option.Description">
+								<ChildContent>
+									<div class="options-panel-readonly-value">@GetConfigDisplayValue( option )</div>
+								</ChildContent>
+							</OptionsPanelRow>
+						}
 					</ChildContent>
 				</OptionsPanelSectionList>
 			</ChildContent>
@@ -30,11 +33,12 @@
 	[Parameter] public MatchConfig Config { get; set; }
 	[Parameter] public Action OnClose { get; set; }
 
-	private IReadOnlyList<OptionsPanelSection<MatchConfigOption>> ConfigSections =>
-		ConfigGroups.Select( group => new OptionsPanelSection<MatchConfigOption>
+	private IReadOnlyList<OptionsPanelSection> ConfigSections =>
+		ConfigGroups.Select( group => new OptionsPanelSection
 		{
+			Key = group,
 			Title = group,
-			Items = GetConfigOptionsForGroup( group ).ToList()
+			HasItems = GetConfigOptionsForGroup( group ).Any()
 		} ).ToList();
 
 	private IReadOnlyList<string> ConfigGroups => MatchConfigSchema.Options.Where( option => option.IsVisible ).Select( option => option.Group ).Distinct().ToList();

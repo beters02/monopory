@@ -10,14 +10,16 @@
 	<PopupStack Popups="@PopupList" OnDismiss="@DismissPopup" OnConfirmDecision="@HandleConfirmationDecision"></PopupStack>
 	<div class="flow-screen lobby-screen">
 		<OptionsMenu IsOpen="@IsOptionsMenuOpen" OnClose="@CloseOptionsMenu"></OptionsMenu>
-		<OptionsPanel IsOpen="@(IsConfigMenuOpen && EditableConfig is not null)" Kicker="Lobby" Title="Game Configuration" OnClose="@CloseConfigMenu" RootVariant="match-config-root">
+		<OptionsPanel IsOpen="@(IsConfigMenuOpen && EditableConfig is not null)" Kicker="Lobby" Title="Game Configuration" OnClose="@CloseConfigMenu" RootVariant="lobby-options-root">
 			<ChildContent>
 				<OptionsPanelBody Copy="@ConfigMenuCopy">
 					<ChildContent Context="scrollPanel">
-						<OptionsPanelSectionList TItem="MatchConfigOption" Sections="@EditableConfigSections" SectionOptionsVariant="reverse">
-							<ChildContent Context="option">
-								<OptionsPanelRow Title="@GetConfigOptionTitle( option )" Value="@option.Description">
-									<ChildContent>
+						<OptionsPanelSectionList Sections="@EditableConfigSections" SectionOptionsVariant="reverse">
+							<ChildContent Context="section">
+								@foreach ( var option in GetConfigOptionsForGroup( section.Key ).Reverse() )
+								{
+									<OptionsPanelRow Title="@GetConfigOptionTitle( option )" Value="@option.Description">
+										<ChildContent>
 												@if ( option.Kind == MatchConfigOptionKind.Bool )
 												{
 													<GameButton Variant="@GetConfigToggleButtonClasses( GetConfigBoolValue( option ) )"
@@ -41,7 +43,7 @@
 												}
 												else if ( option.Kind == MatchConfigOptionKind.Int )
 												{
-													<div class="match-config-stepper">
+													<div class="options-panel-stepper">
 														<GameButton Variant="options-panel-step-button"
 															CanClick="@CanEditConfig"
 															BlockedPopupTitle="Host only"
@@ -49,7 +51,7 @@
 															OnClick="@(() => ChangeConfigIntValue( option, -option.Step ))">-</GameButton>
 														@if ( CanEditConfig )
 														{
-															<TextEntry class="match-config-stepper-input"
+															<TextEntry class="options-panel-stepper-input"
 																Text="@GetConfigIntTextValue( option )"
 																Placeholder="0"
 																OnTextEdited="@((string value) => SetConfigIntDraftValue( option, value ))"
@@ -57,7 +59,7 @@
 														}
 														else
 														{
-															<div class="match-config-stepper-value">@GetConfigIntValue( option )</div>
+															<div class="options-panel-stepper-value">@GetConfigIntValue( option )</div>
 														}
 														<GameButton Variant="options-panel-step-button"
 															CanClick="@CanEditConfig"
@@ -66,8 +68,9 @@
 															OnClick="@(() => ChangeConfigIntValue( option, option.Step ))">+</GameButton>
 													</div>
 												}
-									</ChildContent>
-								</OptionsPanelRow>
+										</ChildContent>
+									</OptionsPanelRow>
+								}
 							</ChildContent>
 						</OptionsPanelSectionList>
 					</ChildContent>
@@ -86,18 +89,16 @@
 			Kicker="Load Game"
 			Title="Saved Seats"
 			OnClose="@CloseLoadSeatMenu"
-			RootVariant="match-config-root"
+			RootVariant="lobby-options-root"
 			PanelVariant="compact-panel load-seat-popup-panel">
 			<ChildContent>
-
-							<div class="match-config-copy">Choose who should sit in each saved player seat before staging this save in the lobby.</div>
-
-							<div class="load-seat-scroll monopory-scroll-y">
+				<OptionsPanelBody Copy="Choose who should sit in each saved player seat before staging this save in the lobby.">
+					<ChildContent Context="_">
 								@if ( SelectedSaveFile?.Snapshot?.Players is null || SelectedSaveFile.Snapshot.Players.Count == 0 )
 								{
-									<div class="match-config-section">
-										<div class="match-config-section-title">No Saved Seats</div>
-										<div class="match-config-value">This save has no saved player seats.</div>
+									<div class="options-panel-section">
+										<div class="options-panel-section-title">No Saved Seats</div>
+										<div class="options-panel-row-value">This save has no saved player seats.</div>
 									</div>
 								}
 								else
@@ -119,12 +120,12 @@
 										</div>
 									}
 								}
-							</div>
-
-							<div class="match-config-footer">
-								<GameButton Variant="options-panel-secondary-button" OnClick="@CloseLoadSeatMenu">Cancel</GameButton>
-								<GameButton Variant="options-panel-primary-button" OnClick="@ConfirmLoadSelectedSaveFinal">Continue</GameButton>
-							</div>
+					</ChildContent>
+					<Footer>
+						<GameButton Variant="options-panel-secondary-button" OnClick="@CloseLoadSeatMenu">Cancel</GameButton>
+						<GameButton Variant="options-panel-primary-button" OnClick="@ConfirmLoadSelectedSaveFinal">Continue</GameButton>
+					</Footer>
+				</OptionsPanelBody>
 			</ChildContent>
 		</OptionsPanel>
 		<OptionsPanel
@@ -132,32 +133,26 @@
 			Kicker="Lobby"
 			Title="Load Game"
 			OnClose="@CloseLoadMenu"
-			RootVariant="match-config-root">
+			RootVariant="lobby-options-root">
 			<ChildContent>
-
-							<div class="match-config-scroll-shell">
-								<div class="match-config-scroll monopory-scroll-y" @ref="LoadGameScrollPanel">
-									<div class="match-config-copy">Manual saves are stable restore points. Autosaves are stored separately and never overwrite a manual save.</div>
-									<div class="match-config-section">
-										<div class="match-config-section-title">Save Type</div>
-										<div class="match-config-section-options">
-											<div class="match-config-row">
-												<div class="match-config-text">
-													<div class="match-config-name">@ActiveSaveTabTitle</div>
-													<div class="match-config-value">@ActiveSaveTabDescription</div>
-												</div>
-												<div class="match-config-control">
+				<OptionsPanelBody Copy="Manual saves are stable restore points. Autosaves are stored separately and never overwrite a manual save.">
+					<ChildContent Context="_">
+									<div class="options-panel-section">
+										<div class="options-panel-section-title">Save Type</div>
+										<div class="options-panel-section-options">
+											<OptionsPanelRow Title="@ActiveSaveTabTitle" Value="@ActiveSaveTabDescription">
+												<ChildContent>
 													<GameButton Variant="@GetSaveTabButtonClasses( true )" OnClick="@(() => SetSaveTab( true ))">Manual Saves</GameButton>
 													<GameButton Variant="@GetSaveTabButtonClasses( false )" OnClick="@(() => SetSaveTab( false ))">Autosaves</GameButton>
-												</div>
-											</div>
+												</ChildContent>
+											</OptionsPanelRow>
 										</div>
 									</div>
 									@if ( SaveSummaries.Count == 0 )
 									{
-										<div class="match-config-section">
-											<div class="match-config-section-title">No @ActiveSaveTabTitle Found</div>
-											<div class="match-config-value">@EmptySaveTabMessage</div>
+										<div class="options-panel-section">
+											<div class="options-panel-section-title">No @ActiveSaveTabTitle Found</div>
+											<div class="options-panel-row-value">@EmptySaveTabMessage</div>
 										</div>
 									}
 									else
@@ -201,17 +196,15 @@
 											</div>
 										}
 									}
-								</div>
-								<MonoScrollbar Target="@LoadGameScrollPanel"></MonoScrollbar>
-							</div>
-
-							<div class="match-config-footer">
-								@if ( CanEditConfig )
-								{
-									<GameButton Variant="options-panel-secondary-button" OnClick="@RefreshSaves">Refresh</GameButton>
-									<GameButton Variant="options-panel-primary-button" CanClick="@CanLoadSelectedSave" OnClick="@ConfirmLoadSelectedSave" BlockedPopupTitle="No save selected" BlockedPopupMessage="Choose a save before loading.">Load Selected</GameButton>
-								}
-							</div>
+					</ChildContent>
+					<Footer>
+						@if ( CanEditConfig )
+						{
+							<GameButton Variant="options-panel-secondary-button" OnClick="@RefreshSaves">Refresh</GameButton>
+							<GameButton Variant="options-panel-primary-button" CanClick="@CanLoadSelectedSave" OnClick="@ConfirmLoadSelectedSave" BlockedPopupTitle="No save selected" BlockedPopupMessage="Choose a save before loading.">Load Selected</GameButton>
+						}
+					</Footer>
+				</OptionsPanelBody>
 			</ChildContent>
 		</OptionsPanel>
 		<OptionsPanel
@@ -308,7 +301,6 @@
 	private bool IsLoadMenuOpen;
 	private bool IsLoadSeatMenuOpen;
 		private Panel PieceCustomizeScrollPanel = null!;
-		private Panel LoadGameScrollPanel = null!;
 	private bool CanOpenConfig => Lobby is not null;
 	private string GameVersion => MonopolyApp.GameVersion;
 	private bool CanEditConfig => Lobby?.IsLocalEffectiveHost == true;
@@ -324,11 +316,12 @@
 	private bool IsManualSaveTab = true;
 	private readonly Dictionary<string, string> ConfigIntDrafts = new();
 	private IReadOnlyList<string> ConfigGroups => MatchConfigSchema.Options.Where( option => option.IsVisible ).Select( option => option.Group ).Distinct().ToList();
-	private IReadOnlyList<OptionsPanelSection<MatchConfigOption>> EditableConfigSections =>
-		ConfigGroups.Select( group => new OptionsPanelSection<MatchConfigOption>
+	private IReadOnlyList<OptionsPanelSection> EditableConfigSections =>
+		ConfigGroups.Select( group => new OptionsPanelSection
 		{
+			Key = group,
 			Title = group,
-			Items = GetConfigOptionsForGroup( group ).Reverse().ToList()
+			HasItems = GetConfigOptionsForGroup( group ).Any()
 		} ).ToList();
 
 	protected override void OnUpdate()

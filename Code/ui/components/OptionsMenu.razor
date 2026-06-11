@@ -13,43 +13,46 @@
 		}
 		<OptionsPanelBody ScrollContentVariant="reverse">
 			<ChildContent Context="scrollPanel">
-				<OptionsPanelSectionList TItem="AppSettingOption" Sections="@AppSettingSections" SectionOptionsVariant="reverse">
-					<ChildContent Context="option">
-						<OptionsPanelRow Title="@option.Label" Value="@GetOptionStatusText( option )">
-							<ChildContent>
-								@if ( option.Kind == AppSettingOptionKind.Bool )
-								{
-									<GameButton Variant="@GetToggleButtonClasses( GetBoolValue( option ) )" CanClick="@IsOptionAvailable( option )" OnClick="@(() => ToggleBoolOption( option ))" BlockedPopupTitle="Unavailable" BlockedPopupMessage="@UnavailableMessage">
-										@(GetBoolValue( option ) ? "On" : "Off")
-									</GameButton>
-								}
-								else if ( option.Kind == AppSettingOptionKind.Enum )
-								{
-									<DropdownButton
-										Value="@GetEnumValue( option )"
-										Items="@option.EnumNames"
-										ScrollTarget="@scrollPanel"
-										CanClick="@IsOptionAvailable( option )"
-										OnSelected="@((string value) => SetEnumValue( option, value ))"
-										BlockedPopupTitle="Unavailable"
-										BlockedPopupMessage="@UnavailableMessage">
-									</DropdownButton>
-								}
-								else if ( option.Kind == AppSettingOptionKind.Int )
-								{
-									<SliderControl
-										class="options-slider"
-										Value="@GetIntValue( option )"
-										OnValueChanged="@((float value) => SetIntValue( option, value ))"
-										Min="@option.IntMin"
-										Max="@option.IntMax"
-										Step="@option.IntStep"
-										ShowTextEntry="@true"
-										NumberFormat="0">
-									</SliderControl>
-								}
-							</ChildContent>
-						</OptionsPanelRow>
+				<OptionsPanelSectionList Sections="@AppSettingSections" SectionOptionsVariant="reverse">
+					<ChildContent Context="section">
+						@foreach ( var option in GetOptionsForSection( section.Key, section.Title ).Reverse() )
+						{
+							<OptionsPanelRow Title="@option.Label" Value="@GetOptionStatusText( option )">
+								<ChildContent>
+									@if ( option.Kind == AppSettingOptionKind.Bool )
+									{
+										<GameButton Variant="@GetToggleButtonClasses( GetBoolValue( option ) )" CanClick="@IsOptionAvailable( option )" OnClick="@(() => ToggleBoolOption( option ))" BlockedPopupTitle="Unavailable" BlockedPopupMessage="@UnavailableMessage">
+											@(GetBoolValue( option ) ? "On" : "Off")
+										</GameButton>
+									}
+									else if ( option.Kind == AppSettingOptionKind.Enum )
+									{
+										<DropdownButton
+											Value="@GetEnumValue( option )"
+											Items="@option.EnumNames"
+											ScrollTarget="@scrollPanel"
+											CanClick="@IsOptionAvailable( option )"
+											OnSelected="@((string value) => SetEnumValue( option, value ))"
+											BlockedPopupTitle="Unavailable"
+											BlockedPopupMessage="@UnavailableMessage">
+										</DropdownButton>
+									}
+									else if ( option.Kind == AppSettingOptionKind.Int )
+									{
+										<SliderControl
+											class="options-slider"
+											Value="@GetIntValue( option )"
+											OnValueChanged="@((float value) => SetIntValue( option, value ))"
+											Min="@option.IntMin"
+											Max="@option.IntMax"
+											Step="@option.IntStep"
+											ShowTextEntry="@true"
+											NumberFormat="0">
+										</SliderControl>
+									}
+								</ChildContent>
+							</OptionsPanelRow>
+						}
 					</ChildContent>
 				</OptionsPanelSectionList>
 			</ChildContent>
@@ -88,7 +91,7 @@
 	private bool SettingsAvailable => AppSettings.SettingsAvailable;
 	private string UnavailableMessage => "This setting is not available right now.";
 	private string RenderSettingsUnavailableMessage => "Video settings cannot be applied because s&box is not exposing render settings for this session. Try standalone mode if this is the editor.";
-	private IReadOnlyList<OptionsPanelSection<AppSettingOption>> AppSettingSections => BuildAppSettingSections();
+	private IReadOnlyList<OptionsPanelSection> AppSettingSections => BuildAppSettingSections();
 
 	protected override void OnParametersSet()
 	{
@@ -102,36 +105,38 @@
 		wasOpen = IsOpen;
 	}
 
-	private IReadOnlyList<OptionsPanelSection<AppSettingOption>> BuildAppSettingSections()
+	private IReadOnlyList<OptionsPanelSection> BuildAppSettingSections()
 	{
-		var sections = new List<OptionsPanelSection<AppSettingOption>>();
+		var sections = new List<OptionsPanelSection>();
 
 		foreach ( var category in AppSettingsSchema.Categories.Reverse() )
 		{
 			var categorySections = GetSectionsForCategory( category ).Reverse().ToList();
 			if ( categorySections.Count == 0 )
 			{
-				sections.Add( new OptionsPanelSection<AppSettingOption>
+				sections.Add( new OptionsPanelSection
 				{
 					Kicker = category.Label,
 					Title = category.Label,
 					Copy = category.Description,
 					EmptyTitle = category.Label,
-					EmptyMessage = "No settings are wired into this section yet."
+					EmptyMessage = "No settings are wired into this section yet.",
+					HasItems = false
 				} );
 				continue;
 			}
 
 			foreach ( var sectionName in categorySections )
 			{
-				sections.Add( new OptionsPanelSection<AppSettingOption>
+				sections.Add( new OptionsPanelSection
 				{
+					Key = category.Key,
 					Kicker = category.Label,
 					Title = sectionName,
 					Copy = category.Description,
-					Items = GetOptionsForSection( category.Key, sectionName ).Reverse().ToList(),
 					EmptyTitle = sectionName,
-					EmptyMessage = "No settings are wired into this section yet."
+					EmptyMessage = "No settings are wired into this section yet.",
+					HasItems = GetOptionsForSection( category.Key, sectionName ).Any()
 				} );
 			}
 		}

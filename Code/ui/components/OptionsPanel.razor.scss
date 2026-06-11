@@ -12,6 +12,22 @@
 	pointer-events: none;
 }
 
+.options-panel-root.options-menu-root {
+	z-index: 150;
+}
+
+.options-panel-root.lobby-options-root {
+	z-index: 82;
+}
+
+.options-panel-root.options-panel-readonly-root {
+	z-index: 151;
+}
+
+.options-panel-root.piece-customize-root {
+	z-index: 83;
+}
+
 .options-panel-root.open {
 	pointer-events: all;
 }
@@ -524,13 +540,72 @@
 	text-overflow: clip;
 }
 
-.options-panel .dropdown-label,
-.options-panel .dropdown-item-label,
-.options-panel .dropdown-label .label,
-.options-panel .dropdown-item-label .label {
-	white-space: normal;
+.options-panel-stepper {
+	width: 100%;
+	height: 42px;
+
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 8px;
+	flex-shrink: 0;
+}
+
+.options-panel-step-button {
+	width: 44px;
+	min-width: 44px;
+	padding: 0;
+}
+
+.options-panel-stepper-value,
+.options-panel-stepper-input {
+	min-width: 96px;
+	width: 96px;
+	height: $monopoly-control-height;
+	padding: 10px 12px;
+
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: flex-start;
+
+	background-color: $monopoly-surface-medium;
+	border: 1px solid $monopoly-panel-line;
+	border-radius: $monopoly-radius-control;
+
+	color: $monopoly-text;
+	font-family: $monopoly-font-family;
+	font-size: 16px;
+	font-weight: 900;
+	line-height: 20px;
+	text-align: left;
+	flex-shrink: 0;
+	pointer-events: all;
+	overflow: hidden;
+	white-space: nowrap;
+}
+
+.options-panel-stepper-value .label,
+.options-panel-stepper-input .placeholder,
+.options-panel-stepper-input .content-label,
+.options-panel-stepper-input .label,
+.options-panel-stepper-input .text {
+	text-align: left;
+	color: $monopoly-text;
+	font-size: 16px;
+	font-weight: 900;
+	line-height: 20px;
+	white-space: nowrap;
 	text-overflow: clip;
 	overflow: visible;
+}
+
+.options-panel-stepper-input .cursor,
+.options-panel-stepper-input .caret {
+	width: 2px;
+	height: 20px;
+	min-width: 2px;
+	background-color: $monopoly-text;
 }
 
 .options-panel .dropdown-toggle {
@@ -542,51 +617,6 @@
 
 .options-panel .dropdown-toggle:hover {
 	background-color: $monopoly-surface-strong;
-}
-
-.options-panel .dropdown-menu {
-	background-color: rgba(12, 22, 30, 0.98);
-	border: 1px solid $monopoly-gold-glow;
-	border-radius: $monopoly-radius-control;
-	box-shadow: $monopoly-panel-shadow-strong;
-	overflow: hidden;
-}
-
-.options-panel .dropdown-item {
-	position: relative;
-	z-index: 1002;
-	min-height: 36px;
-	height: 36px;
-	padding: 0 10px;
-	background-color: $monopoly-surface-medium;
-	border-radius: $monopoly-radius-board;
-	color: $monopoly-text;
-	align-items: center;
-	pointer-events: all;
-}
-
-.options-panel .dropdown-item-label,
-.options-panel .dropdown-item-label .label {
-	color: $monopoly-text;
-}
-
-.options-panel .dropdown-item:hover {
-	background-color: $monopoly-surface-strong;
-}
-
-.options-panel .dropdown-item.selected {
-	background-color: $monopoly-gold;
-	color: $monopoly-ink;
-	box-shadow: none;
-}
-
-.options-panel .dropdown-item.selected:hover {
-	background-color: $monopoly-gold-hover;
-}
-
-.options-panel .dropdown-item.selected .dropdown-item-label,
-.options-panel .dropdown-item.selected .dropdown-item-label .label {
-	color: $monopoly-ink;
 }
 
 .options-panel-empty-state {

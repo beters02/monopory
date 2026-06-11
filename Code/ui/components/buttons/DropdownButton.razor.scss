@@ -93,17 +93,18 @@
 	width: 100%;
 	z-index: 1003;
 
-	padding-bottom: 8px;
+	padding: 6px 0;
 
-	background-color: $monopoly-ink;
-	border: 1px solid $monopoly-panel-line;
+	background-color: rgba(12, 22, 30, 0.98);
+	border: 1px solid $monopoly-gold-glow;
 	border-radius: $monopoly-radius-control;
-	box-shadow: $monopoly-panel-shadow-soft;
+	box-shadow: $monopoly-panel-shadow-strong;
 
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
 	align-items: center;
+	gap: 4px;
 
 	pointer-events: all;
 	overflow: hidden;
@@ -159,9 +160,9 @@
 
 	color: $monopoly-text;
 	text-align: left;
-	white-space: nowrap;
-	text-overflow: ellipsis;
-	overflow: hidden;
+	white-space: normal;
+	text-overflow: clip;
+	overflow: visible;
 	pointer-events: none;
 }
 
@@ -173,9 +174,9 @@
 
 	color: $monopoly-text;
 	text-align: left;
-	white-space: nowrap;
-	text-overflow: ellipsis;
-	overflow: hidden;
+	white-space: normal;
+	text-overflow: clip;
+	overflow: visible;
 }
 
 .dropdown-item:hover {
