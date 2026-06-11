@@ -67,7 +67,7 @@
 
 	private bool IsOpen => ActiveInstanceId == InstanceId;
 	private string RootClasses => IsOpen ? "dropdown-button open" : "dropdown-button";
-	private string MenuStyle => $"min-height: {GetMenuHeight()}px;";
+	private string MenuStyle => $"height: {GetMenuHeight()}px; min-height: {GetMenuHeight()}px;";
 	private string ButtonClasses => string.IsNullOrWhiteSpace( Variant )
 		? "dropdown-toggle"
 		: $"dropdown-toggle {Variant}";
@@ -236,7 +236,7 @@
 	{
 		var itemCount = Math.Max( Items?.Count ?? 0, 1 );
 		var menuGapHeight = Math.Max( itemCount - 1, 0 ) * 4;
-		return 8 + menuGapHeight + itemCount * 36;
+		return 12 + menuGapHeight + itemCount * 52;
 	}
 
 	protected override int BuildHash()

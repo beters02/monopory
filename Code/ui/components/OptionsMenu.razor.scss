@@ -409,18 +409,25 @@
 }
 
 .options-panel .dropdown-menu {
-	background-color: $monopoly-panel-strong;
-	border: 1px solid $monopoly-panel-line;
+	padding: 4px;
+	background-color: rgba(12, 22, 30, 0.98);
+	border: 1px solid $monopoly-gold-glow;
 	border-radius: $monopoly-radius-control;
-	box-shadow: $monopoly-panel-shadow-soft;
+	box-shadow: $monopoly-panel-shadow-strong;
+	gap: 4px;
+	overflow: hidden;
 }
 
 .options-panel .dropdown-item {
 	position: relative;
 	z-index: 1002;
-	background-color: $monopoly-surface-soft;
+	min-height: 36px;
+	height: 36px;
+	padding: 0 10px;
+	background-color: $monopoly-surface-medium;
 	color: $monopoly-text;
 	border-radius: $monopoly-radius-board;
+	align-items: center;
 	pointer-events: all;
 }
 
@@ -430,7 +437,7 @@
 }
 
 .options-panel .dropdown-item:hover {
-	background-color: $monopoly-surface-hover;
+	background-color: $monopoly-surface-strong;
 }
 
 .options-panel .dropdown-item.selected {
