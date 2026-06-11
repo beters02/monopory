@@ -468,11 +468,11 @@
 	gap: 8px;
 }
 
-.options-category-button,
-.options-toggle-button,
-.options-choice-button,
-.options-apply-button {
-	height: 42px;
+.options-panel .monopoly-button.options-category-button,
+.options-panel .monopoly-button.options-toggle-button,
+.options-panel .monopoly-button.options-choice-button,
+.options-panel .monopoly-button.options-apply-button {
+	height: $monopoly-control-height;
 	min-width: 96px;
 	margin-top: 0;
 	padding: 0 14px;
@@ -488,7 +488,7 @@
 	justify-content: center;
 }
 
-.options-category-button {
+.options-panel .monopoly-button.options-category-button {
 	flex: 1;
 	min-width: 0;
 
@@ -496,38 +496,42 @@
 	color: $monopoly-text;
 }
 
-.options-category-button:hover,
-.options-toggle-button:hover,
-.options-choice-button:hover {
+.options-panel .monopoly-button.options-category-button:hover,
+.options-panel .monopoly-button.options-toggle-button:hover,
+.options-panel .monopoly-button.options-choice-button:hover {
 	background-color: $monopoly-surface-strong;
 }
 
-.options-category-button.selected {
+.options-panel .monopoly-button.options-category-button.selected {
 	background-color: $monopoly-gold;
 	color: $monopoly-ink;
 	box-shadow: 0 0 0 2px $monopoly-selected-ring-soft;
 }
 
-.options-toggle-button.selected,
-.options-choice-button.selected {
+.options-panel .monopoly-button.options-toggle-button.selected,
+.options-panel .monopoly-button.options-choice-button.selected {
 	background-color: $monopoly-gold;
 	color: $monopoly-ink;
 }
 
-.options-toggle-button.blocked-action-button,
-.options-choice-button.blocked-action-button,
-.options-apply-button.blocked-action-button {
+.options-panel .monopoly-button.options-toggle-button.selected:hover {
+	background-color: $monopoly-gold-hover;
+}
+
+.options-panel .monopoly-button.options-toggle-button.blocked-action-button,
+.options-panel .monopoly-button.options-choice-button.blocked-action-button,
+.options-panel .monopoly-button.options-apply-button.blocked-action-button {
 	background-color: $monopoly-blocked-action;
 	color: $monopoly-text;
 }
 
-.options-apply-button {
+.options-panel .monopoly-button.options-apply-button {
 	min-width: 132px;
 	background-color: $monopoly-gold;
 	color: $monopoly-ink;
 }
 
-.options-apply-button:hover {
+.options-panel .monopoly-button.options-apply-button:hover {
 	background-color: $monopoly-gold-hover;
 }
 
@@ -539,7 +543,7 @@
 .options-panel .monopoly-button.blocked-action-button.options-category-button:hover,
 .options-panel .monopoly-button.blocked-action-button.options-toggle-button:hover,
 .options-panel .monopoly-button.blocked-action-button.options-choice-button:hover {
-	background-color: $monopoly-ink-hover;
+	background-color: $monopoly-blocked-action-hover;
 }
 
 .options-empty-state {
