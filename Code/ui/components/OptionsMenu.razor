@@ -11,11 +11,11 @@
 		{
 			<div class="options-apply-error">@applyErrorMessage</div>
 		}
-		<OptionsPanelBody ScrollContentVariant="reverse">
+		<OptionsPanelBody>
 			<ChildContent Context="scrollPanel">
-				<OptionsPanelSectionList Sections="@AppSettingSections">
+				<OptionsPanelSectionList Sections="@AppSettingSections" ListVariant="reverse">
 					<ChildContent Context="section">
-						<OptionsPanelSubsectionList Subsections="@section.Subsections" SubsectionOptionsVariant="reverse">
+						<OptionsPanelSubsectionList Subsections="@section.Subsections" ListVariant="reverse" SubsectionOptionsVariant="reverse">
 							<ChildContent Context="subsection">
 								@foreach ( var option in GetOptionsForSection( section.Key, subsection.Key ).Reverse() )
 								{

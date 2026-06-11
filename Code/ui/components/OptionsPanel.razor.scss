@@ -13,7 +13,7 @@
 }
 
 .options-panel-root.options-menu-root {
-	z-index: 150;
+	z-index: 1000;
 }
 
 .options-panel-root.lobby-options-root {
@@ -21,7 +21,7 @@
 }
 
 .options-panel-root.options-panel-readonly-root {
-	z-index: 151;
+	z-index: 1001;
 }
 
 .options-panel-root.piece-customize-root {
@@ -312,6 +312,10 @@
 	flex-shrink: 0;
 }
 
+.options-panel-section-list.reverse {
+	flex-direction: column-reverse;
+}
+
 .options-panel-section-options {
 	display: flex;
 	flex-direction: column;
@@ -329,6 +333,10 @@
 	align-items: stretch;
 	gap: 10px;
 	flex-shrink: 0;
+}
+
+.options-panel-subsection-list.reverse {
+	flex-direction: column-reverse;
 }
 
 .options-panel-subsection {

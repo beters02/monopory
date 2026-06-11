@@ -1,7 +1,7 @@
 @using Sandbox;
 @using Sandbox.UI;
 @inherits Panel
-<root class="options-panel-section-list">
+<root class="@SectionListClasses">
 	@foreach ( var section in Sections )
 	{
 		<div class="options-panel-section">
@@ -50,8 +50,13 @@
 @code
 {
 	[Parameter] public IReadOnlyList<OptionsPanelSection> Sections { get; set; } = new List<OptionsPanelSection>();
+	[Parameter] public string ListVariant { get; set; } = "";
 	[Parameter] public string SectionOptionsVariant { get; set; } = "";
 	[Parameter] public new RenderFragment<OptionsPanelSection> ChildContent { get; set; }
+
+	private string SectionListClasses => string.IsNullOrWhiteSpace( ListVariant )
+		? "options-panel-section-list"
+		: $"options-panel-section-list {ListVariant}";
 
 	private string SectionOptionsClasses => string.IsNullOrWhiteSpace( SectionOptionsVariant )
 		? "options-panel-section-options"
