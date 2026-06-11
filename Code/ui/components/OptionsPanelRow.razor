@@ -2,7 +2,7 @@
 @using Sandbox.UI;
 @using System.Linq;
 @inherits Panel
-<div class="@RowClasses">
+<root class="@RowClasses">
 	<div class="options-panel-row-text">
 		<div class="options-panel-row-title">@Title</div>
 		@if ( !string.IsNullOrWhiteSpace( Value ) )
@@ -16,7 +16,7 @@
 			@ChildContent
 		</div>
 	}
-</div>
+</root>
 
 @code
 {

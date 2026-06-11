@@ -304,6 +304,14 @@
 	pointer-events: none;
 }
 
+.options-panel-section-list {
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	gap: 14px;
+	flex-shrink: 0;
+}
+
 .options-panel-section-options {
 	display: flex;
 	flex-direction: column;

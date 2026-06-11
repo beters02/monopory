@@ -3,7 +3,7 @@
 @using System;
 @using System.Linq;
 @inherits Panel
-<div class="@BodyClasses">
+<root class="@BodyClasses">
 	<div class="@ScrollShellClasses">
 		<div class="@ScrollPanelClasses" @ref="ScrollPanel">
 			@if ( !string.IsNullOrWhiteSpace( Copy ) )
@@ -23,7 +23,7 @@
 			@Footer
 		</div>
 	}
-</div>
+</root>
 
 @code
 {
@@ -37,7 +37,7 @@
 
 	private Panel ScrollPanel = null!;
 	private string BodyClasses => BuildClass( "options-panel-body", Variant );
-	private string ScrollShellClasses => BuildClass( "options-panel-scroll-shell" );
+	private string ScrollShellClasses => "options-panel-scroll-shell";
 	private string ScrollPanelClasses => BuildClass( "options-panel-scroll monopory-scroll-y", ScrollPanelVariant, ScrollContentVariant );
 	private string FooterClasses => BuildClass( "options-panel-footer", FooterVariant );
 
