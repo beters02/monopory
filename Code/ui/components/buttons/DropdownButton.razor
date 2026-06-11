@@ -67,7 +67,7 @@
 
 	private bool IsOpen => ActiveInstanceId == InstanceId;
 	private string RootClasses => IsOpen ? "dropdown-button open" : "dropdown-button";
-	private string MenuStyle => $"height: {GetMenuHeight()}px; min-height: {GetMenuHeight()}px;";
+	private string MenuStyle => $"min-height: {GetMenuHeight()}px;";
 	private string ButtonClasses => string.IsNullOrWhiteSpace( Variant )
 		? "dropdown-toggle"
 		: $"dropdown-toggle {Variant}";

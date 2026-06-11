@@ -33,7 +33,7 @@
 									<div class="match-config-section-title">@group</div>
 									<div class="match-config-section-options">
 
-									@foreach ( var option in GetConfigOptionsForGroup( group ) )
+								@foreach ( var option in GetConfigOptionsForGroup( group ).Reverse() )
 									{
 										<div class="match-config-row">
 											<div class="match-config-text">
