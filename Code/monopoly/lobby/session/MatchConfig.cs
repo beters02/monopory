@@ -95,7 +95,7 @@ public sealed class MatchConfig
 	public bool RandomizeTurnOrder { get; set; } = true;
 
 	[MatchConfigOption( "Turn Rules", "Force Jail Fine After Failed Doubles", Description = "After the final failed jail roll, automatically pay the fine to leave jail.", Order = 34 )]
-	public bool ForceJailFineAfterFailedDoubles { get; set; } = true;
+	public bool ForceJailFineAfterFailedDoubles { get; set; } = false;
 
 	[MatchConfigOption( "Turn Rules", "Turn Time Limit Seconds", Description = "How long each turn can last before timeout handling kicks in.", Order = 35, Min = 15, Max = 900, Step = 15 )]
 	public int TurnTimeLimitSeconds { get; set; } = 180;
