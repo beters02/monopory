@@ -45,7 +45,7 @@
 .piece-customize-grid {
 	display: flex;
 	flex-wrap: wrap;
-	justify-content: space-between;
+	justify-content: flex-start;
 	align-items: stretch;
 	gap: 10px;
 	overflow-x: hidden;
@@ -53,9 +53,9 @@
 }
 
 .piece-customize-card {
-	flex: 0 0 49%;
-	max-width: 49%;
-	min-width: 49%;
+	flex: 1 1 45%;
+	max-width: 100%;
+	min-width: 0;
 	padding: 12px;
 	background-color: $monopoly-surface-soft;
 	border: 1px solid $monopoly-panel-line;
