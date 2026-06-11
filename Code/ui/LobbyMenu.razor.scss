@@ -67,7 +67,8 @@
 
 .piece-customize-card.selected {
 	border-color: $monopoly-gold;
-	box-shadow: 0 0 0 2px $monopoly-selected-ring-soft;
+	background-color: $monopoly-surface-strong;
+	//box-shadow: 0 0 0 5px $monopoly-selected-ring-soft;
 }
 
 .piece-customize-card-title {

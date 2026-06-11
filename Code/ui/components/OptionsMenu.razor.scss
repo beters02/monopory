@@ -2,6 +2,16 @@
 @import "ConfirmationDialog.razor.scss";
 @import "OptionsPanel.razor.scss";
 
+OptionsMenu {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	z-index: 1000;
+	pointer-events: none;
+}
+
 .options-apply-error {
 	width: 100%;
 	min-width: 0;
