@@ -25,22 +25,16 @@
 
 				<div class="options-scroll-shell">
 					<div class="options-scroll-panel monopory-scroll-y" @ref="OptionsScrollPanel">
-						@foreach ( var category in AppSettingsSchema.Categories )
+						@foreach ( var category in AppSettingsSchema.Categories.Reverse() )
 						{
 							<div class="options-category-section">
-								<div class="options-category-heading">
-									<div class="options-category-title">@category.Label</div>
-									<div class="options-category-copy">@category.Description</div>
-								</div>
-
-								@if ( HasSectionsForCategory( category ) )
+				@if ( HasSectionsForCategory( category ) )
 								{
-									@foreach ( var sectionName in GetSectionsForCategory( category ) )
+									@foreach ( var sectionName in GetSectionsForCategory( category ).Reverse() )
 									{
 										<div class="options-section">
-											<div class="options-section-title">@sectionName</div>
 
-											@foreach ( var option in GetOptionsForSection( category.Key, sectionName ) )
+											@foreach ( var option in GetOptionsForSection( category.Key, sectionName ).Reverse() )
 											{
 												<div class="options-row">
 													<div class="options-text">
@@ -82,17 +76,22 @@
 													</div>
 												</div>
 											}
+											<div class="options-section-title">@sectionName</div>
 										</div>
 									}
 								}
-								else
-								{
-									<div class="options-empty-state">
-										<div class="options-empty-title">@category.Label</div>
-										<div class="options-empty-copy">No settings are wired into this section yet.</div>
-									</div>
-								}
-							</div>
+				else
+				{
+					<div class="options-empty-state">
+						<div class="options-empty-title">@category.Label</div>
+						<div class="options-empty-copy">No settings are wired into this section yet.</div>
+					</div>
+				}
+				<div class="options-category-heading">
+					<div class="options-category-title">@category.Label</div>
+					<div class="options-category-copy">@category.Description</div>
+				</div>
+			</div>
 						}
 					</div>
 					<MonoScrollbar Target="@OptionsScrollPanel"></MonoScrollbar>
