@@ -117,12 +117,14 @@
 							}
 							else
 							{
-								@foreach ( var playerIndex in TradeTargetIndexes )
-								{
-								<div class="@GetTradeTargetClasses( playerIndex )" onclick="@(() => SelectTradeTarget( playerIndex ))">
-									<div class="trade-target-label">@GetPlayerName( playerIndex )</div>
-								</div>
-								}
+								<DropdownButton
+									Variant="trade-target-dropdown"
+									Value="@SelectedTradeTargetValue"
+									Items="@TradeTargetItems"
+									Placeholder="Choose player"
+									ItemFormatter="@FormatTradeTargetItem"
+									OnSelected="@SelectTradeTargetValue">
+								</DropdownButton>
 							}
 						</div>
 						<div class="trade-money-row">
@@ -260,6 +262,10 @@
 			.Where( entry => entry.player is not null && entry.player.IsAssigned && !entry.player.IsBankrupt && entry.index != GameRef.LocalPlayerIndex )
 			.Select( entry => entry.index )
 			.ToList() ?? new();
+	private List<string> TradeTargetItems =>
+		TradeTargetIndexes.Select( index => index.ToString() ).ToList();
+	private string SelectedTradeTargetValue =>
+		EffectiveReceiverPlayerIndex >= 0 ? EffectiveReceiverPlayerIndex.ToString() : "";
 
 	private List<int> LocalOwnedPropertyIndexes =>
 		GameRef is null ? new() : GameRef.GetOwnedPropertyIndexes( GameRef.LocalPlayerIndex );
@@ -294,6 +300,14 @@
 		LocalReceiverPlayerIndex = playerIndex;
 		ReceiverMoneyDraft = null;
 		OnSelectReceiver?.Invoke( playerIndex );
+	}
+
+	private void SelectTradeTargetValue( string value )
+	{
+		if ( !int.TryParse( value, out var playerIndex ) )
+			return;
+
+		SelectTradeTarget( playerIndex );
 	}
 
 	private void AdjustSenderMoney( int amount )
@@ -422,9 +436,11 @@
 		return classes;
 	}
 
-	private string GetTradeTargetClasses( int playerIndex )
+	private string FormatTradeTargetItem( string value )
 	{
-		return playerIndex == EffectiveReceiverPlayerIndex ? "trade-target selected" : "trade-target";
+		return int.TryParse( value, out var playerIndex )
+			? GetPlayerName( playerIndex )
+			: value;
 	}
 
 	private string GetPlayerName( int playerIndex )

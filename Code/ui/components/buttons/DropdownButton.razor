@@ -3,7 +3,7 @@
 @using System;
 @inherits Panel
 
-<root class="@RootClasses" style="@RootStyle">
+<root class="@RootClasses">
 	<GameButton
 		Variant="@ButtonClasses"
 		Title="@Title"
@@ -22,6 +22,7 @@
 
 	@if ( IsOpen )
 	{
+		<div class="dropdown-dismiss-layer" onclick="@(() => CloseOpenDropdown( InstanceId ))"></div>
 		<div class="dropdown-menu" style="@MenuStyle" @ref="MenuPanel">
 			@foreach ( var item in Items )
 			{
@@ -42,6 +43,7 @@
 	[Parameter] public string Placeholder { get; set; } = "Select";
 	[Parameter] public string Value { get; set; } = "";
 	[Parameter] public IReadOnlyList<string> Items { get; set; } = Array.Empty<string>();
+	[Parameter] public Func<string, string> ItemFormatter { get; set; }
 	[Parameter] public bool CanClick { get; set; } = true;
 	[Parameter] public bool SoundEnabled { get; set; } = true;
 	[Parameter] public string BlockedPopupTitle { get; set; } = "Action blocked";
@@ -65,7 +67,6 @@
 
 	private bool IsOpen => ActiveInstanceId == InstanceId;
 	private string RootClasses => IsOpen ? "dropdown-button open" : "dropdown-button";
-	private string RootStyle => IsOpen ? $"height: {GetOpenHeight()}px; min-height: {GetOpenHeight()}px;" : "";
 	private string MenuStyle => $"height: {GetMenuHeight()}px; min-height: {GetMenuHeight()}px;";
 	private string ButtonClasses => string.IsNullOrWhiteSpace( Variant )
 		? "dropdown-toggle"
@@ -144,7 +145,8 @@
 			CloseAfterMouseLeaveAt = Time.Now + 0.35f;
 
 		if ( Time.Now >= CloseAfterMouseLeaveAt )
-			CloseOpenDropdown( InstanceId );
+			return;
+			//CloseOpenDropdown( InstanceId );
 	}
 
 	private void MeasureScrollTarget()
@@ -208,8 +210,15 @@
 			: "dropdown-item";
 	}
 
-	private static string FormatItem( string item )
+	private string FormatItem( string item )
 	{
+		if ( ItemFormatter is not null )
+		{
+			var formatted = ItemFormatter.Invoke( item );
+			if ( !string.IsNullOrWhiteSpace( formatted ) )
+				return formatted;
+		}
+
 		if ( string.IsNullOrWhiteSpace( item ) )
 			return "";
 
@@ -223,16 +232,11 @@
 		return label;
 	}
 
-	private int GetOpenHeight()
-	{
-		return 42 + 8 + GetMenuHeight();
-	}
-
 	private int GetMenuHeight()
 	{
 		var itemCount = Math.Max( Items?.Count ?? 0, 1 );
 		var menuGapHeight = Math.Max( itemCount - 1, 0 ) * 4;
-		return 8 + menuGapHeight + itemCount * 46 + 14;
+		return 8 + menuGapHeight + itemCount * 36;
 	}
 
 	protected override int BuildHash()
@@ -244,11 +248,13 @@
 		hash.Add( Value ?? "" );
 		hash.Add( Placeholder ?? "" );
 		hash.Add( CanClick );
-		hash.Add( RootStyle );
 		hash.Add( MenuStyle );
 
 		foreach ( var item in Items )
+		{
 			hash.Add( item ?? "" );
+			hash.Add( FormatItem( item ) );
+		}
 
 		return hash.ToHashCode();
 	}

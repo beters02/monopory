@@ -1,6 +1,7 @@
 @import "../GameTheme.scss";
 @import "buttons/GameButton.razor.scss";
 @import "buttons/CloseButton.razor.scss";
+@import "buttons/DropdownButton.razor.scss";
 @import "MonoScrollbar.razor.scss";
 
 
@@ -135,8 +136,75 @@
 .trade-composer-modal .trade-player-select {
 	width: 100%;
 	display: flex;
-	flex-wrap: wrap;
-	gap: 6px;
+	overflow: visible;
+	z-index: 5;
+}
+
+.trade-composer-modal .trade-player-select .dropdown-button {
+	width: 100%;
+	min-width: 0;
+	height: $monopoly-control-height-small;
+	min-height: $monopoly-control-height-small;
+	z-index: 12;
+}
+
+.trade-composer-modal .trade-player-select .dropdown-button.open {
+	z-index: 1000;
+}
+
+.trade-composer-modal .trade-player-select .dropdown-toggle.trade-target-dropdown {
+	height: $monopoly-control-height-small;
+	min-height: $monopoly-control-height-small;
+	margin: 0;
+	padding: 0 10px;
+
+	background-color: $monopoly-card-ink-surface;
+	border: 2px solid $monopoly-card-ink-line;
+	border-radius: $monopoly-radius-control;
+	color: $monopoly-ink;
+
+	font-size: $monopoly-font-button;
+	text-align: center;
+}
+
+.trade-composer-modal .trade-player-select .dropdown-toggle.trade-target-dropdown:hover {
+	background-color: $monopoly-card-ink-surface-hover;
+}
+
+.trade-composer-modal .trade-player-select .dropdown-label,
+.trade-composer-modal .trade-player-select .dropdown-label .label {
+	color: $monopoly-ink;
+	text-align: center;
+}
+
+.trade-composer-modal .trade-player-select .dropdown-caret {
+	color: $monopoly-ink;
+}
+
+.trade-composer-modal .trade-player-select .dropdown-menu {
+	top: 40px;
+	background-color: $monopoly-ink;
+	border: 2px solid $monopoly-card-ink-line;
+	box-shadow: $monopoly-panel-shadow-strong;
+}
+
+.trade-composer-modal .trade-player-select .dropdown-item {
+	background-color: $monopoly-card-ink-surface;
+	color: $monopoly-ink;
+}
+
+.trade-composer-modal .trade-player-select .dropdown-item-label,
+.trade-composer-modal .trade-player-select .dropdown-item-label .label {
+	color: $monopoly-ink;
+	text-align: center;
+}
+
+.trade-composer-modal .trade-player-select .dropdown-item:hover {
+	background-color: $monopoly-card-ink-surface-hover;
+}
+
+.trade-composer-modal .trade-player-select .dropdown-item.selected {
+	background-color: $monopoly-gold;
 }
 
 .trade-composer-modal .trade-target-empty {

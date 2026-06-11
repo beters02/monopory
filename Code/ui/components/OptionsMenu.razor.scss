@@ -318,6 +318,13 @@
 	flex-wrap: nowrap;
 	flex-shrink: 0;
 	gap: 14px;
+	z-index: 100;
+
+	pointer-events: none;
+}
+
+.options-row > * {
+	pointer-events: all;
 }
 
 .options-text {
@@ -339,6 +346,13 @@
 	align-items: center;
 	justify-content: flex-end;
 	overflow: visible;
+	z-index: 10;
+
+	pointer-events: none;
+}
+
+.options-control > * {
+	pointer-events: all;
 }
 
 .options-row .dropdown-button {
@@ -486,6 +500,7 @@
 	font-weight: 900;
 	text-transform: uppercase;
 	justify-content: center;
+	z-index: 10;
 }
 
 .options-panel .monopoly-button.options-category-button {
