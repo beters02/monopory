@@ -68,6 +68,7 @@ public sealed partial class GameController : Component
 		else
 		{
 			player.Money -= betAmount;
+			AddToVacationCashBank( betAmount );
 		}
 
 		var resultSide = won ? "Win" : "Lose";

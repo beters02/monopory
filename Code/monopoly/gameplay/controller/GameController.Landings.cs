@@ -181,8 +181,9 @@ public sealed partial class GameController : Component
 			return "Landed on Free Parking";
 		}
 
+		EnsureVacationCashMinimum();
 		var payout = FreeParkingBank;
-		FreeParkingBank = 0;
+		ResetVacationCashBankToMinimum();
 
 		if ( payout > 0 )
 		{

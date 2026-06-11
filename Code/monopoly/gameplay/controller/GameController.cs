@@ -42,7 +42,8 @@ public sealed partial class GameController : Component, Component.INetworkListen
 	{
 		Other,
 		TaxSpace,
-		ChanceOrCommunityChest
+		ChanceOrCommunityChest,
+		JailFine
 	}
 
 	[JsonIgnore] public List<PlayerState> Players { get; set; } = new();

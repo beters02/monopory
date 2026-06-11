@@ -248,7 +248,7 @@ public sealed partial class GameController : Component
 		PendingPurchaseSpaceIndex = -1;
 		ClearAuction();
 		NextTradeId = 1;
-		FreeParkingBank = 0;
+		ResetVacationCashBankToMinimum();
 		CurrentTurnGetsExtraRoll = false;
 		CurrentTurnConsecutiveDoubles = 0;
 		CurrentTurnDoublesPlayerIndex = -1;

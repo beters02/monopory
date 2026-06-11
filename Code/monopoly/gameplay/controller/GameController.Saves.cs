@@ -359,6 +359,7 @@ public sealed partial class GameController : Component
 		NextTradeId = Math.Max( snapshot.NextTradeId, 1 );
 		NextChatMessageId = Math.Max( snapshot.NextChatMessageId, 1 );
 		FreeParkingBank = snapshot.FreeParkingBank;
+		EnsureVacationCashMinimum();
 		CurrentTurnGetsExtraRoll = snapshot.CurrentTurnGetsExtraRoll;
 		CurrentTurnConsecutiveDoubles = snapshot.CurrentTurnConsecutiveDoubles;
 		CurrentTurnDoublesPlayerIndex = snapshot.CurrentTurnDoublesPlayerIndex;

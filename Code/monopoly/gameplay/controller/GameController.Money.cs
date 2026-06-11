@@ -55,9 +55,36 @@ public sealed partial class GameController : Component
 		}
 
 		FreeParkingBank = amount;
+		EnsureVacationCashMinimum();
 		Log.Info( $"Cheat changed vacation cash to ${FreeParkingBank}." );
 		message = $"Vacation cash is now ${FreeParkingBank}.";
 		return true;
+	}
+
+	private int GetVacationCashMinimum()
+	{
+		return Config?.VacationCash == true ? Math.Max( Config.VacationCashMinimum, 0 ) : 0;
+	}
+
+	private void EnsureVacationCashMinimum()
+	{
+		var minimum = GetVacationCashMinimum();
+		if ( FreeParkingBank < minimum )
+			FreeParkingBank = minimum;
+	}
+
+	private void ResetVacationCashBankToMinimum()
+	{
+		FreeParkingBank = GetVacationCashMinimum();
+	}
+
+	private void AddToVacationCashBank( int amount )
+	{
+		if ( amount <= 0 || Config?.VacationCash != true )
+			return;
+
+		EnsureVacationCashMinimum();
+		FreeParkingBank += amount;
 	}
 
 	private bool PayBank( PlayerState player, int amount, bool showForcedPaymentPopup = true, BankPaymentSource source = BankPaymentSource.Other )
@@ -65,7 +92,7 @@ public sealed partial class GameController : Component
 		if ( player is null || amount <= 0 )
 			return true;
 
-		var addToFreeParking = source is BankPaymentSource.TaxSpace or BankPaymentSource.ChanceOrCommunityChest;
+		var addToFreeParking = source is BankPaymentSource.TaxSpace or BankPaymentSource.ChanceOrCommunityChest or BankPaymentSource.JailFine;
 
 		if ( !TryMakeForcedPayment( player, amount, -1, true, showForcedPaymentPopup, addToFreeParking ) )
 			return false;

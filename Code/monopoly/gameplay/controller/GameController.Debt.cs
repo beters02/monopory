@@ -49,7 +49,7 @@ public sealed partial class GameController : Component
 		if ( toBank )
 		{
 			if ( addToFreeParking && Config?.VacationCash == true )
-				FreeParkingBank += amount;
+				AddToVacationCashBank( amount );
 
 			if ( showForcedPaymentPopup )
 				ShowForcedPaymentToBankPopup( player, amount );

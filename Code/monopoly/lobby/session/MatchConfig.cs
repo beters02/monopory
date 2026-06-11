@@ -106,10 +106,13 @@ public sealed class MatchConfig
 	[MatchConfigOption( "Board Rules", "Vacation Cash", Description = "Awards pooled cash when landing on Free Parking, if enabled.", Order = 40 )]
 	public bool VacationCash { get; set; } = true;
 
-	[MatchConfigOption( "Board Rules", "No Rent While In Prison", Description = "Prevents jailed players from collecting rent.", Order = 41 )]
+	[MatchConfigOption( "Board Rules", "Vacation Cash Minimum", Description = "Minimum cash kept in Vacation Cash while Vacation Cash is enabled.", Order = 41, Min = 0, Max = 5000, Step = 50 )]
+	public int VacationCashMinimum { get; set; } = 100;
+
+	[MatchConfigOption( "Board Rules", "No Rent While In Prison", Description = "Prevents jailed players from collecting rent.", Order = 42 )]
 	public bool DontCollectRentWhileInPrison { get; set; } = false;
 
-	[MatchConfigOption( "Board Rules", "Even Build", Description = "Requires houses to be built evenly across a color set.", Order = 42 )]
+	[MatchConfigOption( "Board Rules", "Even Build", Description = "Requires houses to be built evenly across a color set.", Order = 43 )]
 	public bool EvenBuild { get; set; } = true;
 
 }

@@ -157,7 +157,7 @@ public sealed partial class GameController : Component
 		if ( Phase != GamePhase.WaitingToRoll || !CurrentPlayer.IsInJail )
 			return;
 
-		if ( !PayBank( CurrentPlayer, JailFineAmount ) )
+		if ( !PayBank( CurrentPlayer, JailFineAmount, true, BankPaymentSource.JailFine ) )
 		{
 			SendPopupToPlayer( CurrentPlayer, "Jail fine", $"Raise ${JailFineAmount} to leave Jail.", PopupKind.Warning );
 			return;
@@ -281,7 +281,7 @@ public sealed partial class GameController : Component
 				return;
 			}
 
-			if ( !PayBank( CurrentPlayer, JailFineAmount ) )
+			if ( !PayBank( CurrentPlayer, JailFineAmount, true, BankPaymentSource.JailFine ) )
 			{
 				ClearPendingRollState();
 				if ( CurrentPlayer is null || CurrentPlayer.IsBankrupt )
