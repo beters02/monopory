@@ -25,6 +25,7 @@
 
 				<div class="options-scroll-shell">
 					<div class="options-scroll-panel monopory-scroll-y" @ref="OptionsScrollPanel">
+						<div class="options-scroll-content">
 						@foreach ( var category in AppSettingsSchema.Categories.Reverse() )
 						{
 							<div class="options-category-section">
@@ -93,6 +94,7 @@
 				</div>
 			</div>
 						}
+						</div>
 					</div>
 					<MonoScrollbar Target="@OptionsScrollPanel"></MonoScrollbar>
 				</div>
