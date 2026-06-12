@@ -113,16 +113,22 @@
 }
 
 .dropdown-menu.scrollable {
+	width: calc(100% + 18px);
 	max-height: 240px;
 	overflow-y: scroll;
 }
 
-.dropdown-scrollbar {
+.mono-scrollbar.dropdown-scrollbar {
 	top: 56px;
-	right: 4px;
+	right: -14px;
 	bottom: auto;
 	height: 228px;
 	z-index: 1006;
+}
+
+.dropdown-menu.scrollable .monopoly-button.dropdown-item {
+	width: calc(100% - 24px);
+	margin-right: 18px;
 }
 
 .dropdown-dismiss-layer {

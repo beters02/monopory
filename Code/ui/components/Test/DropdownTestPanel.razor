@@ -5,13 +5,20 @@
 @inherits Panel
 
 <root class="dropdown-test-panel">
-    <DropdownButton Value="@DefaultVal" Items="@ValOptions">
-        
-    </DropdownButton>
+    @if (@IsDropdownTestEnabled)
+    {
+        <DropdownButton Value="@DefaultVal" Items="@ValOptions">
+            
+        </DropdownButton>
+    }
+    
 </root>
 
 @code
 {
+
+    private bool IsDropdownTestEnabled = false;
+
     private string DefaultVal = "aaaa";
 
     private List<string> ValOptions;

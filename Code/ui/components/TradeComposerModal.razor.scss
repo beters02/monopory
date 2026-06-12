@@ -189,7 +189,7 @@
 	gap: 5px;
 }
 
-.trade-composer-modal .trade-player-select .dropdown-scrollbar {
+.trade-composer-modal .trade-player-select .mono-scrollbar.dropdown-scrollbar {
 	top: 46px;
 	height: 228px;
 }
@@ -198,6 +198,11 @@
 	width: 92%;
 	background-color: $monopoly-board;
 	color: $monopoly-ink;
+}
+
+.trade-composer-modal .trade-player-select .dropdown-menu.scrollable .monopoly-button.dropdown-item {
+	width: calc(100% - 24px);
+	margin-right: 18px;
 }
 
 .trade-composer-modal .trade-player-select .dropdown-item-label,
