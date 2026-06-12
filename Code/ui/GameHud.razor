@@ -1,6 +1,7 @@
 @using Sandbox;
 @using Sandbox.UI;
 @using Sandbox.ui.components;
+@using Sandbox.ui.components.Test
 @using Sandbox.ui.components.buttons;
 @using System;
 @using System.Threading.Tasks;
@@ -26,6 +27,7 @@
 		}
 		else
 		{
+			<DropdownTestPanel></DropdownTestPanel>
 			<SessionOverlay
 				GameRef="@GameRef"
 				IsEscapeMenuOpen="@IsEscapeMenuOpen"

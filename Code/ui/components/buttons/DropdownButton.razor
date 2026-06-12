@@ -1,5 +1,6 @@
 @using Sandbox;
 @using Sandbox.UI;
+@using Sandbox.ui.components;
 @using System;
 @inherits Panel
 
@@ -23,7 +24,7 @@
 	@if ( IsOpen )
 	{
 		<div class="dropdown-dismiss-layer" onclick="@(() => CloseOpenDropdown( InstanceId ))"></div>
-		<div class="dropdown-menu" @ref="MenuPanel">
+		<div class="@MenuClasses" @ref="MenuPanel">
 			@foreach ( var item in Items )
 			{
 				<GameButton Variant="@GetItemClasses( item )" OnClick="@(() => SelectItem( item ))" SoundEnabled="@SoundEnabled">
@@ -33,6 +34,10 @@
 				</GameButton>
 			}
 		</div>
+		@if ( MenuCanScroll )
+		{
+			<MonoScrollbar Target="@MenuPanel" Variant="dropdown-scrollbar"></MonoScrollbar>
+		}
 	}
 </root>
 
@@ -56,6 +61,7 @@
 	private static int NextInstanceId;
 	private static int ActiveInstanceId;
 	private static int OpenVersion;
+	private const int MaxVisibleItems = 5;
 
 	private readonly int InstanceId = ++NextInstanceId;
 	private Panel MenuPanel = null!;
@@ -67,6 +73,8 @@
 
 	private bool IsOpen => ActiveInstanceId == InstanceId;
 	private string RootClasses => IsOpen ? "dropdown-button open" : "dropdown-button";
+	private bool MenuCanScroll => (Items?.Count ?? 0) > MaxVisibleItems;
+	private string MenuClasses => MenuCanScroll ? "dropdown-menu scrollable" : "dropdown-menu";
 	//private string MenuStyle => $"height: {GetMenuHeight()}px; min-height: {GetMenuHeight()}px;";
 	private string ButtonClasses => string.IsNullOrWhiteSpace( Variant )
 		? "dropdown-toggle"
@@ -115,6 +123,7 @@
 		if ( IsOpen )
 		{
 			UpdateHoverClose();
+			ClampMenuScroll();
 			MeasureScrollTarget();
 			UpdateSmoothScroll();
 		}
@@ -131,6 +140,19 @@
 		CloseOpenDropdown( InstanceId );
 		OnSelected?.Invoke( item );
 		StateHasChanged();
+	}
+
+	private void ClampMenuScroll()
+	{
+		if ( MenuPanel is null )
+			return;
+
+		var maxOffsetY = MenuCanScroll ? Math.Max( 0f, MenuPanel.ScrollSize.y ) : 0f;
+		var currentY = MenuPanel.ScrollOffset.y;
+		var nextY = Math.Clamp( currentY, 0f, maxOffsetY );
+
+		if ( MathF.Abs( currentY - nextY ) > 0.1f )
+			MenuPanel.ScrollOffset = new Vector2( 0f, nextY );
 	}
 
 	private void UpdateHoverClose()
