@@ -38,6 +38,9 @@ public sealed class PlayerToken : Component
 	[Property] public float TokenControlHullRadius { get; set; } = 12f;
 	[Property] public float TokenControlHullHeight { get; set; } = 36f;
 	[Property] public int TokenControlMaxSlideBumps { get; set; } = 4;
+	[Property] public float TokenControlReplicationRate { get; set; } = 20f;
+	[Property] public float TokenControlRemoteTimeout { get; set; } = 0.35f;
+	[Property] public float TokenControlRemoteLerpSpeed { get; set; } = 18f;
 	public float TokenControlBoardPadding { get; set; } = 20f;
 	[Property] public float BoardSpotSilhouetteAlpha { get; set; } = 0.28f;
 
@@ -66,7 +69,14 @@ public sealed class PlayerToken : Component
 	private HighlightOutline boardSpotSilhouetteHighlight;
 	private Vector3 tokenControlVelocity;
 	private bool tokenControlGrounded;
+	private float lastTokenControlReplicatedAt;
+	private Vector3 remoteTokenControlPosition;
+	private Rotation remoteTokenControlRotation;
+	private Vector3 remoteTokenControlVelocity;
+	private bool remoteTokenControlWalking;
+	private float remoteTokenControlActiveUntil;
 
+	public bool IsLocalPlayerToken => PlayerState?.IsOwner == true;
 	public bool IsLocallyControllable => CanUseTokenController();
 
 
@@ -109,6 +119,12 @@ public sealed class PlayerToken : Component
 		tokenControlVelocity = Vector3.Zero;
 		tokenControlGrounded = false;
 
+		if ( IsRemoteTokenControlActive() )
+		{
+			UpdateRemoteTokenControl();
+			return;
+		}
+
 		var isMoving = !GameObject.WorldPosition.AlmostEqual( target, 0.1f );
 
         if (isMoving)
@@ -133,14 +149,14 @@ public sealed class PlayerToken : Component
 
 	private bool CanUseTokenController()
 	{
-		if ( Board is null || PlayerState is null || PlayerState.IsBankrupt || PlayerState.IsOwner != true )
+		if ( Board is null || PlayerState is null || PlayerState.IsBankrupt || !IsLocalPlayerToken )
 			return false;
 
 		var game = GameController.Instance;
-		if ( game is null || game.MatchState != MatchLifecycleState.InGame || game.CurrentPlayer != PlayerState )
+		if ( game is null || game.MatchState != MatchLifecycleState.InGame )
 			return false;
 
-		if ( game.Phase is not (GamePhase.WaitingToRoll or GamePhase.TurnEnded) )
+		if ( game.CurrentPlayer == PlayerState )
 			return false;
 
 		if ( GameCamera.Instance?.IsTokenModeRequested != true )
@@ -194,12 +210,74 @@ public sealed class PlayerToken : Component
 		}
 
 		ApplyWalkingAnim( horizontalVelocity.Length > 2f );
+		PublishTokenControlTransform( horizontalVelocity.Length > 2f );
+	}
+
+	private void PublishTokenControlTransform( bool walking )
+	{
+		if ( GameController.Instance is null )
+			return;
+
+		var interval = TokenControlReplicationRate > 0f ? 1f / TokenControlReplicationRate : 0f;
+		if ( interval > 0f && Time.Now - lastTokenControlReplicatedAt < interval )
+			return;
+
+		lastTokenControlReplicatedAt = Time.Now;
+		GameController.Instance.RequestTokenControlTransform(
+			GameObject.WorldPosition,
+			GameObject.WorldRotation,
+			tokenControlVelocity,
+			walking
+		);
+	}
+
+	public void ApplyReplicatedTokenControlTransform( int playerIndex, Vector3 position, Rotation rotation, Vector3 velocity, bool walking )
+	{
+		if ( IsLocalPlayerToken || GameController.Instance is null || PlayerState is null )
+			return;
+
+		if ( GameController.Instance.GetPlayerIndex( PlayerState ) != playerIndex )
+			return;
+
+		remoteTokenControlPosition = position;
+		remoteTokenControlRotation = rotation;
+		remoteTokenControlVelocity = velocity;
+		remoteTokenControlWalking = walking;
+		remoteTokenControlActiveUntil = Time.Now + Math.Max( TokenControlRemoteTimeout, 0.05f );
+	}
+
+	private bool IsRemoteTokenControlActive()
+	{
+		return remoteTokenControlActiveUntil > Time.Now;
+	}
+
+	private void UpdateRemoteTokenControl()
+	{
+		var lerpAmount = Time.Delta * TokenControlRemoteLerpSpeed;
+		GameObject.WorldPosition = GameObject.WorldPosition.LerpTo( remoteTokenControlPosition, lerpAmount );
+		GameObject.WorldRotation = GameObject.WorldRotation.LerpTo( remoteTokenControlRotation, lerpAmount );
+		ApplyWalkingAnim( remoteTokenControlWalking || remoteTokenControlVelocity.WithZ( 0f ).Length > 2f );
 	}
 
 	private Vector2 GetTokenMoveInput()
 	{
 		var analog = Input.AnalogMove;
 		var input = new Vector2( -analog.y, analog.x );
+
+		if ( input.Length <= 0.001f )
+		{
+			if ( Input.Down( "Forward" ) )
+				input.y += 1f;
+
+			if ( Input.Down( "Backward" ) )
+				input.y -= 1f;
+
+			if ( Input.Down( "Right" ) )
+				input.x += 1f;
+
+			if ( Input.Down( "Left" ) )
+				input.x -= 1f;
+		}
 
 		return input.Length > 1f ? input.Normal : input;
 	}

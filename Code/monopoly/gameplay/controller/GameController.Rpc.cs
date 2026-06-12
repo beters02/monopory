@@ -199,6 +199,29 @@ public sealed partial class GameController : Component
 	}
 
 	[Rpc.Host]
+	public void RequestTokenControlTransform( Vector3 position, Rotation rotation, Vector3 velocity, bool walking )
+	{
+		if ( MatchState != MatchLifecycleState.InGame )
+			return;
+
+		var player = GetPlayerForCaller( Rpc.Caller );
+		var playerIndex = GetPlayerIndex( player );
+		if ( playerIndex < 0 )
+			return;
+
+		BroadcastTokenControlTransform( playerIndex, position, rotation, velocity, walking );
+	}
+
+	[Rpc.Broadcast]
+	private void BroadcastTokenControlTransform( int playerIndex, Vector3 position, Rotation rotation, Vector3 velocity, bool walking )
+	{
+		foreach ( var token in Scene.GetAllComponents<PlayerToken>() )
+		{
+			token?.ApplyReplicatedTokenControlTransform( playerIndex, position, rotation, velocity, walking );
+		}
+	}
+
+	[Rpc.Host]
 	public void RequestSendPlayerToJail( PlayerState player )
 	{
 		SendPlayerToJail( player );

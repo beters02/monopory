@@ -86,26 +86,7 @@ public sealed class GameCamera : Component
 			return;
 		}
 
-		var center = GetModeFocus();
-		var yaw = Mode == BoardCameraMode.Default
-			? GetCurrentTokenYaw()
-			: 0f;
-		var distance = Mode == BoardCameraMode.Default ? DefaultModeDistance : Distance;
-		float pitch = Mode == BoardCameraMode.Default ? DefaultModePitch : Pitch;
-
-		if ( Mode == BoardCameraMode.Default )
-		{
-			var controller = GameController.Instance;
-			if ( controller?.IsResolvingPhysicalDice == true &&
-				controller.TryGetPhysicalDice( out var dieA, out var dieB ) )
-			{
-				distance = GetDiceFramingDistance( center, yaw, dieA.GameObject.WorldPosition, dieB.GameObject.WorldPosition );
-				if (Mode == BoardCameraMode.Default)
-					pitch = DefaultModeDicePitch;
-			}
-		}
-
-		ApplyView( center, distance, yaw, pitch, true );
+		UpdateStandardCamera( Mode );
 	}
 
 	public void SetMode( BoardCameraMode mode )
@@ -123,13 +104,13 @@ public sealed class GameCamera : Component
 
 		if ( mode == BoardCameraMode.FreeCam )
 		{
-			freeCamFocus = GetModeFocus();
+			freeCamFocus = GetModeFocus( Mode );
 			freeCamDistance = FreecamModeStartDistance;
 			hasFreeCamFocus = true;
 		}
 		else if ( mode == BoardCameraMode.Token )
 		{
-			var token = GetLocalControllableToken();
+			var token = GetLocalPlayerToken();
 			tokenCameraYaw = token is not null ? GetYawFromForward( token.GameObject.WorldRotation.Forward ) : GetCurrentTokenYaw();
 			tokenCameraPitch = TokenModePitch;
 		}
@@ -147,7 +128,7 @@ public sealed class GameCamera : Component
 			return;
 		}
 
-		var token = GetLocalControllableToken();
+		var token = GetLocalPlayerToken();
 		var desiredMode = token is not null ? BoardCameraMode.Token : BoardCameraMode.Default;
 		ApplyMode( desiredMode );
 	}
@@ -156,7 +137,7 @@ public sealed class GameCamera : Component
 	{
 		if ( !hasFreeCamFocus )
 		{
-			freeCamFocus = GetModeFocus();
+			freeCamFocus = GetModeFocus( Mode );
 			freeCamDistance = Distance;
 			hasFreeCamFocus = true;
 		}
@@ -203,10 +184,17 @@ public sealed class GameCamera : Component
 
 	private void UpdateTokenCamera()
 	{
-		var token = GetLocalControllableToken();
+		var token = GetLocalPlayerToken();
 		if ( token is null )
 		{
 			ApplyMode( BoardCameraMode.Default );
+			return;
+		}
+
+		if ( !token.IsLocallyControllable )
+		{
+			ReleaseTokenMouse();
+			UpdateStandardCamera( BoardCameraMode.Default );
 			return;
 		}
 
@@ -221,6 +209,29 @@ public sealed class GameCamera : Component
 
 		GameObject.WorldPosition = focus - rotation.Forward * TokenModeDistance;
 		GameObject.WorldRotation = rotation;
+	}
+
+	private void UpdateStandardCamera( BoardCameraMode effectiveMode )
+	{
+		var center = GetModeFocus( effectiveMode );
+		var yaw = effectiveMode == BoardCameraMode.Default
+			? GetCurrentTokenYaw()
+			: 0f;
+		var distance = effectiveMode == BoardCameraMode.Default ? DefaultModeDistance : Distance;
+		float pitch = effectiveMode == BoardCameraMode.Default ? DefaultModePitch : Pitch;
+
+		if ( effectiveMode == BoardCameraMode.Default )
+		{
+			var controller = GameController.Instance;
+			if ( controller?.IsResolvingPhysicalDice == true &&
+				controller.TryGetPhysicalDice( out var dieA, out var dieB ) )
+			{
+				distance = GetDiceFramingDistance( center, yaw, dieA.GameObject.WorldPosition, dieB.GameObject.WorldPosition );
+				pitch = DefaultModeDicePitch;
+			}
+		}
+
+		ApplyView( center, distance, yaw, pitch, true );
 	}
 
 	private void CaptureTokenMouse()
@@ -238,14 +249,14 @@ public sealed class GameCamera : Component
 		didHideMouse = false;
 	}
 
-	private PlayerToken GetLocalControllableToken()
+	private PlayerToken GetLocalPlayerToken()
 	{
 		if ( Scene is null )
 			return null;
 
 		foreach ( var token in Scene.GetAllComponents<PlayerToken>() )
 		{
-			if ( token?.IsLocallyControllable == true )
+			if ( token?.IsLocalPlayerToken == true )
 				return token;
 		}
 
@@ -260,9 +271,9 @@ public sealed class GameCamera : Component
 		return MathF.Atan2( forward.y, forward.x ) * 180f / MathF.PI;
 	}
 
-	private Vector3 GetModeFocus()
+	private Vector3 GetModeFocus( BoardCameraMode effectiveMode )
 	{
-		if ( Mode == BoardCameraMode.Default )
+		if ( effectiveMode == BoardCameraMode.Default )
 		{
 			var controller = GameController.Instance;
 			if ( controller?.IsResolvingPhysicalDice == true &&
