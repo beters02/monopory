@@ -25,11 +25,11 @@ public sealed class PlayerToken : Component
 	[Property] public float CollisionImpulseScale { get; set; } = 0.85f;
 	[Property] public bool ReturnToSpaceAfterPhysics { get; set; } = true;
 	[Property] public float SharedSpaceOffsetDistance { get; set; } = 10f;
-	[Property] public float TokenControlMoveSpeed { get; set; } = 95f;
-	[Property] public float TokenControlRunMultiplier { get; set; } = 1.45f;
+	[Property] public float TokenControlGroundMoveSpeed { get; set; } = 95f;
+	[Property] public float TokenControlAirMoveSpeed { get; set; } = 95f;
 	[Property] public float TokenControlTurnSpeed { get; set; } = 12f;
 	[Property] public float TokenControlGroundAcceleration { get; set; } = 900f;
-	[Property] public float TokenControlAirAcceleration { get; set; } = 900f;
+	[Property] public float TokenControlAirAcceleration { get; set; } = 120f;
 	[Property] public float TokenControlFriction { get; set; } = 8f;
 	[Property] public float TokenControlStopSpeed { get; set; } = 35f;
 	[Property] public float TokenControlGravity { get; set; } = 800f;
@@ -157,9 +157,10 @@ public sealed class PlayerToken : Component
 		var input = GetTokenMoveInput();
 		var move = GetCameraRelativeMove( input );
 		var wishDirection = move.Length > 0.001f ? move.Normal : Vector3.Zero;
-		var wishSpeed = TokenControlMoveSpeed * (Input.Down( "Run" ) ? TokenControlRunMultiplier : 1f) * MathX.Clamp( input.Length, 0f, 1f );
 
 		UpdateTokenGroundState();
+		var maxWishSpeed = tokenControlGrounded ? TokenControlGroundMoveSpeed : TokenControlAirMoveSpeed;
+		var wishSpeed = maxWishSpeed * MathX.Clamp( input.Length, 0f, 1f );
 
 		if ( tokenControlGrounded )
 		{
@@ -260,7 +261,7 @@ public sealed class PlayerToken : Component
 		if ( addSpeed <= 0f )
 			return;
 
-		var accelSpeed = Math.Min( acceleration * Time.Delta * wishSpeed / Math.Max( TokenControlMoveSpeed, 1f ), addSpeed );
+		var accelSpeed = Math.Min( acceleration * Time.Delta * wishSpeed, addSpeed );
 		tokenControlVelocity += wishDirection * accelSpeed;
 	}
 
