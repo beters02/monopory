@@ -339,27 +339,29 @@
     private readonly Dictionary<string, string> ConfigIntDrafts = new();
     private IReadOnlyList<string> ConfigGroups;
     private IReadOnlyList<OptionsPanelSection> EditableConfigSections;
+	private bool ShowHiddenMatchOptions;
 
-	private static LobbyMenu instance;
+	private const string ShowHiddenMatchOptionsCallbackId = "toggleShowHiddenOptionsInMenu";
 
-	private static void Onshow_hidden_match_optionsChanged( bool _, bool newValue )
+	private void ApplyShowHiddenMatchOptions( bool showHidden )
 	{
-		Log.Info("Show hidden changed!");
-		RegisterConfigGroupsAndEditableSections(newValue);
+		ShowHiddenMatchOptions = showHidden;
+		RegisterConfigGroupsAndEditableSections();
+
+		configRevision++;
+		StateHasChanged();
 	}
 
-	private static void RegisterConfigGroupsAndEditableSections(bool showHidden)
+	private void RegisterConfigGroupsAndEditableSections()
 	{
-		if ( showHidden )
-			instance.ConfigGroups = MatchConfigSchema.Options.Select( option => option.Group ).Distinct().ToList();
-		else
-			instance.ConfigGroups = MatchConfigSchema.Options.Where( option => option.IsVisible ).Select( option => option.Group ).Distinct().ToList();
+		var options = GetVisibleConfigOptions();
+		ConfigGroups = options.Select( option => option.Group ).Distinct().ToList();
 
-		instance.EditableConfigSections = instance.ConfigGroups.Select( group => new OptionsPanelSection
+		EditableConfigSections = ConfigGroups.Select( group => new OptionsPanelSection
 		{
 			Key = group,
 			Title = group,
-			HasItems = instance.GetConfigOptionsForGroup( group ).Any()
+			HasItems = GetConfigOptionsForGroup( group ).Any()
 		} ).ToList();
 	}
 
@@ -369,16 +371,20 @@
 
 		Log.Info("Added");
 
-		instance = this;
-
 		string showHiddenConVarValue = ConsoleSystem.GetValue("show_hidden_match_options");
-		bool ShowHiddenMatchOptions = showHiddenConVarValue is not null ? showHiddenConVarValue.ToBool() : ShowHiddenMatchOptionsConVar.Value;
-		RegisterConfigGroupsAndEditableSections(ShowHiddenMatchOptions);
+		ShowHiddenMatchOptions = showHiddenConVarValue is not null ? showHiddenConVarValue.ToBool() : ShowHiddenMatchOptionsConVar.Value;
+		RegisterConfigGroupsAndEditableSections();
 
-		ShowHiddenMatchOptionsConVar.RegisterOnChanged("toggleShowHiddenOptionsInMenu", (_, newValue) => {
-			RegisterConfigGroupsAndEditableSections(newValue);
+		ShowHiddenMatchOptionsConVar.RegisterOnChanged(ShowHiddenMatchOptionsCallbackId, (_, newValue) => {
+			ApplyShowHiddenMatchOptions(newValue);
 		});
     }
+
+	protected override void OnDestroy()
+	{
+		ShowHiddenMatchOptionsConVar.UnregisterOnChanged( ShowHiddenMatchOptionsCallbackId );
+		base.OnDestroy();
+	}
 
 	protected override void OnUpdate()
 	{
@@ -1086,7 +1092,14 @@
 
 	private IEnumerable<MatchConfigOption> GetConfigOptionsForGroup( string group )
 	{
-		return MatchConfigSchema.Options.Where( option => option.IsVisible && string.Equals( option.Group, group, StringComparison.Ordinal ) );
+		return GetVisibleConfigOptions().Where( option => string.Equals( option.Group, group, StringComparison.Ordinal ) );
+	}
+
+	private IEnumerable<MatchConfigOption> GetVisibleConfigOptions()
+	{
+		return ShowHiddenMatchOptions
+			? MatchConfigSchema.Options
+			: MatchConfigSchema.Options.Where( option => option.IsVisible );
 	}
 
 	private static string GetConfigOptionTitle( MatchConfigOption option )

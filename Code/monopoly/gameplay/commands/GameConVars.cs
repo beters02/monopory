@@ -109,25 +109,31 @@ public static class ShowHiddenMatchOptionsConVar
 	public const string Name = "show_hidden_match_options";
 
 	[ConVar( Name )]
-	[Change]
+	[Change( nameof( OnValueChanged ) )]
 	public static bool Value { get; set; } = false;
 
-	private static Dictionary<string, Action<bool, bool>> Callbacks = new();
+	private static readonly Dictionary<string, Action<bool, bool>> Callbacks = new();
 
 	public static void RegisterOnChanged(string id, Action<bool, bool> callback)
 	{
-		if ( Callbacks.TryGetValue(id, out _))
+		if ( string.IsNullOrWhiteSpace( id ) || callback is null )
 			return;
 
-		Callbacks.Add(id, callback);
-		Log.Info($"Successfully added OnChanged event {id}");
+		Callbacks[id] = callback;
+		Log.Info($"Registered OnChanged event {id}");
 	}
 
-	private static void Onshow_hidden_match_optionsChanged( bool oldValue, bool newValue )
+	public static void UnregisterOnChanged( string id )
 	{
-		foreach (KeyValuePair<string, Action<bool, bool>> CallbackKeyValue in Callbacks)
-		{
-			CallbackKeyValue.Value.Invoke(oldValue, newValue);
-		}
+		if ( string.IsNullOrWhiteSpace( id ) )
+			return;
+
+		Callbacks.Remove( id );
+	}
+
+	private static void OnValueChanged( bool oldValue, bool newValue )
+	{
+		foreach ( var callback in Callbacks.Values.ToArray() )
+			callback.Invoke( oldValue, newValue );
 	}
 }
