@@ -33,8 +33,16 @@
 
 .options-panel.piece-customize-panel {
 	width: 1040px;
+	background-color: transparent;
+	border-color: transparent;
+	box-shadow: none;
+}
+
+.piece-customize-panel .options-panel-header {
+	padding: 18px;
 	background-color: $monopoly-panel-strong;
-	border-color: $monopoly-panel-line;
+	border: 3px solid $monopoly-panel-line;
+	border-radius: $monopoly-radius-panel;
 	box-shadow: $monopoly-panel-shadow-strong;
 }
 
@@ -188,6 +196,11 @@
 }
 
 .piece-customize-footer {
+	padding: 10px;
+	background-color: $monopoly-panel-strong;
+	border: 3px solid $monopoly-panel-line;
+	border-radius: $monopoly-radius-panel;
+	box-shadow: $monopoly-panel-shadow-strong;
 	display: flex;
 	justify-content: flex-end;
 	pointer-events: none;

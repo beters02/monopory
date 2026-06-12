@@ -120,17 +120,15 @@
       "Components": [
         {
           "__type": "LobbyController",
-          "__guid": "bde94123-51b8-45c7-ad19-a5211250b987",
+          "__guid": "86c2dc02-0f25-4a7d-bcb9-9c408172494f",
           "__enabled": true,
           "Flags": 0,
-          "HostedConfigSnapshot": "",
           "OnComponentDestroy": null,
           "OnComponentDisabled": null,
           "OnComponentEnabled": null,
           "OnComponentFixedUpdate": null,
           "OnComponentStart": null,
-          "OnComponentUpdate": null,
-          "ReadyPlayers": {}
+          "OnComponentUpdate": null
         }
       ],
       "Children": []
@@ -194,7 +192,7 @@
               "Flags": 0,
               "LobbyRef": {
                 "_type": "component",
-                "component_id": "bde94123-51b8-45c7-ad19-a5211250b987",
+                "component_id": "86c2dc02-0f25-4a7d-bcb9-9c408172494f",
                 "go": "04f17a18-2449-4e31-a1e6-88083375f095",
                 "component_type": "LobbyController"
               },
@@ -209,6 +207,84 @@
           "Children": []
         }
       ]
+    },
+    {
+      "__guid": "1c4f99a6-6700-4f61-a976-a4075429ac8d",
+      "__version": 2,
+      "Flags": 0,
+      "Name": "Sun",
+      "Position": "118.740616,-148.659592,448.470398",
+      "Rotation": "-0.125172645,0.311162084,-0.207832322,0.918866634",
+      "Scale": "1,1,1",
+      "Tags": "light_directional,light",
+      "Enabled": true,
+      "NetworkMode": 2,
+      "NetworkFlags": 0,
+      "NetworkOrphaned": 0,
+      "NetworkTransmit": true,
+      "OwnerTransfer": 1,
+      "Components": [
+        {
+          "__type": "Sandbox.DirectionalLight",
+          "__guid": "02f5903f-b700-4f9d-a26d-7740e7234216",
+          "__enabled": true,
+          "Flags": 0,
+          "Contribution": "Diffuse, Specular, Transmissive",
+          "FogMode": "Enabled",
+          "FogStrength": 0.57932264,
+          "LightColor": "0.91373,0.98039,1,1",
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null,
+          "ShadowBias": 0.0005,
+          "ShadowCascadeCount": 4,
+          "ShadowCascadeSplitRatio": 0.855,
+          "ShadowHardness": 0,
+          "Shadows": true,
+          "SkyColor": "0,0,0,0",
+          "Visualizer": {}
+        }
+      ],
+      "Children": []
+    },
+    {
+      "__guid": "dd0d8aa8-7937-44d4-95ad-f1405a89f1aa",
+      "__version": 2,
+      "Flags": 0,
+      "Name": "PiecePreview",
+      "Position": "301.405579,-217.884399,327.530762",
+      "Rotation": "0,0,0,1",
+      "Scale": "1,1,1",
+      "Tags": "",
+      "Enabled": true,
+      "NetworkMode": 2,
+      "NetworkFlags": 0,
+      "NetworkOrphaned": 0,
+      "NetworkTransmit": true,
+      "OwnerTransfer": 1,
+      "Components": [
+        {
+          "__type": "PiecePreview",
+          "__guid": "9f214729-7660-426e-ab6a-cdbaa4539291",
+          "__enabled": true,
+          "Flags": 0,
+          "CameraDistance": 42.37,
+          "CameraHorizontalOffset": -8.92,
+          "CameraVerticalOffset": -3.03,
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null,
+          "PreviewScaleMultiplier": 1,
+          "RotationSpeed": 22
+        }
+      ],
+      "Children": []
     }
   ],
   "SceneProperties": {

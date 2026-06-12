@@ -3,7 +3,7 @@
     "__guid": "d454d6d1-3948-48fe-806e-9e3f654536ae",
     "__version": 2,
     "Flags": 0,
-    "Name": "PreviewDefaultPrefab (1)",
+    "Name": "previewdefaultprefab",
     "Position": "0,0,0",
     "Rotation": "0,0,0.707106829,0.707106829",
     "Scale": "1,1,1",
@@ -14,52 +14,7 @@
     "NetworkOrphaned": 0,
     "NetworkTransmit": true,
     "OwnerTransfer": 1,
-    "Components": [
-      {
-        "__type": "PlayerToken",
-        "__guid": "e130baf9-c471-417c-94f6-ef09462ceb8b",
-        "__enabled": true,
-        "Flags": 0,
-        "CollisionImpulseScale": 0.85,
-        "CollisionRadius": 7,
-        "CollisionRestitution": 0.75,
-        "EnablePhysicsTestGrab": true,
-        "GrabPlanePadding": 6,
-        "GrabRadius": 5,
-        "HeightOffset": 1.25,
-        "MoveSpeed": 15,
-        "OnComponentDestroy": null,
-        "OnComponentDisabled": null,
-        "OnComponentEnabled": null,
-        "OnComponentFixedUpdate": null,
-        "OnComponentStart": null,
-        "OnComponentUpdate": null,
-        "ReturnToSpaceAfterPhysics": true,
-        "RotationSpeed": 10,
-        "SharedSpaceOffsetDistance": 10,
-        "ThrowDamping": 4,
-        "ThrowSpeedScale": 1.1,
-        "ThrowStopSpeed": 8,
-        "WalkingParameterName": "Walking",
-        "XDirectionParameterName": "XDirection"
-      },
-      {
-        "__type": "CharacterAttachmentSlots",
-        "__guid": "6b0ff9d9-c037-493f-a92c-8bbd21bd51f6",
-        "__enabled": true,
-        "Flags": 0,
-        "BackAttachmentId": null,
-        "GlassesAttachmentId": null,
-        "HandAttachmentId": null,
-        "HatAttachmentId": "cutieguys_officer_woman.hat.default",
-        "OnComponentDestroy": null,
-        "OnComponentDisabled": null,
-        "OnComponentEnabled": null,
-        "OnComponentFixedUpdate": null,
-        "OnComponentStart": null,
-        "OnComponentUpdate": null
-      }
-    ],
+    "Components": [],
     "Children": [
       {
         "__guid": "f304a5e9-a13b-43ea-9121-29d6f34614c4",
@@ -815,7 +770,28 @@
         ],
         "Children": []
       }
-    ]
+    ],
+    "__properties": {
+      "NetworkInterpolation": true,
+      "TimeScale": 1,
+      "WantsSystemScene": true,
+      "Metadata": {},
+      "NavMesh": {
+        "Enabled": false,
+        "IncludeStaticBodies": true,
+        "IncludeKeyframedBodies": true,
+        "EditorAutoUpdate": false,
+        "AgentHeight": 64,
+        "AgentRadius": 16,
+        "AgentStepSize": 18,
+        "AgentMaxSlope": 40,
+        "ExcludedBodies": "",
+        "IncludedBodies": "",
+        "DeferGeneration": false,
+        "CustomBounds": false
+      }
+    },
+    "__variables": []
   },
   "ResourceVersion": 2,
   "ShowInMenu": false,
