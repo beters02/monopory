@@ -28,7 +28,7 @@ public sealed class PlayerToken : Component
 	[Property] public float TokenControlMoveSpeed { get; set; } = 95f;
 	[Property] public float TokenControlRunMultiplier { get; set; } = 1.45f;
 	[Property] public float TokenControlTurnSpeed { get; set; } = 12f;
-	[Property] public float TokenControlBoardPadding { get; set; } = 60f;
+	public float TokenControlBoardPadding { get; set; } = 20f;
 	[Property] public float BoardSpotSilhouetteAlpha { get; set; } = 0.28f;
 
 	private SkinnedModelRenderer renderer;
@@ -169,23 +169,8 @@ public sealed class PlayerToken : Component
 
 	private Vector2 GetTokenMoveInput()
 	{
-		var input = Vector2.Zero;
-
-		if ( Input.Down( "Forward" ) )
-			input.y += 1f;
-
-		if ( Input.Down( "Backward" ) )
-			input.y -= 1f;
-
-		if ( Input.Down( "Right" ) )
-			input.x += 1f;
-
-		if ( Input.Down( "Left" ) )
-			input.x -= 1f;
-
 		var analog = Input.AnalogMove;
-		input.x += analog.x;
-		input.y += analog.y;
+		var input = new Vector2( -analog.y, analog.x );
 
 		return input.Length > 1f ? input.Normal : input;
 	}
