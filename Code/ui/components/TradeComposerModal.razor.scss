@@ -186,10 +186,12 @@
 	background-color: $monopoly-ink;
 	border: 2px solid $monopoly-card-ink-line;
 	box-shadow: $monopoly-panel-shadow-strong;
+	gap: 5px;
 }
 
 .trade-composer-modal .trade-player-select .monopoly-button.dropdown-item {
-	background-color: $monopoly-card-ink-surface;
+	width: 92%;
+	background-color: $monopoly-board;
 	color: $monopoly-ink;
 }
 
@@ -200,7 +202,7 @@
 }
 
 .trade-composer-modal .trade-player-select .monopoly-button.dropdown-item:hover {
-	background-color: $monopoly-card-ink-surface-hover;
+	background-color: $monopoly-board-space;
 }
 
 .trade-composer-modal .trade-player-select .monopoly-button.dropdown-item.selected {
