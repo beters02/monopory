@@ -25,10 +25,7 @@ public static class LoadingState
 	}
 
 	public static void Hide()
-	{
-		if ( !IsFunctionalityEnabled )
-			return;
-		
+	{	
 		if ( !IsVisible )
 			return;
 

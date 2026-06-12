@@ -4,7 +4,10 @@
 @inherits Panel
 
 <root class="loading-overlay-root">
-	@if ( IsLocalLoadingVisible || IsServerLoadingVisible )
+	@if ( !@LoadingState.IsFunctionalityEnabled )
+		return;
+
+	@if (IsLocalLoadingVisible || IsServerLoadingVisible)
 	{
 		<div class="loading-overlay-screen">
 			<div class="loading-overlay-card">

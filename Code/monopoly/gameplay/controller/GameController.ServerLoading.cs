@@ -28,10 +28,7 @@ public sealed partial class GameController
 	}
 
 	private void ClearServerLoading()
-	{
-		if ( !LoadingState.IsFunctionalityEnabled )
-			return;
-		
+	{	
 		if ( !Networking.IsHost || !IsServerLoading )
 			return;
 
