@@ -217,11 +217,26 @@
 			PanelVariant="piece-customize-panel"
 			TitleVariant="piece-customize-title">
 			<ChildContent>
+						<div class="piece-customize-layout">
+							<div class="piece-preview-panel">
+								<div class="piece-preview-viewport">
+									<div class="piece-preview-hint">Live Preview</div>
+								</div>
+								<div class="piece-preview-details">
+									<div class="piece-preview-title">@PreviewedPiece.Label</div>
+									<div class="piece-preview-copy">@PreviewedPiece.Description</div>
+									<div class="piece-preview-actions">
+										<GameButton Variant="@GetPieceSelectButtonClasses( PreviewedPiece )" OnClick="@(() => SelectPiece( PreviewedPiece.Id ))">
+											@(IsSelectedPiece( PreviewedPiece ) ? "Selected" : "Select Piece")
+										</GameButton>
+									</div>
+								</div>
+							</div>
 						<div class="piece-customize-scroll-shell">
 							<div class="piece-customize-grid monopory-scroll-y" @ref="PieceCustomizeScrollPanel">
 								@foreach ( var piece in AvailablePieces )
 								{
-									<div class="@GetPieceCardClasses( piece )">
+									<div class="@GetPieceCardClasses( piece )" onclick="@(() => SetPreviewPiece( piece.Id ))">
 										<div class="piece-customize-card-title">@piece.Label</div>
 										<div class="piece-customize-card-copy">@piece.Description</div>
 										<GameButton Variant="@GetPieceSelectButtonClasses( piece )" OnClick="@(() => SelectPiece( piece.Id ))">
@@ -231,6 +246,7 @@
 								}
 							</div>
 							<MonoScrollbar Target="@PieceCustomizeScrollPanel"></MonoScrollbar>
+						</div>
 						</div>
 						<div class="piece-customize-footer">
 							<GameButton Variant="options-panel-secondary-button" OnClick="@CloseCustomizeMenu">Done</GameButton>
@@ -300,11 +316,13 @@
 	private bool IsCustomizeMenuOpen;
 	private bool IsLoadMenuOpen;
 	private bool IsLoadSeatMenuOpen;
-		private Panel PieceCustomizeScrollPanel = null!;
+	private Panel PieceCustomizeScrollPanel = null!;
 	private bool CanOpenConfig => Lobby is not null;
 	private string GameVersion => MonopolyApp.GameVersion;
 	private bool CanEditConfig => Lobby?.IsLocalEffectiveHost == true;
 	private IReadOnlyList<PieceDefinition> AvailablePieces => PieceCatalog.All;
+	private string PreviewPieceId = "";
+	private PieceDefinition PreviewedPiece => PieceCatalog.GetByIdOrDefault( string.IsNullOrWhiteSpace( PreviewPieceId ) ? LocalPlayer?.SelectedPieceId : PreviewPieceId );
 	private MatchConfig EditableConfig;
 	private string LoadedConfigSnapshot = "";
 	private int configRevision;
@@ -331,6 +349,8 @@
 
 		if ( IsConfigMenuOpen )
 			EnsureEditableConfigCurrent();
+
+		UpdatePiecePreview();
 	}
 
 	private string LobbyStatusText
@@ -409,6 +429,7 @@
 		hash.Add( Lobby?.StagedLoadedGameIdentifier ?? "" );
 		hash.Add( configRevision );
 		hash.Add( saveRevision );
+		hash.Add( PreviewPieceId ?? "" );
 		hash.Add( SelectedSaveId ?? "" );
 		hash.Add( IsManualSaveTab );
 		hash.Add( AppSettings.SettingsAvailable );
@@ -559,6 +580,7 @@
 
 	private void CustomizePiece()
 	{
+		PreviewPieceId = LocalPlayer?.SelectedPieceId ?? PieceCatalog.DefaultPieceId;
 		IsCustomizeMenuOpen = true;
 		IsConfigMenuOpen = false;
 		IsOptionsMenuOpen = false;
@@ -569,6 +591,7 @@
 	private void CloseCustomizeMenu()
 	{
 		IsCustomizeMenuOpen = false;
+		PiecePreview.SetActivePiece( Scene, null, false );
 	}
 
 	private bool IsSelectedPiece( PieceDefinition piece )
@@ -580,9 +603,23 @@
 		return string.Equals( selectedPieceId, piece.Id, StringComparison.OrdinalIgnoreCase );
 	}
 
+	private bool IsPreviewedPiece( PieceDefinition piece )
+	{
+		if ( piece is null )
+			return false;
+
+		return string.Equals( PreviewedPiece?.Id, piece.Id, StringComparison.OrdinalIgnoreCase );
+	}
+
 	private string GetPieceCardClasses( PieceDefinition piece )
 	{
-		return IsSelectedPiece( piece ) ? "piece-customize-card selected" : "piece-customize-card";
+		var classes = "piece-customize-card";
+		if ( IsSelectedPiece( piece ) )
+			classes += " selected";
+		if ( IsPreviewedPiece( piece ) )
+			classes += " previewed";
+
+		return classes;
 	}
 
 	private string GetPieceSelectButtonClasses( PieceDefinition piece )
@@ -595,10 +632,23 @@
 		if ( Lobby is null || LocalPlayer is null )
 			return;
 
+		SetPreviewPiece( pieceId );
+
 		if ( Networking.IsHost )
 			Lobby.TrySetSelectedPiece( LocalPlayer.OwnerId, pieceId );
 		else
 			Lobby.RequestSetSelectedPiece( pieceId );
+	}
+
+	private void SetPreviewPiece( string pieceId )
+	{
+		PreviewPieceId = PieceCatalog.GetByIdOrDefault( pieceId ).Id;
+		UpdatePiecePreview();
+	}
+
+	private void UpdatePiecePreview()
+	{
+		PiecePreview.SetActivePiece( Scene, IsCustomizeMenuOpen ? PreviewedPiece : null, IsCustomizeMenuOpen );
 	}
 
 	private void OpenOptionsMenu()

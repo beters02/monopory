@@ -27,18 +27,109 @@
 	min-width: 0;
 }
 
+.options-panel.piece-customize-panel {
+	width: 1040px;
+	background-color: transparent;
+	border-color: transparent;
+	box-shadow: none;
+}
+
+.options-panel-screen.piece-customize-screen {
+	background-color: transparent;
+}
+
+.piece-customize-layout {
+	flex: 1;
+	min-height: 0;
+	display: flex;
+	gap: 16px;
+}
+
+.piece-preview-panel {
+	width: 44%;
+	min-width: 320px;
+	padding: 14px;
+	background-color: $monopoly-panel-strong;
+	border: 3px solid $monopoly-panel-line;
+	border-radius: $monopoly-radius-panel;
+	box-shadow: $monopoly-panel-shadow-strong;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.piece-preview-viewport {
+	flex: 1;
+	min-height: 280px;
+	background-color: transparent;
+	border: 1px solid $monopoly-panel-line;
+	border-radius: $monopoly-radius-control;
+	display: flex;
+	align-items: flex-start;
+	justify-content: flex-start;
+	overflow: hidden;
+}
+
+.piece-preview-hint {
+	margin: 10px;
+	padding: 5px 8px;
+	background-color: $monopoly-surface-strong;
+	border: 1px solid $monopoly-panel-line;
+	border-radius: $monopoly-radius-board;
+	color: $monopoly-gold-soft;
+	font-size: 11px;
+	font-weight: 900;
+	line-height: 14px;
+	text-transform: uppercase;
+}
+
+.piece-preview-details {
+	padding: 12px;
+	background-color: $monopoly-surface-soft;
+	border: 1px solid $monopoly-panel-line;
+	border-radius: $monopoly-radius-control;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.piece-preview-title {
+	color: $monopoly-text;
+	font-size: 24px;
+	font-weight: 900;
+	line-height: 28px;
+}
+
+.piece-preview-copy {
+	color: $monopoly-text-muted;
+	font-size: 13px;
+	font-weight: 800;
+	line-height: 18px;
+	min-height: 36px;
+}
+
+.piece-preview-actions {
+	display: flex;
+	justify-content: flex-end;
+}
+
 .piece-customize-scroll-shell {
 	flex: 1;
 	min-height: 0;
 	position: relative;
+	background-color: $monopoly-panel-strong;
+	border: 3px solid $monopoly-panel-line;
+	border-radius: $monopoly-radius-panel;
+	box-shadow: $monopoly-panel-shadow-strong;
+	padding: 14px;
 }
 
 .piece-customize-scroll-shell .piece-customize-grid {
 	position: absolute;
-	top: 0;
-	left: 0;
-	right: 0;
-	bottom: 0;
+	top: 14px;
+	left: 14px;
+	right: 14px;
+	bottom: 14px;
 	padding-right: 18px;
 }
 
@@ -63,12 +154,18 @@
 	display: flex;
 	flex-direction: column;
 	gap: 8px;
+	pointer-events: all;
 }
 
 .piece-customize-card.selected {
 	border-color: $monopoly-gold;
 	background-color: $monopoly-surface-strong;
 	//box-shadow: 0 0 0 5px $monopoly-selected-ring-soft;
+}
+
+.piece-customize-card.previewed {
+	border-color: $monopoly-gold-soft;
+	background-color: $monopoly-surface-medium;
 }
 
 .piece-customize-card-title {
@@ -89,6 +186,11 @@
 .piece-customize-footer {
 	display: flex;
 	justify-content: flex-end;
+	pointer-events: none;
+}
+
+.piece-customize-footer .monopoly-button {
+	pointer-events: all;
 }
 
 .save-card {

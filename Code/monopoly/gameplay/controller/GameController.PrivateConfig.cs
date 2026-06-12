@@ -1,4 +1,5 @@
 using System;
+using System.Dynamic;
 
 public sealed partial class GameController : Component
 {
@@ -66,6 +67,6 @@ public sealed partial class GameController : Component
 
 	// Tokens
 	public bool RestrictPieceThrowToCurrentTurn { get; set; } = true;
-	public GameMaterial BankruptedPieceMaterial { get; set; } = "materials/pieces/piece_bankrupt.vmat";
+	public GameMaterial BankruptedPieceMaterial { get; set; } = GameAssets.Materials.BankruptedPiece;
 
 }

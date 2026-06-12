@@ -50,6 +50,8 @@ public static class GameAssets
 	{
 		public static readonly GameMaterial House = new ( "materials/pieces/house.vmat" );
 		public static readonly GameMaterial Hotel = new ( "materials/pieces/hotel.vmat" );
+		public static readonly GameMaterial Piece = new ( "materials/pieces/piece.vmat" );
+		public static readonly GameMaterial BankruptedPiece = new ( "materials/pieces/piece_bankrupt.vmat" );
 	}
 
 	public static class Sounds
