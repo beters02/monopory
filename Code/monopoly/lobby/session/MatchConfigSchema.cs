@@ -1,5 +1,7 @@
 using Sandbox;
 using System;
+using System.Diagnostics;
+using System.Diagnostics.Tracing;
 using System.Globalization;
 using System.Linq;
 
@@ -21,6 +23,7 @@ public sealed class MatchConfigOption
 	public int Min { get; init; } = int.MinValue;
 	public int Max { get; init; } = int.MaxValue;
 	public int Step { get; init; } = 1;
+	public object StandaloneValue { get; init; }
 	public MatchConfigOptionKind Kind { get; init; }
 	public Type ValueType { get; init; }
 	public Func<MatchConfig, object> Getter { get; init; }
@@ -70,10 +73,10 @@ public static class MatchConfigSchema
 
 		foreach ( var option in Options )
 		{
-			if ( option.Kind != MatchConfigOptionKind.Int )
+			if ( !TryGetOptionValue( option, config, out var rawValueObject ) )
 				continue;
 
-			if ( !TryGetOptionValue( option, config, out var rawValueObject ) )
+			if ( option.Kind != MatchConfigOptionKind.Int )
 				continue;
 
 			var rawValue = rawValueObject is int intValue ? intValue : 0;
@@ -230,6 +233,7 @@ public static class MatchConfigSchema
 			Min = attribute.Min,
 			Max = attribute.Max,
 			Step = Math.Max( attribute.Step, 1 ),
+			StandaloneValue = attribute.StandaloneValue,
 			Kind = kind,
 			ValueType = propertyType,
 			EnumNames = propertyType.IsEnum ? Enum.GetNames( propertyType ) : Array.Empty<string>(),

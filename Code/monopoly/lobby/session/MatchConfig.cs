@@ -20,6 +20,7 @@ public enum PlayerBankruptedPlayerMode
 }
 
 [AttributeUsage( AttributeTargets.Property )]
+[CodeGenerator( CodeGeneratorFlags.WrapPropertyGet | CodeGeneratorFlags.Instance, "MatchConfigOptionAttribute.OnWrappedGet" )]
 public sealed class MatchConfigOptionAttribute : Attribute
 {
 	public string Group { get; }
@@ -30,11 +31,27 @@ public sealed class MatchConfigOptionAttribute : Attribute
 	public int Min { get; set; } = int.MinValue;
 	public int Max { get; set; } = int.MaxValue;
 	public int Step { get; set; } = 1;
+	public object StandaloneValue { get; set; }
 
 	public MatchConfigOptionAttribute( string group, string label )
 	{
 		Group = group;
 		Label = label;
+	}
+
+	internal static T OnWrappedGet<T>( WrappedPropertyGet<T> property )
+	{
+		var value = property.Value;
+
+		var attribute = property.GetAttribute<MatchConfigOptionAttribute>();
+		if ( attribute?.StandaloneValue is null )
+			return value;
+
+		if ( attribute.StandaloneValue is T standaloneValue )
+			return standaloneValue;
+
+		throw new InvalidOperationException(
+			$"MatchConfigOptionAttribute StandaloneValue type '{attribute.StandaloneValue.GetType().Name}' does not match property '{property.PropertyName}' type '{typeof( T ).Name}'." );
 	}
 }
 
@@ -105,8 +122,8 @@ public sealed class MatchConfig
 
 	[MatchConfigOption( "Turn Rules", "Auto BHop Enabled", Description = "Allows holding jump to automatically jump again when grounded.", Order = 37, IsVisible = false )]
 	public bool AutoBHopEnabled { get; set; } = true;
-
-	[MatchConfigOption( "Turn Rules", "Token Camera Mode Can Always Control", Description = "Allows the local token camera controller to move even during that player's own turn.", Order = 38, IsVisible = false )]
+	
+	[MatchConfigOption( "Turn Rules", "Token Camera Mode Can Always Control", Description = "Allows the local token camera controller to move even during that player's own turn.", Order = 38, IsVisible = false, StandaloneValue = false )]
 	public bool TokenCameraModeCanAlwaysControl { get; set; } = true;
 
 	[MatchConfigOption( "Board Rules", "Vacation Cash", Description = "Awards pooled cash when landing on Free Parking, if enabled.", Order = 40 )]

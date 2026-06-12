@@ -2,4 +2,11 @@
 	<PropertyGroup Condition="'$(MSBuildProjectName)' == 'monopory'">
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	</PropertyGroup>
+
+	<ItemGroup Condition="'$(MSBuildProjectName)' == 'monopory'">
+		<ProjectReference Include="$(MSBuildThisFileDirectory)..\ConCmdGenerator\ConCmdGenerator.csproj"
+			OutputItemType="Analyzer"
+			ReferenceOutputAssembly="false"
+			PrivateAssets="all" />
+	</ItemGroup>
 </Project>
