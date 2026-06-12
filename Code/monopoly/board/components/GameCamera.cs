@@ -198,9 +198,13 @@ public sealed class GameCamera : Component
 			return;
 		}
 
-		CaptureTokenMouse();
+		var isTokenUiMouseReleased = token.ShouldReleaseTokenMouseForTokenUi;
+		if ( isTokenUiMouseReleased )
+			ReleaseTokenMouse();
+		else
+			CaptureTokenMouse();
 
-		var look = Input.AnalogLook * TokenModeLookSensitivity;
+		var look = isTokenUiMouseReleased ? Angles.Zero : Input.AnalogLook * TokenModeLookSensitivity;
 		tokenCameraYaw += look.yaw;
 		tokenCameraPitch = MathX.Clamp( tokenCameraPitch + look.pitch, TokenModeMinPitch, TokenModeMaxPitch );
 

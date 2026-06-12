@@ -77,6 +77,8 @@ public sealed class PlayerToken : Component
 	private float remoteTokenControlActiveUntil;
 
 	public bool IsLocalPlayerToken => PlayerState?.IsOwner == true;
+	public bool CanAlwaysControlTokenCameraMode => IsLocalPlayerToken && GameController.Instance?.Config?.TokenCameraModeCanAlwaysControl == true;
+	public bool ShouldReleaseTokenMouseForTokenUi => CanAlwaysControlTokenCameraMode && Input.Down( "Score" );
 	public bool IsLocallyControllable => CanUseTokenController();
 
 
@@ -156,7 +158,7 @@ public sealed class PlayerToken : Component
 		if ( game is null || game.MatchState != MatchLifecycleState.InGame )
 			return false;
 
-		if ( game.CurrentPlayer == PlayerState )
+		if ( game.CurrentPlayer == PlayerState && !CanAlwaysControlTokenCameraMode )
 			return false;
 
 		if ( GameCamera.Instance?.IsTokenModeRequested != true )
@@ -182,7 +184,7 @@ public sealed class PlayerToken : Component
 		{
 			ApplyTokenGroundFriction();
 
-			if ( Input.Pressed( "Jump" ) )
+			if ( ShouldJump() )
 			{
 				tokenControlVelocity.z = TokenControlJumpSpeed;
 				tokenControlGrounded = false;
@@ -211,6 +213,13 @@ public sealed class PlayerToken : Component
 
 		ApplyWalkingAnim( horizontalVelocity.Length > 2f );
 		PublishTokenControlTransform( horizontalVelocity.Length > 2f );
+	}
+
+	private bool ShouldJump()
+	{
+		return GameController.Instance?.Config?.AutoBHopEnabled == true
+			? Input.Down( "Jump" )
+			: Input.Pressed( "Jump" );
 	}
 
 	private void PublishTokenControlTransform( bool walking )

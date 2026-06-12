@@ -103,6 +103,12 @@ public sealed class MatchConfig
 	[MatchConfigOption( "Turn Rules", "Instant Move Button Unlock Minutes", Description = "Elapsed match minutes before the finish-movement button can appear. 0 allows it immediately.", Order = 36, Min = 0, Max = 240, Step = 5 )]
 	public int InstantMoveButtonUnlockMinutes { get; set; } = 0;
 
+	[MatchConfigOption( "Turn Rules", "Auto BHop Enabled", Description = "Allows holding jump to automatically jump again when grounded.", Order = 37, IsVisible = false )]
+	public bool AutoBHopEnabled { get; set; } = true;
+
+	[MatchConfigOption( "Turn Rules", "Token Camera Mode Can Always Control", Description = "Allows the local token camera controller to move even during that player's own turn.", Order = 38, IsVisible = false )]
+	public bool TokenCameraModeCanAlwaysControl { get; set; } = true;
+
 	[MatchConfigOption( "Board Rules", "Vacation Cash", Description = "Awards pooled cash when landing on Free Parking, if enabled.", Order = 40 )]
 	public bool VacationCash { get; set; } = true;
 

@@ -88,7 +88,7 @@ public static class BoardData
 			{
 				Index = 6,
 				Key = "property_light_blue_0",
-				DisplayName = "CSGOWild.com", // CSGO Blackjack
+				DisplayName = "CSGO\nWild\n.com", // CSGO Blackjack
 				Type = SpaceType.Property,
 				Price = 100,
 				BaseRent = 6,

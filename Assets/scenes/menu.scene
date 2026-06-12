@@ -159,6 +159,37 @@
             }
           ],
           "Children": []
+        },
+        {
+          "__guid": "ca7f691f-03d9-4777-bced-3d5e0923987c",
+          "__version": 2,
+          "Flags": 0,
+          "Name": "StandaloneConsole",
+          "Position": "0,0,0",
+          "Rotation": "0,0,0,1",
+          "Scale": "1,1,1",
+          "Tags": "",
+          "Enabled": true,
+          "NetworkMode": 2,
+          "NetworkFlags": 0,
+          "NetworkOrphaned": 0,
+          "NetworkTransmit": true,
+          "OwnerTransfer": 1,
+          "Components": [
+            {
+              "__type": "Sandbox.ui.components.StandaloneConsole",
+              "__guid": "1fc5c481-4225-406d-883b-55e4a14cb0c8",
+              "__enabled": true,
+              "Flags": 0,
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null
+            }
+          ],
+          "Children": []
         }
       ]
     },
@@ -257,14 +288,14 @@
       "CustomBounds": false
     },
     "GameObjectSystems": {
-      "Sandbox.Clutter.ClutterGridSystem": {
-        "Storage": {
-          "$blob": "1038bcfc-1f47-4964-962a-e0cb2849ee20"
-        }
-      },
       "Sandbox.SelectionSetsSystem": {
         "Data": {
           "SelectionSets": []
+        }
+      },
+      "Sandbox.Clutter.ClutterGridSystem": {
+        "Storage": {
+          "$blob": "1038bcfc-1f47-4964-962a-e0cb2849ee20"
         }
       }
     }

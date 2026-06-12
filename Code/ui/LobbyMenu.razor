@@ -307,44 +307,78 @@
 
 @code
 {
-	[Property] public LobbyController LobbyRef { get; set; }
+    [Property] public LobbyController LobbyRef { get; set; }
 
-	private LobbyController Lobby => LobbyRef;
-	private GameController PopupGame => GameController.Instance;
-	private List<LobbyPlayer> Players => Lobby?.Players ?? new();
-	private List<GamePopup> PopupList => PopupGame?.Popups.ToList() ?? new();
-	private LobbyPlayer LocalPlayer => Lobby?.LocalPlayer;
-	private bool CanClickStartGame => Lobby?.CanLocalPlayerStartGame == true;
-	private bool IsOptionsMenuOpen;
-	private bool IsConfigMenuOpen;
-	private bool IsCustomizeMenuOpen;
-	private bool IsLoadMenuOpen;
-	private bool IsLoadSeatMenuOpen;
-	private Panel PieceCustomizeScrollPanel = null!;
-	private bool CanOpenConfig => Lobby is not null;
-	private string GameVersion => MonopolyApp.GameVersion;
-	private bool CanEditConfig => Lobby?.IsLocalEffectiveHost == true;
-	private IReadOnlyList<PieceDefinition> AvailablePieces => PieceCatalog.All;
-	private string PreviewPieceId = "";
-	private PieceDefinition PreviewedPiece => PieceCatalog.GetByIdOrDefault( string.IsNullOrWhiteSpace( PreviewPieceId ) ? LocalPlayer?.SelectedPieceId : PreviewPieceId );
-	private MatchConfig EditableConfig;
-	private string LoadedConfigSnapshot = "";
-	private int configRevision;
-	private int saveRevision;
-	private string SelectedSaveId = "";
-	private List<GameSaveSummary> SaveSummaries = new();
-	private GameSaveFile SelectedSaveFile;
-	private List<LoadedSeatAssignment> LoadSeatAssignments = new();
-	private bool IsManualSaveTab = true;
-	private readonly Dictionary<string, string> ConfigIntDrafts = new();
-	private IReadOnlyList<string> ConfigGroups => MatchConfigSchema.Options.Where( option => option.IsVisible ).Select( option => option.Group ).Distinct().ToList();
-	private IReadOnlyList<OptionsPanelSection> EditableConfigSections =>
-		ConfigGroups.Select( group => new OptionsPanelSection
+    private LobbyController Lobby => LobbyRef;
+    private GameController PopupGame => GameController.Instance;
+    private List<LobbyPlayer> Players => Lobby?.Players ?? new();
+    private List<GamePopup> PopupList => PopupGame?.Popups.ToList() ?? new();
+    private LobbyPlayer LocalPlayer => Lobby?.LocalPlayer;
+    private bool CanClickStartGame => Lobby?.CanLocalPlayerStartGame == true;
+    private bool IsOptionsMenuOpen;
+    private bool IsConfigMenuOpen;
+    private bool IsCustomizeMenuOpen;
+    private bool IsLoadMenuOpen;
+    private bool IsLoadSeatMenuOpen;
+    private Panel PieceCustomizeScrollPanel = null!;
+    private bool CanOpenConfig => Lobby is not null;
+    private string GameVersion => MonopolyApp.GameVersion;
+    private bool CanEditConfig => Lobby?.IsLocalEffectiveHost == true;
+    private IReadOnlyList<PieceDefinition> AvailablePieces => PieceCatalog.All;
+    private string PreviewPieceId = "";
+    private PieceDefinition PreviewedPiece => PieceCatalog.GetByIdOrDefault( string.IsNullOrWhiteSpace( PreviewPieceId ) ? LocalPlayer?.SelectedPieceId : PreviewPieceId );
+    private MatchConfig EditableConfig;
+    private string LoadedConfigSnapshot = "";
+    private int configRevision;
+    private int saveRevision;
+    private string SelectedSaveId = "";
+    private List<GameSaveSummary> SaveSummaries = new();
+    private GameSaveFile SelectedSaveFile;
+    private List<LoadedSeatAssignment> LoadSeatAssignments = new();
+    private bool IsManualSaveTab = true;
+    private readonly Dictionary<string, string> ConfigIntDrafts = new();
+    private IReadOnlyList<string> ConfigGroups;
+    private IReadOnlyList<OptionsPanelSection> EditableConfigSections;
+
+	private static LobbyMenu instance;
+
+	private static void Onshow_hidden_match_optionsChanged( bool _, bool newValue )
+	{
+		Log.Info("Show hidden changed!");
+		RegisterConfigGroupsAndEditableSections(newValue);
+	}
+
+	private static void RegisterConfigGroupsAndEditableSections(bool showHidden)
+	{
+		if ( showHidden )
+			instance.ConfigGroups = MatchConfigSchema.Options.Select( option => option.Group ).Distinct().ToList();
+		else
+			instance.ConfigGroups = MatchConfigSchema.Options.Where( option => option.IsVisible ).Select( option => option.Group ).Distinct().ToList();
+
+		instance.EditableConfigSections = instance.ConfigGroups.Select( group => new OptionsPanelSection
 		{
 			Key = group,
 			Title = group,
-			HasItems = GetConfigOptionsForGroup( group ).Any()
+			HasItems = instance.GetConfigOptionsForGroup( group ).Any()
 		} ).ToList();
+	}
+
+    protected override void OnAwake()
+    {
+        base.OnAwake();
+
+		Log.Info("Added");
+
+		instance = this;
+
+		string showHiddenConVarValue = ConsoleSystem.GetValue("show_hidden_match_options");
+		bool ShowHiddenMatchOptions = showHiddenConVarValue is not null ? showHiddenConVarValue.ToBool() : ShowHiddenMatchOptionsConVar.Value;
+		RegisterConfigGroupsAndEditableSections(ShowHiddenMatchOptions);
+
+		ShowHiddenMatchOptionsConVar.RegisterOnChanged("toggleShowHiddenOptionsInMenu", (_, newValue) => {
+			RegisterConfigGroupsAndEditableSections(newValue);
+		});
+    }
 
 	protected override void OnUpdate()
 	{

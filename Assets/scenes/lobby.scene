@@ -205,6 +205,37 @@
             }
           ],
           "Children": []
+        },
+        {
+          "__guid": "2c330265-a392-4513-b18e-a141b6deabb8",
+          "__version": 2,
+          "Flags": 0,
+          "Name": "StandaloneConsole",
+          "Position": "-298.80899,320.370758,-142.730774",
+          "Rotation": "0,0,0,1",
+          "Scale": "1,1,1",
+          "Tags": "",
+          "Enabled": true,
+          "NetworkMode": 2,
+          "NetworkFlags": 0,
+          "NetworkOrphaned": 0,
+          "NetworkTransmit": true,
+          "OwnerTransfer": 1,
+          "Components": [
+            {
+              "__type": "Sandbox.ui.components.StandaloneConsole",
+              "__guid": "c5573c68-1a83-4dd0-8d4a-63af0a76310e",
+              "__enabled": true,
+              "Flags": 0,
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null
+            }
+          ],
+          "Children": []
         }
       ]
     },

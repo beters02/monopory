@@ -103,3 +103,31 @@ public static class DebugConVar
 	[ConVar( Name )]
 	public static bool Value { get; set; } = false;
 }
+
+public static class ShowHiddenMatchOptionsConVar
+{
+	public const string Name = "show_hidden_match_options";
+
+	[ConVar( Name )]
+	[Change]
+	public static bool Value { get; set; } = false;
+
+	private static Dictionary<string, Action<bool, bool>> Callbacks = new();
+
+	public static void RegisterOnChanged(string id, Action<bool, bool> callback)
+	{
+		if ( Callbacks.TryGetValue(id, out _))
+			return;
+
+		Callbacks.Add(id, callback);
+		Log.Info($"Successfully added OnChanged event {id}");
+	}
+
+	private static void Onshow_hidden_match_optionsChanged( bool oldValue, bool newValue )
+	{
+		foreach (KeyValuePair<string, Action<bool, bool>> CallbackKeyValue in Callbacks)
+		{
+			CallbackKeyValue.Value.Invoke(oldValue, newValue);
+		}
+	}
+}
