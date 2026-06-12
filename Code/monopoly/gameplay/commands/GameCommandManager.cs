@@ -158,7 +158,7 @@ public sealed class GameCommandManager : Component
 
 	private static void WriteStandaloneConsoleLine( string message, string kind )
 	{
-		if ( MonopolyApp.IsStandalone )
+		if ( MonopolyApp.IsStandalone() )
 			return;
 
 		Sandbox.ui.components.StandaloneConsole.WriteLine( message, kind );

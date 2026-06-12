@@ -216,7 +216,7 @@
 
 	private void UpdateMenuOpenInput()
 	{	
-		if (MonopolyApp.IsStandalone)
+		if ( MonopolyApp.IsStandalone() )
 		{
 			if (Input.EscapePressed)
 				ToggleEscapeMenu();

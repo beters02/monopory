@@ -57,7 +57,7 @@ public sealed class Board : Component
 	{
 		instance = this;
 
-		if (MonopolyApp.IsDebugEnabled)
+		if ( MonopolyApp.IsDebugEnabled() )
 			DebugEnabled = true;
 
 		lastProcBoardWorldScale = ProceduralBoardWorldScale;

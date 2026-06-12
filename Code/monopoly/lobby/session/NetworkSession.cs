@@ -11,7 +11,7 @@ public static class NetworkSession
 	public static bool IsEditorSoftLeftLobby { get; private set; }
 
 	public static bool CanUseEditorSoftLeave =>
-		!MonopolyApp.IsStandalone && Networking.IsClient && Networking.IsActive;
+		!MonopolyApp.IsStandalone() && Networking.IsClient && Networking.IsActive;
 
 	public static bool CanRejoinLobby =>
 		(RejoinLobbyId != 0 || !string.IsNullOrWhiteSpace( RejoinConnectTarget )) && RejoinExpiresAt > Time.Now;

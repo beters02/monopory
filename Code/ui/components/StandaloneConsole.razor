@@ -159,7 +159,7 @@
 
 	private static bool ShouldToggleConsole()
 	{
-		if (MonopolyApp.IsStandalone)
+		if (MonopolyApp.IsStandalone())
 			return Input.Pressed("GameConsole");
 
 		return Input.Pressed( "EditorConsole" );
