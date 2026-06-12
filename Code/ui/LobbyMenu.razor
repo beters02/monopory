@@ -8,7 +8,7 @@
 <root class="monopoly-flow-ui">
 	<ButtonPopLayer></ButtonPopLayer>
 	<PopupStack Popups="@PopupList" OnDismiss="@DismissPopup" OnConfirmDecision="@HandleConfirmationDecision"></PopupStack>
-	<div class="flow-screen lobby-screen">
+	<div class="@LobbyScreenClasses">
 		<OptionsMenu IsOpen="@IsOptionsMenuOpen" OnClose="@CloseOptionsMenu"></OptionsMenu>
 		<OptionsPanel IsOpen="@(IsConfigMenuOpen && EditableConfig is not null)" Kicker="Lobby" Title="Game Configuration" OnClose="@CloseConfigMenu" RootVariant="lobby-options-root">
 			<ChildContent>
@@ -253,6 +253,8 @@
 						</div>
 			</ChildContent>
 		</OptionsPanel>
+		@if ( !IsCustomizeMenuOpen )
+		{
 		<GameButton Variant="flow-settings-button" Title="Options" OnClick="@OpenOptionsMenu">
 			<ChildContent>
 				<div class="flow-settings-icon"></div>
@@ -298,6 +300,7 @@
 				</div>
 			}
 		</div>
+		}
 	</div>
 </root>
 
@@ -388,6 +391,7 @@
 	private string ConfigMenuCopy => CanEditConfig
 		? "Changes stay local to the host until you press Save."
 		: "Viewing current host settings. Only the host can change or save configuration.";
+	private string LobbyScreenClasses => IsCustomizeMenuOpen ? "flow-screen lobby-screen customizing-piece" : "flow-screen lobby-screen";
 	private string StartBlockedMessage => Lobby?.OnlyHostStartsGame == true && Lobby?.IsLocalEffectiveHost != true
 		? "Only the host can start this game."
 		: LobbyStatusText;

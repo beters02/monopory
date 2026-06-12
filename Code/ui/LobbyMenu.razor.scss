@@ -27,11 +27,15 @@
 	min-width: 0;
 }
 
+.lobby-screen.customizing-piece {
+	background-color: transparent;
+}
+
 .options-panel.piece-customize-panel {
 	width: 1040px;
-	background-color: transparent;
-	border-color: transparent;
-	box-shadow: none;
+	background-color: $monopoly-panel-strong;
+	border-color: $monopoly-panel-line;
+	box-shadow: $monopoly-panel-shadow-strong;
 }
 
 .options-panel-screen.piece-customize-screen {
@@ -49,10 +53,10 @@
 	width: 44%;
 	min-width: 320px;
 	padding: 14px;
-	background-color: $monopoly-panel-strong;
+	background-color: transparent;
 	border: 3px solid $monopoly-panel-line;
 	border-radius: $monopoly-radius-panel;
-	box-shadow: $monopoly-panel-shadow-strong;
+	box-shadow: none;
 	display: flex;
 	flex-direction: column;
 	gap: 12px;
@@ -62,8 +66,8 @@
 	flex: 1;
 	min-height: 280px;
 	background-color: transparent;
-	border: 1px solid $monopoly-panel-line;
-	border-radius: $monopoly-radius-control;
+	border: 0;
+	border-radius: 0;
 	display: flex;
 	align-items: flex-start;
 	justify-content: flex-start;
