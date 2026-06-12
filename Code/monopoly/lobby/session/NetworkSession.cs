@@ -46,6 +46,7 @@ public static class NetworkSession
 			if ( !CanRejoinLobby )
 				return false;
 
+			LoadingState.Show( "Rejoining lobby", "Trying to reconnect to your last match." );
 			if ( Networking.IsActive )
 				Networking.Disconnect();
 
@@ -63,18 +64,22 @@ public static class NetworkSession
 			if ( !connected )
 			{
 				ClearRejoinWindow();
+				LoadingState.Hide();
 				return false;
 			}
 
 			ClearRejoinWindow();
 			if ( Networking.IsHost )
 				SceneFlow.LoadLobby( scene );
+			else
+				LoadingState.Hide();
 			return true;
 		}
 		catch ( Exception exception )
 		{
 			Log.Warning( $"TryRejoinLobby failed: {exception.Message}" );
 			ClearRejoinWindow();
+			LoadingState.Hide();
 			return false;
 		}
 	}
@@ -98,6 +103,7 @@ public static class NetworkSession
 		if ( CanUseEditorSoftLeave )
 		{
 			IsEditorSoftLeftLobby = true;
+			LoadingState.Hide();
 			return;
 		}
 

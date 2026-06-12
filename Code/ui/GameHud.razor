@@ -9,6 +9,14 @@
 
 <root class="monopoly-hud">
 	<ButtonPopLayer></ButtonPopLayer>
+	<LoadingOverlay
+		IsServerLoading="@(GameRef?.IsServerLoading == true)"
+		ServerLoadingTitle="@(GameRef?.ServerLoadingTitle ?? "")"
+		ServerLoadingMessage="@(GameRef?.ServerLoadingMessage ?? "")"
+		ServerLoadingStartedAt="@(GameRef?.ServerLoadingStartedAt ?? 0f)"
+		ServerLoadingClientTimeoutSeconds="@(GameRef?.ServerLoadingClientTimeoutSeconds ?? 25f)"
+		ServerLoadingRevision="@(GameRef?.ServerLoadingRevision ?? 0)">
+	</LoadingOverlay>
 	@if ( GameRef is not null )
 	{
 		@if ( NetworkSession.IsEditorSoftLeftLobby )
@@ -301,7 +309,11 @@
 	{
 		if ( GameRef is null )
 			return;
+
+		if ( !Networking.IsHost && !GameRef.IsLocalEffectiveHost )
+			return;
 		
+		LoadingState.Show( "Returning to lobby", "Saving the table state and rebuilding the lobby." );
 		if ( !Networking.IsHost && GameRef.IsLocalEffectiveHost )
 		{
 			GameRef.RequestReturnToLobby();
@@ -332,6 +344,7 @@
 		IsOptionsMenuOpen = false;
 		IsMatchSettingsMenuOpen = false;
 
+		LoadingState.Show( "Leaving lobby", "Disconnecting and returning to the menu." );
 		if ( !NetworkSession.CanUseEditorSoftLeave )
 		{
 			if ( ShouldCreateRejoinWindow() )
@@ -530,6 +543,11 @@
 		hash.Add( GameRef?.MatchState ?? 0 );
 		hash.Add( GameRef?.WinnerPlayerIndex ?? -1 );
 		hash.Add( GameRef?.IsRecoveringHostState ?? false );
+		hash.Add( GameRef?.IsServerLoading ?? false );
+		hash.Add( GameRef?.ServerLoadingTitle ?? "" );
+		hash.Add( GameRef?.ServerLoadingMessage ?? "" );
+		hash.Add( GameRef?.ServerLoadingStartedAt ?? 0f );
+		hash.Add( GameRef?.ServerLoadingRevision ?? 0 );
 		hash.Add( IsEscapeMenuOpen );
 		hash.Add( IsOptionsMenuOpen );
 		hash.Add( IsMatchSettingsMenuOpen );

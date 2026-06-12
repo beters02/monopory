@@ -48,6 +48,7 @@ public sealed partial class LobbyController : Component
 			PreferredHostOwnerId = Connection.Local?.SteamId ?? 0L;
 
 		Players = BuildPlayers();
+		LoadingState.Hide();
 	}
 
 	protected override void OnDestroy()

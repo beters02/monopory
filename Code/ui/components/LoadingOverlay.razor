@@ -1,0 +1,64 @@
+@using Sandbox;
+@using Sandbox.UI;
+@using System;
+@inherits Panel
+
+<root class="loading-overlay-root">
+	@if ( IsLocalLoadingVisible || IsServerLoadingVisible )
+	{
+		<div class="loading-overlay-screen">
+			<div class="loading-overlay-card">
+				<div class="loading-overlay-spinner">
+					<div class="loading-overlay-spinner-dot top-left"></div>
+					<div class="loading-overlay-spinner-dot top-right"></div>
+					<div class="loading-overlay-spinner-dot center"></div>
+					<div class="loading-overlay-spinner-dot bottom-left"></div>
+					<div class="loading-overlay-spinner-dot bottom-right"></div>
+				</div>
+				<div class="loading-overlay-copy">
+					<div class="loading-overlay-kicker">Loading</div>
+					<div class="loading-overlay-title">@(IsLocalLoadingVisible ? LoadingState.Title : ServerLoadingTitle)</div>
+					@if ( !string.IsNullOrWhiteSpace( IsLocalLoadingVisible ? LoadingState.Message : ServerLoadingMessage ) )
+					{
+						<div class="loading-overlay-body">@(IsLocalLoadingVisible ? LoadingState.Message : ServerLoadingMessage)</div>
+					}
+				</div>
+			</div>
+		</div>
+	}
+</root>
+
+@code 
+{
+	[Parameter] public bool IsServerLoading { get; set; }
+	[Parameter] public string ServerLoadingTitle { get; set; } = "";
+	[Parameter] public string ServerLoadingMessage { get; set; } = "";
+	[Parameter] public float ServerLoadingStartedAt { get; set; }
+	[Parameter] public float ServerLoadingClientTimeoutSeconds { get; set; } = 25f;
+	[Parameter] public int ServerLoadingRevision { get; set; }
+
+	private bool IsLocalLoadingVisible =>
+		LoadingState.IsVisible && Time.Now - LoadingState.StartedAt <= LoadingState.ClientTimeoutSeconds;
+
+	private bool IsServerLoadingVisible =>
+		IsServerLoading && Time.Now - ServerLoadingStartedAt <= ServerLoadingClientTimeoutSeconds;
+
+	protected override int BuildHash()
+	{
+		var hash = new HashCode();
+		hash.Add( LoadingState.IsVisible );
+		hash.Add( LoadingState.Title );
+		hash.Add( LoadingState.Message );
+		hash.Add( LoadingState.Revision );
+		hash.Add( IsServerLoading );
+		hash.Add( ServerLoadingTitle );
+		hash.Add( ServerLoadingMessage );
+		hash.Add( ServerLoadingStartedAt );
+		hash.Add( ServerLoadingClientTimeoutSeconds );
+		hash.Add( ServerLoadingRevision );
+		if ( LoadingState.IsVisible || IsServerLoading )
+			hash.Add( MathF.Round( Time.Now * 2f ) );
+		return hash.ToHashCode();
+	}
+}
+	

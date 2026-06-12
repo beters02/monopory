@@ -181,22 +181,34 @@ public sealed partial class GameController : Component, Component.INetworkListen
 			Theme = Components.GetOrCreate<MonopolyTheme>();
 
 		if ( !Networking.IsHost )
+		{
+			LoadingState.Hide();
 			return;
+		}
 
-		var bootstrap = MatchBootstrap.Current;
-		if ( bootstrap?.HasConfig == true )
-			Config = bootstrap.Config;
+		BeginServerLoading( "Preparing game", "The host is setting up the table state." );
+		try
+		{
+			var bootstrap = MatchBootstrap.Current;
+			if ( bootstrap?.HasConfig == true )
+				Config = bootstrap.Config;
 
-		StartPrivateConfig();
-		EnsurePreferredHostOwnerId();
-		EnsurePlayerSlots();
-		ResetGameState( false );
-		MatchState = MatchLifecycleState.Lobby;
-		SyncLobbyConnections();
-		
-		TryStartBootstrappedGame();
+			StartPrivateConfig();
+			EnsurePreferredHostOwnerId();
+			EnsurePlayerSlots();
+			ResetGameState( false );
+			MatchState = MatchLifecycleState.Lobby;
+			SyncLobbyConnections();
+			
+			TryStartBootstrappedGame();
 
-		Log.Info(MaxTurnReminders);
+			Log.Info(MaxTurnReminders);
+		}
+		finally
+		{
+			ClearServerLoading();
+			LoadingState.Hide();
+		}
 	}
 
 	protected override void OnUpdate()
@@ -205,6 +217,7 @@ public sealed partial class GameController : Component, Component.INetworkListen
 		UpdatePopups();
 		UpdateVisualTokens();
 		RecoverPendingPurchaseSelection();
+		UpdateServerLoadingWatchdog();
 
 		if ( !Networking.IsHost )
 			return;

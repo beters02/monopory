@@ -30,41 +30,49 @@ public sealed partial class GameController : Component
 		if ( !requireReady && GetLobbyPlayers().Count < MinPlayers )
 			return false;
 
-		var activePlayers = GetLobbyPlayers();
-		CurrentGameIdentifier = GameSaveService.CreateGameIdentifier( activePlayers.Select( player => player.PlayerName ).ToList() );
-		loadedSourceSaveId = "";
-		currentManualSaveId = "";
-		hasLoadedRestorePoint = false;
-		ResetGameState( false );
-		StartingPlayerCount = activePlayers.Count;
-
-		foreach ( var player in Players )
+		BeginServerLoading( "Starting game", "The host is preparing players, tokens, and the first turn." );
+		try
 		{
-			if ( player is not null && player.IsAssigned && !activePlayers.Contains( player ) )
-				ClearPlayerSlot( player );
-		}
+			var activePlayers = GetLobbyPlayers();
+			CurrentGameIdentifier = GameSaveService.CreateGameIdentifier( activePlayers.Select( player => player.PlayerName ).ToList() );
+			loadedSourceSaveId = "";
+			currentManualSaveId = "";
+			hasLoadedRestorePoint = false;
+			ResetGameState( false );
+			StartingPlayerCount = activePlayers.Count;
 
-		foreach ( var player in activePlayers )
+			foreach ( var player in Players )
+			{
+				if ( player is not null && player.IsAssigned && !activePlayers.Contains( player ) )
+					ClearPlayerSlot( player );
+			}
+
+			foreach ( var player in activePlayers )
+			{
+				ResetPlayerForGame( player );
+				player.ColorSlot = activePlayers.IndexOf( player );
+				player.IsReady = false;
+			}
+
+			SpawnTokensForPlayers( activePlayers );
+
+			var firstPlayerIndex = Players.FindIndex( player => player is not null && player.IsAssigned );
+			CurrentPlayerIndex = Math.Max( firstPlayerIndex, 0 );
+			MatchState = MatchLifecycleState.Starting;
+			GameStartedAt = Time.Now;
+			MatchState = MatchLifecycleState.InGame;
+			BeginTurnForCurrentPlayer();
+			StartTurnTimer();
+
+			ReportMatchStartedAchievements();
+			SendGlobalPopupToAll( "Game started", "The first turn is live.", PopupKind.Success, true, 4f );
+			TryAutosaveStablePoint( "Game started" );
+			return true;
+		}
+		finally
 		{
-			ResetPlayerForGame( player );
-			player.ColorSlot = activePlayers.IndexOf( player );
-			player.IsReady = false;
+			ClearServerLoading();
 		}
-
-		SpawnTokensForPlayers( activePlayers );
-
-		var firstPlayerIndex = Players.FindIndex( player => player is not null && player.IsAssigned );
-		CurrentPlayerIndex = Math.Max( firstPlayerIndex, 0 );
-		MatchState = MatchLifecycleState.Starting;
-		GameStartedAt = Time.Now;
-		MatchState = MatchLifecycleState.InGame;
-		BeginTurnForCurrentPlayer();
-		StartTurnTimer();
-
-		ReportMatchStartedAchievements();
-		SendGlobalPopupToAll( "Game started", "The first turn is live.", PopupKind.Success, true, 4f );
-		TryAutosaveStablePoint( "Game started" );
-		return true;
 	}
 
 	public bool TrySetReady( PlayerState player, bool isReady )

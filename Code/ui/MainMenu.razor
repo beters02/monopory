@@ -7,6 +7,7 @@
 
 <root class="monopoly-flow-ui">
 	<ButtonPopLayer></ButtonPopLayer>
+	<LoadingOverlay></LoadingOverlay>
 	<div class="flow-screen menu-screen">
 		<OptionsMenu IsOpen="@IsOptionsMenuOpen" OnClose="@CloseOptionsMenu"></OptionsMenu>
 		<GameButton Variant="flow-settings-button" Title="Options" OnClick="@OpenOptionsMenu">
@@ -64,11 +65,13 @@
 			return;
 		}
 
+		LoadingState.Show( "Creating lobby", "Setting up the table for your players." );
 		Menu.TryOpenLobby();
 	}
 
 	private async void RejoinLobby()
 	{
+		LoadingState.Show( "Rejoining lobby", "Trying to reconnect to your last match." );
 		await NetworkSession.TryRejoinLobby( Scene );
 	}
 

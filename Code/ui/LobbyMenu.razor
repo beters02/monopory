@@ -7,6 +7,7 @@
 
 <root class="monopoly-flow-ui">
 	<ButtonPopLayer></ButtonPopLayer>
+	<LoadingOverlay></LoadingOverlay>
 	<PopupStack Popups="@PopupList" OnDismiss="@DismissPopup" OnConfirmDecision="@HandleConfirmationDecision"></PopupStack>
 	<div class="@LobbyScreenClasses">
 		<OptionsMenu IsOpen="@IsOptionsMenuOpen" OnClose="@CloseOptionsMenu"></OptionsMenu>
@@ -507,6 +508,7 @@
 			return;
 		}
 
+		LoadingState.Show( Lobby.HasStagedLoadedGame ? "Loading saved game" : "Starting game", "Setting up the board and player pieces." );
 		if ( Networking.IsHost )
 			Lobby.TryStartGame();
 		else
@@ -551,6 +553,7 @@
 		if ( Lobby is null )
 			return;
 
+		LoadingState.Show( "Returning to menu", "Closing the lobby view." );
 		Lobby.RequestBackToMenu();
 	}
 
@@ -574,6 +577,7 @@
 
 	private void LeaveLobby()
 	{
+		LoadingState.Show( "Leaving lobby", "Disconnecting and returning to the menu." );
 		NetworkSession.ForceDisconnectToMenu( Scene );
 	}
 

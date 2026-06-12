@@ -133,19 +133,27 @@ public sealed partial class GameController : Component
 		if ( bootstrap?.HasLoadedGame != true || bootstrap.LoadedGame is null )
 			return false;
 
-		Config = MatchConfigSchema.Deserialize( bootstrap.LoadedGame.Snapshot.MatchConfigSnapshot );
-		StartPrivateConfig();
-		ApplyLoadedSnapshot( bootstrap.LoadedGame, bootstrap.LoadedSeatAssignments );
-		loadedSourceSaveId = bootstrap.LoadedSourceSaveId ?? bootstrap.LoadedGame.Summary?.SaveId ?? "";
-		currentManualSaveId = loadedSourceSaveId;
-		hasLoadedRestorePoint = !string.IsNullOrWhiteSpace( loadedSourceSaveId );
-		CurrentGameIdentifier = bootstrap.LoadedGame.Summary?.GameIdentifier;
-		if ( string.IsNullOrWhiteSpace( CurrentGameIdentifier ) )
-			CurrentGameIdentifier = GameSaveService.CreateGameIdentifier( bootstrap.LoadedGame.Summary?.PlayerNames );
-		GameSaveService.SetLastLoadedSaveId( loadedSourceSaveId );
-		MatchBootstrap.Clear();
-		SendGlobalPopupToAll( "Game loaded", "The saved game is live.", PopupKind.Success, true, 4f );
-		return true;
+		BeginServerLoading( "Loading saved game", "The host is restoring the saved table state." );
+		try
+		{
+			Config = MatchConfigSchema.Deserialize( bootstrap.LoadedGame.Snapshot.MatchConfigSnapshot );
+			StartPrivateConfig();
+			ApplyLoadedSnapshot( bootstrap.LoadedGame, bootstrap.LoadedSeatAssignments );
+			loadedSourceSaveId = bootstrap.LoadedSourceSaveId ?? bootstrap.LoadedGame.Summary?.SaveId ?? "";
+			currentManualSaveId = loadedSourceSaveId;
+			hasLoadedRestorePoint = !string.IsNullOrWhiteSpace( loadedSourceSaveId );
+			CurrentGameIdentifier = bootstrap.LoadedGame.Summary?.GameIdentifier;
+			if ( string.IsNullOrWhiteSpace( CurrentGameIdentifier ) )
+				CurrentGameIdentifier = GameSaveService.CreateGameIdentifier( bootstrap.LoadedGame.Summary?.PlayerNames );
+			GameSaveService.SetLastLoadedSaveId( loadedSourceSaveId );
+			MatchBootstrap.Clear();
+			SendGlobalPopupToAll( "Game loaded", "The saved game is live.", PopupKind.Success, true, 4f );
+			return true;
+		}
+		finally
+		{
+			ClearServerLoading();
+		}
 	}
 
 	private void TryAutosaveStablePoint( string reason )

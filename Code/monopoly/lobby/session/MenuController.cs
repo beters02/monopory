@@ -13,6 +13,7 @@ public sealed class MenuController : Component
 		GameAssets.PrewarmUiAssets();
 		SteamInviteBridge.Register( Scene );
 		HandleLaunchArguments();
+		LoadingState.Hide();
 	}
 
 	public bool TryOpenLobby()
