@@ -1,5 +1,7 @@
 @import "../../GameTheme.scss";
 
+// Variants that override base button box/color styles should target
+// `.monopoly-button.variant-name`; this file is imported by many components.
 .monopoly-button {
     position: relative;
     min-height: $monopoly-control-height;

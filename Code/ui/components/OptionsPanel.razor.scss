@@ -239,9 +239,22 @@
 	color: $monopoly-text;
 }
 
+.options-panel .monopoly-button.options-panel-danger-button {
+	min-width: 132px;
+	background-color: $monopoly-danger;
+	border: 1px solid $monopoly-danger;
+	color: $monopoly-text;
+}
+
 .options-panel-toggle-button:hover,
 .options-panel-step-button:hover,
 .options-panel-secondary-button:hover {
+	background-color: $monopoly-surface-strong;
+}
+
+.options-panel .monopoly-button.options-panel-toggle-button:hover,
+.options-panel .monopoly-button.options-panel-step-button:hover,
+.options-panel .monopoly-button.options-panel-secondary-button:hover {
 	background-color: $monopoly-surface-strong;
 }
 
@@ -250,7 +263,16 @@
 	background-color: $monopoly-gold-hover;
 }
 
+.options-panel .monopoly-button.options-panel-primary-button:hover,
+.options-panel .monopoly-button.options-panel-toggle-button.selected:hover {
+	background-color: $monopoly-gold-hover;
+}
+
 .options-panel-danger-button:hover {
+	background-color: $monopoly-danger-hover;
+}
+
+.options-panel .monopoly-button.options-panel-danger-button:hover {
 	background-color: $monopoly-danger-hover;
 }
 
@@ -744,14 +766,14 @@
 	background-color: $monopoly-text;
 }
 
-.options-panel .dropdown-toggle {
+.options-panel .monopoly-button.dropdown-toggle {
 	background-color: $monopoly-surface-medium;
 	border: 1px solid $monopoly-panel-line;
 	border-radius: $monopoly-radius-control;
 	color: $monopoly-text;
 }
 
-.options-panel .dropdown-toggle:hover {
+.options-panel .monopoly-button.dropdown-toggle:hover {
 	background-color: $monopoly-surface-strong;
 }
 

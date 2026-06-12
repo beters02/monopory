@@ -152,7 +152,7 @@
 	z-index: 1000;
 }
 
-.trade-composer-modal .trade-player-select .dropdown-toggle.trade-target-dropdown {
+.trade-composer-modal .trade-player-select .monopoly-button.dropdown-toggle.trade-target-dropdown {
 	height: $monopoly-control-height-small;
 	min-height: $monopoly-control-height-small;
 	margin: 0;
@@ -167,7 +167,7 @@
 	text-align: center;
 }
 
-.trade-composer-modal .trade-player-select .dropdown-toggle.trade-target-dropdown:hover {
+.trade-composer-modal .trade-player-select .monopoly-button.dropdown-toggle.trade-target-dropdown:hover {
 	background-color: $monopoly-card-ink-surface-hover;
 }
 
@@ -188,7 +188,7 @@
 	box-shadow: $monopoly-panel-shadow-strong;
 }
 
-.trade-composer-modal .trade-player-select .dropdown-item {
+.trade-composer-modal .trade-player-select .monopoly-button.dropdown-item {
 	background-color: $monopoly-card-ink-surface;
 	color: $monopoly-ink;
 }
@@ -199,11 +199,11 @@
 	text-align: center;
 }
 
-.trade-composer-modal .trade-player-select .dropdown-item:hover {
+.trade-composer-modal .trade-player-select .monopoly-button.dropdown-item:hover {
 	background-color: $monopoly-card-ink-surface-hover;
 }
 
-.trade-composer-modal .trade-player-select .dropdown-item.selected {
+.trade-composer-modal .trade-player-select .monopoly-button.dropdown-item.selected {
 	background-color: $monopoly-gold;
 }
 
