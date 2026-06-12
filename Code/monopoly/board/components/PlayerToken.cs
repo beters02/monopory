@@ -28,6 +28,16 @@ public sealed class PlayerToken : Component
 	[Property] public float TokenControlMoveSpeed { get; set; } = 95f;
 	[Property] public float TokenControlRunMultiplier { get; set; } = 1.45f;
 	[Property] public float TokenControlTurnSpeed { get; set; } = 12f;
+	[Property] public float TokenControlGroundAcceleration { get; set; } = 900f;
+	[Property] public float TokenControlAirAcceleration { get; set; } = 900f;
+	[Property] public float TokenControlFriction { get; set; } = 8f;
+	[Property] public float TokenControlStopSpeed { get; set; } = 35f;
+	[Property] public float TokenControlGravity { get; set; } = 800f;
+	[Property] public float TokenControlJumpSpeed { get; set; } = 260f;
+	[Property] public float TokenControlGroundSnapDistance { get; set; } = 8f;
+	[Property] public float TokenControlHullRadius { get; set; } = 12f;
+	[Property] public float TokenControlHullHeight { get; set; } = 36f;
+	[Property] public int TokenControlMaxSlideBumps { get; set; } = 4;
 	public float TokenControlBoardPadding { get; set; } = 20f;
 	[Property] public float BoardSpotSilhouetteAlpha { get; set; } = 0.28f;
 
@@ -54,6 +64,8 @@ public sealed class PlayerToken : Component
 	private GameObject boardSpotSilhouetteObject;
 	private ModelRenderer boardSpotSilhouetteRenderer;
 	private HighlightOutline boardSpotSilhouetteHighlight;
+	private Vector3 tokenControlVelocity;
+	private bool tokenControlGrounded;
 
 	public bool IsLocallyControllable => CanUseTokenController();
 
@@ -94,6 +106,8 @@ public sealed class PlayerToken : Component
 		}
 
 		DestroyBoardSpotSilhouette();
+		tokenControlVelocity = Vector3.Zero;
+		tokenControlGrounded = false;
 
 		var isMoving = !GameObject.WorldPosition.AlmostEqual( target, 0.1f );
 
@@ -141,30 +155,44 @@ public sealed class PlayerToken : Component
 	private void UpdateLocalTokenController()
 	{
 		var input = GetTokenMoveInput();
-		if ( input.Length <= 0.001f )
-		{
-			ApplyWalkingAnim( requestedWalking );
-			return;
-		}
-
 		var move = GetCameraRelativeMove( input );
-		if ( move.Length <= 0.001f )
+		var wishDirection = move.Length > 0.001f ? move.Normal : Vector3.Zero;
+		var wishSpeed = TokenControlMoveSpeed * (Input.Down( "Run" ) ? TokenControlRunMultiplier : 1f) * MathX.Clamp( input.Length, 0f, 1f );
+
+		UpdateTokenGroundState();
+
+		if ( tokenControlGrounded )
 		{
-			ApplyWalkingAnim( requestedWalking );
-			return;
+			ApplyTokenGroundFriction();
+
+			if ( Input.Pressed( "Jump" ) )
+			{
+				tokenControlVelocity.z = TokenControlJumpSpeed;
+				tokenControlGrounded = false;
+			}
 		}
 
-		var speed = TokenControlMoveSpeed * (Input.Down( "Run" ) ? TokenControlRunMultiplier : 1f);
-		var nextPosition = GameObject.WorldPosition + move.Normal * speed * Time.Delta;
-		GameObject.WorldPosition = ClampPositionToBoard( nextPosition );
+		AccelerateToken( wishDirection, wishSpeed, tokenControlGrounded ? TokenControlGroundAcceleration : TokenControlAirAcceleration );
 
-		var targetYaw = MathF.Atan2( move.y, move.x ) * 180f / MathF.PI;
-		GameObject.WorldRotation = GameObject.WorldRotation.LerpTo(
-			Rotation.From( 0f, targetYaw, 0f ),
-			Time.Delta * TokenControlTurnSpeed
-		);
+		if ( !tokenControlGrounded )
+			tokenControlVelocity.z -= TokenControlGravity * Time.Delta;
 
-		ApplyWalkingAnim( true );
+		MoveTokenWithSlide( tokenControlVelocity * Time.Delta );
+
+		if ( tokenControlGrounded && tokenControlVelocity.z < 0f )
+			tokenControlVelocity.z = 0f;
+
+		var horizontalVelocity = tokenControlVelocity.WithZ( 0f );
+		if ( horizontalVelocity.Length > 1f )
+		{
+			var targetYaw = MathF.Atan2( horizontalVelocity.y, horizontalVelocity.x ) * 180f / MathF.PI;
+			GameObject.WorldRotation = GameObject.WorldRotation.LerpTo(
+				Rotation.From( 0f, targetYaw, 0f ),
+				Time.Delta * TokenControlTurnSpeed
+			);
+		}
+
+		ApplyWalkingAnim( horizontalVelocity.Length > 2f );
 	}
 
 	private Vector2 GetTokenMoveInput()
@@ -188,6 +216,110 @@ public sealed class PlayerToken : Component
 			right = GameObject.WorldRotation.Right.WithZ( 0f );
 
 		return forward.Normal * input.y + right.Normal * input.x;
+	}
+
+	private void UpdateTokenGroundState()
+	{
+		var groundHeight = GetSpaceTargetPosition().z;
+		var wasGrounded = tokenControlGrounded;
+		var distanceToGround = GameObject.WorldPosition.z - groundHeight;
+		tokenControlGrounded = distanceToGround <= TokenControlGroundSnapDistance && tokenControlVelocity.z <= 0f;
+
+		if ( tokenControlGrounded )
+		{
+			GameObject.WorldPosition = GameObject.WorldPosition.WithZ( groundHeight );
+			if ( tokenControlVelocity.z < 0f )
+				tokenControlVelocity.z = 0f;
+		}
+		else if ( wasGrounded )
+		{
+			tokenControlVelocity.z = Math.Min( tokenControlVelocity.z, 0f );
+		}
+	}
+
+	private void ApplyTokenGroundFriction()
+	{
+		var horizontalVelocity = tokenControlVelocity.WithZ( 0f );
+		var speed = horizontalVelocity.Length;
+		if ( speed <= 0.001f )
+			return;
+
+		var control = Math.Max( speed, TokenControlStopSpeed );
+		var drop = control * TokenControlFriction * Time.Delta;
+		var newSpeed = Math.Max( speed - drop, 0f );
+		tokenControlVelocity = horizontalVelocity * (newSpeed / speed) + Vector3.Up * tokenControlVelocity.z;
+	}
+
+	private void AccelerateToken( Vector3 wishDirection, float wishSpeed, float acceleration )
+	{
+		if ( wishDirection.Length <= 0.001f || wishSpeed <= 0f || acceleration <= 0f )
+			return;
+
+		var currentSpeed = Vector3.Dot( tokenControlVelocity, wishDirection );
+		var addSpeed = wishSpeed - currentSpeed;
+		if ( addSpeed <= 0f )
+			return;
+
+		var accelSpeed = Math.Min( acceleration * Time.Delta * wishSpeed / Math.Max( TokenControlMoveSpeed, 1f ), addSpeed );
+		tokenControlVelocity += wishDirection * accelSpeed;
+	}
+
+	private void MoveTokenWithSlide( Vector3 move )
+	{
+		if ( move.Length <= 0.001f )
+			return;
+
+		var position = GameObject.WorldPosition;
+		var remaining = move;
+		var maxBumps = Math.Max( TokenControlMaxSlideBumps, 1 );
+
+		for ( var bump = 0; bump < maxBumps; bump++ )
+		{
+			var targetPosition = ClampPositionToBoard( position + remaining );
+			var trace = TraceTokenHull( position, targetPosition );
+
+			if ( !trace.Hit || trace.StartedSolid )
+			{
+				position = targetPosition;
+				break;
+			}
+
+			position = trace.EndPosition;
+
+			var normal = trace.Normal;
+			tokenControlVelocity -= normal * Vector3.Dot( tokenControlVelocity, normal );
+			remaining -= normal * Vector3.Dot( remaining, normal );
+			remaining *= MathX.Clamp( 1f - trace.Fraction, 0f, 1f );
+
+			if ( remaining.Length <= 0.001f )
+				break;
+		}
+
+		GameObject.WorldPosition = ClampPositionToBoard( position );
+	}
+
+	private SceneTraceResult TraceTokenHull( Vector3 startPosition, Vector3 endPosition )
+	{
+		var hull = GetTokenControlHull();
+
+		if ( Scene is null )
+			return default;
+
+		return Scene.Trace
+			.Box( hull, startPosition, endPosition )
+			.IgnoreGameObjectHierarchy( GameObject )
+			.WithoutTags( "trigger" )
+			.Run();
+	}
+
+	private BBox GetTokenControlHull()
+	{
+		var radius = Math.Max( TokenControlHullRadius, 1f );
+		var height = Math.Max( TokenControlHullHeight, radius * 2f );
+		return new BBox(
+			new Vector3( -radius, -radius, 0f ),
+			new Vector3( radius, radius, height )
+		);
 	}
 
 	private Vector3 ClampPositionToBoard( Vector3 position )
