@@ -5,7 +5,8 @@ public enum BoardCameraMode
 {
 	Default,
 	Board,
-	FreeCam
+	FreeCam,
+	Token
 }
 
 public sealed class GameCamera : Component
@@ -31,12 +32,24 @@ public sealed class GameCamera : Component
 	[Property] public float FreeCamBoundsPadding { get; set; } = 48f;
 	[Property] public float DiceFramingPadding { get; set; } = 16f;
 	[Property] public float DiceFramingMinDistance { get; set; } = 140f;
+	[Property] public float TokenModeDistance { get; set; } = 95f;
+	[Property] public float TokenModeHeight { get; set; } = 42f;
+	[Property] public float TokenModePitch { get; set; } = 12f;
+	[Property] public float TokenModeMinPitch { get; set; } = -12f;
+	[Property] public float TokenModeMaxPitch { get; set; } = 55f;
+	[Property] public float TokenModeLookSensitivity { get; set; } = 1f;
 
 	public BoardCameraMode Mode { get; private set; } = BoardCameraMode.Default;
+	public bool IsTokenModeRequested => requestedMode == BoardCameraMode.Token;
+	public bool IsTokenCameraActive => Mode == BoardCameraMode.Token;
 
 	private Vector3 freeCamFocus;
 	private float freeCamDistance;
 	private bool hasFreeCamFocus;
+	private BoardCameraMode requestedMode = BoardCameraMode.Default;
+	private float tokenCameraYaw;
+	private float tokenCameraPitch;
+	private bool didHideMouse;
 
 	protected override void OnStart()
 	{
@@ -52,11 +65,24 @@ public sealed class GameCamera : Component
 		freeCamDistance = Distance;
 	}
 
+	protected override void OnDestroy()
+	{
+		ReleaseTokenMouse();
+	}
+
 	protected override void OnUpdate()
 	{
+		UpdateRequestedModeAvailability();
+
 		if ( Mode == BoardCameraMode.FreeCam )
 		{
 			UpdateFreeCam();
+			return;
+		}
+
+		if ( Mode == BoardCameraMode.Token )
+		{
+			UpdateTokenCamera();
 			return;
 		}
 
@@ -84,9 +110,15 @@ public sealed class GameCamera : Component
 
 	public void SetMode( BoardCameraMode mode )
 	{
+		requestedMode = mode;
+		ApplyMode( mode );
+	}
+
+	private void ApplyMode( BoardCameraMode mode )
+	{
 		if ( Mode == mode )
 			return;
-
+	
 		Mode = mode;
 
 		if ( mode == BoardCameraMode.FreeCam )
@@ -95,6 +127,29 @@ public sealed class GameCamera : Component
 			freeCamDistance = FreecamModeStartDistance;
 			hasFreeCamFocus = true;
 		}
+		else if ( mode == BoardCameraMode.Token )
+		{
+			var token = GetLocalControllableToken();
+			tokenCameraYaw = token is not null ? GetYawFromForward( token.GameObject.WorldRotation.Forward ) : GetCurrentTokenYaw();
+			tokenCameraPitch = TokenModePitch;
+		}
+		else
+		{
+			ReleaseTokenMouse();
+		}
+	}
+
+	private void UpdateRequestedModeAvailability()
+	{
+		if ( requestedMode != BoardCameraMode.Token )
+		{
+			ApplyMode( requestedMode );
+			return;
+		}
+
+		var token = GetLocalControllableToken();
+		var desiredMode = token is not null ? BoardCameraMode.Token : BoardCameraMode.Default;
+		ApplyMode( desiredMode );
 	}
 
 	private void UpdateFreeCam()
@@ -144,6 +199,65 @@ public sealed class GameCamera : Component
 			move += Vector3.Right;
 
 		return move;
+	}
+
+	private void UpdateTokenCamera()
+	{
+		var token = GetLocalControllableToken();
+		if ( token is null )
+		{
+			ApplyMode( BoardCameraMode.Default );
+			return;
+		}
+
+		CaptureTokenMouse();
+
+		var look = Input.AnalogLook * TokenModeLookSensitivity;
+		tokenCameraYaw += look.yaw;
+		tokenCameraPitch = MathX.Clamp( tokenCameraPitch + look.pitch, TokenModeMinPitch, TokenModeMaxPitch );
+
+		var rotation = Rotation.From( tokenCameraPitch, tokenCameraYaw, 0f );
+		var focus = token.GameObject.WorldPosition + Vector3.Up * TokenModeHeight;
+
+		GameObject.WorldPosition = focus - rotation.Forward * TokenModeDistance;
+		GameObject.WorldRotation = rotation;
+	}
+
+	private void CaptureTokenMouse()
+	{
+		Mouse.Visibility = MouseVisibility.Hidden;
+		didHideMouse = true;
+	}
+
+	private void ReleaseTokenMouse()
+	{
+		if ( !didHideMouse )
+			return;
+
+		Mouse.Visibility = MouseVisibility.Visible;
+		didHideMouse = false;
+	}
+
+	private PlayerToken GetLocalControllableToken()
+	{
+		if ( Scene is null )
+			return null;
+
+		foreach ( var token in Scene.GetAllComponents<PlayerToken>() )
+		{
+			if ( token?.IsLocallyControllable == true )
+				return token;
+		}
+
+		return null;
+	}
+
+	private static float GetYawFromForward( Vector3 forward )
+	{
+		if ( forward.Length <= 0.001f )
+			return 0f;
+
+		return MathF.Atan2( forward.y, forward.x ) * 180f / MathF.PI;
 	}
 
 	private Vector3 GetModeFocus()

@@ -25,6 +25,11 @@ public sealed class PlayerToken : Component
 	[Property] public float CollisionImpulseScale { get; set; } = 0.85f;
 	[Property] public bool ReturnToSpaceAfterPhysics { get; set; } = true;
 	[Property] public float SharedSpaceOffsetDistance { get; set; } = 10f;
+	[Property] public float TokenControlMoveSpeed { get; set; } = 95f;
+	[Property] public float TokenControlRunMultiplier { get; set; } = 1.45f;
+	[Property] public float TokenControlTurnSpeed { get; set; } = 12f;
+	[Property] public float TokenControlBoardPadding { get; set; } = 60f;
+	[Property] public float BoardSpotSilhouetteAlpha { get; set; } = 0.28f;
 
 	private SkinnedModelRenderer renderer;
 	private ModelRenderer markerRenderer;
@@ -44,12 +49,24 @@ public sealed class PlayerToken : Component
 	private bool isReplicatedPhysics;
 	private string activeReplicatedPhysicsKey;
 	private string completedReplicatedPhysicsKey;
+	private PieceDefinition currentPieceDefinition;
+	private Color currentPlayerColor = Color.White;
+	private GameObject boardSpotSilhouetteObject;
+	private ModelRenderer boardSpotSilhouetteRenderer;
+	private HighlightOutline boardSpotSilhouetteHighlight;
+
+	public bool IsLocallyControllable => CanUseTokenController();
 
 
 	protected override void OnStart()
 	{
 		renderer = GameObject.GetComponentInChildren<SkinnedModelRenderer>();
 		EnsurePlayerMarker();
+	}
+
+	protected override void OnDestroy()
+	{
+		DestroyBoardSpotSilhouette();
 	}
 
 	protected override void OnUpdate()
@@ -68,6 +85,16 @@ public sealed class PlayerToken : Component
 
 		var target = GetSpaceTargetPosition();
 		var targetRot = GetRotation( PlayerState.SpaceIndex );
+
+		if ( IsLocallyControllable )
+		{
+			UpdateBoardSpotSilhouette( target, targetRot );
+			UpdateLocalTokenController();
+			return;
+		}
+
+		DestroyBoardSpotSilhouette();
+
 		var isMoving = !GameObject.WorldPosition.AlmostEqual( target, 0.1f );
 
         if (isMoving)
@@ -88,6 +115,170 @@ public sealed class PlayerToken : Component
 
 		ApplyWalkingAnim( requestedWalking || isMoving );
 		//ApplyDirection(targetRot.Forward);
+	}
+
+	private bool CanUseTokenController()
+	{
+		if ( Board is null || PlayerState is null || PlayerState.IsBankrupt || PlayerState.IsOwner != true )
+			return false;
+
+		var game = GameController.Instance;
+		if ( game is null || game.MatchState != MatchLifecycleState.InGame || game.CurrentPlayer != PlayerState )
+			return false;
+
+		if ( game.Phase is not (GamePhase.WaitingToRoll or GamePhase.TurnEnded) )
+			return false;
+
+		if ( GameCamera.Instance?.IsTokenModeRequested != true )
+			return false;
+
+		if ( game.HasBlockingPopup )
+			return false;
+
+		return !isGrabbed && !isThrowing;
+	}
+
+	private void UpdateLocalTokenController()
+	{
+		var input = GetTokenMoveInput();
+		if ( input.Length <= 0.001f )
+		{
+			ApplyWalkingAnim( requestedWalking );
+			return;
+		}
+
+		var move = GetCameraRelativeMove( input );
+		if ( move.Length <= 0.001f )
+		{
+			ApplyWalkingAnim( requestedWalking );
+			return;
+		}
+
+		var speed = TokenControlMoveSpeed * (Input.Down( "Run" ) ? TokenControlRunMultiplier : 1f);
+		var nextPosition = GameObject.WorldPosition + move.Normal * speed * Time.Delta;
+		GameObject.WorldPosition = ClampPositionToBoard( nextPosition );
+
+		var targetYaw = MathF.Atan2( move.y, move.x ) * 180f / MathF.PI;
+		GameObject.WorldRotation = GameObject.WorldRotation.LerpTo(
+			Rotation.From( 0f, targetYaw, 0f ),
+			Time.Delta * TokenControlTurnSpeed
+		);
+
+		ApplyWalkingAnim( true );
+	}
+
+	private Vector2 GetTokenMoveInput()
+	{
+		var input = Vector2.Zero;
+
+		if ( Input.Down( "Forward" ) )
+			input.y += 1f;
+
+		if ( Input.Down( "Backward" ) )
+			input.y -= 1f;
+
+		if ( Input.Down( "Right" ) )
+			input.x += 1f;
+
+		if ( Input.Down( "Left" ) )
+			input.x -= 1f;
+
+		var analog = Input.AnalogMove;
+		input.x += analog.x;
+		input.y += analog.y;
+
+		return input.Length > 1f ? input.Normal : input;
+	}
+
+	private Vector3 GetCameraRelativeMove( Vector2 input )
+	{
+		var cameraRotation = Scene?.Camera?.GameObject.WorldRotation ?? GameObject.WorldRotation;
+		var forward = cameraRotation.Forward.WithZ( 0f );
+		var right = cameraRotation.Right.WithZ( 0f );
+
+		if ( forward.Length <= 0.001f )
+			forward = GameObject.WorldRotation.Forward.WithZ( 0f );
+
+		if ( right.Length <= 0.001f )
+			right = GameObject.WorldRotation.Right.WithZ( 0f );
+
+		return forward.Normal * input.y + right.Normal * input.x;
+	}
+
+	private Vector3 ClampPositionToBoard( Vector3 position )
+	{
+		if ( Board?.Spaces is null || Board.Spaces.Count == 0 || TokenControlBoardPadding <= 0f )
+			return position;
+
+		var min = new Vector3( float.MaxValue, float.MaxValue, position.z );
+		var max = new Vector3( float.MinValue, float.MinValue, position.z );
+
+		foreach ( var space in Board.Spaces )
+		{
+			if ( space is null )
+				continue;
+
+			var spacePosition = space.TokenPosition;
+			min.x = Math.Min( min.x, spacePosition.x );
+			min.y = Math.Min( min.y, spacePosition.y );
+			max.x = Math.Max( max.x, spacePosition.x );
+			max.y = Math.Max( max.y, spacePosition.y );
+		}
+
+		position.x = MathX.Clamp( position.x, min.x - TokenControlBoardPadding, max.x + TokenControlBoardPadding );
+		position.y = MathX.Clamp( position.y, min.y - TokenControlBoardPadding, max.y + TokenControlBoardPadding );
+		return position;
+	}
+
+	private void UpdateBoardSpotSilhouette( Vector3 targetPosition, Rotation targetRotation )
+	{
+		EnsureBoardSpotSilhouette();
+
+		if ( boardSpotSilhouetteObject is null )
+			return;
+
+		boardSpotSilhouetteObject.WorldPosition = targetPosition;
+		boardSpotSilhouetteObject.WorldRotation = targetRotation;
+	}
+
+	private void EnsureBoardSpotSilhouette()
+	{
+		if ( boardSpotSilhouetteObject is not null && boardSpotSilhouetteObject.IsValid() )
+			return;
+
+		var piece = currentPieceDefinition ?? PieceCatalog.GetByIdOrDefault( PlayerState?.SelectedPieceId ?? PieceCatalog.DefaultPieceId );
+		if ( piece is null )
+			return;
+
+		var model = Model.Load( piece.ModelPath );
+		if ( model is null )
+			return;
+
+		boardSpotSilhouetteObject = new GameObject( true, $"{GameObject.Name}_BoardSpotSilhouette" );
+		var visualObject = new GameObject( true, "Visual" );
+		visualObject.SetParent( boardSpotSilhouetteObject );
+		visualObject.LocalPosition = piece.LocalVisualOffset;
+		visualObject.LocalRotation = Rotation.Identity;
+		visualObject.LocalScale = piece.LocalVisualScale;
+
+		boardSpotSilhouetteRenderer = visualObject.Components.Create<ModelRenderer>();
+		boardSpotSilhouetteRenderer.Model = model;
+		boardSpotSilhouetteRenderer.Tint = currentPlayerColor.WithAlpha( BoardSpotSilhouetteAlpha );
+
+		boardSpotSilhouetteHighlight = visualObject.Components.Create<HighlightOutline>();
+		boardSpotSilhouetteHighlight.Color = currentPlayerColor.WithAlpha( 0.85f ).Saturate( 1f );
+		boardSpotSilhouetteHighlight.InsideColor = currentPlayerColor.WithAlpha( BoardSpotSilhouetteAlpha );
+	}
+
+	private void DestroyBoardSpotSilhouette()
+	{
+		if ( boardSpotSilhouetteObject is null )
+			return;
+
+		boardSpotSilhouetteObject.Destroy();
+		boardSpotSilhouetteObject = null;
+		boardSpotSilhouetteRenderer = null;
+		boardSpotSilhouetteHighlight = null;
 	}
 
 	private void UpdatePhysicsTestGrab()
@@ -422,6 +613,9 @@ public sealed class PlayerToken : Component
 	public void ApplyPieceDefinition( PieceDefinition piece )
 	{
 		var selectedPiece = piece ?? PieceCatalog.GetByIdOrDefault( PieceCatalog.DefaultPieceId );
+		currentPieceDefinition = selectedPiece;
+		DestroyBoardSpotSilhouette();
+
 		var visualObject = GameObject.Children.FirstOrDefault( child => string.Equals( child?.Name, "Visual", StringComparison.OrdinalIgnoreCase ) );
 		var renderHost = visualObject?.Children.FirstOrDefault() ?? visualObject;
 		if ( renderHost is null )
@@ -488,6 +682,7 @@ public sealed class PlayerToken : Component
 
 	public void ApplyPlayerColor( Color color )
 	{
+		currentPlayerColor = color;
 		EnsurePlayerMarker();
 		if ( markerRenderer is not null )
 			markerRenderer.Tint = color.WithAlpha( 0f );
@@ -496,6 +691,15 @@ public sealed class PlayerToken : Component
 		{
 			markerHighlight.Color = color.WithAlpha( 1f ).Saturate( 1f );
 			markerHighlight.InsideColor = color.WithAlpha ( 0.55f );
+		}
+
+		if ( boardSpotSilhouetteRenderer is not null )
+			boardSpotSilhouetteRenderer.Tint = currentPlayerColor.WithAlpha( BoardSpotSilhouetteAlpha );
+
+		if ( boardSpotSilhouetteHighlight is not null )
+		{
+			boardSpotSilhouetteHighlight.Color = currentPlayerColor.WithAlpha( 0.85f ).Saturate( 1f );
+			boardSpotSilhouetteHighlight.InsideColor = currentPlayerColor.WithAlpha( BoardSpotSilhouetteAlpha );
 		}
 	}
 
