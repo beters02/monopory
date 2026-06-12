@@ -162,6 +162,40 @@
 	justify-content: center;
 }
 
+.options-panel .monopoly-button.options-panel-close-button,
+.options-panel .monopoly-button.options-panel-toggle-button,
+.options-panel .monopoly-button.options-panel-step-button,
+.options-panel .monopoly-button.options-panel-primary-button,
+.options-panel .monopoly-button.options-panel-danger-button,
+.options-panel .monopoly-button.options-panel-secondary-button {
+	height: $monopoly-control-height;
+	min-height: $monopoly-control-height;
+	margin: 0;
+	padding: 0 14px;
+
+	border-radius: $monopoly-radius-control;
+	font-size: $monopoly-font-button;
+	font-weight: 900;
+	text-transform: uppercase;
+	align-items: center;
+	justify-content: center;
+}
+
+.options-panel .monopoly-button.options-panel-close-button .label,
+.options-panel .monopoly-button.options-panel-toggle-button .label,
+.options-panel .monopoly-button.options-panel-step-button .label,
+.options-panel .monopoly-button.options-panel-primary-button .label,
+.options-panel .monopoly-button.options-panel-danger-button .label,
+.options-panel .monopoly-button.options-panel-secondary-button .label {
+	height: 100%;
+	margin: 0;
+	padding: 0;
+
+	align-items: center;
+	justify-content: center;
+	line-height: $monopoly-control-height;
+}
+
 .options-panel-close-button {
 	flex-shrink: 0;
 }
@@ -174,8 +208,24 @@
 	color: $monopoly-text;
 }
 
+.options-panel .monopoly-button.options-panel-toggle-button,
+.options-panel .monopoly-button.options-panel-step-button,
+.options-panel .monopoly-button.options-panel-secondary-button {
+	background-color: $monopoly-surface-medium;
+	border: 1px solid $monopoly-panel-line;
+	color: $monopoly-text;
+}
+
 .options-panel-primary-button,
 .options-panel-toggle-button.selected {
+	min-width: 132px;
+	background-color: $monopoly-gold;
+	border: 1px solid $monopoly-gold;
+	color: $monopoly-ink;
+}
+
+.options-panel .monopoly-button.options-panel-primary-button,
+.options-panel .monopoly-button.options-panel-toggle-button.selected {
 	min-width: 132px;
 	background-color: $monopoly-gold;
 	border: 1px solid $monopoly-gold;
