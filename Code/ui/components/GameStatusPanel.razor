@@ -54,7 +54,7 @@
 						<GameButton Variant="action-buttons jail-action-button" OnClick="@PayToLeaveJail">Pay $50</GameButton>
 						@if ( !CurrentPlayerMustPayForcedJailFine )
 						{
-							<GameButton @ref="ActionJailRollButton" Variant="action-buttons jail-action-button" OnHoldComplete="@RollForJailRelease" HoldMaxSeconds="@RollHoldMaxSeconds" KeyboardInputAction="@GetInputAction()">
+							<GameButton @ref="ActionJailRollButton" Variant="action-buttons jail-action-button" OnHoldComplete="@RollForJailRelease" HoldMaxSeconds="@RollHoldMaxSeconds" KeyboardInputAction="@GetRollInputAction()">
 								<ChildContent>
 									Try Doubles
 									<HoldIndicator Variant="compact" ParentButton="@ActionJailRollButton"></HoldIndicator>
@@ -63,7 +63,7 @@
 						}
 					</div>
 				} else {
-					<GameButton @ref="ActionRollButton" Variant="action-buttons" OnHoldComplete="@RollDice" HoldMaxSeconds="@RollHoldMaxSeconds" KeyboardInputAction="@GetInputAction()">
+					<GameButton @ref="ActionRollButton" Variant="action-buttons" OnHoldComplete="@RollDice" HoldMaxSeconds="@RollHoldMaxSeconds" KeyboardInputAction="@GetRollInputAction()">
 						<ChildContent>
 							Roll Dice
 							<HoldIndicator Variant="compact" ParentButton="@ActionRollButton"></HoldIndicator>
@@ -74,7 +74,7 @@
 
 			@if ( ShouldShowActionButtons && GameRef.MatchState == MatchLifecycleState.InGame && CurrentPlayer == LocalPlayer )
 			{
-				<GameButton Variant="@EndTurnButtonClasses" CanClick="@CanEndTurn" OnClick="@EndTurn" BlockedPopupTitle="Cannot end turn yet" BlockedPopupMessage="@GetEndTurnBlockedMessage()">End Turn</GameButton>
+				<GameButton @ref="ActionEndTurnButton" Variant="@EndTurnButtonClasses" CanClick="@CanEndTurn" OnClick="@EndTurn" BlockedPopupTitle="Cannot end turn yet" BlockedPopupMessage="@GetEndTurnBlockedMessage()" KeyboardInputAction="@GetEndTurnInputAction()">End Turn</GameButton>
 			}
 		</ChildContent>
 	</Sandbox.ui.components.HudPanel.HudPanel>
@@ -84,7 +84,7 @@
 
 		<Sandbox.ui.components.HudPanel.HudPanel Variant="@GetRollButtonPanelClass()">
 			<ChildContent>
-				<GameButton @ref="StatusRollButton" Variant="@GetRollDiceButtonClass()" OnHoldComplete="@RollDice" HoldMaxSeconds="@RollHoldMaxSeconds" KeyboardInputAction="@GetInputAction()">
+				<GameButton @ref="StatusRollButton" Variant="@GetRollDiceButtonClass()" OnHoldComplete="@RollDice" HoldMaxSeconds="@RollHoldMaxSeconds" KeyboardInputAction="@GetRollInputAction()">
 					<ChildContent>
 						Roll Dice
 						<HoldIndicator Variant="status-roll" ParentButton="@StatusRollButton"></HoldIndicator>
@@ -95,7 +95,7 @@
 
 		<Sandbox.ui.components.HudPanel.HudPanel Variant="@GetEndTurnButtonPanelClass()">
 			<ChildContent>
-				<GameButton Variant="@GetEndTurnButtonClass()" OnClick="@EndTurn">End Turn</GameButton>
+				<GameButton @ref="StatusEndTurnButton" Variant="@GetEndTurnButtonClass()" OnClick="@EndTurn" KeyboardInputAction="@GetEndTurnInputAction()">End Turn</GameButton>
 			</ChildContent>
 		</Sandbox.ui.components.HudPanel.HudPanel>		
 
@@ -114,7 +114,7 @@
 				<GameButton Variant="@GetJailButtonClass()" OnClick="@PayToLeaveJail">Pay $50</GameButton>
 				@if ( !CurrentPlayerMustPayForcedJailFine )
 				{
-					<GameButton @ref="StatusJailRollButton" Variant="@GetJailButtonClass()" OnHoldComplete="@RollForJailRelease" HoldMaxSeconds="@RollHoldMaxSeconds" KeyboardInputAction="@GetInputAction()">
+					<GameButton @ref="StatusJailRollButton" Variant="@GetJailButtonClass()" OnHoldComplete="@RollForJailRelease" HoldMaxSeconds="@RollHoldMaxSeconds" KeyboardInputAction="@GetRollInputAction()">
 						<ChildContent>
 							Try Doubles
 							<HoldIndicator Variant="status-roll" ParentButton="@StatusJailRollButton"></HoldIndicator>
@@ -132,8 +132,10 @@
 
 	private GameButton ActionRollButton = null!;
 	private GameButton ActionJailRollButton = null!;
+	private GameButton ActionEndTurnButton = null!;
 	private GameButton StatusRollButton = null!;
 	private GameButton StatusJailRollButton = null!;
+	private GameButton StatusEndTurnButton = null!;
 
     private PlayerState CurrentPlayer => GameRef?.CurrentPlayer;
     private PlayerState LocalPlayer => GameRef?.LocalPlayer;
@@ -145,16 +147,28 @@
     private bool gamePanelEnabled = false;
 	private bool ShouldShowActionButtons => MonopolyApp.IsGameStatusPanelActionButtonsEnabled;
 	private bool didRefreshAfterRefs;
-	private InputAction CachedInputAction;
-	private InputAction GetInputAction()
+	private InputAction CachedRollInputAction;
+	private InputAction CachedEndTurnInputAction;
+	private InputAction GetRollInputAction()
 	{
-		if ( CachedInputAction != null )
-			return CachedInputAction;
+		if ( CachedRollInputAction != null )
+			return CachedRollInputAction;
 		
 		foreach( InputAction action in Input.GetActions().Where(action => action.Name == "RollDice").ToList())
-			CachedInputAction = action;
+			CachedRollInputAction = action;
 			
-		return CachedInputAction;
+		return CachedRollInputAction;
+	}
+
+	private InputAction GetEndTurnInputAction()
+	{
+		if ( CachedEndTurnInputAction != null )
+			return CachedEndTurnInputAction;
+		
+		foreach( InputAction action in Input.GetActions().Where(action => action.Name == "EndTurn").ToList())
+			CachedEndTurnInputAction = action;
+			
+		return CachedEndTurnInputAction;
 	}
 
 	protected override void OnAfterTreeRender( bool firstTime )
@@ -166,6 +180,53 @@
 
 		didRefreshAfterRefs = true;
 		StateHasChanged();
+	}
+
+	public override void Tick()
+	{
+		base.Tick();
+
+		UpdateActionKeybinds();
+	}
+
+	private void UpdateActionKeybinds()
+	{
+		if ( GameRef?.MatchState != MatchLifecycleState.InGame || CurrentPlayer != LocalPlayer )
+			return;
+
+		if ( Input.Pressed( "RollDice" ) )
+			TriggerRollInputAction();
+
+		if ( Input.Pressed( "EndTurn" ) )
+			TriggerEndTurnInputAction();
+	}
+
+	private void TriggerRollInputAction()
+	{
+		if ( !CanActOnCurrentTurn )
+			return;
+
+		if ( IsCurrentPlayerInJail )
+		{
+			if ( !CurrentPlayerMustPayForcedJailFine )
+				(StatusJailRollButton ?? ActionJailRollButton)?.TriggerInputAction();
+
+			return;
+		}
+
+		(StatusRollButton ?? ActionRollButton)?.TriggerInputAction();
+	}
+
+	private void TriggerEndTurnInputAction()
+	{
+		if ( ShouldShowActionButtons )
+		{
+			ActionEndTurnButton?.TriggerInputAction();
+			return;
+		}
+
+		if ( CanEndTurn )
+			StatusEndTurnButton?.TriggerInputAction();
 	}
 
 	private int CurrentTurnRemainingSeconds =>

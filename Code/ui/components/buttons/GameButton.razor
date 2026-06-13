@@ -46,6 +46,17 @@
 
 	public bool IsHolding => isPressing;
 
+	public void TriggerInputAction( float holdStrength = 1f )
+	{
+		if ( OnHoldComplete is not null )
+		{
+			TriggerHoldComplete( holdStrength );
+			return;
+		}
+
+		HandleClick();
+	}
+
 	protected string RootClasses
 	{
 		get
@@ -158,6 +169,13 @@
 
 		var heldSeconds = Math.Max( Time.Now - pressStartedAt, 0f );
 		var strength = HoldMaxSeconds <= 0f ? 1f : Math.Clamp( heldSeconds / HoldMaxSeconds, 0f, 1f );
+		TriggerHoldComplete( strength );
+	}
+
+	private void TriggerHoldComplete( float strength )
+	{
+		if ( Disabled )
+			return;
 
 		ButtonPopEffects.Show( Mouse.Position );
 
@@ -175,7 +193,7 @@
 		if ( ShouldPlayClickSound )
 			Sound.Play();
 
-		OnHoldComplete?.Invoke( strength );
+		OnHoldComplete?.Invoke( Math.Clamp( strength, 0f, 1f ) );
 	}
 
 	private void HandleMouseEnter()
