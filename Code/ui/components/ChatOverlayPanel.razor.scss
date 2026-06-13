@@ -136,6 +136,7 @@
 }
 
 .chat-overlay-input-row {
+	position: relative;
 	height: 44px;
 	padding: 0 14px;
 	border-radius: $monopoly-radius-board;
@@ -172,12 +173,18 @@
 
 .chat-overlay-input .content-label,
 .chat-overlay-input .label,
-.chat-overlay-input .placeholder,
 .chat-overlay-input .text {
 	max-width: 100%;
 	white-space: nowrap;
 	text-overflow: clip;
 	overflow: hidden;
+}
+
+.chat-overlay-input.scrolled .content-label,
+.chat-overlay-input.scrolled .label,
+.chat-overlay-input.scrolled .text {
+	text-align: right;
+	justify-content: flex-end;
 }
 
 .monopoly-button.chat-overlay-send-button {

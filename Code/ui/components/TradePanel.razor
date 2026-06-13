@@ -5,7 +5,7 @@
 @inherits Panel
 
 <root>
-	<div class="trade-panel">
+	<div class="@GetPanelClasses()">
 		<div class="trade-panel-header">
 			<div class="trade-panel-title">Trades</div>
 			<GameButton Variant="trade-create-button" OnClick="@OpenTradeComposer">+ Create</GameButton>
@@ -150,6 +150,15 @@
 
 	private List<string> ReceiverOwnedCardIds =>
 		GameRef is null || ComposerReceiverPlayerIndex < 0 ? new() : GameRef.GetOwnedTradableCardIds( ComposerReceiverPlayerIndex );
+
+	private string GetPanelClasses()
+	{
+		var classes = "trade-panel";
+		if ( GameRef is not null && !GameRef.ForceHiddenUiVisible && !GameRef.IsGameHudVisible() )
+			classes += " invisible";
+
+		return classes;
+	}
 
 	private void OpenTradeComposer()
 	{
@@ -517,7 +526,9 @@
 			HudUi.GetPlayersHash( GameRef ),
 			HudUi.GetPropertyOwnersHash( GameRef ),
 			GetTradesHash(),
-			GetComposerHash()
+			GetComposerHash(),
+			GameRef?.IsGameHudVisible() ?? false,
+			GameRef?.ForceHiddenUiVisible ?? false
 		);
 	}
 }

@@ -44,6 +44,13 @@
 	gap: 10px;
 
 	pointer-events: all;
+	opacity: 1;
+	transition: opacity 0.2s ease;
+}
+
+.trade-panel.invisible {
+	opacity: $monopoly-roll-dice-translucent-panel-opacity;
+	pointer-events: none;
 }
 
 .trade-panel-header {

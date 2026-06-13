@@ -44,9 +44,10 @@
 				{
 					<ConsoleCommandTextEntry
 						@ref="ChatInput"
-						class="chat-overlay-input"
+						class="@GetChatInputClasses()"
 						Placeholder="Type message and press Enter..."
 						OnConsoleCloseRequested="@CancelCompose"
+						OnTextEdited="@SetChatDraft"
 						onsubmit="@SubmitMessage" />
 					<GameButton Variant="chat-overlay-send-button" OnClick="@SubmitMessage">Send</GameButton>
 				}
@@ -78,6 +79,7 @@
 	private int ScrollToBottomFramesRemaining;
 	private float LastInteractionAt;
 	private int LastSeenChatId;
+	private string ChatDraft = "";
 
 	protected override void OnUpdate()
 	{
@@ -181,6 +183,9 @@
 		IsPermanentlyClosed = false;
 		IsComposing = true;
 		WantsFocus = true;
+		ChatDraft = "";
+		if ( ChatInput is not null )
+			ChatInput.Text = "";
 		Touch();
 		StateHasChanged();
 	}
@@ -202,6 +207,9 @@
 		IsPermanentlyClosed = true;
 		IsComposing = false;
 		WantsFocus = false;
+		ChatDraft = "";
+		if ( ChatInput is not null )
+			ChatInput.Text = "";
 		ChatInput?.Blur();
 		StateHasChanged();
 	}
@@ -238,6 +246,9 @@
 	{
 		IsComposing = false;
 		WantsFocus = false;
+		if ( ChatInput is not null )
+			ChatInput.Text = "";
+		ChatDraft = "";
 		ChatInput?.Blur();
 		Touch();
 		StateHasChanged();
@@ -250,6 +261,7 @@
 
 		var message = (ChatInput.Text ?? "").Trim();
 		ChatInput.Text = "";
+		ChatDraft = "";
 
 		if ( !string.IsNullOrWhiteSpace( message ) )
 		{
@@ -263,6 +275,18 @@
 		}
 
 		CancelCompose();
+	}
+
+	private void SetChatDraft( string value )
+	{
+		ChatDraft = value ?? "";
+	}
+
+	private string GetChatInputClasses()
+	{
+		return ChatDraft.Length > 34
+			? "chat-overlay-input scrolled"
+			: "chat-overlay-input";
 	}
 
 	private object[] GetMentionAutoComplete( string value )
@@ -440,6 +464,7 @@
 		hash.Add( IsVisible() );
 		hash.Add( IsLoadingBlockingChat );
 		hash.Add( GameHud.IsMenuBlockingHud );
+		hash.Add( ChatDraft );
 		hash.Add( ChatEntries.Count );
 		hash.Add( GameRef.IsGameHudVisible() );
 
