@@ -257,7 +257,7 @@
 		hash.Add( CanClick );
 		hash.Add( Disabled );
 		hash.Add( isPressing );
-		hash.Add( KeyboardInputAction?.KeyboardCode );
+		hash.Add( GetKeyboardInputActionCode() );
 		hash.Add( InputActionIconColor );
 		hash.Add( MonopolyApp.InputActionIconType );
 
@@ -277,13 +277,25 @@
 
 	private GameIcon GetInputActionIcon()
 	{
-		var keyboardCode = KeyboardInputAction?.KeyboardCode;
+		var keyboardCode = GetKeyboardInputActionCode();
 		if ( string.IsNullOrWhiteSpace( keyboardCode ) )
 			return null;
 
 		return IsMouseKeyboardCode( keyboardCode )
 			? GameAssets.MouseIcons.Get( keyboardCode, UseOutlineInputActionIcon )
 			: GameAssets.KeyboardIcons.Get( keyboardCode, UseOutlineInputActionIcon );
+	}
+
+	private string GetKeyboardInputActionCode()
+	{
+		if ( KeyboardInputAction is null )
+			return "";
+
+		var boundCode = IGameInstance.Current?.GetBind( KeyboardInputAction.Name, out bool _, out bool _ );
+		if ( !string.IsNullOrWhiteSpace( boundCode ) )
+			return boundCode;
+
+		return KeyboardInputAction.KeyboardCode ?? "";
 	}
 
 	private static bool IsMouseKeyboardCode( string keyboardCode )
