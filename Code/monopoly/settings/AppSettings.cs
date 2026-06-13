@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Xml;
 using Sandbox;
 using Sandbox.Audio;
@@ -19,6 +21,13 @@ public class AppSettingsData
 	public Fsr3UpscalerQuality Fsr3Quality { get; set; } = Fsr3UpscalerQuality.Performance;
 	public float MotionBlurScale { get; set; } = 0f;
 	public int Volume { get; set; } = 100;
+	public List<AppSettingsKeybind> Keybinds { get; set; } = new();
+}
+
+public class AppSettingsKeybind
+{
+	public string ActionName { get; set; } = "";
+	public string KeyboardCode { get; set; } = "";
 }
 
 public class AppSettings : Component
@@ -74,7 +83,8 @@ public class AppSettings : Component
 			&& Data.UpscalerMode == snapshot.UpscalerMode
 			&& Data.Fsr3Quality == snapshot.Fsr3Quality
 			&& MathF.Abs( Data.MotionBlurScale - snapshot.MotionBlurScale ) < 0.001f
-			&& Data.Volume == snapshot.Volume;
+			&& Data.Volume == snapshot.Volume
+			&& KeybindsMatch( Data.Keybinds, snapshot.Keybinds );
 	}
 
 	private static AppSettingsData Copy( AppSettingsData source )
@@ -88,13 +98,15 @@ public class AppSettings : Component
 			UpscalerMode = source.UpscalerMode,
 			Fsr3Quality = source.Fsr3Quality,
 			MotionBlurScale = source.MotionBlurScale,
-			Volume = source.Volume
+			Volume = source.Volume,
+			Keybinds = CopyKeybinds( source.Keybinds )
 		};
 	}
 
 	public static void Apply()
 	{
 		ApplyAudio();
+		ApplyKeybinds();
 
 		if (Settings is null)
 			return;
@@ -139,6 +151,26 @@ public class AppSettings : Component
 	public static Fsr3UpscalerQuality GetFsr3Quality() => Data.Fsr3Quality;
 	public static UpscalerMode GetUpscaler() => Data.UpscalerMode; 
 	public static int GetVolume() => Math.Clamp( Data.Volume, 0, 100 );
+	public static string GetKeybind( InputAction action )
+	{
+		if ( action is null )
+			return "";
+
+		var savedKeybind = GetSavedKeybind( action.Name );
+		if ( !string.IsNullOrWhiteSpace( savedKeybind?.KeyboardCode ) )
+			return savedKeybind.KeyboardCode;
+
+		return IGameInstance.Current?.GetBind( action.Name, out bool _, out bool _ ) ?? action.KeyboardCode ?? "";
+	}
+
+	public static string GetKeybindConflictName( InputAction action, string keyboardCode )
+	{
+		var conflict = GetKeybindConflict( action, keyboardCode );
+		if ( conflict is null )
+			return "";
+
+		return !string.IsNullOrWhiteSpace( conflict.Title ) ? conflict.Title : conflict.Name;
+	}
 
 	public static string GetFullscreenModeString(FullscreenMode mode)
 	{
@@ -188,6 +220,37 @@ public class AppSettings : Component
 		ApplyAudio();
 		return true;
 	}
+
+	public static bool TrySetKeybind( InputAction action, string keyboardCode )
+	{
+		if ( action is null || string.IsNullOrWhiteSpace( action.Name ) )
+			return false;
+
+		keyboardCode = NormalizeKeybindCode( keyboardCode );
+		if ( string.IsNullOrWhiteSpace( keyboardCode ) )
+			return false;
+
+		if ( GetKeybindConflict( action, keyboardCode ) is not null )
+			return false;
+
+		Data.Keybinds ??= new List<AppSettingsKeybind>();
+		var savedKeybind = GetSavedKeybind( action.Name );
+		if ( savedKeybind is null )
+		{
+			Data.Keybinds.Add( new AppSettingsKeybind
+			{
+				ActionName = action.Name,
+				KeyboardCode = keyboardCode
+			} );
+		}
+		else
+		{
+			savedKeybind.KeyboardCode = keyboardCode;
+		}
+
+		Log.Info( $"Queued keybind '{action.Name}' to '{keyboardCode}'." );
+		return true;
+	}
 	
 	public static bool TryApply()
 	{
@@ -203,5 +266,109 @@ public class AppSettings : Component
 
 		if ( Mixer.Master is not null )
 			Mixer.Master.Volume = volume;
+	}
+
+	private static void ApplyKeybinds()
+	{
+		if ( Data.Keybinds is null || Data.Keybinds.Count == 0 )
+			return;
+
+		var gameInstance = IGameInstance.Current;
+		if ( gameInstance is null )
+		{
+			Log.Warning( "Could not apply keybinds because IGameInstance.Current is null." );
+			return;
+		}
+
+		foreach ( var keybind in Data.Keybinds )
+		{
+			if ( keybind is null || string.IsNullOrWhiteSpace( keybind.ActionName ) || string.IsNullOrWhiteSpace( keybind.KeyboardCode ) )
+				continue;
+
+			gameInstance.SetBind( keybind.ActionName, keybind.KeyboardCode );
+			Log.Info( $"Applied keybind '{keybind.ActionName}' to '{keybind.KeyboardCode}'." );
+		}
+
+		gameInstance.SaveBinds();
+	}
+
+	private static bool KeybindsMatch( List<AppSettingsKeybind> left, List<AppSettingsKeybind> right )
+	{
+		left = CopyKeybinds( left );
+		right = CopyKeybinds( right );
+
+		if ( left.Count != right.Count )
+			return false;
+
+		foreach ( var leftKeybind in left )
+		{
+			var rightKeybind = right.FirstOrDefault( keybind => string.Equals( keybind.ActionName, leftKeybind.ActionName, StringComparison.Ordinal ) );
+			if ( rightKeybind is null )
+				return false;
+
+			if ( !string.Equals( leftKeybind.KeyboardCode, rightKeybind.KeyboardCode, StringComparison.Ordinal ) )
+				return false;
+		}
+
+		return true;
+	}
+
+	private static List<AppSettingsKeybind> CopyKeybinds( List<AppSettingsKeybind> keybinds )
+	{
+		return (keybinds ?? new List<AppSettingsKeybind>())
+			.Where( keybind => keybind is not null && !string.IsNullOrWhiteSpace( keybind.ActionName ) )
+			.Select( keybind => new AppSettingsKeybind
+			{
+				ActionName = keybind.ActionName,
+				KeyboardCode = keybind.KeyboardCode ?? ""
+			} )
+			.ToList();
+	}
+
+	private static AppSettingsKeybind GetSavedKeybind( string actionName )
+	{
+		if ( string.IsNullOrWhiteSpace( actionName ) || Data.Keybinds is null )
+			return null;
+
+		return Data.Keybinds.FirstOrDefault( keybind => string.Equals( keybind?.ActionName, actionName, StringComparison.Ordinal ) );
+	}
+
+	private static string NormalizeKeybindCode( string keyboardCode )
+	{
+		return (keyboardCode ?? "").Trim();
+	}
+
+	private static InputAction GetKeybindConflict( InputAction targetAction, string keyboardCode )
+	{
+		if ( targetAction is null )
+			return null;
+
+		keyboardCode = NormalizeKeybindCode( keyboardCode );
+		if ( string.IsNullOrWhiteSpace( keyboardCode ) )
+			return null;
+
+		foreach ( var action in Input.GetActions() )
+		{
+			if ( action is null || string.IsNullOrWhiteSpace( action.Name ) )
+				continue;
+
+			if ( ShouldIgnoreKeybindConflict( action ) )
+				continue;
+
+			if ( string.Equals( action.Name, targetAction.Name, StringComparison.Ordinal ) )
+				continue;
+
+			var actionKeyboardCode = IGameInstance.Current?.GetBind( action.Name, out bool _, out bool _ ) ?? GetKeybind( action );
+			if ( string.Equals( NormalizeKeybindCode( actionKeyboardCode ), keyboardCode, StringComparison.OrdinalIgnoreCase ) )
+				return action;
+		}
+
+		return null;
+	}
+
+	private static bool ShouldIgnoreKeybindConflict( InputAction action )
+	{
+		return !Application.IsEditor &&
+			string.Equals( action?.GroupName, "Editor", StringComparison.OrdinalIgnoreCase );
 	}
 }

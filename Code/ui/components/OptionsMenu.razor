@@ -53,6 +53,12 @@
 													NumberFormat="0">
 												</SliderControl>
 											}
+											else if ( option.Kind == AppSettingOptionKind.Keybind )
+											{
+												<GameButton Variant="@GetKeybindButtonClasses( option )" CanClick="@IsOptionAvailable( option )" OnClick="@(() => StartKeybindCapture( option ))" BlockedPopupTitle="Unavailable" BlockedPopupMessage="@UnavailableMessage">
+													@GetKeybindButtonText( option )
+												</GameButton>
+											}
 										</ChildContent>
 									</OptionsPanelRow>
 								}
@@ -88,6 +94,7 @@
 	private bool wasOpen;
 	private bool isCloseConfirmationOpen;
 	private AppSettingsData openingSettingsSnapshot;
+	private AppSettingOption keybindCaptureOption;
 	private string applyErrorMessage = "";
 
 	private string OptionsScreenVariant => UseBlurBackdrop ? "blur-backdrop" : "";
@@ -97,6 +104,7 @@
 	private string UnavailableMessage => "This setting is not available right now.";
 	private string RenderSettingsUnavailableMessage => "Video settings cannot be applied because s&box is not exposing render settings for this session. Try standalone mode if this is the editor.";
 	private IReadOnlyList<OptionsPanelSection> AppSettingSections => BuildAppSettingSections();
+	public override bool AcceptsImeInput => keybindCaptureOption is not null;
 
 	protected override void OnParametersSet()
 	{
@@ -201,6 +209,30 @@
 		ApplySetting( option?.SetIntValue?.Invoke( (int)MathF.Round( rawValue ) ) == true );
 	}
 
+	private static string GetKeybindValue( AppSettingOption option )
+	{
+		return option?.GetKeybindValue?.Invoke() ?? "";
+	}
+
+	private void SetKeybindValue( AppSettingOption option, string keyboardCode )
+	{
+		if ( option is null )
+			return;
+
+		var conflictName = option.GetKeybindConflict?.Invoke( keyboardCode ) ?? "";
+		if ( !string.IsNullOrWhiteSpace( conflictName ) )
+		{
+			ShowApplyError( $"{keyboardCode.ToUpperInvariant()} is already bound to {conflictName}." );
+			return;
+		}
+
+		var applied = option.SetKeybindValue?.Invoke( keyboardCode ) == true;
+		if ( !applied )
+			Log.Warning( $"Could not apply keybind '{option.Key}' to '{keyboardCode}'." );
+
+		ApplySetting( applied );
+	}
+
 	private string GetOptionStatusText( AppSettingOption option )
 	{
 		if ( IsOptionAvailable( option ) )
@@ -246,6 +278,7 @@
 
 	private void Close()
 	{
+		StopKeybindCapture();
 		DropdownButton.CloseOpenDropdown();
 
 		if ( HasUnsavedChanges )
@@ -296,6 +329,7 @@
 	{
 		openingSettingsSnapshot = AppSettings.Capture();
 		isCloseConfirmationOpen = false;
+		StopKeybindCapture();
 		applyErrorMessage = "";
 	}
 
@@ -322,12 +356,139 @@
 		return enabled ? "options-panel-toggle-button selected" : "options-panel-toggle-button";
 	}
 
+	private string GetKeybindButtonClasses( AppSettingOption option )
+	{
+		return IsCapturingKeybind( option )
+			? "options-panel-toggle-button selected options-keybind-capturing"
+			: "options-panel-toggle-button";
+	}
+
+	private string GetKeybindButtonText( AppSettingOption option )
+	{
+		if ( IsCapturingKeybind( option ) )
+			return "Press a key";
+
+		var keyboardCode = GetKeybindValue( option );
+		return string.IsNullOrWhiteSpace( keyboardCode ) ? "Unbound" : keyboardCode.ToUpperInvariant();
+	}
+
+	private void StartKeybindCapture( AppSettingOption option )
+	{
+		if ( !IsOptionAvailable( option ) )
+			return;
+		
+		keybindCaptureOption = option;
+		AcceptsFocus = true;
+		Focus();
+		applyErrorMessage = "";
+		revision++;
+		StateHasChanged();
+	}
+
+	public override void OnButtonEvent( ButtonEvent e )
+	{
+		if ( keybindCaptureOption is null || e is null || !e.Pressed )
+		{
+			base.OnButtonEvent( e );
+			return;
+		}
+
+		if ( IsMouseButton( e.Button ) )
+		{
+			e.StopPropagation = true;
+			TryCaptureKeybindButton( e );
+			return;
+		}
+
+		base.OnButtonEvent( e );
+	}
+
+	public override void OnButtonTyped( ButtonEvent e )
+	{
+		if ( keybindCaptureOption is null || e is null || !e.Pressed )
+		{
+			base.OnButtonTyped( e );
+			return;
+		}
+
+		e.StopPropagation = true;
+		TryCaptureKeybindButton( e );
+	}
+
+	private void TryCaptureKeybindButton( ButtonEvent e )
+	{
+		var button = (e.Button ?? "").Trim();
+		if ( string.IsNullOrWhiteSpace( button ) )
+			return;
+
+		if ( string.Equals( button, "escape", StringComparison.OrdinalIgnoreCase ) )
+		{
+			StopKeybindCapture();
+			revision++;
+			StateHasChanged();
+			return;
+		}
+
+		SetKeybindValue( keybindCaptureOption, FormatKeybindCode( button, e ) );
+		StopKeybindCapture();
+		revision++;
+		StateHasChanged();
+	}
+
+	private void StopKeybindCapture()
+	{
+		keybindCaptureOption = null;
+		Blur();
+	}
+
+	private static string FormatKeybindCode( string button, ButtonEvent e )
+	{
+		var parts = new List<string>();
+		var normalizedButton = button.Trim();
+
+		if ( e.HasCtrl && !IsModifierButton( normalizedButton, "ctrl", "control" ) )
+			parts.Add( "ctrl" );
+
+		if ( e.HasAlt && !IsModifierButton( normalizedButton, "alt" ) )
+			parts.Add( "alt" );
+
+		if ( e.HasShift && !IsModifierButton( normalizedButton, "shift" ) )
+			parts.Add( "shift" );
+
+		parts.Add( normalizedButton );
+		return string.Join( " + ", parts );
+	}
+
+	private bool IsCapturingKeybind( AppSettingOption option )
+	{
+		return keybindCaptureOption is not null &&
+			option is not null &&
+			string.Equals( keybindCaptureOption.Key, option.Key, StringComparison.Ordinal );
+	}
+
+	private static bool IsMouseButton( string button )
+	{
+		return (button ?? "").Trim().StartsWith( "mouse", StringComparison.OrdinalIgnoreCase );
+	}
+
+	private static bool IsModifierButton( string button, params string[] modifierNames )
+	{
+		foreach ( var modifierName in modifierNames )
+		{
+			if ( button.Contains( modifierName, StringComparison.OrdinalIgnoreCase ) )
+				return true;
+		}
+
+		return false;
+	}
+
 	protected override int BuildHash()
 	{
 		var hash = new HashCode();
 		hash.Add( IsOpen );
 		hash.Add( revision );
 		hash.Add( SettingsAvailable );
+		hash.Add( keybindCaptureOption?.Key );
 
 		foreach ( var option in AppSettingsSchema.Options )
 		{
@@ -338,6 +499,7 @@
 			{
 				AppSettingOptionKind.Bool => GetBoolValue( option ).ToString(),
 				AppSettingOptionKind.Int => GetIntValue( option ).ToString(),
+				AppSettingOptionKind.Keybind => GetKeybindValue( option ),
 				_ => GetEnumValue( option )
 			} );
 		}

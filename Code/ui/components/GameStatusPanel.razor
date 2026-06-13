@@ -148,28 +148,27 @@
     private bool gamePanelEnabled = false;
 	private bool ShouldShowActionButtons => MonopolyApp.IsGameStatusPanelActionButtonsEnabled;
 	private bool didRefreshAfterRefs;
-	private InputAction CachedRollInputAction;
-	private InputAction CachedEndTurnInputAction;
+
+	private InputAction GetInputAction(string name, string defaultKeyCode)
+	{
+		var action = Input.GetActions().FirstOrDefault( action => string.Equals( action.Name, name, StringComparison.Ordinal ) );
+		if ( action is null )
+		{
+			Log.Warning($"Could not find {name} action. Setting to default {defaultKeyCode}");
+			return new(name, defaultKeyCode);
+		}
+
+		return action;
+	}
+
 	private InputAction GetRollInputAction()
 	{
-		if ( CachedRollInputAction != null )
-			return CachedRollInputAction;
-		
-		foreach( InputAction action in Input.GetActions().Where(action => action.Name == "RollDice").ToList())
-			CachedRollInputAction = action;
-			
-		return CachedRollInputAction;
+		return GetInputAction("RollDice", "R");
 	}
 
 	private InputAction GetEndTurnInputAction()
 	{
-		if ( CachedEndTurnInputAction != null )
-			return CachedEndTurnInputAction;
-		
-		foreach( InputAction action in Input.GetActions().Where(action => action.Name == "EndTurn").ToList())
-			CachedEndTurnInputAction = action;
-			
-		return CachedEndTurnInputAction;
+		return GetInputAction("EndTurn", "E");
 	}
 
 	protected override void OnAfterTreeRender( bool firstTime )
