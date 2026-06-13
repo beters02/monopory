@@ -10,7 +10,7 @@ public static class LoadingState
 	public static float StartedAt { get; private set; }
 	public static int Revision { get; private set; }
 
-	public static readonly bool IsFunctionalityEnabled = false;
+	public static readonly bool IsFunctionalityEnabled = true;
 
 	public static void Show( string title, string message = "" )
 	{
