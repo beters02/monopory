@@ -2,8 +2,11 @@ using System;
 using System.Collections.Generic;
 using Sandbox;
 
+[AttributeUsage( AttributeTargets.Method )]
 public sealed class CheatCmdAttribute : Attribute {}
+[AttributeUsage( AttributeTargets.Method )]
 public sealed class HostCheatCmdAttribute : Attribute {}
+[AttributeUsage( AttributeTargets.Method )]
 public sealed class HostCmdAttribute : Attribute {}
 
 public sealed class CommandResult
@@ -37,14 +40,7 @@ public sealed class GameCommand
 	public string Name { get; init; }
 	public MethodDescription Method { get; init; }
 	public ConCmdAttribute Attribute { get; init; }
-	public GameCommandCheatType CheatType { get; init; } = GameCommandCheatType.None;
-
-	public GameCommand( string name, MethodDescription method, ConCmdAttribute attribute )
-	{
-		Name = name;
-		Method = method;
-		Attribute = attribute;
-	}
+	public GameCommandCheatType CheatType { get; init; }
 
 	public GameCommand( string name, MethodDescription method, ConCmdAttribute attribute, GameCommandCheatType cheatType )
 	{
@@ -83,12 +79,12 @@ public static class GameCommands
 				name = method.Name;
 
 			GameCommandCheatType cheatType = GameCommandCheatType.None;
-
-			if ( TypeLibrary.HasAttribute<CheatCmdAttribute>(method.GetType()) )
+			
+			if ( method.GetCustomAttribute<CheatCmdAttribute>() is not null )
 				cheatType = GameCommandCheatType.Cheats;
-			else if ( TypeLibrary.HasAttribute<HostCheatCmdAttribute>(method.GetType()) )
+			else if ( method.GetCustomAttribute<HostCheatCmdAttribute>() is not null )
 				cheatType = GameCommandCheatType.HostOrCheats;
-			else if ( TypeLibrary.HasAttribute<HostCmdAttribute>(method.GetType()) )
+			else if ( method.GetCustomAttribute<HostCmdAttribute>() is not null )
 				cheatType = GameCommandCheatType.Host;
 
 			Commands[name] = new GameCommand( name, method, attribute, cheatType );
