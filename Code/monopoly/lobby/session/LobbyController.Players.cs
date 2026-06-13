@@ -119,7 +119,7 @@ public sealed partial class LobbyController
 	{
 		var players = new List<LobbyPlayer>();
 		var localSteamId = GetLocalSteamId();
-		var effectiveHostOwnerId = ResolveEffectiveHostOwnerId();
+		var effectiveHostOwnerId = EffectiveHostOwnerId;
 		var connectionsBySteamId = GetConnections().ToDictionary( connection => connection.SteamId, connection => connection );
 		var ownerIds = GetKnownOwnerIds()
 			.Where( ownerId => ownerId != 0 )
@@ -215,19 +215,6 @@ public sealed partial class LobbyController
 		}
 
 		return false;
-	}
-
-	private long ResolveEffectiveHostOwnerId()
-	{
-		var preferredHost = PreferredHostOwnerId;
-		if ( preferredHost != 0 && HasConnection( preferredHost ) )
-			return preferredHost;
-
-		var hostConnection = Connection.Host;
-		if ( hostConnection is not null )
-			return hostConnection.SteamId;
-
-		return 0;
 	}
 
 	private IEnumerable<long> GetKnownOwnerIds()

@@ -90,7 +90,7 @@ public sealed partial class LobbyController
 		if ( !OnlyHostStartsGame )
 			return true;
 
-		return caller.SteamId == EffectiveHostOwnerId;
+		return MonopolyApp.IsEffectiveHostCaller( caller );
 	}
 
 }

@@ -2,6 +2,10 @@ using System;
 using System.Collections.Generic;
 using Sandbox;
 
+public sealed class CheatCmdAttribute : Attribute {}
+public sealed class HostCheatCmdAttribute : Attribute {}
+public sealed class HostCmdAttribute : Attribute {}
+
 public sealed class CommandResult
 {
 	public bool Ok { get; }
@@ -15,9 +19,41 @@ public sealed class CommandResult
 
 	public static CommandResult Success( string message = "" ) => new( true, message );
 	public static CommandResult Fail( string message ) => new( false, message );
+	public static CommandResult FailCheats() => new( false, "Cheats must be enabled to use this command." );
+	public static CommandResult FailHost() => new( false, "Must be host to use this command." );
+	public static CommandResult FailCheatsOrHost() => new( false, "Must be host or have cheats enabled to use this command." );
 }
 
-public sealed record GameCommand( string Name, MethodDescription Method, ConCmdAttribute Attribute );
+public enum GameCommandCheatType
+{
+	None,
+	Cheats,
+	HostOrCheats,
+	Host
+}
+
+public sealed class GameCommand
+{
+	public string Name { get; init; }
+	public MethodDescription Method { get; init; }
+	public ConCmdAttribute Attribute { get; init; }
+	public GameCommandCheatType CheatType { get; init; } = GameCommandCheatType.None;
+
+	public GameCommand( string name, MethodDescription method, ConCmdAttribute attribute )
+	{
+		Name = name;
+		Method = method;
+		Attribute = attribute;
+	}
+
+	public GameCommand( string name, MethodDescription method, ConCmdAttribute attribute, GameCommandCheatType cheatType )
+	{
+		Name = name;
+		Method = method;
+		Attribute = attribute;
+		CheatType = cheatType;
+	}
+}
 
 public static class GameCommands
 {
@@ -46,7 +82,16 @@ public static class GameCommands
 			if ( string.IsNullOrWhiteSpace( name ) )
 				name = method.Name;
 
-			Commands[name] = new GameCommand( name, method, attribute );
+			GameCommandCheatType cheatType = GameCommandCheatType.None;
+
+			if ( TypeLibrary.HasAttribute<CheatCmdAttribute>(method.GetType()) )
+				cheatType = GameCommandCheatType.Cheats;
+			else if ( TypeLibrary.HasAttribute<HostCheatCmdAttribute>(method.GetType()) )
+				cheatType = GameCommandCheatType.HostOrCheats;
+			else if ( TypeLibrary.HasAttribute<HostCmdAttribute>(method.GetType()) )
+				cheatType = GameCommandCheatType.Host;
+
+			Commands[name] = new GameCommand( name, method, attribute, cheatType );
 		}
 	}
 }
@@ -55,13 +100,21 @@ public sealed class GameCommandManager : Component
 {
 	private bool lastCheatsEnabled;
 	private bool firstRun = true;
+	private IReadOnlyDictionary<string, GameCommand> _commands = GameCommands.All;
+	private static IReadOnlyDictionary<string, GameCommand> Commands;
+
+	protected override void OnAwake()
+	{
+		base.OnAwake();
+		Commands = _commands;
+	}
 
 	protected override void OnUpdate()
 	{
 		if ( !Networking.IsHost )
 			return;
 
-		HandlePreviouslyExistingCommands();
+		//HandlePreviouslyExistingCommands();
 
 		if ( firstRun )
 			firstRun = false;
@@ -75,7 +128,7 @@ public sealed class GameCommandManager : Component
 		return string.Join( " ", new[] { playerName }.Concat( playerNameTail ) );
 	}
 
-	internal static void RunCommand( string commandName, Func<CommandResult> callback )
+	internal static void ExecuteCommand( string commandName, Func<CommandResult> callback )
 	{
 		try
 		{
@@ -89,12 +142,44 @@ public sealed class GameCommandManager : Component
 		}
 	}
 
+	internal static void RunCommand(string commandName, Func<CommandResult> callback, Connection caller = null )
+	{
+
+		if ( caller == null || !Commands.TryGetValue( commandName, out GameCommand value ) )
+		{
+			ExecuteCommand( commandName, callback );
+			return;
+		}
+
+		Log.Info("Found command.");
+		Log.Info(value.Name);
+		Log.Info(value.CheatType);
+
+		if ( value.CheatType == GameCommandCheatType.Cheats )
+			if ( !CanUseCheatCommand( caller ) )
+			{
+				LogCommandResult( commandName, CommandResult.FailCheats());
+				return;
+			}
+		else if ( value.CheatType == GameCommandCheatType.HostOrCheats )
+			if ( !CanUseHostCheatCommand( caller ) )
+			{
+				LogCommandResult( commandName, CommandResult.FailCheats());
+				return;
+			}
+		else if ( value.CheatType == GameCommandCheatType.Host )
+			if ( !CanUseHostCommand( caller ))
+			{
+				LogCommandResult( commandName, CommandResult.FailHost());
+				return;
+			}
+
+		ExecuteCommand( commandName, callback );
+	}
+
 	internal static bool CanUseCheatCommand( Connection caller )
 	{
-		if ( Networking.IsHost && (caller is null || caller == Connection.Local) )
-			return true;
-
-		return Game.CheatsEnabled;
+		return MonopolyApp.CheatsEnabled;
 	}
 
 	internal static bool CanUseHostCheatCommand( Connection caller )
@@ -105,7 +190,12 @@ public sealed class GameCommandManager : Component
 		if ( GameController.Instance?.IsEffectiveHostCaller( caller ) == true )
 			return true;
 
-		return Game.CheatsEnabled;
+		return MonopolyApp.CheatsEnabled;
+	}
+
+	internal static bool CanUseHostCommand( Connection caller )
+	{
+		return Networking.IsHost && (caller is null || caller == Connection.Local);
 	}
 
 	internal static bool HasUnresolvedPendingBuyDecision( GameController game, PlayerState player )
@@ -164,9 +254,9 @@ public sealed class GameCommandManager : Component
 		Sandbox.ui.components.StandaloneConsole.WriteLine( message, kind );
 	}
 
-	private void HandlePreviouslyExistingCommands()
+	/*private void HandlePreviouslyExistingCommands()
 	{
-		var cheatsEnabled = Game.CheatsEnabled;
+		var cheatsEnabled = MonopolyApp.CheatsEnabled;
 		if ( cheatsEnabled != lastCheatsEnabled )
 		{
 			var oldValue = lastCheatsEnabled;
@@ -177,15 +267,75 @@ public sealed class GameCommandManager : Component
 
 	private void OnSvCheatsChanged( bool oldValue, bool newValue, bool wasFirstRun )
 	{
-		Log.Info( $"sv_cheats changed: {oldValue} -> {newValue}" );
+		OnSvCheatsChangedStatic( oldValue, newValue, firstRun );
+	}*/
+
+	public static void OnSvCheatsChangedStatic( bool oldValue, bool newValue, bool wasFirstRun = false )
+	{
+		Log.Info( $"mn_cheats changed: {oldValue} -> {newValue}" );
 
 		if ( wasFirstRun )
 			return;
 
 		GameController.Instance?.SendTableChatMessage(
 			"Server cheats changed",
-			$"sv_cheats is now {(newValue ? "enabled" : "disabled")}."
+			$"mn_cheats is now {(newValue ? "enabled" : "disabled")}."
 		);
+		GameController.Instance?.SendGlobalPopupToAll("Server Cheats Changed", $"mn_cheats is now {(newValue ? "enabled" : "disabled")}.");
+	}
+
+	public static bool TryParseBool(string value, out bool? parsed)
+	{
+		parsed = null;
+
+		if ( value is null )
+			return false;
+		
+		if ( bool.TryParse( value, out bool boolValue ) )
+		{
+			parsed = boolValue;
+			return true;
+		}
+
+		if ( int.TryParse( value, out int intValue ) )
+		{
+			if ( intValue != 1 && intValue != 0 )
+				return false;
+
+			parsed = intValue == 1;
+			return true;
+		}
+
+		return false;
+	}
+}
+
+public static class SvCheatsCommand
+{
+	public const string Name = "mn_cheats";
+
+	[ConCmd( Name )]
+	public static void Execute( Connection connection, string value = "_" )
+	{
+		GameCommandManager.RunCommand( Name, () =>
+		{
+			bool oldValue = MonopolyApp.CheatsEnabled;
+
+			if ( value is null || value == "_" )
+				return CommandResult.Success($"mn_cheats {oldValue}");
+
+			if ( !GameCommandManager.CanUseHostCommand( connection ) )
+				return CommandResult.FailHost();
+
+			var couldParse = GameCommandManager.TryParseBool( value, out bool? parsed );
+			if ( !couldParse )
+				return CommandResult.Fail( $"Unable to parse value {value}" );
+
+			bool newValue = (bool) parsed;
+			MonopolyApp.SetCheatsEnabled( newValue );
+			GameCommandManager.OnSvCheatsChangedStatic( oldValue, newValue );
+			return CommandResult.Success( $"mn_cheats => {value}" );
+		} );
 	}
 }
 
@@ -193,14 +343,12 @@ public static class RollPhysicalDiceCommand
 {
 	public const string Name = "roll_physical_dice";
 
+	[HostCheatCmd]
 	[ConCmd( Name )]
 	public static void Execute( Connection connection, string playerName = "self", params string[] playerNameTail )
 	{
 		GameCommandManager.RunCommand( Name, () =>
 		{
-			if ( !GameCommandManager.CanUseHostCheatCommand( connection ) )
-				return CommandResult.Fail( "roll_physical_dice can only be used by the host with sv_cheats enabled." );
-
 			var game = GameController.Instance;
 			if ( game is null )
 				return CommandResult.Fail( "No active game." );
@@ -215,7 +363,7 @@ public static class RollPhysicalDiceCommand
 
 			_ = game.RollDiceAsync();
 			return CommandResult.Success();
-		} );
+		}, connection );
 	}
 }
 
@@ -223,14 +371,12 @@ public static class EndTurnCommand
 {
 	public const string Name = "end_turn";
 
+	[HostCheatCmd]
 	[ConCmd( Name )]
 	public static void Execute( Connection connection, string playerName = "self", params string[] playerNameTail )
 	{
 		GameCommandManager.RunCommand( Name, () =>
 		{
-			if ( !GameCommandManager.CanUseHostCheatCommand( connection ) )
-				return CommandResult.Fail( "end_turn can only be used by the host with sv_cheats enabled." );
-
 			var game = GameController.Instance;
 			if ( game is null )
 				return CommandResult.Fail( "No active game." );
@@ -245,7 +391,7 @@ public static class EndTurnCommand
 
 			game.EndTurn();
 			return CommandResult.Success();
-		} );
+		}, connection );
 	}
 }
 
@@ -253,6 +399,7 @@ public static class BuyPropertyCommand
 {
 	public const string Name = "buy_property";
 
+	[CheatCmd]
 	[ConCmd( Name )]
 	public static void Execute( Connection connection, int propertyIndex, string playerName = "self", params string[] playerNameTail )
 	{
@@ -275,13 +422,10 @@ public static class BuyPropertyCommand
 			if ( GameCommandManager.HasUnresolvedPendingBuyDecision( game, player ) )
 				return CommandResult.Fail( GameCommandManager.GetPendingBuyDecisionMessage( game ) );
 
-			if ( !GameCommandManager.CanUseCheatCommand( connection ) )
-				return CommandResult.Fail( "sv_cheats must be enabled to buy arbitrary properties." );
-
 			return game.TryBuyPropertyForPlayer( player, propertyIndex, true, out var message )
 				? CommandResult.Success( message )
 				: CommandResult.Fail( message );
-		} );
+		}, connection );
 	}
 }
 
@@ -289,14 +433,12 @@ public static class BuyPropertySetCommand
 {
 	public const string Name = "buy_property_set";
 
+	[CheatCmd]
 	[ConCmd( Name )]
 	public static void Execute( Connection connection, string propertySet, string playerName = "self", params string[] playerNameTail )
 	{
 		GameCommandManager.RunCommand( Name, () =>
 		{
-			if ( !GameCommandManager.CanUseCheatCommand( connection ) )
-				return CommandResult.Fail( "sv_cheats must be enabled to buy property sets." );
-
 			if ( !ColorGroups.TryParse( propertySet, out var colorGroup ) || colorGroup == ColorGroup.None )
 				return CommandResult.Fail( $"Property set \"{propertySet}\" does not exist." );
 
@@ -320,7 +462,7 @@ public static class BuyPropertySetCommand
 			return game.TryBuyPropertySetForPlayer( player, properties, true, out var message )
 				? CommandResult.Success( message )
 				: CommandResult.Fail( message );
-		} );
+		}, connection );
 	}
 }
 
@@ -349,7 +491,7 @@ public static class RollDiceCommand
 			var isCallerRollingSelf = resolvedPlayerName.Equals( "self", StringComparison.OrdinalIgnoreCase ) ||
 				resolvedPlayerName.Equals( "me", StringComparison.OrdinalIgnoreCase );
 
-			if ( (isForcedRoll || !isCallerRollingSelf) && !GameCommandManager.CanUseCheatCommand( connection ) )
+			if ( (isForcedRoll || !isCallerRollingSelf) && !GameCommandManager.CanUseHostCheatCommand( connection ) )
 				return CommandResult.Fail( "sv_cheats must be enabled to force rolls or roll for another player." );
 
 			if ( Networking.IsHost )
@@ -358,7 +500,7 @@ public static class RollDiceCommand
 				game.RequestRollDice( amount );
 
 			return CommandResult.Success();
-		} );
+		}, connection );
 	}
 }
 
@@ -366,6 +508,7 @@ public static class RollTwoDiceCommand
 {
 	public const string Name = "roll_two_dice";
 
+	[CheatCmd]
 	[ConCmd( Name )]
 	public static void Execute( Connection connection, int dieA, int dieB, string playerName = "self", params string[] playerNameTail )
 	{
@@ -386,16 +529,13 @@ public static class RollTwoDiceCommand
 			if ( game.CurrentPlayer != player )
 				return CommandResult.Fail( "It is not that player's turn." );
 
-			if ( !GameCommandManager.CanUseCheatCommand( connection ) )
-				return CommandResult.Fail( "sv_cheats must be enabled to force rolls or roll for another player." );
-
 			if ( Networking.IsHost )
 				_ = game.RollTwoDiceAsync( dieA, dieB );
 			else
 				game.RequestRollTwoDice( dieA, dieB );
 
 			return CommandResult.Success();
-		} );
+		}, connection );
 	}
 }
 
@@ -418,7 +558,7 @@ public static class DisplayStatsLogCommand
 				game.RequestDisplayStatsLog();
 
 			return CommandResult.Success( game.BuildStatsLogText() );
-		} );
+		}, connection );
 	}
 }
 
@@ -426,17 +566,15 @@ public static class DisplayHiddenUiCommand
 {
 	public const string Name = "display_hidden_ui";
 
+	[HostCmd]
 	[ConCmd( Name )]
 	public static void Execute( Connection connection, bool visible = true )
 	{
-		GameCommandManager.RunCommand( Name, () => SetHiddenUiVisible( connection, visible ) );
+		GameCommandManager.RunCommand( Name, () => SetHiddenUiVisible( connection, visible ), connection );
 	}
 
 	internal static CommandResult SetHiddenUiVisible( Connection connection, bool visible )
 	{
-		if ( !GameCommandManager.CanUseHostCheatCommand( connection ) )
-			return CommandResult.Fail( "display_hidden_ui can only be used by the host with sv_cheats enabled." );
-
 		var game = GameController.Instance;
 		if ( game is null )
 			return CommandResult.Fail( "No active game." );
@@ -453,10 +591,11 @@ public static class DisplayAllUiCommand
 {
 	public const string Name = "display_all_ui";
 
+	[HostCmd]
 	[ConCmd( Name )]
 	public static void Execute( Connection connection, bool visible = true )
 	{
-		GameCommandManager.RunCommand( Name, () => DisplayHiddenUiCommand.SetHiddenUiVisible( connection, visible ) );
+		GameCommandManager.RunCommand( Name, () => DisplayHiddenUiCommand.SetHiddenUiVisible( connection, visible ), connection );
 	}
 }
 
@@ -464,10 +603,11 @@ public static class DisplayMakeUiVisibleCommand
 {
 	public const string Name = "display_make_ui_visible";
 
+	[HostCmd]
 	[ConCmd( Name )]
 	public static void Execute( Connection connection, bool visible = true )
 	{
-		GameCommandManager.RunCommand( Name, () => DisplayHiddenUiCommand.SetHiddenUiVisible( connection, visible ) );
+		GameCommandManager.RunCommand( Name, () => DisplayHiddenUiCommand.SetHiddenUiVisible( connection, visible ), connection );
 	}
 }
 
@@ -475,14 +615,12 @@ public static class ForceReadyUpCommand
 {
 	public const string Name = "force_ready_up";
 
+	[HostCmd]
 	[ConCmd( Name )]
 	public static void Execute( Connection connection )
 	{
 		GameCommandManager.RunCommand( Name, () =>
 		{
-			if ( !GameCommandManager.CanUseHostCheatCommand( connection ) )
-				return CommandResult.Fail( "force_ready_up can only be used by the host with sv_cheats enabled." );
-
 			var game = GameController.Instance;
 			if ( game is not null )
 			{
@@ -498,7 +636,7 @@ public static class ForceReadyUpCommand
 			return lobby.TryForceReadyUp( out var message )
 				? CommandResult.Success( message )
 				: CommandResult.Fail( message );
-		} );
+		}, connection );
 	}
 }
 
@@ -506,14 +644,12 @@ public static class ChangeMoneyCommand
 {
 	public const string Name = "change_money";
 
+	[CheatCmd]
 	[ConCmd( Name )]
 	public static void Execute( Connection connection, int amount, string playerName = "self", params string[] playerNameTail )
 	{
 		GameCommandManager.RunCommand( Name, () =>
 		{
-			if ( !GameCommandManager.CanUseCheatCommand( connection ) )
-				return CommandResult.Fail( "sv_cheats must be enabled to change player money." );
-
 			var game = GameController.Instance;
 			if ( game is null )
 				return CommandResult.Fail( "No active game." );
@@ -526,7 +662,7 @@ public static class ChangeMoneyCommand
 			return game.TryChangeMoneyForPlayer( player, amount, out var message )
 				? CommandResult.Success( message )
 				: CommandResult.Fail( message );
-		} );
+		}, connection );
 	}
 }
 
@@ -549,7 +685,7 @@ public static class ChangeVacationCashCommand
 			return game.TryChangeVacationCash( amount, out var message )
 				? CommandResult.Success( message )
 				: CommandResult.Fail( message );
-		} );
+		}, connection );
 	}
 }
 
@@ -577,7 +713,7 @@ public static class ForceEndGameWinCommand
 			return game.TryForceEndGameWin( player, out var message )
 				? CommandResult.Success( message )
 				: CommandResult.Fail( message );
-		} );
+		}, connection );
 	}
 }
 
@@ -610,6 +746,6 @@ public static class JailPlayerCommand
 				game.RequestSendPlayerToJail( player );
 
 			return CommandResult.Success();
-		} );
+		}, connection );
 	}
 }

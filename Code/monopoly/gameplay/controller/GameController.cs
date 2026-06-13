@@ -67,8 +67,16 @@ public sealed partial class GameController : Component, Component.INetworkListen
 	[Sync] public bool PendingRollSuppressDoublesExtraTurn { get; set; }
 	[Sync] public bool PendingRollIsJailAttempt { get; set; }
 	[Sync] public float PendingRollStartedAt { get; set; }
-	[Sync] public long PreferredHostOwnerId { get; set; }
-	[Sync] public bool PreferredHostDisconnected { get; set; }
+	public long PreferredHostOwnerId
+	{
+		get => MonopolyApp.GetPreferredHostOwnerId();
+		set => MonopolyApp.SetPreferredHostOwnerId( value );
+	}
+	public bool PreferredHostDisconnected
+	{
+		get => MonopolyApp.GetPreferredHostDisconnected();
+		set => MonopolyApp.SetPreferredHostDisconnected( value );
+	}
 	[Sync] public bool IsRecoveringHostState { get; set; }
 	[Sync] public NetDictionary<int, int> PropertyOwners { get; set; } = new();
 	[Sync] public NetDictionary<int, int> PropertyImprovements { get; set; } = new();

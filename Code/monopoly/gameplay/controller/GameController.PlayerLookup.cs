@@ -21,11 +21,7 @@ public sealed partial class GameController : Component
 	public int LocalPlayerIndex => Players.IndexOf( LocalPlayer );
 	public bool IsLocalEffectiveHost
 	{
-		get
-		{
-			var localSteamId = GetLocalSteamId();
-			return localSteamId.HasValue && localSteamId.Value == EffectiveHostOwnerId;
-		}
+		get => MonopolyApp.IsLocalEffectiveHost;
 	}
 
 	public int GetPlayerIndex( PlayerState player )

@@ -6,42 +6,14 @@ public sealed partial class GameController
 	
 	public bool IsEffectiveHostCaller( Connection caller )
 	{
-		if ( !Networking.IsHost )
-			return false;
-
-		if ( caller is null || caller == Connection.Local )
-			return true;
-
-		return caller.SteamId == EffectiveHostOwnerId;
+		return MonopolyApp.IsEffectiveHostCaller( caller );
 	}
 
-	public long EffectiveHostOwnerId => ResolveEffectiveHostOwnerId();
+	public long EffectiveHostOwnerId => MonopolyApp.EffectiveHostOwnerId;
 
 	private void EnsurePreferredHostOwnerId()
 	{
-		if ( PreferredHostOwnerId != 0 )
-			return;
-
-		PreferredHostOwnerId = Connection.Local?.SteamId ?? Connection.Host?.SteamId ?? 0L;
-		PreferredHostDisconnected = false;
-	}
-
-	private long ResolveEffectiveHostOwnerId()
-	{
-		var preferredHost = PreferredHostOwnerId;
-		if ( preferredHost != 0 && HasConnection( preferredHost ) )
-			return preferredHost;
-
-		var hostConnection = Connection.Host ?? Connection.Local;
-		return hostConnection?.SteamId ?? 0L;
-	}
-
-	private static bool HasConnection( long steamId )
-	{
-		if ( steamId == 0 )
-			return false;
-
-		return Connection.All.Any( connection => connection is not null && connection.SteamId == steamId );
+		MonopolyApp.EnsurePreferredHostOwnerId();
 	}
 
 	void Component.INetworkListener.OnConnected( Connection connection )

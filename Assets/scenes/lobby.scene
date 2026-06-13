@@ -33,7 +33,7 @@
           "OnComponentStart": null,
           "OnComponentUpdate": null,
           "SceneTags": "",
-          "Title": null,
+          "Title": "Lobby",
           "Version": null
         },
         {
@@ -313,6 +313,49 @@
           "OnComponentUpdate": null,
           "PreviewScaleMultiplier": 1,
           "RotationSpeed": 22
+        }
+      ],
+      "Children": []
+    },
+    {
+      "__guid": "bf4adf5f-09aa-40e3-b551-e4d868dcbfbb",
+      "__version": 2,
+      "Flags": 0,
+      "Name": "MonopolyApp",
+      "Position": "-345.133362,-432.402405,286.538086",
+      "Rotation": "0,0,0,1",
+      "Scale": "1,1,1",
+      "Tags": "",
+      "Enabled": true,
+      "NetworkMode": 1,
+      "NetworkFlags": 0,
+      "NetworkOrphaned": 1,
+      "NetworkTransmit": true,
+      "OwnerTransfer": 1,
+      "Components": [
+        {
+          "__type": "MonopolyApp",
+          "__guid": "d3869f54-a22a-43df-9579-b5d5b29d66b8",
+          "__enabled": true,
+          "Flags": 0,
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null
+        },
+        {
+          "__type": "AuthTest",
+          "__guid": "066297ab-e739-446f-a11c-799ca76f0993",
+          "__enabled": true,
+          "Flags": 0,
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null
         }
       ],
       "Children": []

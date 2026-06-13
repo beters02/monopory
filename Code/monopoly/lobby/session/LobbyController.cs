@@ -12,7 +12,11 @@ public sealed partial class LobbyController : Component
 	[Sync] public NetDictionary<string, float> DisconnectedPlayers { get; set; } = new();
 	[Sync] public NetDictionary<string, string> SelectedPieces { get; set; } = new();
 	[Sync] public NetDictionary<string, string> SelectedDiceSkins { get; set; } = new();
-	[Sync] public long PreferredHostOwnerId { get; set; }
+	public long PreferredHostOwnerId
+	{
+		get => MonopolyApp.GetPreferredHostOwnerId();
+		set => MonopolyApp.SetPreferredHostOwnerId( value );
+	}
 	[Sync] public string StagedLoadedSaveName { get; set; } = "";
 	[Sync] public string StagedLoadedGameIdentifier { get; set; } = "";
 	private string lastAppliedHostedConfigSnapshot = "";
@@ -33,8 +37,8 @@ public sealed partial class LobbyController : Component
 		CanStartGame && (!OnlyHostStartsGame || IsLocalEffectiveHost);
 	public bool HasStagedLoadedGame => !string.IsNullOrWhiteSpace( StagedLoadedSaveName );
 
-	public bool IsLocalEffectiveHost => GetLocalSteamId() == EffectiveHostOwnerId;
-	public long EffectiveHostOwnerId => ResolveEffectiveHostOwnerId();
+	public bool IsLocalEffectiveHost => MonopolyApp.IsLocalEffectiveHost;
+	public long EffectiveHostOwnerId => MonopolyApp.EffectiveHostOwnerId;
 	public static LobbyController Instance => instance;
 
 	protected override void OnStart()

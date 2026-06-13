@@ -62,6 +62,37 @@
         }
       ],
       "Children": []
+    },
+    {
+      "__guid": "00903ce0-9051-47bd-ab5b-58f51ab3cbdd",
+      "__version": 2,
+      "Flags": 0,
+      "Name": "GameCommandManager",
+      "Position": "149.994965,149.994995,-212.124985",
+      "Rotation": "0,0,0,1",
+      "Scale": "1,1,1",
+      "Tags": "",
+      "Enabled": true,
+      "NetworkMode": 2,
+      "NetworkFlags": 0,
+      "NetworkOrphaned": 0,
+      "NetworkTransmit": true,
+      "OwnerTransfer": 1,
+      "Components": [
+        {
+          "__type": "GameCommandManager",
+          "__guid": "8a48c867-aef7-4028-83a8-632a2f308770",
+          "__enabled": true,
+          "Flags": 0,
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null
+        }
+      ],
+      "Children": []
     }
   ],
   "SceneProperties": {
