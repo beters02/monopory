@@ -19,8 +19,6 @@ public enum PlayerBankruptedPlayerMode
 	MakePropertiesUnowned
 }
 
-[AttributeUsage( AttributeTargets.Property )]
-[CodeGenerator( CodeGeneratorFlags.WrapPropertyGet | CodeGeneratorFlags.Instance, "MatchConfigOptionAttribute.OnWrappedGet" )]
 public sealed class MatchConfigOptionAttribute : Attribute
 {
 	public string Group { get; }
@@ -37,21 +35,6 @@ public sealed class MatchConfigOptionAttribute : Attribute
 	{
 		Group = group;
 		Label = label;
-	}
-
-	internal static T OnWrappedGet<T>( WrappedPropertyGet<T> property )
-	{
-		var value = property.Value;
-
-		var attribute = property.GetAttribute<MatchConfigOptionAttribute>();
-		if ( attribute?.StandaloneValue is null )
-			return value;
-
-		if ( attribute.StandaloneValue is T standaloneValue )
-			return standaloneValue;
-
-		throw new InvalidOperationException(
-			$"MatchConfigOptionAttribute StandaloneValue type '{attribute.StandaloneValue.GetType().Name}' does not match property '{property.PropertyName}' type '{typeof( T ).Name}'." );
 	}
 }
 
