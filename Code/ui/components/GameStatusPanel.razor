@@ -54,7 +54,7 @@
 						<GameButton OnClick="@PayToLeaveJail">Pay $50</GameButton>
 						@if ( !CurrentPlayerMustPayForcedJailFine )
 						{
-							<GameButton @ref="ActionJailRollButton" OnHoldComplete="@RollForJailRelease" HoldMaxSeconds="@RollHoldMaxSeconds">
+							<GameButton @ref="ActionJailRollButton" OnHoldComplete="@RollForJailRelease" HoldMaxSeconds="@RollHoldMaxSeconds" KeyboardInputAction="@GetInputAction()">
 								<ChildContent>
 									Try Doubles
 									<HoldIndicator Variant="compact" ParentButton="@ActionJailRollButton"></HoldIndicator>
@@ -63,7 +63,7 @@
 						}
 					</div>
 				} else {
-					<GameButton @ref="ActionRollButton" Variant="action-buttons" OnHoldComplete="@RollDice" HoldMaxSeconds="@RollHoldMaxSeconds">
+					<GameButton @ref="ActionRollButton" Variant="action-buttons" OnHoldComplete="@RollDice" HoldMaxSeconds="@RollHoldMaxSeconds" KeyboardInputAction="@GetInputAction()">
 						<ChildContent>
 							Roll Dice
 							<HoldIndicator Variant="compact" ParentButton="@ActionRollButton"></HoldIndicator>
@@ -84,7 +84,7 @@
 
 		<Sandbox.ui.components.HudPanel.HudPanel Variant="@GetRollButtonPanelClass()">
 			<ChildContent>
-				<GameButton @ref="StatusRollButton" Variant="@GetRollDiceButtonClass()" OnHoldComplete="@RollDice" HoldMaxSeconds="@RollHoldMaxSeconds">
+				<GameButton @ref="StatusRollButton" Variant="@GetRollDiceButtonClass()" OnHoldComplete="@RollDice" HoldMaxSeconds="@RollHoldMaxSeconds" KeyboardInputAction="@GetInputAction()">
 					<ChildContent>
 						Roll Dice
 						<HoldIndicator Variant="status-roll" ParentButton="@StatusRollButton"></HoldIndicator>
@@ -114,7 +114,7 @@
 				<GameButton Variant="@GetJailButtonClass()" OnClick="@PayToLeaveJail">Pay $50</GameButton>
 				@if ( !CurrentPlayerMustPayForcedJailFine )
 				{
-					<GameButton @ref="StatusJailRollButton" Variant="@GetJailButtonClass()" OnHoldComplete="@RollForJailRelease" HoldMaxSeconds="@RollHoldMaxSeconds">
+					<GameButton @ref="StatusJailRollButton" Variant="@GetJailButtonClass()" OnHoldComplete="@RollForJailRelease" HoldMaxSeconds="@RollHoldMaxSeconds" KeyboardInputAction="@GetInputAction()">
 						<ChildContent>
 							Try Doubles
 							<HoldIndicator Variant="status-roll" ParentButton="@StatusJailRollButton"></HoldIndicator>
@@ -144,6 +144,17 @@
     private const float RollHoldMaxSeconds = 1.25f;
     private bool gamePanelEnabled = false;
 	private bool didRefreshAfterRefs;
+	private InputAction CachedInputAction;
+	private InputAction GetInputAction()
+	{
+		if ( CachedInputAction != null )
+			return CachedInputAction;
+		
+		foreach( InputAction action in Input.GetActions().Where(action => action.Name == "RollDice").ToList())
+			CachedInputAction = action;
+			
+		return CachedInputAction;
+	}
 
 	protected override void OnAfterTreeRender( bool firstTime )
 	{

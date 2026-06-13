@@ -17,7 +17,7 @@ public partial class MonopolyApp : Component
     private static bool DebugEnabled = false;
     private static bool GameLaunchedWithDebugConvar = false;
 
-    public static readonly InputActionIconType InputActionIconType = InputActionIconType.Outline;
+    public static readonly InputActionIconType InputActionIconType = InputActionIconType.Default;
 
     [Sync( SyncFlags.FromHost )] public static bool CheatsEnabled { get; set; } = false;
 
