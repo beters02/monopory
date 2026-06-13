@@ -12,6 +12,7 @@ public sealed class MenuController : Component
 	{
 		GameAssets.PrewarmUiAssets();
 		SteamInviteBridge.Register( Scene );
+		Config = MatchConfigSchema.CreateDefault();
 		HandleLaunchArguments();
 		LoadingState.Hide();
 	}

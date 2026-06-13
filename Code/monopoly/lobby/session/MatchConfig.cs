@@ -21,6 +21,8 @@ public enum PlayerBankruptedPlayerMode
 
 public sealed class MatchConfigOptionAttribute : Attribute
 {
+	private object standaloneValue;
+
 	public string Group { get; }
 	public string Label { get; }
 	public string Description { get; set; } = "";
@@ -29,7 +31,16 @@ public sealed class MatchConfigOptionAttribute : Attribute
 	public int Min { get; set; } = int.MinValue;
 	public int Max { get; set; } = int.MaxValue;
 	public int Step { get; set; } = 1;
-	public object StandaloneValue { get; set; }
+	public bool HasStandaloneValue { get; private set; }
+	public object StandaloneValue
+	{
+		get => standaloneValue;
+		set
+		{
+			standaloneValue = value;
+			HasStandaloneValue = true;
+		}
+	}
 
 	public MatchConfigOptionAttribute( string group, string label )
 	{

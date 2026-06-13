@@ -23,6 +23,7 @@ public sealed class MatchConfigOption
 	public int Min { get; init; } = int.MinValue;
 	public int Max { get; init; } = int.MaxValue;
 	public int Step { get; init; } = 1;
+	public bool HasStandaloneValue { get; init; }
 	public object StandaloneValue { get; init; }
 	public MatchConfigOptionKind Kind { get; init; }
 	public Type ValueType { get; init; }
@@ -48,7 +49,7 @@ public static class MatchConfigSchema
 
 	public static MatchConfig CreateDefault()
 	{
-		return Normalize( new MatchConfig(), 0 );
+		return Normalize( ApplyStandaloneDefaults( new MatchConfig() ), 0 );
 	}
 
 	public static MatchConfig Clone( MatchConfig config )
@@ -91,6 +92,24 @@ public static class MatchConfigSchema
 
 		config.MinPlayers = Math.Clamp( config.MinPlayers, minPlayersMin, Math.Min( config.MaxPlayers, maxPlayersMax ) );
 		config.MaxPlayers = Math.Clamp( config.MaxPlayers, Math.Min( Math.Max( config.MinPlayers, connectedPlayerCount ), maxPlayersMax ), maxPlayersMax );
+		return config;
+	}
+
+	public static MatchConfig ApplyStandaloneDefaults( MatchConfig config )
+	{
+		config ??= new MatchConfig();
+
+		if ( !MonopolyApp.IsStandalone() )
+			return config;
+
+		foreach ( var option in Options )
+		{
+			if ( !option.HasStandaloneValue )
+				continue;
+
+			TrySetOptionValue( option, config, option.StandaloneValue );
+		}
+
 		return config;
 	}
 
@@ -233,6 +252,7 @@ public static class MatchConfigSchema
 			Min = attribute.Min,
 			Max = attribute.Max,
 			Step = Math.Max( attribute.Step, 1 ),
+			HasStandaloneValue = attribute.HasStandaloneValue,
 			StandaloneValue = attribute.StandaloneValue,
 			Kind = kind,
 			ValueType = propertyType,
