@@ -49,12 +49,12 @@
 					<div class="jail-action-buttons">
 						@if ( CurrentPlayerHasGetOutOfJailFreeCard && !CurrentPlayerMustPayForcedJailFine )
 						{
-							<GameButton OnClick="@UseGetOutOfJailFreeCard">Use Card</GameButton>
+							<GameButton Variant="action-buttons jail-action-button" OnClick="@UseGetOutOfJailFreeCard">Use Card</GameButton>
 						}
-						<GameButton OnClick="@PayToLeaveJail">Pay $50</GameButton>
+						<GameButton Variant="action-buttons jail-action-button" OnClick="@PayToLeaveJail">Pay $50</GameButton>
 						@if ( !CurrentPlayerMustPayForcedJailFine )
 						{
-							<GameButton @ref="ActionJailRollButton" OnHoldComplete="@RollForJailRelease" HoldMaxSeconds="@RollHoldMaxSeconds" KeyboardInputAction="@GetInputAction()">
+							<GameButton @ref="ActionJailRollButton" Variant="action-buttons jail-action-button" OnHoldComplete="@RollForJailRelease" HoldMaxSeconds="@RollHoldMaxSeconds" KeyboardInputAction="@GetInputAction()">
 								<ChildContent>
 									Try Doubles
 									<HoldIndicator Variant="compact" ParentButton="@ActionJailRollButton"></HoldIndicator>

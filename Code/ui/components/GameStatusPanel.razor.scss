@@ -56,6 +56,11 @@
 	height: 24px;
 }
 
+.monopoly-button.action-buttons.has-input-action-icon .monopoly-button-content {
+	padding-left: 30px;
+	padding-right: 30px;
+}
+
 .camera-mode-buttons {
 	display: flex;
 	flex-direction: column;
@@ -102,11 +107,13 @@
 .jail-action-buttons .monopoly-button {
 	flex: 1;
 	min-width: 0;
-	margin-top: 0;
-	padding: 8px 9px;
+	max-height: 42px;
+}
+
+.jail-action-buttons .monopoly-button.jail-action-button {
+	text-transform: none;
 	font-size: $monopoly-font-button;
-	text-align: center;
-	justify-content: center;
+	line-height: 15px;
 }
 
 .hud-panel.status-roll-button-panel {
@@ -174,6 +181,17 @@
 	min-height: 40px;
 	padding: 0 10px;
 	white-space: nowrap;
+}
+
+.monopoly-button.status-roll-button.jail .monopoly-button-input-action-icon {
+	right: 12px;
+	width: 24px;
+	height: 24px;
+}
+
+.monopoly-button.status-roll-button.jail.has-input-action-icon .monopoly-button-content {
+	padding-left: 32px;
+	padding-right: 32px;
 }
 
 .hud-panel.status-roll-button-panel.jail {

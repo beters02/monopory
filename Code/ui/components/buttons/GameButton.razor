@@ -7,8 +7,14 @@
 	@if ( ShouldShowInputActionIcon )
 	{
 		<div class="monopoly-button-input-action-icon" style="@InputActionIconStyle"></div>
+		<div class="monopoly-button-content">
+			@ChildContent
+		</div>
 	}
-	@ChildContent
+	else
+	{
+		@ChildContent
+	}
 </root>
 
 @code
@@ -50,6 +56,9 @@
 
 			if ( isPressing && OnHoldComplete is not null )
 				classes += " hold-capture-active";
+
+			if ( ShouldShowInputActionIcon )
+				classes += " has-input-action-icon";
 
 			return classes;
 		}
