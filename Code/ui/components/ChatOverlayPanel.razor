@@ -72,6 +72,7 @@
 	private readonly List<ChatEntry> ChatEntries = new();
 	private static readonly char[] MentionTrailingCharacters = ['.', ',', '!', '?', ':', ';', ')', ']', '}'];
 	private ConsoleCommandTextEntry ChatInput = null!;
+	private Panel ChatInputTextPanel;
 	private Panel MessagesPanel = null!;
 	private bool IsComposing;
 	private bool IsPermanentlyClosed;
@@ -80,6 +81,7 @@
 	private float LastInteractionAt;
 	private int LastSeenChatId;
 	private string ChatDraft = "";
+	private int ChatInputScrollFramesRemaining;
 
 	protected override void OnUpdate()
 	{
@@ -126,6 +128,8 @@
 				if ( ChatInput.HasFocus )
 					WantsFocus = false;
 			}
+
+			UpdateChatInputScroll();
 
 			return;
 		}
@@ -184,8 +188,13 @@
 		IsComposing = true;
 		WantsFocus = true;
 		ChatDraft = "";
+		ChatInputTextPanel = null;
+		ChatInputScrollFramesRemaining = 0;
 		if ( ChatInput is not null )
+		{
 			ChatInput.Text = "";
+			ChatInput.ScrollOffset = Vector2.Zero;
+		}
 		Touch();
 		StateHasChanged();
 	}
@@ -208,8 +217,13 @@
 		IsComposing = false;
 		WantsFocus = false;
 		ChatDraft = "";
+		ChatInputTextPanel = null;
+		ChatInputScrollFramesRemaining = 0;
 		if ( ChatInput is not null )
+		{
 			ChatInput.Text = "";
+			ChatInput.ScrollOffset = Vector2.Zero;
+		}
 		ChatInput?.Blur();
 		StateHasChanged();
 	}
@@ -247,8 +261,13 @@
 		IsComposing = false;
 		WantsFocus = false;
 		if ( ChatInput is not null )
+		{
 			ChatInput.Text = "";
+			ChatInput.ScrollOffset = Vector2.Zero;
+		}
 		ChatDraft = "";
+		ChatInputTextPanel = null;
+		ChatInputScrollFramesRemaining = 0;
 		ChatInput?.Blur();
 		Touch();
 		StateHasChanged();
@@ -261,7 +280,10 @@
 
 		var message = (ChatInput.Text ?? "").Trim();
 		ChatInput.Text = "";
+		ChatInput.ScrollOffset = Vector2.Zero;
 		ChatDraft = "";
+		ChatInputTextPanel = null;
+		ChatInputScrollFramesRemaining = 0;
 
 		if ( !string.IsNullOrWhiteSpace( message ) )
 		{
@@ -280,13 +302,43 @@
 	private void SetChatDraft( string value )
 	{
 		ChatDraft = value ?? "";
+		ChatInputScrollFramesRemaining = 3;
 	}
 
 	private string GetChatInputClasses()
 	{
-		return ChatDraft.Length > 34
-			? "chat-overlay-input scrolled"
-			: "chat-overlay-input";
+		return "chat-overlay-input";
+	}
+
+	private void UpdateChatInputScroll()
+	{
+		if ( ChatInput is null || ChatInputScrollFramesRemaining <= 0 )
+			return;
+
+		ChatInputScrollFramesRemaining--;
+		ChatInputTextPanel ??= FindTextEntryTextPanel( ChatInput );
+
+		var scrollTarget = ChatInputTextPanel ?? (Panel)ChatInput;
+		var targetX = ChatDraft.Length > 34 ? Math.Max( 0f, scrollTarget.ScrollSize.x ) : 0f;
+		scrollTarget.ScrollOffset = new Vector2( targetX, 0f );
+	}
+
+	private static Panel FindTextEntryTextPanel( Panel panel )
+	{
+		if ( panel is null )
+			return null;
+
+		foreach ( var child in panel.Children )
+		{
+			if ( child.HasClass( "text" ) )
+				return child;
+
+			var result = FindTextEntryTextPanel( child );
+			if ( result is not null )
+				return result;
+		}
+
+		return null;
 	}
 
 	private object[] GetMentionAutoComplete( string value )
@@ -465,6 +517,7 @@
 		hash.Add( IsLoadingBlockingChat );
 		hash.Add( GameHud.IsMenuBlockingHud );
 		hash.Add( ChatDraft );
+		hash.Add( ChatInputScrollFramesRemaining );
 		hash.Add( ChatEntries.Count );
 		hash.Add( GameRef.IsGameHudVisible() );
 

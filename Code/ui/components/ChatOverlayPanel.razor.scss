@@ -155,7 +155,7 @@
 	color: $monopoly-text-muted;
 }
 
-.chat-overlay-input {
+.textentry.chat-overlay-input {
 	flex: 1;
 	min-width: 0;
 	width: 100%;
@@ -167,24 +167,22 @@
 	font-size: 15px;
 	font-weight: 600;
 	color: $monopoly-text;
+	align-items: center;
+	justify-content: flex-start;
+	flex-direction: row;
 	overflow: hidden;
 	white-space: nowrap;
 }
 
-.chat-overlay-input .content-label,
-.chat-overlay-input .label,
-.chat-overlay-input .text {
+.textentry.chat-overlay-input .placeholder,
+.textentry.chat-overlay-input .content-label,
+.textentry.chat-overlay-input .label {
+	width: auto;
+	flex-shrink: 0;
+	white-space: nowrap;
 	max-width: 100%;
-	white-space: nowrap;
-	text-overflow: clip;
-	overflow: hidden;
-}
-
-.chat-overlay-input.scrolled .content-label,
-.chat-overlay-input.scrolled .label,
-.chat-overlay-input.scrolled .text {
-	text-align: right;
-	justify-content: flex-end;
+	overflow-x: scroll;
+	overflow-y: hidden;
 }
 
 .monopoly-button.chat-overlay-send-button {
