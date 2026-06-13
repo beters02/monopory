@@ -47,6 +47,13 @@
 	border-radius: $monopoly-radius-control;
 	font-size: $monopoly-font-button;
 	text-transform: uppercase;
+	overflow: visible;
+}
+
+.monopoly-button.action-buttons .monopoly-button-input-action-icon {
+	right: 14px;
+	width: 24px;
+	height: 24px;
 }
 
 .camera-mode-buttons {

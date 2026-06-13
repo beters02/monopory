@@ -6,7 +6,7 @@
 <root class="@RootClasses" title="@Title" onclick="@HandleClick" onrightclick="@HandleRightClick" onmousedown="@HandlePressStart" onmouseup="@HandlePressEnd" onmouseover="@HandleMouseEnter" onmouseout="@HandleMouseLeave">
 	@if ( ShouldShowInputActionIcon )
 	{
-		<img class="monopoly-button-input-action-icon" src="@InputActionIcon.Path" />
+		<div class="monopoly-button-input-action-icon" style="@InputActionIconStyle"></div>
 	}
 	@ChildContent
 </root>
@@ -32,6 +32,7 @@
 	[Parameter] public Action OnBlocked { get; set; }
 	[Parameter] public new RenderFragment ChildContent { get; set; }
 	[Parameter] public InputAction KeyboardInputAction { get; set; }
+	[Parameter] public string InputActionIconColor { get; set; } = "";
 
 	private bool isPressing;
 	private float pressStartedAt;
@@ -49,9 +50,6 @@
 
 			if ( isPressing && OnHoldComplete is not null )
 				classes += " hold-capture-active";
-
-			if ( ShouldShowInputActionIcon )
-				classes += " has-input-action-icon";
 
 			return classes;
 		}
@@ -76,6 +74,7 @@
 	private bool ShouldShowInputActionIcon => InputActionIcon is not null;
 	private bool UseOutlineInputActionIcon => MonopolyApp.InputActionIconType == InputActionIconType.Outline;
 	private GameIcon InputActionIcon => GetInputActionIcon();
+	private string InputActionIconStyle => GetInputActionIconStyle();
 
 	protected void HandleClick()
 	{
@@ -204,6 +203,7 @@
 		hash.Add( Disabled );
 		hash.Add( isPressing );
 		hash.Add( KeyboardInputAction?.KeyboardCode );
+		hash.Add( InputActionIconColor );
 		hash.Add( MonopolyApp.InputActionIconType );
 
 		if ( isPressing )
@@ -235,6 +235,19 @@
 	{
 		var code = (keyboardCode ?? "").Trim();
 		return code.StartsWith( "mouse", StringComparison.OrdinalIgnoreCase );
+	}
+
+	private string GetInputActionIconStyle()
+	{
+		var icon = InputActionIcon;
+		if ( icon is null )
+			return "";
+
+		var style = $"mask-image: url({icon.Path});";
+		if ( !string.IsNullOrWhiteSpace( InputActionIconColor ) )
+			style += $" background-color: {InputActionIconColor};";
+
+		return style;
 	}
 
 	private void ShowBlockedActionPopup()
