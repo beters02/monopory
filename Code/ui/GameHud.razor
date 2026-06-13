@@ -9,14 +9,6 @@
 
 <root class="monopoly-hud">
 	<ButtonPopLayer></ButtonPopLayer>
-	<LoadingOverlay
-		IsServerLoading="@(GameRef?.IsServerLoading == true)"
-		ServerLoadingTitle="@(GameRef?.ServerLoadingTitle ?? "")"
-		ServerLoadingMessage="@(GameRef?.ServerLoadingMessage ?? "")"
-		ServerLoadingStartedAt="@(GameRef?.ServerLoadingStartedAt ?? 0f)"
-		ServerLoadingClientTimeoutSeconds="@(GameRef?.ServerLoadingClientTimeoutSeconds ?? 25f)"
-		ServerLoadingRevision="@(GameRef?.ServerLoadingRevision ?? 0)">
-	</LoadingOverlay>
 	@if ( GameRef is not null )
 	{
 		@if ( NetworkSession.IsEditorSoftLeftLobby )

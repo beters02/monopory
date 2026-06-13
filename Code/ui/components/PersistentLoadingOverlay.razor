@@ -1,0 +1,36 @@
+@using Sandbox;
+@using Sandbox.UI;
+@using System;
+@inherits PanelComponent
+
+<root class="persistent-loading-overlay">
+	<LoadingOverlay
+		IsServerLoading="@(GameRef?.IsServerLoading == true)"
+		ServerLoadingTitle="@(GameRef?.ServerLoadingTitle ?? "")"
+		ServerLoadingMessage="@(GameRef?.ServerLoadingMessage ?? "")"
+		ServerLoadingStartedAt="@(GameRef?.ServerLoadingStartedAt ?? 0f)"
+		ServerLoadingClientTimeoutSeconds="@(GameRef?.ServerLoadingClientTimeoutSeconds ?? 25f)"
+		ServerLoadingRevision="@(GameRef?.ServerLoadingRevision ?? 0)">
+	</LoadingOverlay>
+</root>
+
+@code
+{
+	private GameController GameRef => GameController.Instance;
+
+	protected override int BuildHash()
+	{
+		var hash = new HashCode();
+		hash.Add( LoadingState.IsVisible );
+		hash.Add( LoadingState.IsBlockingInteraction );
+		hash.Add( LoadingState.Revision );
+		hash.Add( GameRef?.IsServerLoading ?? false );
+		hash.Add( GameRef?.ServerLoadingTitle ?? "" );
+		hash.Add( GameRef?.ServerLoadingMessage ?? "" );
+		hash.Add( GameRef?.ServerLoadingStartedAt ?? 0f );
+		hash.Add( GameRef?.ServerLoadingRevision ?? 0 );
+		if ( LoadingState.IsBlockingInteraction || GameRef?.IsServerLoading == true )
+			hash.Add( MathF.Round( Time.Now * 2f ) );
+		return hash.ToHashCode();
+	}
+}

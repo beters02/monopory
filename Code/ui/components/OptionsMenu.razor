@@ -218,7 +218,7 @@
 		}
 
 		LoadingState.Show( "Applying settings", "Updating video and audio options." );
-		await Task.Delay( 16 );
+		await LoadingState.WaitUntilPresentedAsync();
 
 		try
 		{

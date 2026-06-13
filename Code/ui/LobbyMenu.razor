@@ -7,7 +7,6 @@
 
 <root class="monopoly-flow-ui">
 	<ButtonPopLayer></ButtonPopLayer>
-	<LoadingOverlay></LoadingOverlay>
 	<PopupStack Popups="@PopupList" OnDismiss="@DismissPopup" OnConfirmDecision="@HandleConfirmationDecision"></PopupStack>
 	<div class="@LobbyScreenClasses">
 		<OptionsMenu IsOpen="@IsOptionsMenuOpen" OnClose="@CloseOptionsMenu"></OptionsMenu>
@@ -1256,12 +1255,14 @@
 		configRevision++;
 	}
 
-	private void SaveConfigMenu()
+	private async void SaveConfigMenu()
 	{
 		if ( Lobby is null || EditableConfig is null || !CanEditConfig )
 			return;
 
 		LoadingState.Show( "Applying settings", "Updating the match rules." );
+		await LoadingState.WaitUntilPresentedAsync();
+
 		CommitConfigIntDraftValues();
 		NormalizeEditableConfig();
 

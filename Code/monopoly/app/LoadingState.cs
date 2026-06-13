@@ -4,8 +4,9 @@ using System.Threading.Tasks;
 public static class LoadingState
 {
 	public const float ClientTimeoutSeconds = 25f;
-	public const float MinimumVisibleSeconds = 2.5f;
-	public const float OverlayTransitionSeconds = 0.45f;
+	public const float MinimumVisibleSeconds = 2f;
+	public const float PresentationDelaySeconds = 0.2f;
+	public const float OverlayTransitionSeconds = 0.65f;
 
 	public static bool IsVisible { get; private set; }
 	public static string Title { get; private set; } = "";
@@ -46,6 +47,17 @@ public static class LoadingState
 			return;
 
 		_ = HideAfterSceneReadyAsync( Revision, frames, minimumVisibleSeconds );
+	}
+
+	public static async Task WaitUntilPresentedAsync( float minimumVisibleSeconds = PresentationDelaySeconds )
+	{
+		if ( !IsVisible )
+			return;
+
+		var revision = Revision;
+		var readyAt = StartedAt + Math.Max( minimumVisibleSeconds, 0f );
+		while ( IsVisible && Revision == revision && Time.Now < readyAt )
+			await Task.Delay( 16 );
 	}
 
 	private static async Task HideAfterSceneReadyAsync( int revision, int frames, float minimumVisibleSeconds )

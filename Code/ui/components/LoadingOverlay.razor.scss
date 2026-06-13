@@ -30,6 +30,24 @@
 	justify-content: center;
 
 	pointer-events: all;
+
+	opacity: 0;
+}
+
+.loading-overlay-root.visible .loading-overlay-screen {
+	opacity: 1;
+	animation-name: loading-overlay-screen-in;
+	animation-duration: 0.06s;
+	animation-timing-function: ease-out;
+	animation-fill-mode: both;
+}
+
+.loading-overlay-root.exiting .loading-overlay-screen {
+	opacity: 0;
+	animation-name: loading-overlay-screen-out;
+	animation-duration: 0.65s;
+	animation-timing-function: ease;
+	animation-fill-mode: both;
 }
 
 .loading-overlay-card {
@@ -166,6 +184,26 @@
 	100% {
 		opacity: 1;
 		transform: translateY(0) scale(1);
+	}
+}
+
+@keyframes loading-overlay-screen-in {
+	0% {
+		opacity: 0;
+	}
+
+	100% {
+		opacity: 1;
+	}
+}
+
+@keyframes loading-overlay-screen-out {
+	0% {
+		opacity: 1;
+	}
+
+	100% {
+		opacity: 0;
 	}
 }
 
