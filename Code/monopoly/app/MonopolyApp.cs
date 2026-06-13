@@ -1,6 +1,12 @@
 using System;
 using System.Threading.Tasks;
 
+public enum InputActionIconType
+{
+    Default,
+    Outline
+}
+
 public partial class MonopolyApp : Component
 {
 
@@ -10,6 +16,8 @@ public partial class MonopolyApp : Component
     private static bool Standalone = false;
     private static bool DebugEnabled = false;
     private static bool GameLaunchedWithDebugConvar = false;
+
+    public static readonly InputActionIconType InputActionIconType = InputActionIconType.Outline;
 
     [Sync( SyncFlags.FromHost )] public static bool CheatsEnabled { get; set; } = false;
 

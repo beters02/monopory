@@ -27,6 +27,8 @@
 	[Parameter] public new Action OnRightClick { get; set; }
 	[Parameter] public Action OnBlocked { get; set; }
 	[Parameter] public new RenderFragment ChildContent { get; set; }
+	[Parameter] public InputAction KeyboardInputAction { get; set; }
+	[Parameter] public InputAction MouseInputAction { get; set; }
 
 	private bool isPressing;
 	private float pressStartedAt;

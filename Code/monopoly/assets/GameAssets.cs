@@ -2,7 +2,7 @@ using System;
 
 public sealed class GameAssetCategoryAttribute : Attribute {}
 
-public static class GameAssets
+public static partial class GameAssets
 {
 	private static bool uiAssetsPrewarmed;
 
@@ -15,6 +15,9 @@ public static class GameAssets
 
 		foreach ( (var type, GameAssetCategoryAttribute attribute) in TypeLibrary.GetTypesWithAttribute<GameAssetCategoryAttribute>() )
 			PreloadAssets( type );
+
+		KeyboardIcons.Preload();
+		MouseIcons.Preload();
 	}
 
 	private static void PreloadAssets( TypeDescription type )
@@ -106,8 +109,10 @@ public static class GameAssets
 		public static readonly GameSoundtrack Nolan01 = new ( "sounds/music/soundtrack1.sound" );
 	}
 
-	public static class KeyboardIcons
-	{
-	}
+	[GameAssetCategory]
+	public static partial class KeyboardIcons {}
+
+	[GameAssetCategory]
+	public static partial class MouseIcons {}
 
 }
