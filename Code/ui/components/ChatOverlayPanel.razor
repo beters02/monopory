@@ -114,6 +114,7 @@
 		{
 			Mouse.Visibility = MouseVisibility.Visible;
 			ConfigureInput();
+			SyncChatDraftFromInput();
 
 			if ( Input.EscapePressed )
 			{
@@ -305,6 +306,16 @@
 		ChatInputScrollFramesRemaining = 3;
 	}
 
+	private void SyncChatDraftFromInput()
+	{
+		if ( ChatInput is null )
+			return;
+
+		var currentDraft = ChatInput.Text ?? "";
+		if ( currentDraft != ChatDraft )
+			SetChatDraft( currentDraft );
+	}
+
 	private string GetChatInputClasses()
 	{
 		return "chat-overlay-input";
@@ -319,7 +330,7 @@
 		ChatInputTextPanel ??= FindTextEntryTextPanel( ChatInput );
 
 		var scrollTarget = ChatInputTextPanel ?? (Panel)ChatInput;
-		var targetX = ChatDraft.Length > 34 ? Math.Max( 0f, scrollTarget.ScrollSize.x ) : 0f;
+		var targetX = ChatDraft.Length > 34 ? Math.Max( 0f, scrollTarget.ScrollSize.x + 24f ) : 0f;
 		scrollTarget.ScrollOffset = new Vector2( targetX, 0f );
 	}
 
