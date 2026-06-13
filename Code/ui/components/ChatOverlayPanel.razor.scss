@@ -136,7 +136,6 @@
 }
 
 .chat-overlay-input-row {
-	position: relative;
 	height: 44px;
 	padding: 0 14px;
 	border-radius: $monopoly-radius-board;
@@ -146,6 +145,11 @@
 	align-items: center;
 	gap: 10px;
 	pointer-events: all;
+	flex-direction: row;
+	font-family: $monopoly-font-family;
+	font-size: 15px;
+	font-weight: 600;
+	color: $monopoly-text;
 }
 
 .chat-overlay-input-placeholder {
@@ -155,35 +159,11 @@
 	color: $monopoly-text-muted;
 }
 
-.textentry.chat-overlay-input {
-	flex: 1;
-	min-width: 0;
-	width: 100%;
-	height: 100%;
-	padding: 9px 0;
+.chat-overlay-input {
+	flex-grow: 1;
 	background-color: $monopoly-transparent;
 	border: 0;
-	font-family: $monopoly-font-family;
-	font-size: 15px;
-	font-weight: 600;
-	color: $monopoly-text;
-	align-items: center;
-	justify-content: flex-start;
-	flex-direction: row;
-	overflow: hidden;
-	white-space: nowrap;
-}
-
-.textentry.chat-overlay-input .placeholder,
-.textentry.chat-overlay-input .content-label,
-.textentry.chat-overlay-input .label,
-.textentry.chat-overlay-input .text {
-	width: auto;
-	flex-shrink: 0;
-	white-space: nowrap;
-	max-width: 100%;
-	overflow-x: scroll;
-	overflow-y: hidden;
+	position: static;
 }
 
 .monopoly-button.chat-overlay-send-button {

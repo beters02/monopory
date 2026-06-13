@@ -44,10 +44,9 @@
 				{
 					<ConsoleCommandTextEntry
 						@ref="ChatInput"
-						class="@GetChatInputClasses()"
+						class="chat-overlay-input"
 						Placeholder="Type message and press Enter..."
 						OnConsoleCloseRequested="@CancelCompose"
-						OnTextEdited="@SetChatDraft"
 						onsubmit="@SubmitMessage" />
 					<GameButton Variant="chat-overlay-send-button" OnClick="@SubmitMessage">Send</GameButton>
 				}
@@ -72,7 +71,6 @@
 	private readonly List<ChatEntry> ChatEntries = new();
 	private static readonly char[] MentionTrailingCharacters = ['.', ',', '!', '?', ':', ';', ')', ']', '}'];
 	private ConsoleCommandTextEntry ChatInput = null!;
-	private Panel ChatInputTextPanel;
 	private Panel MessagesPanel = null!;
 	private bool IsComposing;
 	private bool IsPermanentlyClosed;
@@ -80,12 +78,6 @@
 	private int ScrollToBottomFramesRemaining;
 	private float LastInteractionAt;
 	private int LastSeenChatId;
-	private string ChatDraft = "";
-	private int ChatInputScrollFramesRemaining;
-	private bool IsChatDraftShrinking;
-	private const int ChatInputScrollStartLength = 30;
-	private const float ChatInputScrollEndPadding = 6f;
-	private const float ChatInputBackspacePullback = 16f;
 
 	protected override void OnUpdate()
 	{
@@ -118,7 +110,6 @@
 		{
 			Mouse.Visibility = MouseVisibility.Visible;
 			ConfigureInput();
-			SyncChatDraftFromInput();
 
 			if ( Input.EscapePressed )
 			{
@@ -133,8 +124,6 @@
 				if ( ChatInput.HasFocus )
 					WantsFocus = false;
 			}
-
-			UpdateChatInputScroll();
 
 			return;
 		}
@@ -192,14 +181,9 @@
 		IsPermanentlyClosed = false;
 		IsComposing = true;
 		WantsFocus = true;
-		ChatDraft = "";
-		IsChatDraftShrinking = false;
-		ChatInputTextPanel = null;
-		ChatInputScrollFramesRemaining = 0;
 		if ( ChatInput is not null )
 		{
 			ChatInput.Text = "";
-			ChatInput.ScrollOffset = Vector2.Zero;
 		}
 		Touch();
 		StateHasChanged();
@@ -222,14 +206,9 @@
 		IsPermanentlyClosed = true;
 		IsComposing = false;
 		WantsFocus = false;
-		ChatDraft = "";
-		IsChatDraftShrinking = false;
-		ChatInputTextPanel = null;
-		ChatInputScrollFramesRemaining = 0;
 		if ( ChatInput is not null )
 		{
 			ChatInput.Text = "";
-			ChatInput.ScrollOffset = Vector2.Zero;
 		}
 		ChatInput?.Blur();
 		StateHasChanged();
@@ -270,12 +249,7 @@
 		if ( ChatInput is not null )
 		{
 			ChatInput.Text = "";
-			ChatInput.ScrollOffset = Vector2.Zero;
 		}
-		ChatDraft = "";
-		IsChatDraftShrinking = false;
-		ChatInputTextPanel = null;
-		ChatInputScrollFramesRemaining = 0;
 		ChatInput?.Blur();
 		Touch();
 		StateHasChanged();
@@ -288,11 +262,6 @@
 
 		var message = (ChatInput.Text ?? "").Trim();
 		ChatInput.Text = "";
-		ChatInput.ScrollOffset = Vector2.Zero;
-		ChatDraft = "";
-		IsChatDraftShrinking = false;
-		ChatInputTextPanel = null;
-		ChatInputScrollFramesRemaining = 0;
 
 		if ( !string.IsNullOrWhiteSpace( message ) )
 		{
@@ -306,68 +275,6 @@
 		}
 
 		CancelCompose();
-	}
-
-	private void SetChatDraft( string value )
-	{
-		var nextDraft = value ?? "";
-		IsChatDraftShrinking = nextDraft.Length < ChatDraft.Length;
-		ChatDraft = nextDraft;
-		ChatInputScrollFramesRemaining = 3;
-	}
-
-	private void SyncChatDraftFromInput()
-	{
-		if ( ChatInput is null )
-			return;
-
-		var currentDraft = ChatInput.Text ?? "";
-		if ( currentDraft != ChatDraft )
-			SetChatDraft( currentDraft );
-	}
-
-	private string GetChatInputClasses()
-	{
-		return "chat-overlay-input";
-	}
-
-	private void UpdateChatInputScroll()
-	{
-		if ( ChatInput is null )
-			return;
-
-		if ( ChatInputScrollFramesRemaining > 0 )
-		{
-			ChatInputScrollFramesRemaining--;
-			if ( ChatInputScrollFramesRemaining == 0 )
-				IsChatDraftShrinking = false;
-		}
-
-		ChatInputTextPanel ??= FindTextEntryTextPanel( ChatInput );
-
-		var scrollTarget = ChatInputTextPanel ?? (Panel)ChatInput;
-		var targetX = ChatDraft.Length > ChatInputScrollStartLength
-			? Math.Max( 0f, scrollTarget.ScrollSize.x + ChatInputScrollEndPadding - (IsChatDraftShrinking ? ChatInputBackspacePullback : 0f) )
-			: 0f;
-		scrollTarget.ScrollOffset = new Vector2( targetX, 0f );
-	}
-
-	private static Panel FindTextEntryTextPanel( Panel panel )
-	{
-		if ( panel is null )
-			return null;
-
-		foreach ( var child in panel.Children )
-		{
-			if ( child.HasClass( "text" ) )
-				return child;
-
-			var result = FindTextEntryTextPanel( child );
-			if ( result is not null )
-				return result;
-		}
-
-		return null;
 	}
 
 	private object[] GetMentionAutoComplete( string value )
@@ -545,8 +452,6 @@
 		hash.Add( IsVisible() );
 		hash.Add( IsLoadingBlockingChat );
 		hash.Add( GameHud.IsMenuBlockingHud );
-		hash.Add( ChatDraft );
-		hash.Add( ChatInputScrollFramesRemaining );
 		hash.Add( ChatEntries.Count );
 		hash.Add( GameRef.IsGameHudVisible() );
 

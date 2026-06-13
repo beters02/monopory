@@ -8798,6 +8798,50 @@
             }
           ],
           "Children": []
+        },
+        {
+          "__guid": "1f94706e-3602-4d88-a47f-48763b60d973",
+          "__version": 2,
+          "Flags": 0,
+          "Name": "chatest",
+          "Position": "0,0,0",
+          "Rotation": "0,0,0,1",
+          "Scale": "1,1,1",
+          "Tags": "",
+          "Enabled": true,
+          "NetworkMode": 2,
+          "NetworkFlags": 0,
+          "NetworkOrphaned": 0,
+          "NetworkTransmit": true,
+          "OwnerTransfer": 1,
+          "Components": [
+            {
+              "__type": "Sandbox.SimpleTextChat",
+              "__guid": "690fa429-ccc0-4336-832b-7bc2e164e5e3",
+              "__enabled": true,
+              "Flags": 0,
+              "BoxWidth": 480,
+              "FadeDuration": 2,
+              "FontSize": 24,
+              "HistorySize": 100,
+              "InputBoxColor": "0,0,0,0.7",
+              "InputTextColor": "1,1,1,1",
+              "IsEnabled": true,
+              "LineHeight": 28,
+              "LogBoxColor": "0,0,0,0.45",
+              "LogHeight": 240,
+              "MessageLifetime": 10,
+              "NameColor": "0.18039,0.43529,0.91373,1",
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null,
+              "TextColor": "1,1,1,1"
+            }
+          ],
+          "Children": []
         }
       ]
     },
