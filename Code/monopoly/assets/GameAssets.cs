@@ -1,11 +1,10 @@
+using System;
+
+public sealed class GameAssetCategoryAttribute : Attribute {}
+
 public static class GameAssets
 {
 	private static bool uiAssetsPrewarmed;
-
-	public static void PrewarmSongAssets()
-	{
-		Soundtracks.Nolan01.Preload();
-	}
 
 	public static void PrewarmUiAssets()
 	{
@@ -14,38 +13,43 @@ public static class GameAssets
 
 		uiAssetsPrewarmed = true;
 
-		Images.Chance.Preload();
-
-		Materials.House.Preload();
-		Materials.Hotel.Preload();
-
-		Sounds.Click.Preload();
-		Sounds.ClosingClick.Preload();
-		Sounds.ClickAndOpen.Preload();
-		Sounds.ClickAndClose.Preload();
-		Sounds.CardFlip.Preload();
-		Sounds.Warning.Preload();
-		Sounds.Error.Preload();
-		Sounds.DiceImpact.Preload();
-		Sounds.TokenStep.Preload();
-		Sounds.Success.Preload();
-		Sounds.PianoBingBingBing.Preload();
-		Sounds.TradeNegotiated.Preload();
-		Sounds.TradeReceived.Preload();
-		Sounds.ChatReceived.Preload();
-		Sounds.ChatSent.Preload();
+		foreach ( (var type, GameAssetCategoryAttribute attribute) in TypeLibrary.GetTypesWithAttribute<GameAssetCategoryAttribute>() )
+			PreloadAssets( type );
 	}
 
+	private static void PreloadAssets( TypeDescription type )
+	{
+		if ( type is null )
+			return;
+
+		foreach ( var field in type.Fields )
+			PreloadAsset( field );
+	}
+
+	private static void PreloadAsset( FieldDescription field )
+	{
+		var asset = field.GetValue( null );
+		if ( asset is null )
+			return;
+
+		var assetType = Game.TypeLibrary.GetType( field.FieldType );
+		var preloadMethod = assetType?.GetMethod( "Preload" );
+		preloadMethod?.Invoke( asset );
+	}
+
+	[GameAssetCategory]
 	public static class Images
 	{
 		public static readonly GameImage Chance = new ( "textures/Chance.png" );
 	}
 
+	[GameAssetCategory]
 	public static class Icons
 	{
 		public static readonly GameIcon CameraWhiteFixedSvg = new ( "textures/icons/camera_white_fixed.svg" );
 	}
 
+	[GameAssetCategory]
 	public static class Materials
 	{
 		public static readonly GameMaterial House = new ( "materials/pieces/house.vmat" );
@@ -54,6 +58,7 @@ public static class GameAssets
 		public static readonly GameMaterial BankruptedPiece = new ( "materials/pieces/piece_bankrupt.vmat" );
 	}
 
+	[GameAssetCategory]
 	public static class Sounds
 	{
 		public static readonly GameSound Click = new ( "sounds/effects/click.sound" );
@@ -95,10 +100,14 @@ public static class GameAssets
 		}
 	}
 
+	[GameAssetCategory]
 	public static class Soundtracks
 	{
 		public static readonly GameSoundtrack Nolan01 = new ( "sounds/music/soundtrack1.sound" );
 	}
 
+	public static class KeyboardIcons
+	{
+	}
 
 }

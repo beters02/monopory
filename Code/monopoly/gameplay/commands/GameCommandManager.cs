@@ -94,7 +94,6 @@ public static class GameCommands
 
 public sealed class GameCommandManager : Component
 {
-	private bool lastCheatsEnabled;
 	private bool firstRun = true;
 	private IReadOnlyDictionary<string, GameCommand> _commands = GameCommands.All;
 	private static IReadOnlyDictionary<string, GameCommand> Commands;

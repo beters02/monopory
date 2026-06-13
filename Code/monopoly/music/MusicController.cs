@@ -23,7 +23,6 @@ public sealed class MusicController : Component
 
 		if (!isEnabled) return;
 
-		GameAssets.PrewarmSongAssets();
 		SoundEvent = GameAssets.Soundtracks.Nolan01.GetSoundEvent();
 		StartSoundtrack();
 	}
