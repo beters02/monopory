@@ -82,8 +82,10 @@
 	private int LastSeenChatId;
 	private string ChatDraft = "";
 	private int ChatInputScrollFramesRemaining;
+	private bool IsChatDraftShrinking;
 	private const int ChatInputScrollStartLength = 30;
 	private const float ChatInputScrollEndPadding = 6f;
+	private const float ChatInputBackspacePullback = 16f;
 
 	protected override void OnUpdate()
 	{
@@ -191,6 +193,7 @@
 		IsComposing = true;
 		WantsFocus = true;
 		ChatDraft = "";
+		IsChatDraftShrinking = false;
 		ChatInputTextPanel = null;
 		ChatInputScrollFramesRemaining = 0;
 		if ( ChatInput is not null )
@@ -220,6 +223,7 @@
 		IsComposing = false;
 		WantsFocus = false;
 		ChatDraft = "";
+		IsChatDraftShrinking = false;
 		ChatInputTextPanel = null;
 		ChatInputScrollFramesRemaining = 0;
 		if ( ChatInput is not null )
@@ -269,6 +273,7 @@
 			ChatInput.ScrollOffset = Vector2.Zero;
 		}
 		ChatDraft = "";
+		IsChatDraftShrinking = false;
 		ChatInputTextPanel = null;
 		ChatInputScrollFramesRemaining = 0;
 		ChatInput?.Blur();
@@ -285,6 +290,7 @@
 		ChatInput.Text = "";
 		ChatInput.ScrollOffset = Vector2.Zero;
 		ChatDraft = "";
+		IsChatDraftShrinking = false;
 		ChatInputTextPanel = null;
 		ChatInputScrollFramesRemaining = 0;
 
@@ -304,7 +310,9 @@
 
 	private void SetChatDraft( string value )
 	{
-		ChatDraft = value ?? "";
+		var nextDraft = value ?? "";
+		IsChatDraftShrinking = nextDraft.Length < ChatDraft.Length;
+		ChatDraft = nextDraft;
 		ChatInputScrollFramesRemaining = 3;
 	}
 
@@ -329,13 +337,17 @@
 			return;
 
 		if ( ChatInputScrollFramesRemaining > 0 )
+		{
 			ChatInputScrollFramesRemaining--;
+			if ( ChatInputScrollFramesRemaining == 0 )
+				IsChatDraftShrinking = false;
+		}
 
 		ChatInputTextPanel ??= FindTextEntryTextPanel( ChatInput );
 
 		var scrollTarget = ChatInputTextPanel ?? (Panel)ChatInput;
 		var targetX = ChatDraft.Length > ChatInputScrollStartLength
-			? Math.Max( 0f, scrollTarget.ScrollSize.x + ChatInputScrollEndPadding )
+			? Math.Max( 0f, scrollTarget.ScrollSize.x + ChatInputScrollEndPadding - (IsChatDraftShrinking ? ChatInputBackspacePullback : 0f) )
 			: 0f;
 		scrollTarget.ScrollOffset = new Vector2( targetX, 0f );
 	}
