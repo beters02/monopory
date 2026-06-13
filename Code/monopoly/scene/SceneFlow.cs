@@ -16,7 +16,7 @@ public static class SceneFlow
 
 	private static async Task ChangeSceneAsync( string scenePath )
 	{
-		await Task.Delay( 1 );
+		await Task.Delay( 16 );
 
 		var options = new SceneLoadOptions();
 		if ( !options.SetScene( scenePath ) )

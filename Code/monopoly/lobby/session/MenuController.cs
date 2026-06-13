@@ -14,7 +14,7 @@ public sealed class MenuController : Component
 		SteamInviteBridge.Register( Scene );
 		Config = MatchConfigSchema.CreateDefault();
 		HandleLaunchArguments();
-		LoadingState.Hide();
+		LoadingState.HideAfterSceneReady();
 	}
 
 	public bool TryOpenLobby()

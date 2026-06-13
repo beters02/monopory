@@ -3,6 +3,7 @@
 @using Sandbox.Engine.Settings;
 @using Sandbox.ui.components.buttons
 @using System;
+@using System.Threading.Tasks;
 @inherits Panel
 
 <OptionsPanel IsOpen="@IsOpen" Kicker="Settings" Title="Options" OnClose="@Close" RootVariant="options-menu-root" ScreenVariant="@OptionsScreenVariant" PanelVariant="options-menu-panel">
@@ -208,7 +209,7 @@
 		return $"{option?.Description} Unavailable in this session.";
 	}
 
-	private void ApplyOptions()
+	private async void ApplyOptions()
 	{
 		if ( HasPendingVideoChanges && !SettingsAvailable )
 		{
@@ -216,9 +217,22 @@
 			return;
 		}
 
-		if ( !AppSettings.TryApply() )
+		LoadingState.Show( "Applying settings", "Updating video and audio options." );
+		await Task.Delay( 16 );
+
+		try
 		{
-			ShowApplyError( "Settings could not be applied." );
+			if ( !AppSettings.TryApply() )
+			{
+				LoadingState.Hide();
+				ShowApplyError( "Settings could not be applied." );
+				return;
+			}
+		}
+		catch ( Exception exception )
+		{
+			LoadingState.Hide();
+			ShowApplyError( $"Settings could not be applied: {exception.Message}" );
 			return;
 		}
 
@@ -227,6 +241,7 @@
 		applyErrorMessage = "";
 		revision++;
 		StateHasChanged();
+		LoadingState.HideAfterSceneReady( 8, 0.25f );
 	}
 
 	private void Close()

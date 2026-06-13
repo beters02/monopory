@@ -1261,11 +1261,13 @@
 		if ( Lobby is null || EditableConfig is null || !CanEditConfig )
 			return;
 
+		LoadingState.Show( "Applying settings", "Updating the match rules." );
 		CommitConfigIntDraftValues();
 		NormalizeEditableConfig();
 
 		if ( !Lobby.TrySaveConfig( EditableConfig, out var errorMessage ) )
 		{
+			LoadingState.Hide();
 			ShowLocalPopup( "Could not save", errorMessage, PopupKind.Warning, true, 3f, false );
 			return;
 		}
@@ -1274,6 +1276,7 @@
 		EditableConfig = Lobby.GetEditableConfig();
 		ShowLocalPopup( "Configuration saved", "Lobby game settings have been updated.", PopupKind.Success, true, 2.5f, false );
 		configRevision++;
+		LoadingState.HideAfterSceneReady( 4, 0.16f );
 	}
 
 	private static string GetConfigToggleButtonClasses( bool enabled )

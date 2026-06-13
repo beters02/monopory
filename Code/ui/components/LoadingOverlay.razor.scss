@@ -6,7 +6,13 @@
 	left: 0;
 	right: 0;
 	bottom: 0;
+	z-index: 20000;
 	pointer-events: none;
+}
+
+.loading-overlay-root.visible,
+.loading-overlay-root.exiting {
+	pointer-events: all;
 }
 
 .loading-overlay-screen {
@@ -15,9 +21,9 @@
 	left: 0;
 	right: 0;
 	bottom: 0;
-	z-index: 100;
+	z-index: 0;
 
-	background-color: $monopoly-screen-tint;
+	background-color: $monopoly-ink-soft;
 
 	display: flex;
 	align-items: center;
@@ -42,6 +48,27 @@
 
 	color: $monopoly-ink;
 	font-family: $monopoly-font-family;
+
+	opacity: 0;
+	transform: translateY(10px) scale(0.96);
+}
+
+.loading-overlay-root.visible .loading-overlay-card {
+	opacity: 1;
+	transform: translateY(0) scale(1);
+	animation-name: loading-overlay-card-in;
+	animation-duration: 0.45s;
+	animation-timing-function: ease;
+	animation-fill-mode: both;
+}
+
+.loading-overlay-root.exiting .loading-overlay-card {
+	opacity: 0;
+	transform: translateY(-8px) scale(0.98);
+	animation-name: loading-overlay-card-out;
+	animation-duration: 0.45s;
+	animation-timing-function: ease;
+	animation-fill-mode: both;
 }
 
 .loading-overlay-spinner {
@@ -127,5 +154,29 @@
 
 	100% {
 		transform: rotate(360deg);
+	}
+}
+
+@keyframes loading-overlay-card-in {
+	0% {
+		opacity: 0;
+		transform: translateY(10px) scale(0.96);
+	}
+
+	100% {
+		opacity: 1;
+		transform: translateY(0) scale(1);
+	}
+}
+
+@keyframes loading-overlay-card-out {
+	0% {
+		opacity: 1;
+		transform: translateY(0) scale(1);
+	}
+
+	100% {
+		opacity: 0;
+		transform: translateY(-8px) scale(0.98);
 	}
 }

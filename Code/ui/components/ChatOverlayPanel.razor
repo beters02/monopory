@@ -93,7 +93,7 @@
 			ScrollToBottomFramesRemaining--;
 		}
 
-		if ( StandaloneConsole.IsConsoleOpen || NetworkSession.IsEditorSoftLeftLobby || GameHud.IsMenuBlockingHud )
+		if ( IsLoadingBlockingChat || StandaloneConsole.IsConsoleOpen || NetworkSession.IsEditorSoftLeftLobby || GameHud.IsMenuBlockingHud )
 		{
 			if ( IsComposing )
 				CancelCompose();
@@ -401,6 +401,9 @@
 
 	private bool IsVisible()
 	{
+		if ( IsLoadingBlockingChat )
+			return false;
+
 		if ( GameHud.IsMenuBlockingHud )
 			return false;
 
@@ -409,6 +412,8 @@
 
 		return IsComposing || (Time.Now - LastInteractionAt) <= HideAfterSeconds;
 	}
+
+	private bool IsLoadingBlockingChat => LoadingState.IsBlockingInteraction || GameRef?.IsServerLoading == true;
 
 	private string GetRootClasses()
 	{
@@ -433,6 +438,7 @@
 		hash.Add( IsComposing );
 		hash.Add( IsPermanentlyClosed );
 		hash.Add( IsVisible() );
+		hash.Add( IsLoadingBlockingChat );
 		hash.Add( GameHud.IsMenuBlockingHud );
 		hash.Add( ChatEntries.Count );
 		hash.Add( GameRef.IsGameHudVisible() );

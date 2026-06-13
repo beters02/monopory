@@ -3,11 +3,11 @@
 @using System;
 @inherits Panel
 
-<root class="loading-overlay-root">
+<root class="@RootClasses">
 	@if ( !@LoadingState.IsFunctionalityEnabled )
 		return;
 
-	@if (IsLocalLoadingVisible || IsServerLoadingVisible)
+	@if ( ShouldRenderOverlay )
 	{
 		<div class="loading-overlay-screen">
 			<div class="loading-overlay-card">
@@ -20,10 +20,10 @@
 				</div>
 				<div class="loading-overlay-copy">
 					<div class="loading-overlay-kicker">Loading</div>
-					<div class="loading-overlay-title">@(IsLocalLoadingVisible ? LoadingState.Title : ServerLoadingTitle)</div>
-					@if ( !string.IsNullOrWhiteSpace( IsLocalLoadingVisible ? LoadingState.Message : ServerLoadingMessage ) )
+					<div class="loading-overlay-title">@DisplayTitle</div>
+					@if ( !string.IsNullOrWhiteSpace( DisplayMessage ) )
 					{
-						<div class="loading-overlay-body">@(IsLocalLoadingVisible ? LoadingState.Message : ServerLoadingMessage)</div>
+						<div class="loading-overlay-body">@DisplayMessage</div>
 					}
 				</div>
 			</div>
@@ -40,11 +40,81 @@
 	[Parameter] public float ServerLoadingClientTimeoutSeconds { get; set; } = 25f;
 	[Parameter] public int ServerLoadingRevision { get; set; }
 
+	private bool isOverlayRendered;
+	private bool isOverlayExiting;
+	private bool wasOverlayTargetVisible;
+	private float overlayExitStartedAt;
+	private string lastTitle = "Loading";
+	private string lastMessage = "";
+
 	private bool IsLocalLoadingVisible =>
 		LoadingState.IsVisible && Time.Now - LoadingState.StartedAt <= LoadingState.ClientTimeoutSeconds;
 
 	private bool IsServerLoadingVisible =>
 		IsServerLoading && Time.Now - ServerLoadingStartedAt <= ServerLoadingClientTimeoutSeconds;
+
+	private bool IsOverlayTargetVisible => IsLocalLoadingVisible || IsServerLoadingVisible;
+
+	private bool ShouldRenderOverlay
+	{
+		get
+		{
+			UpdateOverlayTransitionState();
+			return isOverlayRendered;
+		}
+	}
+
+	private string DisplayTitle => IsOverlayTargetVisible
+		? (IsLocalLoadingVisible ? LoadingState.Title : ServerLoadingTitle)
+		: lastTitle;
+
+	private string DisplayMessage => IsOverlayTargetVisible
+		? (IsLocalLoadingVisible ? LoadingState.Message : ServerLoadingMessage)
+		: lastMessage;
+
+	private string RootClasses
+	{
+		get
+		{
+			UpdateOverlayTransitionState();
+
+			var classes = "loading-overlay-root";
+			if ( IsOverlayTargetVisible )
+				classes += " visible";
+			else if ( isOverlayExiting )
+				classes += " exiting";
+
+			return classes;
+		}
+	}
+
+	private void UpdateOverlayTransitionState()
+	{
+		var targetVisible = IsOverlayTargetVisible;
+		if ( targetVisible )
+		{
+			isOverlayRendered = true;
+			isOverlayExiting = false;
+			wasOverlayTargetVisible = true;
+			overlayExitStartedAt = 0f;
+			lastTitle = IsLocalLoadingVisible ? LoadingState.Title : ServerLoadingTitle;
+			lastMessage = IsLocalLoadingVisible ? LoadingState.Message : ServerLoadingMessage;
+			return;
+		}
+
+		if ( wasOverlayTargetVisible && isOverlayRendered && !isOverlayExiting )
+		{
+			isOverlayExiting = true;
+			overlayExitStartedAt = Time.Now;
+			wasOverlayTargetVisible = false;
+		}
+
+		if ( isOverlayExiting && Time.Now - overlayExitStartedAt >= LoadingState.OverlayTransitionSeconds )
+		{
+			isOverlayRendered = false;
+			isOverlayExiting = false;
+		}
+	}
 
 	protected override int BuildHash()
 	{
@@ -59,7 +129,10 @@
 		hash.Add( ServerLoadingStartedAt );
 		hash.Add( ServerLoadingClientTimeoutSeconds );
 		hash.Add( ServerLoadingRevision );
-		if ( LoadingState.IsVisible || IsServerLoading )
+		hash.Add( LoadingState.IsBlockingInteraction );
+		hash.Add( isOverlayRendered );
+		hash.Add( isOverlayExiting );
+		if ( LoadingState.IsBlockingInteraction || IsServerLoading || isOverlayRendered )
 			hash.Add( MathF.Round( Time.Now * 2f ) );
 		return hash.ToHashCode();
 	}

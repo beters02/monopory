@@ -190,7 +190,7 @@ public sealed partial class GameController : Component, Component.INetworkListen
 
 		if ( !Networking.IsHost )
 		{
-			LoadingState.Hide();
+			LoadingState.HideAfterSceneReady();
 			return;
 		}
 
@@ -215,7 +215,7 @@ public sealed partial class GameController : Component, Component.INetworkListen
 		finally
 		{
 			ClearServerLoading();
-			LoadingState.Hide();
+			LoadingState.HideAfterSceneReady();
 		}
 	}
 
