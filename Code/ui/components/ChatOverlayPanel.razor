@@ -82,6 +82,8 @@
 	private int LastSeenChatId;
 	private string ChatDraft = "";
 	private int ChatInputScrollFramesRemaining;
+	private const int ChatInputScrollStartLength = 30;
+	private const float ChatInputScrollEndPadding = 6f;
 
 	protected override void OnUpdate()
 	{
@@ -323,14 +325,18 @@
 
 	private void UpdateChatInputScroll()
 	{
-		if ( ChatInput is null || ChatInputScrollFramesRemaining <= 0 )
+		if ( ChatInput is null )
 			return;
 
-		ChatInputScrollFramesRemaining--;
+		if ( ChatInputScrollFramesRemaining > 0 )
+			ChatInputScrollFramesRemaining--;
+
 		ChatInputTextPanel ??= FindTextEntryTextPanel( ChatInput );
 
 		var scrollTarget = ChatInputTextPanel ?? (Panel)ChatInput;
-		var targetX = ChatDraft.Length > 34 ? Math.Max( 0f, scrollTarget.ScrollSize.x + 24f ) : 0f;
+		var targetX = ChatDraft.Length > ChatInputScrollStartLength
+			? Math.Max( 0f, scrollTarget.ScrollSize.x + ChatInputScrollEndPadding )
+			: 0f;
 		scrollTarget.ScrollOffset = new Vector2( targetX, 0f );
 	}
 
