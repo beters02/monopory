@@ -4,7 +4,8 @@ using System.Threading.Tasks;
 public static class LoadingState
 {
 	public const float ClientTimeoutSeconds = 25f;
-	public const float MinimumVisibleSeconds = 2f;
+	public const float StandaloneMinimumVisibleSeconds = 2f;
+	public const float EditorMinimumVisibleSeconds = 0f;
 	public const float PresentationDelaySeconds = 0.2f;
 	public const float OverlayTransitionSeconds = 0.65f;
 
@@ -17,6 +18,8 @@ public static class LoadingState
 
 	public static readonly bool IsFunctionalityEnabled = true;
 	public static bool IsBlockingInteraction => IsVisible || Time.Now - HiddenAt <= OverlayTransitionSeconds;
+
+	public static float GetMinimumVisibleSeconds() => Application.IsEditor ? EditorMinimumVisibleSeconds : StandaloneMinimumVisibleSeconds;
 
 	public static void Show( string title, string message = "" )
 	{
@@ -41,10 +44,13 @@ public static class LoadingState
 		Revision++;
 	}
 
-	public static void HideAfterSceneReady( int frames = 2, float minimumVisibleSeconds = MinimumVisibleSeconds )
+	public static void HideAfterSceneReady( int frames = 2, float minimumVisibleSeconds = -67f )
 	{
 		if ( !IsVisible )
 			return;
+
+		if ( minimumVisibleSeconds == -67f )
+			minimumVisibleSeconds = GetMinimumVisibleSeconds();
 
 		_ = HideAfterSceneReadyAsync( Revision, frames, minimumVisibleSeconds );
 	}
@@ -62,7 +68,7 @@ public static class LoadingState
 
 	private static async Task HideAfterSceneReadyAsync( int revision, int frames, float minimumVisibleSeconds )
 	{
-		var hideAt = StartedAt + Math.Max( minimumVisibleSeconds, MinimumVisibleSeconds );
+		var hideAt = StartedAt + Math.Max( minimumVisibleSeconds, GetMinimumVisibleSeconds() );
 		while ( IsVisible && Revision == revision && Time.Now < hideAt )
 			await Task.Delay( 16 );
 

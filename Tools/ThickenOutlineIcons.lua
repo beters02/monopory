@@ -17,10 +17,6 @@ local function quote_path( path )
 	return '"' .. path:gsub( '"', '\\"' ) .. '"'
 end
 
-local function fuckLuaFiveOne(...)
-    return { n = select("#", ...), ... }
-end
-
 local function list_outline_files( root )
 	local files = {}
 	local command
@@ -38,10 +34,11 @@ local function list_outline_files( root )
 
 	for line in pipe:lines() do
 		if line ~= "" then
-			local a = normalize_slashes(line)
 			if package.config:sub( 1, 1 ) == "\\" then
+				local a = normalize_slashes( root .. "/" .. line )
 				table.insert( files, a )
 			else
+				local a = normalize_slashes( line )
 				table.insert( files, a )
 			end
 		end
@@ -49,6 +46,10 @@ local function list_outline_files( root )
 
 	pipe:close()
 	return files
+end
+
+local function escape_pattern( text )
+	return text:gsub( "([^%w])", "%%%1" )
 end
 
 local function read_file( path )
@@ -65,14 +66,11 @@ local function write_file( path, contents )
 end
 
 local function set_attribute( tag, name, value )
-	local attr_pattern = name .. '="[^"]*"'
-	local attr = name .. '="' .. value .. '"'
+	local attr_pattern = "%s*" .. escape_pattern( name ) .. '="[^"]*"'
+	local attr = " " .. name .. '="' .. value .. '"'
 
-	if tag:find( attr_pattern ) then
-		return tag:gsub( attr_pattern, attr, 1 )
-	end
-
-	return tag:gsub( "%s*/?>$", " " .. attr .. "%0", 1 )
+	tag = tag:gsub( attr_pattern, "" )
+	return tag:gsub( "%s*/?>$", attr .. "%0", 1 )
 end
 
 local function thicken_path_tag( tag )
@@ -97,8 +95,7 @@ local changed_files = 0
 local changed_paths = 0
 
 for _, root in ipairs( roots ) do
-	for _, ipath in ipairs( list_outline_files( root ) ) do
-		local path = root .. "/" .. ipath
+	for _, path in ipairs( list_outline_files( root ) ) do
 		local original = read_file( path )
 		local path_changes = 0
 
