@@ -85,6 +85,23 @@ GameHud {
 		pointer-events: none;
 	}
 
+	.trade-hud-layer {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		z-index: 35;
+		opacity: 1;
+		transition: opacity 0.16s ease;
+		pointer-events: none;
+	}
+
+	.trade-hud-layer.menu-hidden-by-menu {
+		opacity: 0;
+		pointer-events: none;
+	}
+
 	.manual-save-name-screen {
 		position: absolute;
 		top: 0;

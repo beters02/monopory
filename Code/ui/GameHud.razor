@@ -106,7 +106,9 @@
 					<PropertyOwnershipPanel GameRef="@GameRef"></PropertyOwnershipPanel>
 				</div>
 
-				<TradePanel GameRef="@GameRef"></TradePanel>
+				<div class="@GetTradeLayerClasses()">
+					<TradePanel GameRef="@GameRef"></TradePanel>
+				</div>
 				
 				@if ( !IsAnyMenuOpen || GameRef.ForceHiddenUiVisible )
 				{
@@ -203,6 +205,15 @@
 	private bool IsAnyLocalMenuOpen()
 	{
 		return IsEscapeMenuOpen || IsOptionsMenuOpen || IsMatchSettingsMenuOpen || IsManualSaveNameMenuOpen;
+	}
+
+	private string GetTradeLayerClasses()
+	{
+		var classes = "trade-hud-layer";
+		if ( IsAnyMenuOpen && !GameRef.ForceHiddenUiVisible )
+			classes += " menu-hidden-by-menu";
+
+		return classes;
 	}
 
 	private void UpdateInputs()

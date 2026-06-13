@@ -129,6 +129,7 @@
 				{
 					Popup = CopyPopup( popup )
 				} );
+				_ = DismissAfterLifetime( popup.Id, popup.Lifetime );
 				continue;
 			}
 
@@ -167,6 +168,20 @@
 
 		renderedPopups.RemoveAll( popup => popup.Popup.Id == popupId && popup.IsClosing );
 		StateHasChanged();
+	}
+
+	private async Task DismissAfterLifetime( int popupId, float lifetime )
+	{
+		if ( lifetime <= 0f )
+			return;
+
+		await Task.DelaySeconds( lifetime );
+
+		var renderedPopup = renderedPopups.FirstOrDefault( popup => popup.Popup.Id == popupId );
+		if ( renderedPopup is null || renderedPopup.IsClosing )
+			return;
+
+		Dismiss( popupId );
 	}
 
 	private static GamePopup CopyPopup( GamePopup popup )
