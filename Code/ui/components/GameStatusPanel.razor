@@ -136,6 +136,7 @@
 	private GameButton StatusRollButton = null!;
 	private GameButton StatusJailRollButton = null!;
 	private GameButton StatusEndTurnButton = null!;
+	private GameButton KeyboardRollButton;
 
     private PlayerState CurrentPlayer => GameRef?.CurrentPlayer;
     private PlayerState LocalPlayer => GameRef?.LocalPlayer;
@@ -192,29 +193,59 @@
 	private void UpdateActionKeybinds()
 	{
 		if ( GameRef?.MatchState != MatchLifecycleState.InGame || CurrentPlayer != LocalPlayer )
+		{
+			CancelRollInputActionHold();
 			return;
+		}
 
 		if ( Input.Pressed( "RollDice" ) )
-			TriggerRollInputAction();
+			StartRollInputActionHold();
+
+		if ( KeyboardRollButton is not null && !Input.Down( "RollDice" ) )
+			CompleteRollInputActionHold();
 
 		if ( Input.Pressed( "EndTurn" ) )
 			TriggerEndTurnInputAction();
 	}
 
-	private void TriggerRollInputAction()
+	private void StartRollInputActionHold()
 	{
 		if ( !CanActOnCurrentTurn )
 			return;
 
+		var rollButton = GetRollInputActionButton();
+		if ( rollButton is null )
+			return;
+
+		KeyboardRollButton = rollButton;
+		KeyboardRollButton.StartInputActionHold();
+	}
+
+	private void CompleteRollInputActionHold()
+	{
+		var rollButton = KeyboardRollButton;
+		KeyboardRollButton = null;
+		rollButton?.CompleteInputActionHold();
+	}
+
+	private void CancelRollInputActionHold()
+	{
+		var rollButton = KeyboardRollButton;
+		KeyboardRollButton = null;
+		rollButton?.CancelInputActionHold();
+	}
+
+	private GameButton GetRollInputActionButton()
+	{
 		if ( IsCurrentPlayerInJail )
 		{
 			if ( !CurrentPlayerMustPayForcedJailFine )
-				(StatusJailRollButton ?? ActionJailRollButton)?.TriggerInputAction();
+				return StatusJailRollButton ?? ActionJailRollButton;
 
-			return;
+			return null;
 		}
 
-		(StatusRollButton ?? ActionRollButton)?.TriggerInputAction();
+		return StatusRollButton ?? ActionRollButton;
 	}
 
 	private void TriggerEndTurnInputAction()

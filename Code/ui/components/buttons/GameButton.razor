@@ -57,6 +57,34 @@
 		HandleClick();
 	}
 
+	public void StartInputActionHold()
+	{
+		if ( OnHoldComplete is null || Disabled )
+			return;
+
+		isPressing = true;
+		isHovering = true;
+		pressStartedAt = Time.Now;
+		StateHasChanged();
+	}
+
+	public void CompleteInputActionHold()
+	{
+		if ( OnHoldComplete is null || !isPressing )
+			return;
+
+		StopHolding();
+
+		var heldSeconds = Math.Max( Time.Now - pressStartedAt, 0f );
+		var strength = HoldMaxSeconds <= 0f ? 1f : Math.Clamp( heldSeconds / HoldMaxSeconds, 0f, 1f );
+		TriggerHoldComplete( strength );
+	}
+
+	public void CancelInputActionHold()
+	{
+		StopHolding();
+	}
+
 	protected string RootClasses
 	{
 		get
