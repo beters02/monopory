@@ -42,17 +42,17 @@
 			<div class="chat-overlay-input-row" onclick="@HandleInputRowClick">
 				@if ( IsComposing )
 				{
-					<ConsoleCommandTextEntry
+					<ChatTextEntry
 						@ref="ChatInput"
 						class="chat-overlay-input"
 						Placeholder="Type message and press Enter..."
-						OnConsoleCloseRequested="@CancelCompose"
+						OnCloseRequested="@CancelCompose"
 						onsubmit="@SubmitMessage" />
 					<GameButton Variant="chat-overlay-send-button" OnClick="@SubmitMessage">Send</GameButton>
 				}
 				else
 				{
-					<div class="chat-overlay-input-placeholder">Press Enter to chat...</div>
+					<div class="chat-overlay-input-placeholder">Press Enter to chat, and Shift+Enter to close...</div>
 				}
 			</div>
 		</div>
@@ -70,7 +70,7 @@
 	private readonly record struct MentionMatch( int Start, int NameEnd, int End, string Name );
 	private readonly List<ChatEntry> ChatEntries = new();
 	private static readonly char[] MentionTrailingCharacters = ['.', ',', '!', '?', ':', ';', ')', ']', '}'];
-	private ConsoleCommandTextEntry ChatInput = null!;
+	private ChatTextEntry ChatInput = null!;
 	private Panel MessagesPanel = null!;
 	private bool IsComposing;
 	private bool IsPermanentlyClosed;
@@ -220,7 +220,7 @@
 		IsPermanentlyClosed = false;
 		Touch();
 		RequestScrollToBottom();
-		StateHasChanged();
+		BeginCompose();
 	}
 
 	private static bool IsChatShortcutPressed()
@@ -260,10 +260,16 @@
 		if ( ChatInput is null )
 			return;
 
+		InputFocus.Clear(ChatInput);
+		Log.Info("Cleared panel focus");
+		StateHasChanged();
+
+		Log.Info( IsShiftDown() );
+
 		var message = (ChatInput.Text ?? "").Trim();
 		ChatInput.Text = "";
-
-		if ( !string.IsNullOrWhiteSpace( message ) )
+		
+		if ( !string.IsNullOrWhiteSpace( message ) || !IsShiftDown() )
 		{
 			var game = GameRef ?? GameController.Instance;
 			game?.RequestSendChatMessage( message );
