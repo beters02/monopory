@@ -812,3 +812,27 @@ public static class TryGetSteamLobbySocket
 		}, connection );
 	}
 }
+
+public static class TryTransferSteamLobbyHost
+{
+	public const string Name = "try_get_steam_lobby_socket";
+
+	[StandaloneCmd]
+	[HostCmd]
+	[ConCmd( Name )]
+	public static void Execute( Connection connection, string playerName, string[] playerNameTail )
+	{
+		GameCommandManager.RunCommand( Name, () =>
+		{
+
+			//var resolvedPlayerName = GameCommandManager.JoinPlayerName( playerName, playerNameTail );
+			//var player = game.ResolvePlayerReference( resolvedPlayerName, connection );
+
+			bool gotSocket = MonopolyApp.TryGetLobbySocket(out object socket, out string msg);
+			if ( gotSocket )
+				return CommandResult.Success(msg);
+
+			return CommandResult.Fail(msg);
+		}, connection );
+	}
+}

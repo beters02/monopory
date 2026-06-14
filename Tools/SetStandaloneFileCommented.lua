@@ -36,11 +36,11 @@ local content = file:read("*a")
 file:close()
 
 local function isStandaloneDirective(line)
-    return line:match("^%s*#if") or line:match("^%s*#endif")
+    return line:match("^%s*#if%f[%A]") or line:match("^%s*#endif%f[%A]")
 end
 
 local function isCommentedStandaloneDirective(line)
-    return line:match("^%s*//%s*#if") or line:match("^%s*//%s*#endif")
+    return line:match("^%s*//%s*#if%f[%A]") or line:match("^%s*//%s*#endif%f[%A]")
 end
 
 local function processLine(line)
@@ -49,16 +49,16 @@ local function processLine(line)
             return line
         end
 
-        return line:gsub("^(%s*)(#if)", "%1//%2", 1)
-            :gsub("^(%s*)(#endif)", "%1//%2", 1)
+        return line:gsub("^(%s*)(#if%f[%A])", "%1//%2", 1)
+            :gsub("^(%s*)(#endif%f[%A])", "%1//%2", 1)
     end
 
     if not isCommentedStandaloneDirective(line) then
         return line
     end
 
-    return line:gsub("^(%s*)//%s*(#if)", "%1%2", 1)
-        :gsub("^(%s*)//%s*(#endif)", "%1%2", 1)
+    return line:gsub("^(%s*)//%s*(#if%f[%A])", "%1%2", 1)
+        :gsub("^(%s*)//%s*(#endif%f[%A])", "%1%2", 1)
 end
 
 local output = {}

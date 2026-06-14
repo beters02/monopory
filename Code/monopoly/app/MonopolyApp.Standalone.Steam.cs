@@ -18,62 +18,65 @@ public partial class MonopolyApp : Component
         return TryGetActiveSteamLobbySocket(out steamLobbySocket, out msg);
     }
 
-    	private static bool TryGetActiveSteamLobbySocket( out object steamLobbySocket, out string message )
-	{
+    private static bool TryGetActiveSteamLobbySocket( out object steamLobbySocket, out string message )
+    {
+        steamLobbySocket = null;
+        message = "";
 
-		steamLobbySocket = null;
-		message = "";
+//#if STANDALONE
+        var networkingType = FindLoadedType( "Sandbox.Network.Networking" ) ?? FindLoadedType( "Sandbox.Networking" );
+        var networkSystem = networkingType?.GetField( "System", SteamStaticReflectionFlags )?.GetValue( null );
+        if ( networkSystem is null )
+        {
+            message = "Could not find active Sandbox networking system.";
+            return false;
+        }
 
-#if STANDALONE
-		var networkingType = FindLoadedType( "Sandbox.Network.Networking" ) ?? FindLoadedType( "Sandbox.Networking" );
-		var networkSystem = networkingType?.GetField( "System", SteamStaticReflectionFlags )?.GetValue( null );
-		if ( networkSystem is null )
-		{
-			message = "Could not find active Sandbox networking system.";
-			return false;
-		}
+        var sockets = networkSystem.GetType().GetProperty( "Sockets", SteamInstanceReflectionFlags )?.GetValue( networkSystem ) as IEnumerable;
+        if ( sockets is null )
+        {
+            message = "Could not inspect active network sockets.";
+            return false;
+        }
 
-		var sockets = networkSystem.GetType().GetProperty( "Sockets", SteamInstanceReflectionFlags )?.GetValue( networkSystem ) as IEnumerable;
-		if ( sockets is null )
-		{
-			message = "Could not inspect active network sockets.";
-			return false;
-		}
-
-		foreach ( var socket in sockets )
-		{
-			if ( socket?.GetType().FullName == "Sandbox.Network.SteamLobbySocket" )
-			{
+        foreach ( var socket in sockets )
+        {
+            if ( socket?.GetType().FullName == "Sandbox.Network.SteamLobbySocket" )
+            {
                 message = "Lobby socket found successfully";
-				steamLobbySocket = socket;
-				return true;
-			}
-		}
+                steamLobbySocket = socket;
+                return true;
+            }
+        }
 
-#endif
-		message = "No active Steam lobby socket was found.";
-		return false;
-	}
+//#endif
+        message = "No active Steam lobby socket was found.";
+        return false;
+    }
 
+    public static bool TryTransferSteamLobbyHost( Connection connection, string steamId, out string msg )
+    {
+        msg = "Transfer lobby host is available in standalone";
+
+        if ( IsStandalone() )
+        {
 #if STANDALONE
+            if ( !long.TryParse( steamId, out var targetSteamId ) || targetSteamId == 0 )
+            {
+                msg = $"Could not parse target SteamId \"{steamId}\".";
+                return false;
+            }
+
+            return TryTransferSteamLobbyHost( targetSteamId, out msg );
+#endif
+        }
+        
+        return false;
+    }
+
+//#if STANDALONE
 	private const BindingFlags SteamStaticReflectionFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
 	private const BindingFlags SteamInstanceReflectionFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
-    
-
-	[ConCmd( "transfer_steam_lobby_host" )]
-	private static void TransferSteamLobbyHostCommand( Connection connection, string steamId )
-	{
-		if ( !long.TryParse( steamId, out var targetSteamId ) || targetSteamId == 0 )
-		{
-			Log.Warning( $"Could not parse target SteamId \"{steamId}\"." );
-			return;
-		}
-
-		if ( TryTransferSteamLobbyHost( targetSteamId, out var message ) )
-			Log.Info( message );
-		else
-			Log.Warning( message );
-	}
 
 	public static bool TryTransferSteamLobbyHost( long targetSteamId, out string message )
 	{
@@ -276,6 +279,6 @@ public partial class MonopolyApp : Component
 		return null;
 
 	}
-#endif
+//#endif
 
 }
