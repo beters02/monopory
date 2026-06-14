@@ -48,8 +48,6 @@ public sealed class InputHelperService : Component
         UpdateLeftShiftDown();
         UpdateRightShiftDown();
         UpdateEscapeDown();
-
-        Log.Info(IsInputCodeDown(InputCode.LeftShift));
     }
 
     private void UpdateInputDownState(InputCode str, bool isDown)

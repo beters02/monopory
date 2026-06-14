@@ -1,0 +1,380 @@
+@import "../GameTheme.scss";
+@import "buttons/CloseButton.razor.scss";
+
+.property-stats-backdrop {
+	position: absolute;
+	left: 0;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	z-index: 58;
+	align-items: center;
+	justify-content: center;
+	background-color: $monopoly-modal-backdrop;
+	pointer-events: all;
+}
+
+.property-stats-modal {
+	position: relative;
+	width: 980px;
+	max-width: 86%;
+	height: 720px;
+	max-height: 84%;
+	padding: 24px;
+	background-color: $monopoly-board;
+	border: 4px solid $monopoly-ink;
+	border-radius: $monopoly-radius-board;
+	box-shadow: 0 0 0 5px $monopoly-board-outline, $monopoly-panel-shadow-strong;
+	color: $monopoly-ink;
+	font-family: $monopoly-font-family;
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+	pointer-events: all;
+}
+
+.property-stats-close {
+	position: absolute;
+	top: 12px;
+	right: 12px;
+	z-index: 2;
+	width: 44px;
+	height: 44px;
+	min-width: 44px;
+	min-height: 44px;
+	padding: 4px;
+	pointer-events: all;
+}
+
+.property-stats-header {
+	padding-right: 58px;
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 18px;
+}
+
+.property-stats-kicker {
+	color: $monopoly-danger;
+	font-size: $monopoly-font-kicker;
+	font-weight: 900;
+	text-transform: uppercase;
+}
+
+.property-stats-title {
+	font-size: $monopoly-font-title;
+	font-weight: 900;
+	line-height: $monopoly-font-title-line;
+}
+
+.property-stats-subtitle {
+	margin-top: 8px;
+	padding: 8px 12px;
+	background-color: $monopoly-board-surface;
+	border: 2px solid $monopoly-board-surface-line;
+	border-radius: $monopoly-radius-control;
+	font-size: 14px;
+	font-weight: 800;
+	white-space: nowrap;
+}
+
+.property-stats-summary-grid {
+	display: flex;
+	flex-direction: row;
+	gap: 10px;
+}
+
+.property-stats-summary-card,
+.property-stats-section {
+	background-color: $monopoly-board-surface;
+	border: 2px solid $monopoly-board-surface-line;
+	border-radius: $monopoly-radius-control;
+}
+
+.property-stats-summary-card {
+	flex: 1;
+	min-width: 0;
+	min-height: 82px;
+	padding: 12px;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	gap: 4px;
+}
+
+.property-stats-summary-label {
+	color: $monopoly-danger;
+	font-size: 12px;
+	font-weight: 900;
+	text-transform: uppercase;
+}
+
+.property-stats-summary-value {
+	font-size: 30px;
+	font-weight: 900;
+	line-height: 32px;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
+}
+
+.property-stats-summary-value.small {
+	font-size: 20px;
+	line-height: 24px;
+}
+
+.property-stats-content {
+	flex: 1;
+	min-height: 0;
+	display: flex;
+	gap: 12px;
+}
+
+.property-stats-column {
+	width: 34%;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.property-stats-column.wide {
+	flex: 1;
+	width: auto;
+}
+
+.property-stats-section {
+	padding: 12px;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	min-height: 0;
+}
+
+.property-stats-section.fill {
+	flex: 1;
+}
+
+.property-stats-section-title {
+	font-size: 17px;
+	font-weight: 900;
+	text-transform: uppercase;
+}
+
+.property-stats-rank-row,
+.property-stats-player-row,
+.property-stats-table-row,
+.property-stats-table-header {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	gap: 8px;
+}
+
+.property-stats-rank-row {
+	min-height: 42px;
+	padding: 8px;
+	background-color: $monopoly-board-surface-strong;
+	border-radius: $monopoly-radius-control;
+}
+
+.property-stats-rank-main,
+.property-stats-property-cell {
+	min-width: 0;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.property-stats-rank-main {
+	flex: 1;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 1px;
+}
+
+.property-stats-rank-name,
+.property-stats-property-name,
+.property-stats-player-name {
+	font-size: 14px;
+	font-weight: 900;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
+}
+
+.property-stats-player-name {
+	flex: 1;
+	min-width: 0;
+}
+
+.property-stats-rank-meta,
+.property-stats-property-meta {
+	font-size: 11px;
+	font-weight: 800;
+	opacity: 0.65;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
+}
+
+.property-stats-rank-value {
+	flex-shrink: 0;
+	padding: 4px 8px;
+	background-color: $monopoly-gold;
+	border-radius: $monopoly-radius-control;
+	color: $monopoly-ink;
+	font-size: 14px;
+	font-weight: 900;
+}
+
+.property-stats-empty {
+	min-height: 42px;
+	padding: 10px;
+	align-items: center;
+	justify-content: center;
+	background-color: $monopoly-board-surface-strong;
+	border-radius: $monopoly-radius-control;
+	font-size: 13px;
+	font-weight: 800;
+	opacity: 0.68;
+}
+
+.property-stats-player-list {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.property-stats-player-row {
+	min-height: 44px;
+	padding: 8px;
+	background-color: $monopoly-board-surface-strong;
+	border: 2px solid $monopoly-transparent;
+	border-radius: $monopoly-radius-control;
+}
+
+.property-stats-player-row.local-player {
+	border-color: $monopoly-gold;
+	box-shadow: inset 0 0 0 1px $monopoly-gold-glow;
+}
+
+.property-stats-player-row.bankrupt {
+	opacity: 0.55;
+}
+
+.property-stats-player-pill {
+	width: 72px;
+	flex-shrink: 0;
+	padding: 4px 8px;
+	background-color: $monopoly-ink;
+	border-radius: $monopoly-radius-control;
+	color: $monopoly-board;
+	font-size: 13px;
+	font-weight: 900;
+	text-align: center;
+}
+
+.property-stats-player-metric {
+	width: 58px;
+	flex-shrink: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 0;
+	font-size: 13px;
+	font-weight: 900;
+}
+
+.property-stats-player-metric label {
+	font-size: 9px;
+	font-weight: 900;
+	opacity: 0.62;
+	text-transform: uppercase;
+}
+
+.property-stats-table {
+	flex: 1;
+	min-height: 0;
+	overflow-y: scroll;
+	overflow-x: hidden;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.property-stats-table-header,
+.property-stats-table-row {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	gap: 8px;
+}
+
+.property-stats-table-header {
+	padding: 0 8px 4px 8px;
+	color: $monopoly-danger;
+	font-size: 11px;
+	font-weight: 900;
+	text-transform: uppercase;
+}
+
+.property-stats-table-row {
+	min-height: 46px;
+	padding: 7px 8px;
+	background-color: $monopoly-board-surface-strong;
+	border-radius: $monopoly-radius-control;
+	font-size: 13px;
+	font-weight: 800;
+	cursor: pointer;
+	pointer-events: all;
+}
+
+.property-stats-table-row:hover {
+	background-color: $monopoly-gold-soft;
+}
+
+.property-stats-property-cell,
+.property-stats-table-property {
+	flex: 2;
+	min-width: 0;
+}
+
+.property-stats-table-owner {
+	flex: 1;
+	min-width: 0;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
+}
+
+.property-stats-table-small {
+	width: 52px;
+	flex-shrink: 0;
+}
+
+.property-stats-table-money {
+	width: 64px;
+	flex-shrink: 0;
+}
+
+.property-stats-color-swatch {
+	width: 12px;
+	height: 28px;
+	border: 2px solid $monopoly-ink;
+	border-radius: 3px;
+	flex-shrink: 0;
+	background-color: $property-none;
+}
+
+.property-stats-color-swatch.color-brown { background-color: $property-brown; }
+.property-stats-color-swatch.color-light_blue { background-color: $property-light-blue; }
+.property-stats-color-swatch.color-pink { background-color: $property-pink; }
+.property-stats-color-swatch.color-orange { background-color: $property-orange; }
+.property-stats-color-swatch.color-red { background-color: $property-red; }
+.property-stats-color-swatch.color-yellow { background-color: $property-yellow; }
+.property-stats-color-swatch.color-green { background-color: $property-green; }
+.property-stats-color-swatch.color-dark_blue { background-color: $property-dark-blue; }
+.property-stats-color-swatch.color-railroad { background-color: $monopoly-ink-hover; }
+.property-stats-color-swatch.color-utility { background-color: $property-utility; }
+.property-stats-color-swatch.color-none { background-color: $property-none; }

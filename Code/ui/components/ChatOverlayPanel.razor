@@ -313,8 +313,6 @@
 			return;
 		}
 
-		Log.Info("cancelling");
-
 		CancelCompose();
 	}
 
@@ -523,9 +521,9 @@
 
 		if ( GameRef is not null && !GameRef.ForceHiddenUiVisible && !GameRef.IsGameHudVisible() )
 			return false;
-
+		
 		if ( IsPermanentlyClosed )
-			return IsMentionPreviewActive;
+			return ShouldShowReopenButton || IsMentionPreviewActive;
 
 		return IsComposing || (Time.Now - LastInteractionAt) <= HideAfterSeconds;
 	}

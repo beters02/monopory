@@ -130,6 +130,7 @@
 			</ChildContent>
 		</Sandbox.ui.components.HudPanel.HudPanel>		
 	}
+	<PropertyStatsModal GameRef="@GameRef" IsOpen="@IsStatsPanelOpen" OnClose="@CloseStatsPanel"></PropertyStatsModal>
 </root>
 
 @code
@@ -143,6 +144,7 @@
 	private GameButton StatusJailRollButton = null!;
 	private GameButton StatusEndTurnButton = null!;
 	private GameButton KeyboardRollButton;
+	private bool IsStatsPanelOpen;
 
     private PlayerState CurrentPlayer => GameRef?.CurrentPlayer;
     private PlayerState LocalPlayer => GameRef?.LocalPlayer;
@@ -444,10 +446,14 @@
 		if ( GameRef is null )
 			return;
 
-		if ( Networking.IsHost )
-			GameRef.DisplayStatsLog();
-		else
-			GameRef.RequestDisplayStatsLog();
+		IsStatsPanelOpen = true;
+		StateHasChanged();
+	}
+
+	private void CloseStatsPanel()
+	{
+		IsStatsPanelOpen = false;
+		StateHasChanged();
 	}
 
 	private string GetEndTurnBlockedMessage()
@@ -494,6 +500,33 @@
 		hash.Add( CurrentCameraMode );
 		hash.Add( CanEndTurn );
 		hash.Add( ShouldShowActionButtons );
+		hash.Add( IsStatsPanelOpen );
+		hash.Add( GetPropertyStatsHash() );
+		return hash.ToHashCode();
+	}
+
+	private int GetPropertyStatsHash()
+	{
+		var hash = new HashCode();
+
+		if ( GameRef?.PropertyLandingCounts is not null )
+		{
+			foreach ( var entry in GameRef.PropertyLandingCounts.OrderBy( entry => entry.Key ) )
+			{
+				hash.Add( entry.Key );
+				hash.Add( entry.Value );
+			}
+		}
+
+		if ( GameRef?.PropertyRentEarned is not null )
+		{
+			foreach ( var entry in GameRef.PropertyRentEarned.OrderBy( entry => entry.Key ) )
+			{
+				hash.Add( entry.Key );
+				hash.Add( entry.Value );
+			}
+		}
+
 		return hash.ToHashCode();
 	}
 }

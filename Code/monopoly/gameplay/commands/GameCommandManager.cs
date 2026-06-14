@@ -788,7 +788,7 @@ public static class ViewDeckCommand
 {
 	public const string Name = "view_deck";
 
-	[HostCheatCmd]
+	[CheatCmd]
 	[ConCmd( Name )]
 	public static void Execute( Connection connection, string deckName = "chance" )
 	{

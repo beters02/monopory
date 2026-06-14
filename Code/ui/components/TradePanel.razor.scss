@@ -99,13 +99,13 @@
 	box-shadow: 0 0 0 1px $monopoly-gold-glow;
 }
 
-.trade-row.incoming .trade-row-main {
+.trade-row.incoming:not(.involves-local-player) .trade-row-main {
 	background-color: $monopoly-gold;
 	color: $monopoly-ink;
 }
 
-.trade-row.incoming .trade-party-name,
-.trade-row.incoming .trade-arrow {
+.trade-row.incoming:not(.involves-local-player) .trade-party-name,
+.trade-row.incoming:not(.involves-local-player) .trade-arrow {
 	color: $monopoly-ink;
 }
 
