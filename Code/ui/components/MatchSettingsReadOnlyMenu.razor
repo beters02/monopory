@@ -3,25 +3,24 @@
 @using Sandbox.ui.components;
 @using Sandbox.ui.components.buttons;
 @using System;
-@using System.Linq;
 @inherits Panel
 
 <OptionsPanel IsOpen="@(IsOpen && Config is not null)" Kicker="Match" Title="Match Settings" OnClose="@Close" RootVariant="options-panel-readonly-root">
 	<ChildContent>
 		<OptionsPanelBody Copy="Current match settings are read-only during a live game.">
 			<ChildContent Context="_">
-				<OptionsPanelSectionList Sections="@ConfigSections">
-					<ChildContent Context="section">
-						@foreach ( var option in GetConfigOptionsForGroup( section.Key ) )
-						{
-							<OptionsPanelRow Title="@option.Label" Value="@option.Description">
-								<ChildContent>
-									<div class="options-panel-readonly-value">@GetConfigDisplayValue( option )</div>
-								</ChildContent>
-							</OptionsPanelRow>
-						}
-					</ChildContent>
-				</OptionsPanelSectionList>
+				<div class="match-config-tabs">
+					<GameButton Variant="@GetPageButtonClasses( MatchConfigPageGameRules )" OnClick="@(() => SetPage( MatchConfigPageGameRules ))">Game Rules</GameButton>
+					<GameButton Variant="@GetPageButtonClasses( MatchConfigPageBoardConfiguration )" OnClick="@(() => SetPage( MatchConfigPageBoardConfiguration ))">Board Configuration</GameButton>
+				</div>
+				@if ( IsGameRulesPage )
+				{
+					<MatchConfigRulesReadOnlyPage Config="@Config"></MatchConfigRulesReadOnlyPage>
+				}
+				else
+				{
+					<BoardConfigReadOnlyPage Config="@Config"></BoardConfigReadOnlyPage>
+				}
 			</ChildContent>
 		</OptionsPanelBody>
 	</ChildContent>
@@ -33,58 +32,34 @@
 	[Parameter] public MatchConfig Config { get; set; }
 	[Parameter] public Action OnClose { get; set; }
 
-	private IReadOnlyList<OptionsPanelSection> ConfigSections =>
-		ConfigGroups.Select( group => new OptionsPanelSection
-		{
-			Key = group,
-			Title = group,
-			HasItems = GetConfigOptionsForGroup( group ).Any()
-		} ).ToList();
+	private const string MatchConfigPageGameRules = "Game Rules";
+	private const string MatchConfigPageBoardConfiguration = "Board Configuration";
+	private string ActivePage = MatchConfigPageGameRules;
 
-	private IReadOnlyList<string> ConfigGroups => MatchConfigSchema.Options.Where( option => option.IsVisible ).Select( option => option.Group ).Distinct().ToList();
+	private bool IsGameRulesPage => string.Equals( ActivePage, MatchConfigPageGameRules, StringComparison.Ordinal );
 
 	private void Close()
 	{
 		OnClose?.Invoke();
 	}
 
-	private IEnumerable<MatchConfigOption> GetConfigOptionsForGroup( string group )
+	private void SetPage( string page )
 	{
-		return MatchConfigSchema.Options.Where( option => option.IsVisible && string.Equals( option.Group, group, StringComparison.Ordinal ) );
+		ActivePage = page;
 	}
 
-	private string GetConfigDisplayValue( MatchConfigOption option )
+	private string GetPageButtonClasses( string page )
 	{
-		var value = MatchConfigSchema.GetOptionValue( option, Config );
-
-		if ( option.Kind == MatchConfigOptionKind.Bool )
-			return (bool)(value ?? false) ? "On" : "Off";
-
-		if ( option.Kind == MatchConfigOptionKind.Enum )
-			return FormatEnumLabel( value?.ToString() ?? "" );
-
-		return MatchConfigSchema.FormatValue( option, value );
-	}
-
-	private static string FormatEnumLabel( string value )
-	{
-		if ( string.IsNullOrWhiteSpace( value ) )
-			return "";
-
-		var label = value.Replace( "_", " " );
-		for ( var i = label.Length - 1; i > 0; i-- )
-		{
-			if ( char.IsUpper( label[i] ) && !char.IsWhiteSpace( label[i - 1] ) )
-				label = label.Insert( i, " " );
-		}
-
-		return label;
+		return string.Equals( ActivePage, page, StringComparison.Ordinal )
+			? "options-panel-primary-button match-config-tab-button"
+			: "options-panel-secondary-button match-config-tab-button";
 	}
 
 	protected override int BuildHash()
 	{
 		var hash = new HashCode();
 		hash.Add( IsOpen );
+		hash.Add( ActivePage );
 
 		if ( Config is not null )
 		{
