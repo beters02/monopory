@@ -179,6 +179,13 @@
 	pointer-events: all;
 }
 
+.selected-space-card-panel .selected-space-card .space-card-menu-button,
+.selected-space-card-panel .selected-space-card .space-card-menu-button *,
+.selected-space-card-panel .selected-space-card .space-card-menu,
+.selected-space-card-panel .selected-space-card .space-card-menu * {
+	pointer-events: all;
+}
+
 .selected-space-actions,
 .selected-space-actions *,
 .space-card-close,

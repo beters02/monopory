@@ -167,6 +167,8 @@ public sealed partial class GameController : Component
 			PropertyImprovements[property.Index] = count + 1;
 		}
 
+		var colorSetName = targets.FirstOrDefault()?.ColorGroup.ToString() ?? "color";
+		SendGlobalPopupToAll( "Improvements purchased", $"{player.PlayerName} bought 1 house on each {colorSetName} property set!", PopupKind.Success, true, 4f );
 		SendTableChatMessage( "Improvements purchased", $"{player.PlayerName} built 1 improvement on {targets.Count} color set properties for ${totalCost}." );
 		TryAutosaveStablePoint( "Color set improvements purchased" );
 		return true;

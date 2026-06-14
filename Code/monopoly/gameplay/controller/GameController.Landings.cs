@@ -56,6 +56,10 @@ public sealed partial class GameController : Component
 					break;
 
 				case SpaceType.Tax:
+
+					if ( spaceDef.Key == "tax_income")
+						PlayGlobalSound(GameAssets.Sounds.Pluh);
+
 					if ( PayBank( player, spaceDef.TaxAmount, true, BankPaymentSource.TaxSpace ) )
 					{
 						result = $"Paid ${spaceDef.TaxAmount} tax";

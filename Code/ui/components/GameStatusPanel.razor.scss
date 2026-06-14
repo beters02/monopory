@@ -69,6 +69,12 @@
 	margin-bottom: 0;
 }
 
+.camera-mode-button-row {
+	display: flex;
+	flex-direction: row;
+	gap: 6px;
+}
+
 .camera-mode-buttons .monopoly-button.camera-mode-button {
 	flex: 1;
 	min-width: 0;
