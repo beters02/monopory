@@ -44,6 +44,24 @@
 
 @code
 {
+
+	public class EntryKind
+	{
+		private string Str { get; }
+
+		private EntryKind(string str)
+		{
+			Str = str;
+		}
+
+		// Overriding the default ToString method
+		public override string ToString() => Str;
+
+		public static readonly EntryKind Error = new("err");
+		public static readonly EntryKind Warning = new("wrn");
+		public static readonly EntryKind Message = new("msg");
+	}
+
 	private readonly record struct ConsoleEntry( string Message, string Kind, DateTime Time )
 	{
 		public string TimeText => Time.ToString( "HH:mm:ss" );
@@ -77,6 +95,10 @@
 	private int ErrorCount => Entries.Count( entry => entry.Kind == "err" );
 
 	private IEnumerable<ConsoleEntry> FilteredEntries => Entries.Where( ShouldShowEntry );
+
+	public static EntryKind EMessage = EntryKind.Message;
+	public static EntryKind EWarning = EntryKind.Warning;
+	public static EntryKind EError = EntryKind.Error;
 
 	protected override void OnStart()
 	{
@@ -291,6 +313,9 @@
 		{
 		}
 	}
+
+	public static void WriteLine( string message, EntryKind entryKind) =>
+		WriteLine(message, entryKind.ToString());
 
 	private static string GetLogKind( string level )
 	{

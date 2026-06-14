@@ -20,6 +20,7 @@ public sealed partial class LobbyController
 		return true;
 	}
 
+	[Rpc.Broadcast]
 	private void LoadGameScene()
 	{
 		SceneFlow.LoadGame( Scene );

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Sandbox;
+using Sandbox.ui.components;
 
 [AttributeUsage( AttributeTargets.Method )]
 public sealed class CheatCmdAttribute : Attribute {}
@@ -279,9 +280,9 @@ public sealed class GameCommandManager : Component
 		GameController.Instance?.SendGlobalPopupToAll("Server Cheats Changed", $"mn_cheats is now {(newValue ? "enabled" : "disabled")}.");
 	}
 
-	public static bool TryParseBool(string value, out bool? parsed)
+	public static bool TryParseBool(string value, out bool parsed)
 	{
-		parsed = null;
+		parsed = false;
 
 		if ( value is null )
 			return false;
@@ -322,11 +323,11 @@ public static class SvCheatsCommand
 			if ( !GameCommandManager.CanUseHostCommand( connection ) )
 				return CommandResult.FailHost();
 
-			var couldParse = GameCommandManager.TryParseBool( value, out bool? parsed );
+			var couldParse = GameCommandManager.TryParseBool( value, out bool parsed );
 			if ( !couldParse )
 				return CommandResult.Fail( $"Unable to parse value {value}" );
 
-			bool newValue = (bool) parsed;
+			bool newValue = parsed;
 			MonopolyApp.SetCheatsEnabled( newValue );
 			GameCommandManager.OnSvCheatsChangedStatic( oldValue, newValue );
 			return CommandResult.Success( $"mn_cheats => {value}" );
@@ -741,6 +742,27 @@ public static class JailPlayerCommand
 				game.RequestSendPlayerToJail( player );
 
 			return CommandResult.Success();
+		}, connection );
+	}
+}
+
+public static class GetHostId
+{
+	public const string Name = "get_host";
+
+	[ConCmd( Name )]
+	public static void Execute( Connection connection, string networkingHost = "false" )
+	{
+		GameCommandManager.RunCommand( Name, () =>
+		{
+			if ( !GameCommandManager.TryParseBool( networkingHost, out bool shouldDisplayNetworkingHost ) )
+				StandaloneConsole.WriteLine($"Could not parse bool value {networkingHost}. Continuing with false.", StandaloneConsole.EWarning);
+			
+			long id = shouldDisplayNetworkingHost ?  Connection.Host.SteamId : MonopolyApp.EffectiveHostOwnerId;
+			string idString = Networking.IsHost ? id.ToString() : "Only the host can see player's steam ids.";
+			string playerName = MonopolyApp.GetPlayerDisplayName(id)?? "Unable to find player name.";
+
+			return CommandResult.Success($"Player Name: {playerName} - SteamId: {idString}.");
 		}, connection );
 	}
 }
