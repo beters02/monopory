@@ -30,7 +30,6 @@ public partial class MonopolyApp : Component
             _ = InitializeAchievementsBackendAsync();
         }
 #endif
-        
     }    
 
     private static string GetLocalPlayerName()
