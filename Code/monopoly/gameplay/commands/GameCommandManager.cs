@@ -820,7 +820,7 @@ public static class TryTransferSteamLobbyHost
 	[StandaloneCmd]
 	[HostCmd]
 	[ConCmd( Name )]
-	public static void Execute( Connection connection, string unresolvedPlayerName, string[] unresolvedPlayerNameTail )
+	public static void Execute( Connection connection, string unresolvedPlayerName = "self", params string[] unresolvedPlayerNameTail )
 	{
 		GameCommandManager.RunCommand( Name, () =>
 		{

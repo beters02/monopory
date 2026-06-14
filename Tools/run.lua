@@ -3,7 +3,25 @@ local aliases = {
     ThickenOutlineIcons = {"toi", "thick", "icons"}
 }
 
-local command = arg[1]
+local command = arg and arg[1]
+
+if not command then
+    for cmd, cmdAliases in pairs(aliases) do
+        local str = cmd..":"
+        local first = true
+        for _, v in pairs(cmdAliases) do
+            local commaStr = ","
+            if first then
+                commaStr = ""
+                first = false
+            end
+            str = str .. commaStr .. " ".. v
+        end
+        print(str)
+    end
+    return
+end
+
 local argsStr = table.concat(arg, " ", 2)
 
 local function runLuaCommand(fileNameNoExt)
