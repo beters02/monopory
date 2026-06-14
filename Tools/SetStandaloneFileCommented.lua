@@ -94,3 +94,8 @@ end
 outputFile:write(table.concat(output))
 outputFile:close()
 
+if toggle then
+    print("Successfully commented out Standalone")
+else
+    print("Successfully uncommented Standalone")
+end
