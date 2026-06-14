@@ -23,7 +23,7 @@ public partial class MonopolyApp : Component
         steamLobbySocket = null;
         message = "";
 
-//#if STANDALONE
+#if STANDALONE
         var networkingType = FindLoadedType( "Sandbox.Network.Networking" ) ?? FindLoadedType( "Sandbox.Networking" );
         var networkSystem = networkingType?.GetField( "System", SteamStaticReflectionFlags )?.GetValue( null );
         if ( networkSystem is null )
@@ -49,7 +49,7 @@ public partial class MonopolyApp : Component
             }
         }
 
-//#endif
+#endif
         message = "No active Steam lobby socket was found.";
         return false;
     }
@@ -60,7 +60,7 @@ public partial class MonopolyApp : Component
 
         if ( IsStandalone() )
         {
-//#if STANDALONE
+#if STANDALONE
             if ( !long.TryParse( toPlayerSteamId, out var targetSteamId ) || targetSteamId == 0 )
             {
                 msg = $"Could not parse target SteamId \"{toPlayerSteamId}\".";
@@ -68,13 +68,13 @@ public partial class MonopolyApp : Component
             }
 
             return TryTransferSteamLobbyHostSync( targetSteamId, out msg );
-//#endif
+#endif
         }
         
         return false;
     }
 
-//#if STANDALONE
+#if STANDALONE
 	private const BindingFlags SteamStaticReflectionFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
 	private const BindingFlags SteamInstanceReflectionFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
 
@@ -279,6 +279,6 @@ public partial class MonopolyApp : Component
 		return null;
 
 	}
-//#endif
+#endif
 
 }
