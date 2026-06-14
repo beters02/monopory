@@ -11,6 +11,16 @@ public sealed class HostCheatCmdAttribute : Attribute {}
 public sealed class HostCmdAttribute : Attribute {}
 [AttributeUsage( AttributeTargets.Method )]
 public sealed class StandaloneCmdAttribute : Attribute {}
+[AttributeUsage( AttributeTargets.Method )]
+public sealed class SourceOverwriteCmdAttribute : Attribute
+{
+	public string Name { get; set; }
+
+	public SourceOverwriteCmdAttribute( string name )
+	{
+		Name = name;
+	}
+}
 
 public sealed class CommandResult
 {
@@ -50,8 +60,10 @@ public sealed class GameCommand
 	public string Name { get; init; }
 	public MethodDescription Method { get; init; }
 	public ConCmdAttribute Attribute { get; init; }
+	public SourceOverwriteCmdAttribute SourceAttribute { get; init; }
 	public GameCommandCheatType CheatType { get; init; }
 	public GameCommandAppType AppType { get; init; }
+	public bool IsSourceOverwrite { get; init; }
 
 	public GameCommand( string name, MethodDescription method, ConCmdAttribute attribute, GameCommandCheatType cheatType, GameCommandAppType appType )
 	{
@@ -59,6 +71,18 @@ public sealed class GameCommand
 		Method = method;
 		Attribute = attribute;
 		CheatType = cheatType;
+		AppType = appType;
+		IsSourceOverwrite = false;
+	}
+
+	public GameCommand( string name, MethodDescription method, SourceOverwriteCmdAttribute attribute, GameCommandCheatType cheatType, GameCommandAppType appType )
+	{
+		Name = name;
+		Method = method;
+		SourceAttribute = attribute;
+		CheatType = cheatType;
+		AppType = appType;
+		IsSourceOverwrite = true;
 	}
 }
 
@@ -76,16 +100,50 @@ public static class GameCommands
 		}
 	}
 
+	private class MethodHelperObject
+	{
+		public ConCmdAttribute conCmdAttribute;
+		public SourceOverwriteCmdAttribute sourceOverwriteCmdAttribute;
+		public MethodDescription method;
+	}
+
 	private static void EnsureRegistered()
 	{
 		if ( registered )
 			return;
 
 		registered = true;
+		
 
-		foreach ( var (method, attribute) in Game.TypeLibrary.GetMethodsWithAttribute<ConCmdAttribute>() )
+		List<MethodHelperObject> methodsToGoOver = new();
+
+		foreach ( var (_method, attribute) in Game.TypeLibrary.GetMethodsWithAttribute<ConCmdAttribute>() )
 		{
-			var name = attribute.Name;
+			MethodHelperObject obj = new()
+			{
+				method = _method,
+				conCmdAttribute = attribute
+			};
+
+			methodsToGoOver.Add(obj);
+		}
+
+		foreach ( var (_method, attribute ) in Game.TypeLibrary.GetMethodsWithAttribute<SourceOverwriteCmdAttribute>())
+		{
+			MethodHelperObject obj = new()
+			{
+				method = _method,
+				sourceOverwriteCmdAttribute = attribute
+			};
+
+			methodsToGoOver.Add(obj);
+		}
+
+		foreach ( var obj in methodsToGoOver )
+		{
+			var method = obj.method;
+
+			var name = obj.conCmdAttribute is not null ? obj.conCmdAttribute.Name : obj.sourceOverwriteCmdAttribute.Name;
 			if ( string.IsNullOrWhiteSpace( name ) )
 				name = method.Name;
 
@@ -103,7 +161,11 @@ public static class GameCommands
 			if ( method.GetCustomAttribute<StandaloneCmdAttribute>() is not null )
 				appType = GameCommandAppType.Standalone;
 
-			Commands[name] = new GameCommand( name, method, attribute, cheatType, appType );
+			if (obj.sourceOverwriteCmdAttribute is not null)
+				Commands[name] = new GameCommand( name, method, obj.sourceOverwriteCmdAttribute, cheatType, appType );
+			else
+				Commands[name] = new GameCommand( name, method, obj.conCmdAttribute, cheatType, appType );
+			
 		}
 	}
 }
@@ -194,6 +256,30 @@ public sealed class GameCommandManager : Component
 		ExecuteCommand( commandName, callback );
 	}
 
+	public static void RunCommandFromName( Connection caller, string commandName, params string[] args )
+	{
+		if ( Commands[commandName] is null )
+		{
+			LogCommandResult(commandName, CommandResult.Fail($"Could not find command {commandName}"));
+			return;
+		}
+
+		object[] useArgs = [caller];
+
+		foreach(var a in args)
+		{
+			useArgs.Append(a);
+		}
+
+		Func<CommandResult> callback = () =>
+		{
+			Commands[commandName].Method.Invoke( null, useArgs );
+			return CommandResult.Success();
+		};
+
+		RunCommand( commandName, callback, caller );
+	}
+
 	internal static bool CanUseCheatCommand( Connection caller )
 	{
 		return MonopolyApp.CheatsEnabled;
@@ -257,7 +343,8 @@ public sealed class GameCommandManager : Component
 
 		if ( string.IsNullOrWhiteSpace( result.Message ) )
 		{
-			var message = $"{commandName} command succeeded.";
+			//var message = $"{commandName} command succeeded.";
+			var message = result.Message;
 			Log.Info( message );
 			WriteStandaloneConsoleLine( message, "msg" );
 			return;
@@ -330,13 +417,25 @@ public sealed class GameCommandManager : Component
 
 		return false;
 	}
+
+	public static bool IsCommandSourceOverwrite( string command )
+	{
+		if ( Commands[command] is not null )
+		{
+			return Commands[command].IsSourceOverwrite;
+		}
+
+		return false;
+	}
 }
 
 public static class SvCheatsCommand
 {
-	public const string Name = "mn_cheats";
+	public const string Name = "sv_cheats";
+	public const string Alias = "mn_cheats";
 
-	[ConCmd( Name )]
+	[ConCmd ( Alias )]
+	[SourceOverwriteCmd( Name )]
 	public static void Execute( Connection connection, string value = "_" )
 	{
 		GameCommandManager.RunCommand( Name, () =>
@@ -344,7 +443,7 @@ public static class SvCheatsCommand
 			bool oldValue = MonopolyApp.CheatsEnabled;
 
 			if ( value is null || value == "_" )
-				return CommandResult.Success($"mn_cheats {oldValue}");
+				return CommandResult.Success($"sv_cheats {oldValue}");
 
 			if ( !GameCommandManager.CanUseHostCommand( connection ) )
 				return CommandResult.FailHost();
@@ -356,7 +455,7 @@ public static class SvCheatsCommand
 			bool newValue = parsed;
 			MonopolyApp.SetCheatsEnabled( newValue );
 			GameCommandManager.OnSvCheatsChangedStatic( oldValue, newValue );
-			return CommandResult.Success( $"mn_cheats => {value}" );
+			return CommandResult.Success( $"sv_cheats => {value}" );
 		} );
 	}
 }

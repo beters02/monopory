@@ -257,12 +257,55 @@
 
 		try
 		{
-			ConsoleSystem.Run( command );
+			var commandParts = SplitCommandArguments( command );
+			var commandName = commandParts.FirstOrDefault() ?? "";
+			var args = commandParts.Skip( 1 ).ToArray();
+
+			if (GameCommandManager.IsCommandSourceOverwrite(commandName))
+			{
+				GameCommandManager.RunCommandFromName(Connection.Local, commandName, args);
+			}
+			else
+				ConsoleSystem.Run( command );
 		}
 		catch ( Exception exception )
 		{
 			AddEntry( exception.Message, "err" );
 		}
+	}
+
+	private static List<string> SplitCommandArguments( string command )
+	{
+		var parts = new List<string>();
+		var current = "";
+		var inQuotes = false;
+
+		foreach ( var ch in command ?? "" )
+		{
+			if ( ch == '"' )
+			{
+				inQuotes = !inQuotes;
+				continue;
+			}
+
+			if ( char.IsWhiteSpace( ch ) && !inQuotes )
+			{
+				if ( current.Length > 0 )
+				{
+					parts.Add( current );
+					current = "";
+				}
+
+				continue;
+			}
+
+			current += ch;
+		}
+
+		if ( current.Length > 0 )
+			parts.Add( current );
+
+		return parts;
 	}
 
 	private void AddEntry( string message, string kind )
