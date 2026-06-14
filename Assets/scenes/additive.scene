@@ -33,37 +33,6 @@
       "Children": []
     },
     {
-      "__guid": "db27c11e-e5e8-4ef5-bac4-f1a5bf4c4608",
-      "__version": 2,
-      "Flags": 0,
-      "Name": "MusicController",
-      "Position": "149.994965,149.994995,-212.124985",
-      "Rotation": "0,0,0,1",
-      "Scale": "1,1,1",
-      "Tags": "",
-      "Enabled": true,
-      "NetworkMode": 2,
-      "NetworkFlags": 0,
-      "NetworkOrphaned": 0,
-      "NetworkTransmit": true,
-      "OwnerTransfer": 1,
-      "Components": [
-        {
-          "__type": "Sandbox.MusicController",
-          "__guid": "bead5279-5005-4654-9543-7310c8279891",
-          "__enabled": true,
-          "Flags": 0,
-          "OnComponentDestroy": null,
-          "OnComponentDisabled": null,
-          "OnComponentEnabled": null,
-          "OnComponentFixedUpdate": null,
-          "OnComponentStart": null,
-          "OnComponentUpdate": null
-        }
-      ],
-      "Children": []
-    },
-    {
       "__guid": "00903ce0-9051-47bd-ab5b-58f51ab3cbdd",
       "__version": 2,
       "Flags": 0,

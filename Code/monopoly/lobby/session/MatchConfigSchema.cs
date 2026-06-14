@@ -49,7 +49,7 @@ public static class MatchConfigSchema
 
 	public static MatchConfig CreateDefault()
 	{
-		return Normalize( ApplyStandaloneDefaults( new MatchConfig() ), 0 );
+		return Normalize( new MatchConfig(), 0 );
 	}
 
 	public static MatchConfig Clone( MatchConfig config )
@@ -71,6 +71,7 @@ public static class MatchConfigSchema
 	public static MatchConfig Normalize( MatchConfig config, int connectedPlayerCount )
 	{
 		config ??= new MatchConfig();
+		ApplyStandaloneDefaults( config );
 
 		foreach ( var option in Options )
 		{
