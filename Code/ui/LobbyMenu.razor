@@ -21,25 +21,26 @@
 						@if ( IsGameRulesConfigPage )
 						{
 							<div class="match-config-presets">
-								<OptionsPanelRow Title="Game Rule Presets" Value="Apply predefined rule sets or save your current draft as a custom preset.">
-									<ChildContent>
-										<div class="match-config-preset-actions">
-											@foreach ( var preset in GameRulePresets )
-											{
-												<GameButton Variant="options-panel-secondary-button match-config-preset-button" OnClick="@(() => ApplyGameRulesPreset( preset ))">@preset.Name</GameButton>
-												@if ( !preset.IsPredefined )
-												{
-													<GameButton Variant="options-panel-danger-button match-config-preset-delete" OnClick="@(() => DeleteGameRulesPreset( preset ))">Delete</GameButton>
-												}
-											}
-											<TextEntry class="match-config-preset-name-input"
-												Text="@GameRulePresetNameDraft"
-												Placeholder="Preset name"
-												OnTextEdited="@((string value) => SetGameRulePresetNameDraft( value ))" />
-											<GameButton Variant="options-panel-primary-button match-config-preset-button" CanClick="@CanEditConfig" OnClick="@SaveGameRulesPreset" BlockedPopupTitle="Host only" BlockedPopupMessage="Only the host can save match setting presets.">Save Preset</GameButton>
-										</div>
-									</ChildContent>
-								</OptionsPanelRow>
+								<div class="match-config-preset-header">
+									<div class="options-panel-section-title">Game Rule Presets</div>
+									<div class="options-panel-row-value">Apply predefined rule sets or save your current draft as a custom preset.</div>
+								</div>
+								<div class="match-config-preset-actions">
+									<GameButton Variant="@GetCustomGameRulesPresetButtonClasses()" OnClick="@MarkCustomPreset">Custom</GameButton>
+									@foreach ( var preset in GameRulePresets )
+									{
+										<GameButton Variant="@GetGameRulesPresetButtonClasses( preset )" OnClick="@(() => ApplyGameRulesPreset( preset ))">@preset.Name</GameButton>
+										@if ( !preset.IsPredefined )
+										{
+											<GameButton Variant="options-panel-danger-button match-config-preset-delete" OnClick="@(() => DeleteGameRulesPreset( preset ))">Delete</GameButton>
+										}
+									}
+									<TextEntry class="match-config-preset-name-input"
+										Text="@GameRulePresetNameDraft"
+										Placeholder="Preset name"
+										OnTextEdited="@((string value) => SetGameRulePresetNameDraft( value ))" />
+									<GameButton Variant="options-panel-primary-button match-config-preset-button" CanClick="@CanEditConfig" OnClick="@SaveGameRulesPreset" BlockedPopupTitle="Host only" BlockedPopupMessage="Only the host can save match setting presets.">Save Preset</GameButton>
+								</div>
 							</div>
 							<OptionsPanelSectionList Sections="@EditableConfigSections" SectionOptionsVariant="reverse">
 								<ChildContent Context="section">
@@ -48,7 +49,7 @@
 										<OptionsPanelRow Title="@GetConfigOptionTitle( option )" Value="@option.Description">
 											<ChildContent>
 													@if ( option.Kind == MatchConfigOptionKind.Bool )
-													{
+											{
 														<GameButton Variant="@GetConfigToggleButtonClasses( GetConfigBoolValue( option ) )"
 															CanClick="@CanEditConfig"
 															BlockedPopupTitle="Host only"
@@ -104,25 +105,26 @@
 						else
 						{
 							<div class="match-config-presets">
-								<OptionsPanelRow Title="Board Presets" Value="Apply predefined board names or save your current board name draft.">
-									<ChildContent>
-										<div class="match-config-preset-actions">
-											@foreach ( var preset in BoardConfigPresets )
-											{
-												<GameButton Variant="options-panel-secondary-button match-config-preset-button" OnClick="@(() => ApplyBoardConfigPreset( preset ))">@preset.Name</GameButton>
-												@if ( !preset.IsPredefined )
-												{
-													<GameButton Variant="options-panel-danger-button match-config-preset-delete" OnClick="@(() => DeleteBoardConfigPreset( preset ))">Delete</GameButton>
-												}
-											}
-											<TextEntry class="match-config-preset-name-input"
-												Text="@BoardConfigPresetNameDraft"
-												Placeholder="Preset name"
-												OnTextEdited="@((string value) => SetBoardConfigPresetNameDraft( value ))" />
-											<GameButton Variant="options-panel-primary-button match-config-preset-button" CanClick="@CanEditConfig" OnClick="@SaveBoardConfigPreset" BlockedPopupTitle="Host only" BlockedPopupMessage="Only the host can save board presets.">Save Preset</GameButton>
-										</div>
-									</ChildContent>
-								</OptionsPanelRow>
+								<div class="match-config-preset-header">
+									<div class="options-panel-section-title">Board Presets</div>
+									<div class="options-panel-row-value">Apply predefined board names or save your current board name draft.</div>
+								</div>
+								<div class="match-config-preset-actions">
+									<GameButton Variant="@GetCustomBoardConfigPresetButtonClasses()" OnClick="@MarkCustomPreset">Custom</GameButton>
+									@foreach ( var preset in BoardConfigPresets )
+									{
+										<GameButton Variant="@GetBoardConfigPresetButtonClasses( preset )" OnClick="@(() => ApplyBoardConfigPreset( preset ))">@preset.Name</GameButton>
+										@if ( !preset.IsPredefined )
+										{
+											<GameButton Variant="options-panel-danger-button match-config-preset-delete" OnClick="@(() => DeleteBoardConfigPreset( preset ))">Delete</GameButton>
+										}
+									}
+									<TextEntry class="match-config-preset-name-input"
+										Text="@BoardConfigPresetNameDraft"
+										Placeholder="Preset name"
+										OnTextEdited="@((string value) => SetBoardConfigPresetNameDraft( value ))" />
+									<GameButton Variant="options-panel-primary-button match-config-preset-button" CanClick="@CanEditConfig" OnClick="@SaveBoardConfigPreset" BlockedPopupTitle="Host only" BlockedPopupMessage="Only the host can save board presets.">Save Preset</GameButton>
+								</div>
 							</div>
 							<div class="options-panel-section">
 								<div class="options-panel-section-title">Space Names</div>

@@ -46,8 +46,24 @@
 }
 
 .match-config-presets {
+	padding: 14px;
+	background-color: $monopoly-surface-soft;
+	border: 1px solid $monopoly-panel-line;
+	border-radius: $monopoly-radius-control;
 	margin-bottom: 10px;
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	gap: 10px;
 	flex-shrink: 0;
+	pointer-events: none;
+}
+
+.match-config-preset-header {
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	gap: 4px;
 }
 
 .match-config-preset-actions {
@@ -55,6 +71,7 @@
 	flex-wrap: wrap;
 	justify-content: flex-end;
 	gap: 8px;
+	pointer-events: none;
 }
 
 .options-panel .monopoly-button.match-config-preset-button {
