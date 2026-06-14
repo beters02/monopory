@@ -28,6 +28,20 @@
 	pointer-events: all;
 }
 
+.popup-clear-hint {
+	align-self: center;
+	padding: 5px 10px;
+	background-color: $monopoly-gold;
+	border: 2px solid $monopoly-ink;
+	border-radius: $monopoly-radius-control;
+	box-shadow: 0 6px 18px $monopoly-disabled-surface;
+	color: $monopoly-ink;
+	font-family: $monopoly-font-family;
+	font-size: 12px;
+	font-weight: 900;
+	text-transform: uppercase;
+}
+
 .popup-confirmation-overlay {
 	position: absolute;
 	top: 0;

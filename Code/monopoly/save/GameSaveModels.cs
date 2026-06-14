@@ -55,6 +55,7 @@ public sealed class GameSaveSnapshot
 	public List<GameSaveIntBoolEntry> MortgagedProperties { get; set; } = new();
 	public List<GameSaveIntStringEntry> PendingTrades { get; set; } = new();
 	public List<GameSaveIntStringEntry> TradeViewers { get; set; } = new();
+	public List<GameSaveIntStringEntry> TradeEditors { get; set; } = new();
 	public List<GameSaveIntStringEntry> ChatMessages { get; set; } = new();
 	public List<GameSaveIntIntEntry> StatsLogDiceFaceCounts { get; set; } = new();
 	public List<GameSaveIntIntEntry> PropertyLandingCounts { get; set; } = new();

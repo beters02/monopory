@@ -354,11 +354,41 @@
           "OnComponentEnabled": null,
           "OnComponentFixedUpdate": null,
           "OnComponentStart": null,
-          "OnComponentUpdate": null
+          "OnComponentUpdate": null,
+          "SceneSoundtracks": [
+            {
+              "Scene": "MenuLobby",
+              "ShuffleSoundtracks": true,
+              "Soundtracks": [
+                {
+                  "Path": "sounds/music/soundtrack1.sound",
+                  "IsAssigned": true
+                }
+              ]
+            },
+            {
+              "Scene": "Game",
+              "ShuffleSoundtracks": true,
+              "Soundtracks": [
+                {
+                  "Path": "sounds/music/soundtrack1.sound",
+                  "IsAssigned": true
+                }
+              ]
+            }
+          ],
+          "ShuffleSoundtracks": true,
+          "Soundtracks": [
+            {
+              "Path": "sounds/music/soundtrack1.sound",
+              "IsAssigned": true
+            }
+          ],
+          "StartEnabled": true
         },
         {
-          "__type": "Sandbox.ui.components.PersistentLoadingOverlay",
-          "__guid": "c2debc5a-db2d-4d40-957f-93e0d5eb5453",
+          "__type": "Sandbox.ScenePersistentObject",
+          "__guid": "7c55e0ba-d692-4c6b-8044-84821f9a20a6",
           "__enabled": true,
           "Flags": 0,
           "OnComponentDestroy": null,

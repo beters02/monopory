@@ -28,6 +28,7 @@
 					<div class="@GetTradeRowClasses( trade )">
 						<div class="trade-row-main" onclick="@(() => OpenTradeViewer( trade.Id ))">
 							<div class="trade-party">
+								<div class="@GetTradeEditingClasses( trade.Id, trade.SenderPlayerIndex )" title="@GetTradeEditingTitle( trade.Id, trade.SenderPlayerIndex )">E</div>
 								<div class="@GetTradeViewingClasses( trade.Id, trade.SenderPlayerIndex )" title="@GetTradeViewingTitle( trade.Id, trade.SenderPlayerIndex )">
 									<div class="trade-eye-outline">
 										<div class="trade-eye-pupil"></div>
@@ -41,6 +42,7 @@
 							</div>
 							<div class="trade-arrow">-&gt;</div>
 							<div class="trade-party">
+								<div class="@GetTradeEditingClasses( trade.Id, trade.ReceiverPlayerIndex )" title="@GetTradeEditingTitle( trade.Id, trade.ReceiverPlayerIndex )">E</div>
 								<div class="@GetTradeViewingClasses( trade.Id, trade.ReceiverPlayerIndex )" title="@GetTradeViewingTitle( trade.Id, trade.ReceiverPlayerIndex )">
 									<div class="trade-eye-outline">
 										<div class="trade-eye-pupil"></div>
@@ -119,7 +121,9 @@
 	private int ComposerReceiverMoney;
 	private int NegotiatedTradeId = -1;
 	private int EditedTradeId = -1;
+	private int EditingStatusTradeId = -1;
 	private int ViewedTradeId = -1;
+	private int LastAutoOpenedIncomingTradeId = -1;
 
 	private PlayerState LocalPlayer => GameRef?.LocalPlayer;
 	private int LocalPlayerMoney => LocalPlayer?.Money ?? 0;
@@ -151,6 +155,29 @@
 	private List<string> ReceiverOwnedCardIds =>
 		GameRef is null || ComposerReceiverPlayerIndex < 0 ? new() : GameRef.GetOwnedTradableCardIds( ComposerReceiverPlayerIndex );
 
+	public override void Tick()
+	{
+		base.Tick();
+		TryAutoOpenIncomingTrade();
+	}
+
+	private void TryAutoOpenIncomingTrade()
+	{
+		if ( GameRef is null || IsTradeComposerOpen || ViewedTradeId >= 0 )
+			return;
+
+		var incomingTrade = Trades
+			.Where( trade => trade.ReceiverPlayerIndex == GameRef.LocalPlayerIndex )
+			.OrderByDescending( trade => trade.Id )
+			.FirstOrDefault();
+
+		if ( incomingTrade is null || incomingTrade.Id == LastAutoOpenedIncomingTradeId )
+			return;
+
+		LastAutoOpenedIncomingTradeId = incomingTrade.Id;
+		OpenTradeViewer( incomingTrade.Id );
+	}
+
 	private string GetPanelClasses()
 	{
 		var classes = "trade-panel";
@@ -163,6 +190,7 @@
 	private void OpenTradeComposer()
 	{
 		ClearViewedTrade();
+		ClearEditedTrade();
 		NegotiatedTradeId = -1;
 		EditedTradeId = -1;
 		IsTradeComposerOpen = true;
@@ -180,6 +208,7 @@
 
 	private void CloseTradeComposer()
 	{
+		ClearEditedTrade();
 		ComposerSenderPropertyIndexes.Clear();
 		ComposerReceiverPropertyIndexes.Clear();
 		ComposerSenderCardIds.Clear();
@@ -193,6 +222,7 @@
 
 	private void OpenTradeViewer( int tradeId )
 	{
+		ClearEditedTrade();
 		if ( ViewedTradeId >= 0 && ViewedTradeId != tradeId )
 			GameRef?.RequestSetTradeViewing( ViewedTradeId, false );
 
@@ -319,7 +349,7 @@
 		ComposerSenderCardIds.Clear();
 		ComposerReceiverCardIds.Clear();
 		NegotiatedTradeId = -1;
-		EditedTradeId = -1;
+		ClearEditedTrade();
 		IsTradeComposerOpen = false;
 	}
 
@@ -329,8 +359,11 @@
 			return;
 
 		ClearViewedTrade();
+		ClearEditedTrade();
 		NegotiatedTradeId = tradeId;
 		EditedTradeId = -1;
+		EditingStatusTradeId = tradeId;
+		GameRef.RequestSetTradeEditing( tradeId, true );
 		IsTradeComposerOpen = true;
 		ComposerReceiverPlayerIndex = trade.SenderPlayerIndex;
 		ComposerSenderMoney = Math.Clamp( trade.ReceiverMoney, 0, LocalPlayerMoney );
@@ -362,8 +395,11 @@
 			return;
 
 		ClearViewedTrade();
+		ClearEditedTrade();
 		NegotiatedTradeId = -1;
 		EditedTradeId = tradeId;
+		EditingStatusTradeId = tradeId;
+		GameRef.RequestSetTradeEditing( tradeId, true );
 		IsTradeComposerOpen = true;
 		ComposerReceiverPlayerIndex = trade.ReceiverPlayerIndex;
 		ComposerSenderMoney = Math.Clamp( trade.SenderMoney, 0, LocalPlayerMoney );
@@ -388,6 +424,7 @@
 
 	private void AcceptTrade( int tradeId )
 	{
+		ClearEditedTrade();
 		if ( ViewedTradeId == tradeId )
 			ViewedTradeId = -1;
 
@@ -398,6 +435,7 @@
 
 	private void DenyTrade( int tradeId )
 	{
+		ClearEditedTrade();
 		if ( ViewedTradeId == tradeId )
 			ViewedTradeId = -1;
 
@@ -416,7 +454,19 @@
 		if ( trade.SenderPlayerIndex == GameRef?.LocalPlayerIndex )
 			classes += " outgoing";
 
+		if ( trade.InvolvesPlayer( GameRef?.LocalPlayerIndex ?? -1 ) )
+			classes += " involves-local-player";
+
 		return classes;
+	}
+
+	private void ClearEditedTrade()
+	{
+		if ( EditingStatusTradeId >= 0 )
+			GameRef?.RequestSetTradeEditing( EditingStatusTradeId, false );
+
+		EditingStatusTradeId = -1;
+		EditedTradeId = -1;
 	}
 
 	private bool IsViewingTrade( int tradeId, int playerIndex )
@@ -439,6 +489,28 @@
 		return IsViewingTrade( tradeId, playerIndex )
 			? $"{GetPlayerName( playerIndex )} has this trade open"
 			: $"{GetPlayerName( playerIndex )} does not have this trade open";
+	}
+
+	private bool IsEditingTrade( int tradeId, int playerIndex )
+	{
+		if ( EditingStatusTradeId == tradeId && playerIndex == GameRef?.LocalPlayerIndex )
+			return true;
+
+		return GameRef?.IsPlayerEditingTrade( tradeId, playerIndex ) == true;
+	}
+
+	private string GetTradeEditingClasses( int tradeId, int playerIndex )
+	{
+		return IsEditingTrade( tradeId, playerIndex )
+			? "trade-edit-status editing"
+			: "trade-edit-status";
+	}
+
+	private string GetTradeEditingTitle( int tradeId, int playerIndex )
+	{
+		return IsEditingTrade( tradeId, playerIndex )
+			? $"{GetPlayerName( playerIndex )} is editing this trade"
+			: $"{GetPlayerName( playerIndex )} is not editing this trade";
 	}
 
 	private string GetPlayerName( int playerIndex )
@@ -488,6 +560,7 @@
 			hash.Add( trade.Serialize() );
 			hash.Add( GameRef.IsTradeValid( trade ) );
 			hash.Add( GameRef.TradeViewers.TryGetValue( trade.Id, out var viewers ) ? viewers : "" );
+			hash.Add( GameRef.TradeEditors.TryGetValue( trade.Id, out var editors ) ? editors : "" );
 		}
 
 		return hash.ToHashCode();
@@ -502,6 +575,7 @@
 		hash.Add( ComposerReceiverMoney );
 		hash.Add( NegotiatedTradeId );
 		hash.Add( EditedTradeId );
+		hash.Add( EditingStatusTradeId );
 		hash.Add( ViewedTradeId );
 
 		foreach ( var index in ComposerSenderPropertyIndexes.OrderBy( x => x ) )

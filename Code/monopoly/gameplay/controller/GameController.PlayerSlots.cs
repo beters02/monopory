@@ -275,6 +275,7 @@ public sealed partial class GameController : Component
 		MortgagedProperties.Clear();
 		PendingTrades.Clear();
 		TradeViewers.Clear();
+		TradeEditors.Clear();
 		TokenPhysicsStates.Clear();
 		StatsLogDiceFaceCounts.Clear();
 
@@ -376,6 +377,7 @@ public sealed partial class GameController : Component
 			{
 				PendingTrades.Remove( trade.Id );
 				TradeViewers.Remove( trade.Id );
+				TradeEditors.Remove( trade.Id );
 			}
 		}
 	}

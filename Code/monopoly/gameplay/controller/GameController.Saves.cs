@@ -247,6 +247,7 @@ public sealed partial class GameController : Component
 			MortgagedProperties = CaptureIntBoolDictionary( MortgagedProperties ),
 			PendingTrades = CaptureIntStringDictionary( PendingTrades ),
 			TradeViewers = CaptureIntStringDictionary( TradeViewers ),
+			TradeEditors = CaptureIntStringDictionary( TradeEditors ),
 			ChatMessages = CaptureIntStringDictionary( ChatMessages ),
 			StatsLogDiceFaceCounts = CaptureIntIntDictionary( StatsLogDiceFaceCounts ),
 			PropertyLandingCounts = CaptureIntIntDictionary( PropertyLandingCounts ),
@@ -411,6 +412,7 @@ public sealed partial class GameController : Component
 		ApplyIntBoolDictionary( MortgagedProperties, snapshot.MortgagedProperties );
 		ApplyIntStringDictionary( PendingTrades, snapshot.PendingTrades );
 		ApplyIntStringDictionary( TradeViewers, snapshot.TradeViewers );
+		ApplyIntStringDictionary( TradeEditors, snapshot.TradeEditors );
 		ApplyIntStringDictionary( ChatMessages, snapshot.ChatMessages );
 		ApplyIntIntDictionary( StatsLogDiceFaceCounts, snapshot.StatsLogDiceFaceCounts );
 		ApplyIntIntDictionary( PropertyLandingCounts, snapshot.PropertyLandingCounts );

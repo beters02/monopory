@@ -110,6 +110,7 @@ public static partial class GameAssets
 	public static class Soundtracks
 	{
 		public static readonly GameSoundtrack Nolan01 = new ( "sounds/music/soundtrack1.sound" );
+		public static readonly GameSoundtrack Game01 = new ( "sounds/music/soundtrack1.sound" );
 	}
 
 	[GameAssetCategory]

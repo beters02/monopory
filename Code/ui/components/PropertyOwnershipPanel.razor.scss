@@ -154,6 +154,16 @@
 	flex-shrink: 0;
 }
 
+.property-manager-section.current-player {
+	background-color: $monopoly-card-ink-surface;
+	border-color: $monopoly-gold;
+	box-shadow: 0 0 0 1px $monopoly-gold-glow;
+}
+
+.property-manager-section.current-player .property-manager-section-title {
+	color: $monopoly-gold;
+}
+
 .property-manager-section-title {
 	font-size: 11px;
 	font-weight: 800;

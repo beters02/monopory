@@ -488,6 +488,21 @@ public static class RollPhysicalDiceCommand
 	}
 }
 
+public static class HelpCommand
+{
+	public const string Name = "help";
+
+	[ConCmd( Name )]
+	public static void Execute( Connection connection )
+	{
+		GameCommandManager.RunCommand( Name, () =>
+		{
+			var names = GameCommands.All.Keys.OrderBy( name => name ).ToList();
+			return CommandResult.Success( $"Available commands: {string.Join( ", ", names )}" );
+		}, connection );
+	}
+}
+
 public static class EndTurnCommand
 {
 	public const string Name = "end_turn";
@@ -765,6 +780,28 @@ public static class DisplayStatsLogCommand
 				game.RequestDisplayStatsLog();
 
 			return CommandResult.Success( game.BuildStatsLogText() );
+		}, connection );
+	}
+}
+
+public static class ViewDeckCommand
+{
+	public const string Name = "view_deck";
+
+	[HostCheatCmd]
+	[ConCmd( Name )]
+	public static void Execute( Connection connection, string deckName = "chance" )
+	{
+		GameCommandManager.RunCommand( Name, () =>
+		{
+			var game = GameController.Instance;
+			if ( game is null )
+				return CommandResult.Fail( "No active game." );
+
+			if ( !game.TryParseCardDeck( deckName, out var deck ) )
+				return CommandResult.Fail( "Unknown deck. Use chance or chest." );
+
+			return CommandResult.Success( game.BuildDeckListText( deck ) );
 		}, connection );
 	}
 }

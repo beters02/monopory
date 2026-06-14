@@ -152,6 +152,20 @@ public static partial class AppSettingsSchema
 				setter: AppSettings.TrySetVolume,
 				isAvailable: () => true
 			),
+			IntOption(
+				key: "audio.music_volume",
+				category: "audio",
+				section: "Music",
+				label: "Music Volume",
+				description: "Adjusts soundtrack music without changing game or UI sounds.",
+				order: 21,
+				min: 0,
+				max: 100,
+				step: 1,
+				getter: AppSettings.GetMusicVolume,
+				setter: AppSettings.TrySetMusicVolume,
+				isAvailable: () => true
+			),
 		};
 
 		options.AddRange( GetEditableKeybinds().Select( ( action, index ) => KeybindOption(

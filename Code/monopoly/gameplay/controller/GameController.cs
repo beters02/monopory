@@ -84,6 +84,7 @@ public sealed partial class GameController : Component, Component.INetworkListen
 	[Sync] public NetDictionary<int, bool> MortgagedProperties { get; set; } = new();
 	[Sync] public NetDictionary<int, string> PendingTrades { get; set; } = new();
 	[Sync] public NetDictionary<int, string> TradeViewers { get; set; } = new();
+	[Sync] public NetDictionary<int, string> TradeEditors { get; set; } = new();
 	[Sync] public NetDictionary<int, string> TokenPhysicsStates { get; set; } = new();
 	[Sync] public NetDictionary<int, string> ChatMessages { get; set; } = new();
 	[Sync] public NetDictionary<int, int> StatsLogDiceFaceCounts { get; set; } = new();

@@ -9,6 +9,7 @@
 	@if ( StandardPopups.Count > 0 )
 	{
 		<div class="popup-stack">
+			<div class="popup-clear-hint">Press C to clear popups</div>
 			@foreach ( var renderedPopup in StandardPopups )
 			{
 				var popup = renderedPopup.Popup;

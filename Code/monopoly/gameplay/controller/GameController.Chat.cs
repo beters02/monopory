@@ -36,17 +36,6 @@ public sealed partial class GameController
 		PlayChatMessageSounds( Rpc.Caller.SteamId, message );
 	}
 
-	private bool TryHandleChatCommand( string message )
-	{
-		if ( string.Equals( message, DisplayStatsLogCommand.Name, StringComparison.OrdinalIgnoreCase ) )
-		{
-			DisplayStatsLog();
-			return true;
-		}
-
-		return false;
-	}
-
 	private void AppendChatMessage( string senderName, string message )
 	{
 		var id = Math.Max( NextChatMessageId, 1 );
@@ -204,6 +193,27 @@ public sealed partial class GameController
 		AppendChatMessage( "System", text );
 	}
 
+	public static void SendSystemChatMessageToConnection( Connection caller, string message )
+	{
+		if ( caller is null || string.IsNullOrWhiteSpace( message ) )
+			return;
+
+		using ( Rpc.FilterInclude( caller ) )
+			Instance.AppendLocalChatMessage( "System", message );
+	}
+
+	[Rpc.Broadcast]
+	private void AppendLocalChatMessage( string senderName, string message )
+	{
+		Sandbox.ui.components.ChatOverlayPanel.AppendLocalChatMessage( senderName, message );
+	}
+
+	[Rpc.Broadcast]
+	private void ClearChatLocal( int newestClearedChatId )
+	{
+		Sandbox.ui.components.ChatOverlayPanel.ClearLocalChat( newestClearedChatId );
+	}
+
 	private static string SanitizeChatField( string value )
 	{
 		if ( string.IsNullOrEmpty( value ) )
@@ -216,3 +226,4 @@ public sealed partial class GameController
 			.Trim();
 	}
 }
+

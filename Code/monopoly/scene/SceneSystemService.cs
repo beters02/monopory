@@ -1,3 +1,5 @@
+using System;
+
 public class GameScene
 {
 
@@ -22,13 +24,15 @@ public sealed class SceneSystemService : Component, Component.INetworkListener
 {
     [Sync(SyncFlags.FromHost)] public static GameScene CurrentLoadedGameScene { get; set; } = GameScene.Menu;
 
+    public static event Action<GameScene> SceneLoaded;
+
     [Description("Called from SceneFlow when a Scene is loaded.")]
     public static void OnSceneLoaded(GameScene gameScene)
     {
-        if ( !Networking.IsHost )
-            return;
+        if ( Networking.IsHost )
+            CurrentLoadedGameScene = gameScene;
 
-        CurrentLoadedGameScene = gameScene;
+        SceneLoaded?.Invoke( gameScene );
     }
 
     public static bool TryGetSceneIfActive( GameScene gameScene, out Scene scene )

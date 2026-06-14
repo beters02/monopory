@@ -103,6 +103,25 @@
 		0 10px 24px $monopoly-disabled-surface;
 }
 
+.monopoly-button.stats-log-button {
+	width: 100%;
+	min-height: $monopoly-control-height-small;
+	margin-top: 0;
+	padding: 0 10px;
+	align-items: center;
+	justify-content: center;
+	background-color: $monopoly-gold;
+	color: $monopoly-ink;
+	border-radius: $monopoly-radius-control;
+	font-size: $monopoly-font-button;
+	font-weight: 900;
+	text-transform: uppercase;
+}
+
+.monopoly-button.stats-log-button:hover {
+	background-color: $monopoly-gold-hover;
+}
+
 .jail-action-buttons {
 	display: flex;
 	flex-direction: row;

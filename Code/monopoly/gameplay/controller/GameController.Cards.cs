@@ -109,6 +109,53 @@ public sealed partial class GameController : Component
 		communityChestDrawPile.Clear();
 	}
 
+	public string BuildDeckListText( CardDeck deck )
+	{
+		var drawPile = deck == CardDeck.Chance
+			? chanceDrawPile
+			: communityChestDrawPile;
+
+		if ( drawPile.Count == 0 )
+			ReshuffleCardDrawPile( deck );
+
+		if ( drawPile.Count == 0 )
+			return $"{GetDeckDisplayName( deck )} deck is empty.";
+
+		var lines = drawPile
+			.Select( ( card, index ) => $"{index + 1}. {ResolveCardText( card.Title )}: {ResolveCardText( card.Description )}" )
+			.ToList();
+
+		return $"{GetDeckDisplayName( deck )} deck ({lines.Count} cards):\n{string.Join( "\n", lines )}";
+	}
+
+	public bool TryParseCardDeck( string value, out CardDeck deck )
+	{
+		deck = CardDeck.Chance;
+
+		if ( string.IsNullOrWhiteSpace( value ) )
+			return false;
+
+		var normalized = value.Trim().Replace( "_", "" ).Replace( "-", "" ).Replace( " ", "" ).ToLowerInvariant();
+		switch ( normalized )
+		{
+			case "chance":
+				deck = CardDeck.Chance;
+				return true;
+			case "chest":
+			case "community":
+			case "communitychest":
+				deck = CardDeck.CommunityChest;
+				return true;
+			default:
+				return false;
+		}
+	}
+
+	private static string GetDeckDisplayName( CardDeck deck )
+	{
+		return deck == CardDeck.Chance ? "Chance" : "Community Chest";
+	}
+
 	private void ReshuffleCardDrawPile( CardDeck deck )
 	{
 		var cards = deck == CardDeck.Chance

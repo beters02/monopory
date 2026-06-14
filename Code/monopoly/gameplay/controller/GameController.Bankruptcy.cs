@@ -58,6 +58,7 @@ public sealed partial class GameController : Component
 			{
 				PendingTrades.Remove( trade.Id );
 				TradeViewers.Remove( trade.Id );
+				TradeEditors.Remove( trade.Id );
 			}
 		}
 

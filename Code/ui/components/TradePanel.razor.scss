@@ -93,6 +93,22 @@
 	gap: 6px;
 }
 
+.trade-row.involves-local-player .trade-row-main {
+	background-color: $monopoly-card-ink-surface;
+	border: 1px solid $monopoly-gold;
+	box-shadow: 0 0 0 1px $monopoly-gold-glow;
+}
+
+.trade-row.incoming .trade-row-main {
+	background-color: $monopoly-gold;
+	color: $monopoly-ink;
+}
+
+.trade-row.incoming .trade-party-name,
+.trade-row.incoming .trade-arrow {
+	color: $monopoly-ink;
+}
+
 .trade-row-main {
 	flex: 1;
 	min-width: 0;
@@ -164,6 +180,29 @@
 .trade-view-status.viewing {
 	background-color: $monopoly-surface-selected;
 	border-color: $monopoly-selected-ring;
+}
+
+.trade-edit-status {
+	flex-shrink: 0;
+	width: 13px;
+	height: 13px;
+	align-items: center;
+	justify-content: center;
+	background-color: $monopoly-surface-strong;
+	border: 1px solid $monopoly-selected-ring-soft;
+	border-radius: 2px;
+	color: $monopoly-text-muted;
+	font-size: 8px;
+	font-weight: 900;
+	line-height: 10px;
+	opacity: 0.35;
+}
+
+.trade-edit-status.editing {
+	background-color: $monopoly-gold;
+	border-color: $monopoly-gold-hover;
+	color: $monopoly-ink;
+	opacity: 1;
 }
 
 .trade-eye-outline {

@@ -80,6 +80,36 @@ public partial class MonopolyApp
         return false;
     }
 
+	public static IEnumerable<string> GetPlayerReferenceAutocompleteNames( string playerString = "" )
+	{
+		var candidates = new List<string>();
+
+		if ( LobbyRef is not null && LobbyRef.IsValid )
+		{
+			candidates.AddRange( LobbyRef.Players
+				.Where( player => player is not null && !player.IsAbandoned )
+				.Select( player => (player.Name ?? "").Trim() ) );
+		}
+
+		if ( GameRef is not null && GameRef.IsValid )
+		{
+			candidates.AddRange( GameRef.Players
+				.Where( player => player is not null && player.IsAssigned && !player.IsBankrupt )
+				.Select( player => (player.PlayerName ?? "").Trim() ) );
+		}
+
+		var reference = TrimPlayerReference( playerString ?? "" );
+		var normalizedReference = NormalizePlayerReference( reference );
+
+		return candidates
+			.Where( name => !string.IsNullOrWhiteSpace( name ) )
+			.Distinct( StringComparer.OrdinalIgnoreCase )
+			.Where( name => IsPlayerAutocompleteMatch( name, reference, normalizedReference ) )
+			.OrderBy( name => GetPlayerAutocompleteRank( name, reference, normalizedReference ) )
+			.ThenBy( name => name.Length )
+			.ThenBy( name => name );
+	}
+
 	public static PlayerState ResolvePlayerReference( IEnumerable<PlayerState> players, string playerString, Connection caller = null, PlayerState localPlayer = null )
 	{
 		return ResolvePlayerReference(
@@ -230,6 +260,37 @@ public partial class MonopolyApp
 			PlayerNameMatchMode.RegexNormalizedPartial => NormalizePlayerReference( playerName ).Contains( reference, StringComparison.OrdinalIgnoreCase ),
 			_ => false
 		};
+	}
+
+	private static bool IsPlayerAutocompleteMatch( string playerName, string reference, string normalizedReference )
+	{
+		if ( string.IsNullOrWhiteSpace( playerName ) )
+			return false;
+
+		if ( string.IsNullOrWhiteSpace( reference ) )
+			return true;
+
+		return playerName.StartsWith( reference, StringComparison.OrdinalIgnoreCase ) ||
+			playerName.Contains( reference, StringComparison.OrdinalIgnoreCase ) ||
+			NormalizePlayerReference( playerName ).StartsWith( normalizedReference, StringComparison.OrdinalIgnoreCase ) ||
+			NormalizePlayerReference( playerName ).Contains( normalizedReference, StringComparison.OrdinalIgnoreCase );
+	}
+
+	private static int GetPlayerAutocompleteRank( string playerName, string reference, string normalizedReference )
+	{
+		if ( string.IsNullOrWhiteSpace( reference ) )
+			return 0;
+
+		if ( playerName.StartsWith( reference, StringComparison.OrdinalIgnoreCase ) )
+			return 0;
+
+		if ( NormalizePlayerReference( playerName ).StartsWith( normalizedReference, StringComparison.OrdinalIgnoreCase ) )
+			return 1;
+
+		if ( playerName.Contains( reference, StringComparison.OrdinalIgnoreCase ) )
+			return 2;
+
+		return 3;
 	}
 
 	private static string TrimPlayerReference( string playerString )

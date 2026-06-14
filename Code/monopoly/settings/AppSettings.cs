@@ -21,6 +21,7 @@ public class AppSettingsData
 	public Fsr3UpscalerQuality Fsr3Quality { get; set; } = Fsr3UpscalerQuality.Performance;
 	public float MotionBlurScale { get; set; } = 0f;
 	public int Volume { get; set; } = 100;
+	public int MusicVolume { get; set; } = 100;
 	public List<AppSettingsKeybind> Keybinds { get; set; } = new();
 }
 
@@ -84,6 +85,7 @@ public class AppSettings : Component
 			&& Data.Fsr3Quality == snapshot.Fsr3Quality
 			&& MathF.Abs( Data.MotionBlurScale - snapshot.MotionBlurScale ) < 0.001f
 			&& Data.Volume == snapshot.Volume
+			&& Data.MusicVolume == snapshot.MusicVolume
 			&& KeybindsMatch( Data.Keybinds, snapshot.Keybinds );
 	}
 
@@ -99,6 +101,7 @@ public class AppSettings : Component
 			Fsr3Quality = source.Fsr3Quality,
 			MotionBlurScale = source.MotionBlurScale,
 			Volume = source.Volume,
+			MusicVolume = source.MusicVolume,
 			Keybinds = CopyKeybinds( source.Keybinds )
 		};
 	}
@@ -151,6 +154,7 @@ public class AppSettings : Component
 	public static Fsr3UpscalerQuality GetFsr3Quality() => Data.Fsr3Quality;
 	public static UpscalerMode GetUpscaler() => Data.UpscalerMode; 
 	public static int GetVolume() => Math.Clamp( Data.Volume, 0, 100 );
+	public static int GetMusicVolume() => Math.Clamp( Data.MusicVolume, 0, 100 );
 	public static string GetKeybind( InputAction action )
 	{
 		if ( action is null )
@@ -221,6 +225,14 @@ public class AppSettings : Component
 		return true;
 	}
 
+	public static bool TrySetMusicVolume( int volume )
+	{
+		volume = Math.Clamp( volume, 0, 100 );
+		Data.MusicVolume = volume;
+		ApplyAudio();
+		return true;
+	}
+
 	public static bool TrySetKeybind( InputAction action, string keyboardCode )
 	{
 		if ( action is null || string.IsNullOrWhiteSpace( action.Name ) )
@@ -262,10 +274,20 @@ public class AppSettings : Component
 	private static void ApplyAudio()
 	{
 		var volume = Math.Clamp( Data.Volume, 0, 100 ) / 100f;
+		var musicVolume = Math.Clamp( Data.MusicVolume, 0, 100 ) / 100f;
 		ConsoleSystem.SetValue( "volume", volume );
 
 		if ( Mixer.Master is not null )
 			Mixer.Master.Volume = volume;
+
+		var musicMixer = GetMusicMixer();
+		if ( musicMixer is not null )
+			musicMixer.Volume = musicVolume;
+	}
+
+	public static Mixer GetMusicMixer()
+	{
+		return Mixer.FindMixerByName( "music" );
 	}
 
 	private static void ApplyKeybinds()

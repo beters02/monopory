@@ -59,7 +59,7 @@ public abstract class GameSoundBase<TSelf> where TSelf : GameSoundBase<TSelf>
 		return true;
 	}
 
-	public SoundHandle PlayWithHandle()
+	public SoundHandle PlayWithHandle( float volume = 1, float pitch = 1, float delay = 0, float fadeInTime = 0 )
 	{
 		if ( !IsAssigned )
 			return null;
@@ -69,6 +69,13 @@ public abstract class GameSoundBase<TSelf> where TSelf : GameSoundBase<TSelf>
 		else
 			return Sound.Play( Path );
 	}
+
+	public SoundHandle PlayWithHandle( float delay = 0, float fadeInTime = 0 ) => 
+		PlayWithHandle(default, default, delay, fadeInTime);
+
+	public SoundHandle PlayWithHandle() =>
+		PlayWithHandle(default, default, default, default);
+
 
 	private static GameSoundType GetSoundType( string path )
 	{

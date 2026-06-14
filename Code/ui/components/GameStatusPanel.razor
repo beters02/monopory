@@ -35,7 +35,7 @@
 			<HudPanelEmptyLine></HudPanelEmptyLine>
 			<HudPanelSubtitle>Game</HudPanelSubtitle>
 
-			// PUT STATS BUTTON HERE
+			<GameButton Variant="stats-log-button" OnClick="@ShowStatsLog">Stats</GameButton>
 
 			@if ( GameRef.MatchState == MatchLifecycleState.InGame )
 			{
@@ -437,6 +437,17 @@
 	private void FinishActiveMovement()
 	{
 		GameRef?.RequestFinishActiveMovement();
+	}
+
+	private void ShowStatsLog()
+	{
+		if ( GameRef is null )
+			return;
+
+		if ( Networking.IsHost )
+			GameRef.DisplayStatsLog();
+		else
+			GameRef.RequestDisplayStatsLog();
 	}
 
 	private string GetEndTurnBlockedMessage()
