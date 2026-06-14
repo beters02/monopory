@@ -249,6 +249,8 @@ public sealed partial class GameController : Component
 			TradeViewers = CaptureIntStringDictionary( TradeViewers ),
 			ChatMessages = CaptureIntStringDictionary( ChatMessages ),
 			StatsLogDiceFaceCounts = CaptureIntIntDictionary( StatsLogDiceFaceCounts ),
+			PropertyLandingCounts = CaptureIntIntDictionary( PropertyLandingCounts ),
+			PropertyRentEarned = CaptureIntIntDictionary( PropertyRentEarned ),
 			PendingPurchaseSpaceIndex = PendingPurchaseSpaceIndex,
 			AuctionSpaceIndex = AuctionSpaceIndex,
 			AuctionCurrentBid = AuctionCurrentBid,
@@ -411,6 +413,8 @@ public sealed partial class GameController : Component
 		ApplyIntStringDictionary( TradeViewers, snapshot.TradeViewers );
 		ApplyIntStringDictionary( ChatMessages, snapshot.ChatMessages );
 		ApplyIntIntDictionary( StatsLogDiceFaceCounts, snapshot.StatsLogDiceFaceCounts );
+		ApplyIntIntDictionary( PropertyLandingCounts, snapshot.PropertyLandingCounts );
+		ApplyIntIntDictionary( PropertyRentEarned, snapshot.PropertyRentEarned );
 		ApplyCardDrawPile( chanceDrawPile, Board?.ChanceCards, snapshot.ChanceDrawPileCardKeys );
 		ApplyCardDrawPile( communityChestDrawPile, Board?.CommunityChestCards, snapshot.CommunityChestDrawPileCardKeys );
 
@@ -543,6 +547,8 @@ public sealed partial class GameController : Component
 			PropertyOwners.Count,
 			PropertyImprovements.Count,
 			MortgagedProperties.Count,
+			PropertyLandingCounts.Sum( entry => entry.Value ),
+			PropertyRentEarned.Sum( entry => entry.Value ),
 			FreeParkingBank,
 			NextTradeId,
 			WinnerPlayerIndex );

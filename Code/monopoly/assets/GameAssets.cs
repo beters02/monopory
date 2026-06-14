@@ -81,6 +81,8 @@ public static partial class GameAssets
 		public static readonly GameSound ChatReceived = new ( "sounds/effects/chat-message-received.sound" );
 		public static readonly GameSound ChatSent = new ( "sounds/effects/chat-message-sent.sound" );
 		public static readonly GameSound ChatMentioned = new ( "sounds/effects/chat-message-mentioned.sound" );
+		public static readonly GameSound AuctionStart = new ( "sounds/effects/auction-start.sound" );
+		public static readonly GameSound AuctionBid = new ( "sounds/effects/auction-bid.sound" );
 
 		public static class Popup
 		{

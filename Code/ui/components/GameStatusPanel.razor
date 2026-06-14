@@ -102,7 +102,7 @@
 
 		<Sandbox.ui.components.HudPanel.HudPanel Variant="@GetFinishMoveButtonPanelClass()">
 			<ChildContent>
-				<GameButton Variant="@GetFinishMoveButtonClass()" OnClick="@FinishActiveMovement">Finish Move</GameButton>
+				<GameButton Variant="@GetFinishMoveButtonClass()" OnClick="@FinishActiveMovement" KeyboardInputAction="@GetFinishMoveInputAction()">Finish Move</GameButton>
 			</ChildContent>
 		</Sandbox.ui.components.HudPanel.HudPanel>
 
@@ -172,6 +172,11 @@
 		return GetInputAction("EndTurn", "E");
 	}
 
+	private InputAction GetFinishMoveInputAction()
+	{
+		return GetInputAction( "FinishMove", "F" );
+	}
+
 	protected override void OnAfterTreeRender( bool firstTime )
 	{
 		base.OnAfterTreeRender( firstTime );
@@ -206,6 +211,9 @@
 
 		if ( Input.Pressed( "EndTurn" ) )
 			TriggerEndTurnInputAction();
+
+		if ( Input.Pressed( "FinishMove" ) )
+			TriggerFinishMoveInputAction();
 	}
 
 	private void StartRollInputActionHold()
@@ -260,6 +268,12 @@
 			StatusEndTurnButton?.TriggerInputAction();
 	}
 
+	private void TriggerFinishMoveInputAction()
+	{
+		if ( CanFinishActiveMovement )
+			FinishActiveMovement();
+	}
+
 	private int CurrentTurnRemainingSeconds =>
 		GameRef is null || GameRef.CurrentTurnEndsAt <= 0f
 			? -1
@@ -312,7 +326,7 @@
 
 	private string GetRollButtonPanelClass()
 	{
-		var str = "status-roll-button-panel";
+		var str = "status-roll-button-panel status-roll-panel";
 		if ( !CanActOnCurrentTurn || IsCurrentPlayerInJail )
 			str += " hidden";
 
@@ -321,7 +335,7 @@
 
 	private string GetEndTurnButtonPanelClass()
 	{
-		var str = "status-roll-button-panel";
+		var str = "status-roll-button-panel status-end-turn-panel";
 		if ( !CanEndTurn )
 			str += " hidden";
 
@@ -348,7 +362,7 @@
 
 	private string GetFinishMoveButtonPanelClass()
 	{
-		var str = "status-roll-button-panel";
+		var str = "status-roll-button-panel status-finish-move-panel";
 		if ( !CanFinishActiveMovement )
 			str += " hidden";
 
@@ -377,7 +391,7 @@
 
 	private string GetJailButtonPanelClass()
 	{
-		var str = "status-roll-button-panel";
+		var str = "status-roll-button-panel status-jail-panel";
 		if ( !CanActOnCurrentTurn || !IsCurrentPlayerInJail )
 			str += " hidden";
 

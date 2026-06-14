@@ -87,6 +87,8 @@ public sealed partial class GameController : Component, Component.INetworkListen
 	[Sync] public NetDictionary<int, string> TokenPhysicsStates { get; set; } = new();
 	[Sync] public NetDictionary<int, string> ChatMessages { get; set; } = new();
 	[Sync] public NetDictionary<int, int> StatsLogDiceFaceCounts { get; set; } = new();
+	[Sync] public NetDictionary<int, int> PropertyLandingCounts { get; set; } = new();
+	[Sync] public NetDictionary<int, int> PropertyRentEarned { get; set; } = new();
 	[Property] public Board Board { get; set; }
 
 	public PlayerState CurrentPlayer =>

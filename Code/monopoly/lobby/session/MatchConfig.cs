@@ -102,22 +102,25 @@ public sealed class MatchConfig
 	[MatchConfigOption( "Turn Rules", "Doubles Go Again Out Of Jail", Description = "If Doubles Goes Again is enabled, a player can get another turn from doubles on a roll made after leaving jail.", Order = 32 )]
 	public bool DoublesGoAgainOutOfJail { get; set; } = false;
 
-	[MatchConfigOption( "Turn Rules", "Randomize Turn Order", Description = "Shuffles the starting player order at match start.", Order = 33 )]
+	[MatchConfigOption( "Turn Rules", "Snake Eyes Bonus On Third Doubles", Description = "If Doubles Goes Again is enabled, snake eyes still pays its bonus when it is the third doubles roll in a row.", Order = 33 )]
+	public bool SnakeEyesBonusWhenRolledDoublesThreeInARow { get; set; } = true;
+
+	[MatchConfigOption( "Turn Rules", "Randomize Turn Order", Description = "Shuffles the starting player order at match start.", Order = 34 )]
 	public bool RandomizeTurnOrder { get; set; } = true;
 
-	[MatchConfigOption( "Turn Rules", "Force Jail Fine After Failed Doubles", Description = "After the final failed jail roll, automatically pay the fine to leave jail.", Order = 34 )]
+	[MatchConfigOption( "Turn Rules", "Force Jail Fine After Failed Doubles", Description = "After the final failed jail roll, automatically pay the fine to leave jail.", Order = 35 )]
 	public bool ForceJailFineAfterFailedDoubles { get; set; } = false;
 
-	[MatchConfigOption( "Turn Rules", "Turn Time Limit Seconds", Description = "How long each turn can last before timeout handling kicks in.", Order = 35, Min = 15, Max = 900, Step = 15 )]
+	[MatchConfigOption( "Turn Rules", "Turn Time Limit Seconds", Description = "How long each turn can last before timeout handling kicks in.", Order = 36, Min = 15, Max = 900, Step = 15 )]
 	public int TurnTimeLimitSeconds { get; set; } = 180;
 
-	[MatchConfigOption( "Turn Rules", "Instant Move Button Unlock Minutes", Description = "Elapsed match minutes before the finish-movement button can appear. 0 allows it immediately.", Order = 36, Min = 0, Max = 240, Step = 5 )]
+	[MatchConfigOption( "Turn Rules", "Instant Move Button Unlock Minutes", Description = "Elapsed match minutes before the finish-movement button can appear. 0 allows it immediately.", Order = 37, Min = 0, Max = 240, Step = 5 )]
 	public int InstantMoveButtonUnlockMinutes { get; set; } = 0;
 
-	[MatchConfigOption( "Turn Rules", "Auto BHop Enabled", Description = "Allows holding jump to automatically jump again when grounded.", Order = 37, IsVisible = false )]
+	[MatchConfigOption( "Turn Rules", "Auto BHop Enabled", Description = "Allows holding jump to automatically jump again when grounded.", Order = 38, IsVisible = false )]
 	public bool AutoBHopEnabled { get; set; } = true;
 	
-	[MatchConfigOption( "Turn Rules", "Token Camera Mode Can Always Control", Description = "Allows the local token camera controller to move even during that player's own turn.", Order = 38, IsVisible = false, StandaloneValue = false )]
+	[MatchConfigOption( "Turn Rules", "Token Camera Mode Can Always Control", Description = "Allows the local token camera controller to move even during that player's own turn.", Order = 39, IsVisible = false, StandaloneValue = false )]
 	public bool TokenCameraModeCanAlwaysControl { get; set; } = true;
 
 	[MatchConfigOption( "Board Rules", "Vacation Cash", Description = "Awards pooled cash when landing on Free Parking, if enabled.", Order = 40 )]

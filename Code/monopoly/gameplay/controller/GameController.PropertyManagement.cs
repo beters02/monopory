@@ -33,6 +33,16 @@ public sealed partial class GameController : Component
 	}
 
 	[Rpc.Host]
+	public void RequestBuildColorSetImprovement( int spaceIndex )
+	{
+		if ( !CanAcceptGameplayInput() )
+			return;
+
+		var playerIndex = GetPlayerIndexForCaller( Rpc.Caller );
+		TryBuildColorSetImprovement( playerIndex, spaceIndex );
+	}
+
+	[Rpc.Host]
 	public void RequestSellImprovement( int spaceIndex )
 	{
 		if ( !CanAcceptGameplayInput() )
@@ -63,6 +73,16 @@ public sealed partial class GameController : Component
 	}
 
 	[Rpc.Host]
+	public void RequestSellColorSetImprovement( int spaceIndex )
+	{
+		if ( !CanAcceptGameplayInput() )
+			return;
+
+		var playerIndex = GetPlayerIndexForCaller( Rpc.Caller );
+		TrySellColorSetImprovement( playerIndex, spaceIndex );
+	}
+
+	[Rpc.Host]
 	public void RequestMortgageProperty( int spaceIndex )
 	{
 		if ( !CanAcceptGameplayInput() )
@@ -88,6 +108,16 @@ public sealed partial class GameController : Component
 	}
 
 	[Rpc.Host]
+	public void RequestMortgageColorSet( int spaceIndex )
+	{
+		if ( !CanAcceptGameplayInput() )
+			return;
+
+		var playerIndex = GetPlayerIndexForCaller( Rpc.Caller );
+		TryMortgageColorSet( playerIndex, spaceIndex );
+	}
+
+	[Rpc.Host]
 	public void RequestUnmortgageProperty( int spaceIndex )
 	{
 		if ( !CanAcceptGameplayInput() )
@@ -110,5 +140,103 @@ public sealed partial class GameController : Component
 		SendTableChatMessage( "Property purchased", $"{player.PlayerName} unmortgaged {unmortgagedSpaceName} for ${cost}." );
 		Log.Info( $"{player.PlayerName} unmortgaged {unmortgagedSpaceName} for ${cost}." );
 		TryAutosaveStablePoint( "Property unmortgaged" );
+	}
+
+	private bool TryBuildColorSetImprovement( int playerIndex, int sourceSpaceIndex )
+	{
+		var player = Players.ElementAtOrDefault( playerIndex );
+		var properties = GetManageableColorSetProperties( playerIndex, sourceSpaceIndex );
+		if ( player is null || properties.Count == 0 )
+			return false;
+
+		var targets = properties.Where( property => CanBuildImprovement( playerIndex, property.Index ) ).ToList();
+		if ( targets.Count == 0 )
+			return false;
+
+		var totalCost = targets.Sum( property => GetImprovementCost( property.Index ) );
+		if ( totalCost <= 0 || player.Money < totalCost )
+			return false;
+
+		foreach ( var property in targets )
+		{
+			var count = GetImprovementCount( property.Index );
+			var cost = GetImprovementCost( property.Index );
+			if ( !PayBank( player, cost, false ) )
+				return false;
+
+			PropertyImprovements[property.Index] = count + 1;
+		}
+
+		SendTableChatMessage( "Improvements purchased", $"{player.PlayerName} built 1 improvement on {targets.Count} color set properties for ${totalCost}." );
+		TryAutosaveStablePoint( "Color set improvements purchased" );
+		return true;
+	}
+
+	private bool TrySellColorSetImprovement( int playerIndex, int sourceSpaceIndex )
+	{
+		var player = Players.ElementAtOrDefault( playerIndex );
+		var properties = GetManageableColorSetProperties( playerIndex, sourceSpaceIndex );
+		if ( player is null || properties.Count == 0 )
+			return false;
+
+		var targets = properties.Where( property => CanSellImprovement( playerIndex, property.Index ) ).ToList();
+		if ( targets.Count == 0 )
+			return false;
+
+		var totalRefund = 0;
+		foreach ( var property in targets )
+		{
+			var refund = GetImprovementSellValue( property.Index );
+			var count = GetImprovementCount( property.Index );
+			totalRefund += refund;
+			player.Money += refund;
+
+			if ( count <= 1 )
+				PropertyImprovements.Remove( property.Index );
+			else
+				PropertyImprovements[property.Index] = count - 1;
+		}
+
+		TrySettlePendingForcedPaymentForPlayer( playerIndex );
+		SendTableChatMessage( "Improvements sold", $"{player.PlayerName} sold 1 improvement from {targets.Count} color set properties for ${totalRefund}." );
+		TryAutosaveStablePoint( "Color set improvements sold" );
+		return true;
+	}
+
+	private bool TryMortgageColorSet( int playerIndex, int sourceSpaceIndex )
+	{
+		var player = Players.ElementAtOrDefault( playerIndex );
+		var properties = GetManageableColorSetProperties( playerIndex, sourceSpaceIndex );
+		if ( player is null || properties.Count == 0 )
+			return false;
+
+		var targets = properties.Where( property => CanMortgageProperty( playerIndex, property.Index ) ).ToList();
+		if ( targets.Count == 0 )
+			return false;
+
+		var totalValue = 0;
+		foreach ( var property in targets )
+		{
+			var value = GetMortgageValue( property.Index );
+			totalValue += value;
+			player.Money += value;
+			MortgagedProperties[property.Index] = true;
+		}
+
+		TrySettlePendingForcedPaymentForPlayer( playerIndex );
+		SendTableChatMessage( "Properties mortgaged", $"{player.PlayerName} mortgaged {targets.Count} color set properties for ${totalValue}." );
+		TryAutosaveStablePoint( "Color set mortgaged" );
+		return true;
+	}
+
+	private List<SpaceDef> GetManageableColorSetProperties( int playerIndex, int sourceSpaceIndex )
+	{
+		var source = Board?.GetSpaceDef( sourceSpaceIndex );
+		if ( source is null || source.Type != SpaceType.Property || source.ColorGroup == ColorGroup.None )
+			return new();
+
+		return GetColorGroupProperties( source.ColorGroup )
+			.Where( property => GetOwnerIndexForSpace( property.Index ) == playerIndex )
+			.ToList();
 	}
 }

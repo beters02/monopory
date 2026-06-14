@@ -251,7 +251,7 @@ public sealed partial class GameController : Component
 	{
 		RecordPendingDiceRollForStats();
 		ReportDiceRollAchievements( CurrentPlayer, rolledDoubles );
-		ApplySnakeEyesBonus( CurrentPlayer );
+		ApplySnakeEyesBonus( CurrentPlayer, rolledDoubles );
 
 		if ( rolledDoubles )
 		{
@@ -345,12 +345,17 @@ public sealed partial class GameController : Component
 		return value is >= 1 and <= 6;
 	}
 
-	private void ApplySnakeEyesBonus( PlayerState player )
+	private void ApplySnakeEyesBonus( PlayerState player, bool rolledDoubles )
 	{
 		if ( player is null || player.IsBankrupt )
 			return;
 
 		if ( LastDieA != 1 || LastDieB != 1 )
+			return;
+
+		if ( IsThirdConsecutiveDoublesRoll( rolledDoubles ) &&
+			Config?.DoublesGoesAgain == true &&
+			Config?.SnakeEyesBonusWhenRolledDoublesThreeInARow != true )
 			return;
 
 		var bonus = Math.Max( Config?.SnakeEyesBonusMoney ?? 0, 0 );
@@ -361,6 +366,18 @@ public sealed partial class GameController : Component
 		TrySettlePendingForcedPaymentForPlayer( GetPlayerIndex( player ) );
 		ShowMoneyReceivedPopup( player, bonus, "snake eyes" );
 		Log.Info( $"{player.PlayerName} collected ${bonus} for rolling snake eyes." );
+	}
+
+	private bool IsThirdConsecutiveDoublesRoll( bool rolledDoubles )
+	{
+		if ( !rolledDoubles )
+			return false;
+
+		var consecutiveBeforeRoll = CurrentTurnDoublesPlayerIndex == CurrentPlayerIndex
+			? CurrentTurnConsecutiveDoubles
+			: 0;
+
+		return consecutiveBeforeRoll >= 2;
 	}
 
 	private async Task CompletePendingNormalRollAsync( int total, bool rolledDoubles )
@@ -375,7 +392,7 @@ public sealed partial class GameController : Component
 		var suppressDoublesExtraTurn = PendingRollSuppressDoublesExtraTurn || ShouldSuppressDoublesExtraTurnForVacationCashBreak( player, executionKind );
 
 		RecordPendingDiceRollForStats();
-		ApplySnakeEyesBonus( CurrentPlayer );
+		ApplySnakeEyesBonus( CurrentPlayer, rolledDoubles );
 		ReportDiceRollAchievements( CurrentPlayer, rolledDoubles );
 
 		if ( !suppressDoublesExtraTurn && Config?.DoublesGoesAgain == true && ApplyDoublesRule( rolledDoubles ) )
@@ -869,6 +886,15 @@ public sealed partial class GameController : Component
 	private void PlayTurnSound( PlayerState player )
 	{
 		PlaySoundToConnection( GetConnectionForPlayer( player ), GameAssets.Sounds.PianoBingBingBing, TurnSoundDelay );
+	}
+
+	public bool TryPlayTurnReminder( PlayerState player )
+	{
+		if ( !Networking.IsHost || player is null || !player.IsAssigned || player.IsBankrupt )
+			return false;
+
+		PlayTurnSound( player );
+		return true;
 	}
 
 	[Button( "End Turn" )]

@@ -16,6 +16,16 @@ public partial class MonopolyApp
 		return null;
 	}
 
+	public static Connection GetConnectionForPlayer( PlayerState player )
+	{
+		return Connection.All.FirstOrDefault( c => c.SteamId == player.OwnerId );
+	}
+
+	public static Connection GetConnectionForPlayer( LobbyPlayer player )
+	{
+		return Connection.All.FirstOrDefault( c => c.SteamId == player.OwnerId );
+	}
+
     public static bool TryGetPlayerFullNameFromString( string playerString, out string playerName )
     {
         

@@ -7,7 +7,8 @@ public static partial class AppSettingsSchema
     private static readonly string[] EditableKeybindNames =
 	[
 		"RollDice",
-		"EndTurn"
+		"EndTurn",
+        "FinishMove"
 	];
 
     private static List<InputAction> GetEditableKeybinds()

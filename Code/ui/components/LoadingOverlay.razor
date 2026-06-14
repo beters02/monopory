@@ -44,6 +44,8 @@
 	private bool isOverlayExiting;
 	private bool wasOverlayTargetVisible;
 	private float overlayExitStartedAt;
+	private int observedServerLoadingRevision = -1;
+	private float serverLoadingMinimumVisibleUntil;
 	private string lastTitle = "Loading";
 	private string lastMessage = "";
 
@@ -51,7 +53,8 @@
 		LoadingState.IsVisible && Time.Now - LoadingState.StartedAt <= LoadingState.ClientTimeoutSeconds;
 
 	private bool IsServerLoadingVisible =>
-		IsServerLoading && Time.Now - ServerLoadingStartedAt <= ServerLoadingClientTimeoutSeconds;
+		(IsServerLoading && Time.Now - ServerLoadingStartedAt <= ServerLoadingClientTimeoutSeconds) ||
+		Time.Now < serverLoadingMinimumVisibleUntil;
 
 	private bool IsOverlayTargetVisible => IsLocalLoadingVisible || IsServerLoadingVisible;
 
@@ -90,6 +93,8 @@
 
 	private void UpdateOverlayTransitionState()
 	{
+		UpdateServerLoadingMinimumState();
+
 		var targetVisible = IsOverlayTargetVisible;
 		if ( targetVisible )
 		{
@@ -116,6 +121,18 @@
 		}
 	}
 
+	private void UpdateServerLoadingMinimumState()
+	{
+		if ( ServerLoadingRevision == observedServerLoadingRevision )
+			return;
+
+		observedServerLoadingRevision = ServerLoadingRevision;
+		if ( !IsServerLoading )
+			return;
+
+		serverLoadingMinimumVisibleUntil = Time.Now + LoadingState.GetMinimumVisibleSeconds();
+	}
+
 	protected override int BuildHash()
 	{
 		var hash = new HashCode();
@@ -129,10 +146,11 @@
 		hash.Add( ServerLoadingStartedAt );
 		hash.Add( ServerLoadingClientTimeoutSeconds );
 		hash.Add( ServerLoadingRevision );
+		hash.Add( serverLoadingMinimumVisibleUntil );
 		hash.Add( LoadingState.IsBlockingInteraction );
 		hash.Add( isOverlayRendered );
 		hash.Add( isOverlayExiting );
-		if ( LoadingState.IsBlockingInteraction || IsServerLoading || isOverlayRendered )
+		if ( LoadingState.IsBlockingInteraction || IsServerLoading || Time.Now < serverLoadingMinimumVisibleUntil || isOverlayRendered )
 			hash.Add( MathF.Round( Time.Now * 2f ) );
 		return hash.ToHashCode();
 	}

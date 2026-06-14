@@ -271,6 +271,14 @@ public sealed partial class GameController : Component
 		}
 	}
 
+	private void PlayGlobalSound( GameSound sound, float delaySec = 0f )
+	{
+		if ( !Networking.IsHost || sound is null || !sound.IsAssigned )
+			return;
+
+		PlaySoundLocal( sound.Path, delaySec );
+	}
+
 	[Rpc.Broadcast]
 	private void PlaySoundLocal( string soundPath, float delaySec = 0f )
 	{

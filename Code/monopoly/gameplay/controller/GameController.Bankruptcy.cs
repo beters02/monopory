@@ -193,10 +193,23 @@ public sealed partial class GameController : Component
 		if ( playerIndex < 0 )
 			return false;
 
+		var creditor = GetPendingForcedPaymentCreditorForPlayer( playerIndex );
+		var debtAmount = HasPendingForcedPaymentForPlayer( playerIndex ) ? PendingForcedPaymentAmount : 0;
 		player.IsDisconnected = false;
 		player.AbandonEndsAt = 0f;
-		BankruptPlayer( playerIndex, null, true );
+		BankruptPlayer( playerIndex, creditor, true, debtAmount );
 		return true;
+	}
+
+	private PlayerState GetPendingForcedPaymentCreditorForPlayer( int playerIndex )
+	{
+		if ( !HasPendingForcedPaymentForPlayer( playerIndex ) )
+			return null;
+
+		if ( PendingForcedPaymentToBank || PendingForcedPaymentToEachPlayer )
+			return null;
+
+		return Players.ElementAtOrDefault( PendingForcedPaymentReceiverIndex );
 	}
 
 	private void CheckForGameOver()

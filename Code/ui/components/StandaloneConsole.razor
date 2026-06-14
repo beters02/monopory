@@ -80,6 +80,7 @@
 	private Panel OutputPanel = null!;
 	private bool WantsFocus;
 	private string Filter = "";
+	private int ScrollToBottomFramesRemaining;
 
 	public static StandaloneConsole Instance { get; private set; }
 	public static bool IsConsoleOpen => Instance?.IsOpen == true;
@@ -151,6 +152,12 @@
 			if ( CommandInput.HasFocus )
 				WantsFocus = false;
 		}
+
+		if ( ScrollToBottomFramesRemaining > 0 && OutputPanel is not null )
+		{
+			OutputPanel.TryScrollToBottom();
+			ScrollToBottomFramesRemaining--;
+		}
 	}
 
 	private void ConfigureInput()
@@ -177,7 +184,7 @@
 
 		TrimEntries();
 		StateHasChanged();
-		OutputPanel?.TryScrollToBottom();
+		RequestScrollToBottom();
 	}
 
 	private static bool ShouldToggleConsole()
@@ -314,7 +321,7 @@
 		TrimEntries();
 
 		StateHasChanged();
-		OutputPanel?.TryScrollToBottom();
+		RequestScrollToBottom();
 	}
 
 	private void TrimEntries()
@@ -430,8 +437,14 @@
 	{
 		WantsFocus = true;
 		CommandInput?.Focus();
-		OutputPanel?.TryScrollToBottom();
+		RequestScrollToBottom();
 		StateHasChanged();
+	}
+
+	private void RequestScrollToBottom()
+	{
+		ScrollToBottomFramesRemaining = 3;
+		OutputPanel?.TryScrollToBottom();
 	}
 
 	private object[] GetAutoComplete( string value )

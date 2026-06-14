@@ -23,6 +23,18 @@
 				OwnerName="@selection.OwnerName"
 				DrawnCardText="@selection.DrawnCardText">
 				<OverlayContent>
+					@if ( selection.CanShowColorSetMenu )
+					{
+						<button class="space-card-menu-button" onclick="@ToggleColorSetMenu">&#9776;</button>
+						@if ( IsColorSetMenuOpen )
+						{
+							<div class="space-card-menu">
+								<GameButton Variant="@GetColorSetMenuButtonClasses( selection.CanBuildColorSetImprovement )" CanClick="@selection.CanBuildColorSetImprovement" OnClick="@BuildColorSetImprovement">Buy 1 house on color set</GameButton>
+								<GameButton Variant="@GetColorSetMenuButtonClasses( selection.CanSellColorSetImprovement )" CanClick="@selection.CanSellColorSetImprovement" OnClick="@SellColorSetImprovement">Sell 1 house on color set</GameButton>
+								<GameButton Variant="@GetColorSetMenuButtonClasses( selection.CanMortgageColorSet )" CanClick="@selection.CanMortgageColorSet" OnClick="@MortgageColorSet">Mortgage color set</GameButton>
+							</div>
+						}
+					}
 					<CloseButton Variant="@GetSpaceCardCloseButtonClasses( selection )" CanClick="@(!selection.IsClosing && selection.CanClose)" OnClick="@CloseSelectedSpace" BlockedPopupTitle="Decision required" BlockedPopupMessage="@selection.CloseBlockedMessage"></CloseButton>
 				</OverlayContent>
 				<FooterContent>
@@ -100,6 +112,7 @@
 
 	private const float OutroDuration = 0.13f;
 	private RenderedSelectedSpace renderedSelection;
+	private bool IsColorSetMenuOpen;
 
 	private RenderedSelectedSpace RenderedSelection
 	{
@@ -158,6 +171,10 @@
 			CanSellImprovement = CanSellSelectedImprovement,
 			CanMortgage = CanMortgageSelectedSpace,
 			CanUnmortgage = CanUnmortgageSelectedSpace,
+			CanShowColorSetMenu = CanShowColorSetMenu,
+			CanBuildColorSetImprovement = CanBuildColorSetImprovement,
+			CanSellColorSetImprovement = CanSellColorSetImprovement,
+			CanMortgageColorSet = CanMortgageColorSet,
 			ImprovementAmountLabel = SelectedImprovementAmountLabel,
 			PriceLabel = SelectedSpacePriceLabel,
 			RentLabel = SelectedSpaceRentLabel,
@@ -234,6 +251,11 @@
 		return selection.CanMortgage || selection.CanUnmortgage ? "mortgage-action" : "mortgage-action disabled";
 	}
 
+	private static string GetColorSetMenuButtonClasses( bool canClick )
+	{
+		return canClick ? "color-set-menu-action" : "color-set-menu-action disabled";
+	}
+
 	private string SpaceCardCloseButtonClasses =>
 		ShouldBlockSelectedSpaceClose ? "space-card-close blocked-action-button" : "space-card-close";
 
@@ -288,6 +310,11 @@
 
 	private bool CanManageSelectedSpace =>
 		IsOwnedByLocalPlayer;
+
+	private bool CanShowColorSetMenu =>
+		CanManageSelectedSpace &&
+		SelectedSpace?.Type == SpaceType.Property &&
+		SelectedSpace.ColorGroup != ColorGroup.None;
 
 	private bool CanSkipPendingPropertyDecision =>
 		IsLocalPlayersTurn &&
@@ -372,6 +399,12 @@
 		GameRef.LocalPlayerIndex >= 0 &&
 		GameRef.CanSellImprovement( GameRef.LocalPlayerIndex, SelectedSpaceIndex );
 
+	private bool CanBuildColorSetImprovement =>
+		GetSelectedColorSetProperties().Any( property => GameRef?.CanBuildImprovement( GameRef.LocalPlayerIndex, property.Index ) == true );
+
+	private bool CanSellColorSetImprovement =>
+		GetSelectedColorSetProperties().Any( property => GameRef?.CanSellImprovement( GameRef.LocalPlayerIndex, property.Index ) == true );
+
 	private int SelectedMortgageValue =>
 		SelectedSpaceIndex < 0 ? 0 : GameRef?.GetMortgageValue( SelectedSpaceIndex ) ?? 0;
 
@@ -388,6 +421,9 @@
 		GameRef.LocalPlayerIndex >= 0 &&
 		GameRef.CanUnmortgageProperty( GameRef.LocalPlayerIndex, SelectedSpaceIndex );
 
+	private bool CanMortgageColorSet =>
+		GetSelectedColorSetProperties().Any( property => GameRef?.CanMortgageProperty( GameRef.LocalPlayerIndex, property.Index ) == true );
+
 	private string MortgageActionLabel =>
 		IsSelectedSpaceMortgaged
 			? $"Unmortgage -${SelectedUnmortgageCost}"
@@ -403,6 +439,24 @@
 		SelectedSpace is null
 			? "You do not have enough money to buy this property."
 			: $"{SelectedSpace.DisplayName} costs ${SelectedSpace.Price}, but you only have ${GameRef?.LocalPlayer?.Money ?? 0}.";
+
+	private List<SpaceDef> GetSelectedColorSetProperties()
+	{
+		if ( GameRef?.Board?.SpaceDefs is null ||
+			SelectedSpace is null ||
+			SelectedSpace.Type != SpaceType.Property ||
+			SelectedSpace.ColorGroup == ColorGroup.None ||
+			GameRef.LocalPlayerIndex < 0 )
+			return new();
+
+		return GameRef.Board.SpaceDefs
+			.Where( property =>
+				property is not null &&
+				property.Type == SpaceType.Property &&
+				property.ColorGroup == SelectedSpace.ColorGroup &&
+				GameRef.GetOwnerIndexForSpace( property.Index ) == GameRef.LocalPlayerIndex )
+			.ToList();
+	}
 
 	private int GetSelectedOwnerIndex()
 	{
@@ -423,7 +477,13 @@
 
 	private void CloseSelectedSpace()
 	{
+		IsColorSetMenuOpen = false;
 		GameRef?.ClearSelectedSpace();
+	}
+
+	private void ToggleColorSetMenu()
+	{
+		IsColorSetMenuOpen = !IsColorSetMenuOpen;
 	}
 
 	private void BuyProperty()
@@ -451,12 +511,28 @@
 		GameRef?.RequestBuildImprovement( SelectedSpaceIndex );
 	}
 
+	private void BuildColorSetImprovement()
+	{
+		if ( SelectedSpaceIndex < 0 || !CanBuildColorSetImprovement )
+			return;
+
+		GameRef?.RequestBuildColorSetImprovement( SelectedSpaceIndex );
+	}
+
 	private void SellImprovement()
 	{
 		if ( SelectedSpaceIndex < 0 || !CanSellSelectedImprovement )
 			return;
 
 		GameRef?.RequestSellImprovement( SelectedSpaceIndex );
+	}
+
+	private void SellColorSetImprovement()
+	{
+		if ( SelectedSpaceIndex < 0 || !CanSellColorSetImprovement )
+			return;
+
+		GameRef?.RequestSellColorSetImprovement( SelectedSpaceIndex );
 	}
 
 	private void Mortgage()
@@ -492,6 +568,20 @@
 		);
 	}
 
+	private void MortgageColorSet()
+	{
+		if ( SelectedSpaceIndex < 0 || !CanMortgageColorSet || GameRef?.HasBlockingPopup == true )
+			return;
+
+		var colorSetName = SelectedSpace?.ColorGroup.ToString() ?? "this";
+		GameRef?.ShowLocalConfirmation(
+			"Confirm mortgage set",
+			$"Are you sure you want to mortgage the {colorSetName} color set?",
+			() => GameRef?.RequestMortgageColorSet( SelectedSpaceIndex ),
+			confirmLabel: "Mortgage Set"
+		);
+	}
+
 	private async Task DelayedStateHasChanged(float time)
 	{
 		await Task.DelaySeconds(time);
@@ -521,6 +611,7 @@
 		hash.Add( HudUi.GetPropertyOwnersHash( GameRef ) );
 		hash.Add( HudUi.GetMortgagedPropertiesHash( GameRef ) );
 		hash.Add( SelectedImprovementCount );
+		hash.Add( IsColorSetMenuOpen );
 		return hash.ToHashCode();
 	}
 
@@ -546,6 +637,10 @@
 		public bool CanSellImprovement { get; set; }
 		public bool CanMortgage { get; set; }
 		public bool CanUnmortgage { get; set; }
+		public bool CanShowColorSetMenu { get; set; }
+		public bool CanBuildColorSetImprovement { get; set; }
+		public bool CanSellColorSetImprovement { get; set; }
+		public bool CanMortgageColorSet { get; set; }
 		public string ImprovementAmountLabel { get; set; } = "";
 		public string PriceLabel { get; set; } = "";
 		public string RentLabel { get; set; } = "";

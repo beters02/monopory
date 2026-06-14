@@ -57,6 +57,8 @@ public sealed partial class GameController : Component
 	public GameSound TradeAcceptedSound = GameAssets.Sounds.Success; // success
 	public GameSound TradeDeniedSound = GameAssets.Sounds.Warning; // error
 	public GameSound TradeNegotiationReceivedSound = GameAssets.Sounds.TradeNegotiated; // retro 9
+	public GameSound AuctionStartSound = GameAssets.Sounds.AuctionStart;
+	public GameSound AuctionBidSound = GameAssets.Sounds.AuctionBid;
 
 	// Turns
 	private int MaxTurnReminders { get; set; } = 4;

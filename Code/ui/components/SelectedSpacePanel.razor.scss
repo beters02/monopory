@@ -17,6 +17,60 @@
 	pointer-events: none;
 }
 
+.space-card-menu-button {
+	position: absolute;
+	top: 8px;
+	right: 50px;
+	z-index: 20;
+	width: 34px;
+	height: 34px;
+	border-radius: $monopoly-radius-control;
+	background-color: $monopoly-ink;
+	color: $monopoly-board;
+	font-size: 22px;
+	font-weight: 900;
+	align-items: center;
+	justify-content: center;
+	pointer-events: all;
+	cursor: pointer;
+}
+
+.space-card-menu {
+	position: absolute;
+	top: 48px;
+	right: 8px;
+	z-index: 21;
+	width: 210px;
+	padding: 8px;
+	border: 2px solid $monopoly-gold;
+	border-radius: $monopoly-radius-control;
+	background-color: $monopoly-panel-strong;
+	box-shadow: $monopoly-panel-shadow-soft;
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	pointer-events: all;
+}
+
+.space-card-menu .monopoly-button.color-set-menu-action {
+	min-height: $monopoly-control-height-small;
+	margin-top: 0;
+	padding: 5px 8px;
+	background-color: $monopoly-gold;
+	color: $monopoly-ink;
+	border-radius: $monopoly-radius-control;
+	font-size: $monopoly-font-button;
+	font-weight: 900;
+	line-height: 14px;
+	text-transform: uppercase;
+	white-space: normal;
+}
+
+.space-card-menu .monopoly-button.color-set-menu-action.disabled {
+	background-color: $monopoly-blocked-action;
+	color: $monopoly-text-muted;
+}
+
 .space-management {
 	margin-top: auto;
 
@@ -127,7 +181,10 @@
 
 .selected-space-actions,
 .selected-space-actions *,
-.space-card-close {
+.space-card-close,
+.space-card-menu-button,
+.space-card-menu,
+.space-card-menu * {
 	pointer-events: all;
 }
 

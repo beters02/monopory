@@ -516,6 +516,92 @@ public static class EndTurnCommand
 	}
 }
 
+public static class FinishMoveCommand
+{
+	public const string Name = "finish_move";
+
+	[ConCmd( Name )]
+	public static void Execute( Connection connection, string playerName = "self", params string[] playerNameTail )
+	{
+		GameCommandManager.RunCommand( Name, () =>
+		{
+			var game = GameController.Instance;
+			if ( game is null )
+				return CommandResult.Fail( "No active game." );
+
+			var resolvedPlayerName = GameCommandManager.JoinPlayerName( playerName, playerNameTail );
+			var player = game.ResolvePlayerReference( resolvedPlayerName, connection );
+			if ( player is null )
+				return CommandResult.Fail( $"Could not find player \"{resolvedPlayerName}\"." );
+
+			if ( playerName != "self" || MonopolyApp.GetConnectionForPlayer( player ) != Connection.Local)
+				if ( !GameCommandManager.CanUseHostCommand( Connection.Local ) )
+					return CommandResult.FailCheatsOrHost();
+
+			if ( game.CurrentPlayer != player )
+				return CommandResult.Fail( "It is not that player's turn." );
+
+			if ( !game.CanFinishActiveMovement( player ) )
+				return CommandResult.Fail( "That player cannot finish movement right now." );
+
+			if ( Networking.IsHost )
+				game.FinishActiveMovement( player );
+			else
+				game.RequestFinishActiveMovement();
+
+			return CommandResult.Success( "Finished active movement." );
+		}, connection );
+	}
+}
+
+public static class SetCameraModeCommand
+{
+	public const string Name = "set_camera_mode";
+
+	[ConCmd( Name )]
+	public static void Execute( Connection connection, string mode = "default" )
+	{
+		GameCommandManager.RunCommand( Name, () =>
+		{
+			if ( !Enum.TryParse<BoardCameraMode>( mode, true, out var cameraMode ) )
+				return CommandResult.Fail( $"Unknown camera mode \"{mode}\". Use Default, Board, FreeCam, or Token." );
+
+			var camera = GameCamera.Instance;
+			if ( camera is null )
+				return CommandResult.Fail( "No active game camera." );
+
+			camera.SetMode( cameraMode );
+			return CommandResult.Success( $"Camera mode => {cameraMode}." );
+		}, connection );
+	}
+}
+
+public static class PlayTurnReminderCommand
+{
+	public const string Name = "play_turn_reminder";
+
+	[HostCheatCmd]
+	[ConCmd( Name )]
+	public static void Execute( Connection connection, string playerName = "self", params string[] playerNameTail )
+	{
+		GameCommandManager.RunCommand( Name, () =>
+		{
+			var game = GameController.Instance;
+			if ( game is null )
+				return CommandResult.Fail( "No active game." );
+
+			var resolvedPlayerName = GameCommandManager.JoinPlayerName( playerName, playerNameTail );
+			var player = game.ResolvePlayerReference( resolvedPlayerName, connection );
+			if ( player is null )
+				return CommandResult.Fail( $"Could not find player \"{resolvedPlayerName}\"." );
+
+			return game.TryPlayTurnReminder( player )
+				? CommandResult.Success( $"Played turn reminder for {player.PlayerName}." )
+				: CommandResult.Fail( $"Could not play turn reminder for {player.PlayerName}." );
+		}, connection );
+	}
+}
+
 public static class BuyPropertyCommand
 {
 	public const string Name = "buy_property";

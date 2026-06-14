@@ -43,6 +43,7 @@ public sealed partial class GameController : Component
 			}
 
 			Log.Info( $"{player.PlayerName} landed on {spaceDef.DisplayName}" );
+			RecordPropertyLandingForStats( player, spaceDef );
 
 			//if (spaceDef.Type != SpaceType.Go && spaceDef.Type )
 			ShowCardForPlayerWhoLanded(player);
@@ -125,6 +126,7 @@ public sealed partial class GameController : Component
 			var rent = GetRentForSpace( def.Index );
 			if ( PayPlayer( player, owner, rent ) )
 			{
+				RecordPropertyRentEarnedForStats( ownerIndex, def.Index, rent );
 				Log.Info( $"{player.PlayerName} paid ${rent} rent to {owner.PlayerName}." );
 				return $"Paid ${rent} rent to {owner.PlayerName}";
 			}
@@ -245,5 +247,35 @@ public sealed partial class GameController : Component
 		player.Money += amount;
 		ShowMoneyReceivedPopup( player, amount, "the bank" );
 		Log.Info( $"{player.PlayerName} collected ${amount} for GO movement (passes: {goPassCount}, landed on GO: {landedOnGo})." );
+	}
+
+	private void RecordPropertyLandingForStats( PlayerState player, SpaceDef def )
+	{
+		if ( player is null || def is null || !IsPurchasableSpace( def ) )
+			return;
+
+		var playerIndex = GetPlayerIndex( player );
+		if ( playerIndex < 0 )
+			return;
+
+		IncrementPropertyStat( PropertyLandingCounts, BuildPropertyStatKey( playerIndex, def.Index ), 1 );
+	}
+
+	private void RecordPropertyRentEarnedForStats( int ownerIndex, int spaceIndex, int amount )
+	{
+		if ( ownerIndex < 0 || spaceIndex < 0 || amount <= 0 )
+			return;
+
+		IncrementPropertyStat( PropertyRentEarned, BuildPropertyStatKey( ownerIndex, spaceIndex ), amount );
+	}
+
+	private static int BuildPropertyStatKey( int playerIndex, int spaceIndex )
+	{
+		return (playerIndex * 1000) + spaceIndex;
+	}
+
+	private static void IncrementPropertyStat( NetDictionary<int, int> stats, int key, int amount )
+	{
+		stats[key] = stats.TryGetValue( key, out var current ) ? current + amount : amount;
 	}
 }

@@ -57,6 +57,8 @@ public sealed class GameSaveSnapshot
 	public List<GameSaveIntStringEntry> TradeViewers { get; set; } = new();
 	public List<GameSaveIntStringEntry> ChatMessages { get; set; } = new();
 	public List<GameSaveIntIntEntry> StatsLogDiceFaceCounts { get; set; } = new();
+	public List<GameSaveIntIntEntry> PropertyLandingCounts { get; set; } = new();
+	public List<GameSaveIntIntEntry> PropertyRentEarned { get; set; } = new();
 	public int PendingPurchaseSpaceIndex { get; set; } = -1;
 	public int AuctionSpaceIndex { get; set; } = -1;
 	public int AuctionCurrentBid { get; set; }

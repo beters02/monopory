@@ -53,6 +53,7 @@ public sealed partial class GameController : Component
 		PauseTurnTimerForAuction();
 		Phase = GamePhase.Auctioning;
 
+		PlayGlobalSound( AuctionStartSound );
 		SendGlobalPopupToAll( "Auction started", $"{def.DisplayName} is up for auction.", PopupKind.Info, true, 4f );
 		Log.Info( $"Auction started for {def.DisplayName}." );
 	}
@@ -138,6 +139,7 @@ public sealed partial class GameController : Component
 		AuctionHighBidderIndex = bidderIndex;
 		AuctionEndsAt = MathF.Max( AuctionEndsAt, Time.Now + 7f );
 
+		PlayGlobalSound( AuctionBidSound );
 		Log.Info( $"{bidder.PlayerName} bid ${AuctionCurrentBid} on {def.DisplayName}." );
 	}
 }
