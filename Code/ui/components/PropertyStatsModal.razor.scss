@@ -17,11 +17,11 @@
 
 .property-stats-modal {
 	position: relative;
-	width: 980px;
-	max-width: 86%;
-	height: 720px;
-	max-height: 84%;
-	padding: 24px;
+	width: 900px;
+	max-width: 50%;
+	height: 610px;
+	max-height: 76%;
+	padding: 18px;
 	background-color: $monopoly-board;
 	border: 4px solid $monopoly-ink;
 	border-radius: $monopoly-radius-board;
@@ -30,29 +30,37 @@
 	font-family: $monopoly-font-family;
 	display: flex;
 	flex-direction: column;
-	gap: 16px;
+	gap: 10px;
 	pointer-events: all;
 }
 
 .property-stats-close {
 	position: absolute;
-	top: 12px;
-	right: 12px;
+	left: 95%;
 	z-index: 2;
-	width: 44px;
-	height: 44px;
-	min-width: 44px;
-	min-height: 44px;
+	width: 34px;
+	height: 34px;
+	min-width: 34px;
+	min-height: 34px;
 	padding: 4px;
 	pointer-events: all;
 }
 
 .property-stats-header {
-	padding-right: 58px;
+	margin-top: -16px;
+	padding-left: 0;
 	display: flex;
 	align-items: flex-start;
 	justify-content: space-between;
-	gap: 18px;
+	gap: 12px;
+}
+
+.property-stats-heading {
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 0;
 }
 
 .property-stats-kicker {
@@ -60,21 +68,23 @@
 	font-size: $monopoly-font-kicker;
 	font-weight: 900;
 	text-transform: uppercase;
+	line-height: 14px;
 }
 
 .property-stats-title {
-	font-size: $monopoly-font-title;
+	font-size: 34px;
 	font-weight: 900;
-	line-height: $monopoly-font-title-line;
+	line-height: 38px;
+	margin-left: 0;
 }
 
 .property-stats-subtitle {
-	margin-top: 8px;
-	padding: 8px 12px;
+	margin-top: 6px;
+	padding: 7px 10px;
 	background-color: $monopoly-board-surface;
 	border: 2px solid $monopoly-board-surface-line;
 	border-radius: $monopoly-radius-control;
-	font-size: 14px;
+	font-size: 12px;
 	font-weight: 800;
 	white-space: nowrap;
 }
@@ -82,7 +92,7 @@
 .property-stats-summary-grid {
 	display: flex;
 	flex-direction: row;
-	gap: 10px;
+	gap: 8px;
 }
 
 .property-stats-summary-card,
@@ -95,8 +105,8 @@
 .property-stats-summary-card {
 	flex: 1;
 	min-width: 0;
-	min-height: 82px;
-	padding: 12px;
+	min-height: 68px;
+	padding: 10px;
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
@@ -105,38 +115,38 @@
 
 .property-stats-summary-label {
 	color: $monopoly-danger;
-	font-size: 12px;
+	font-size: 10px;
 	font-weight: 900;
 	text-transform: uppercase;
 }
 
 .property-stats-summary-value {
-	font-size: 30px;
+	font-size: 24px;
 	font-weight: 900;
-	line-height: 32px;
+	line-height: 27px;
 	white-space: nowrap;
 	text-overflow: ellipsis;
 	overflow: hidden;
 }
 
 .property-stats-summary-value.small {
-	font-size: 20px;
-	line-height: 24px;
+	font-size: 17px;
+	line-height: 20px;
 }
 
 .property-stats-content {
 	flex: 1;
 	min-height: 0;
 	display: flex;
-	gap: 12px;
+	gap: 10px;
 }
 
 .property-stats-column {
-	width: 34%;
+	width: 32%;
 	min-width: 0;
 	display: flex;
 	flex-direction: column;
-	gap: 12px;
+	gap: 10px;
 }
 
 .property-stats-column.wide {
@@ -145,10 +155,10 @@
 }
 
 .property-stats-section {
-	padding: 12px;
+	padding: 10px;
 	display: flex;
 	flex-direction: column;
-	gap: 8px;
+	gap: 6px;
 	min-height: 0;
 }
 
@@ -158,7 +168,7 @@
 }
 
 .property-stats-section-title {
-	font-size: 17px;
+	font-size: 15px;
 	font-weight: 900;
 	text-transform: uppercase;
 }
@@ -174,8 +184,8 @@
 }
 
 .property-stats-rank-row {
-	min-height: 42px;
-	padding: 8px;
+	min-height: 36px;
+	padding: 7px;
 	background-color: $monopoly-board-surface-strong;
 	border-radius: $monopoly-radius-control;
 }
@@ -198,7 +208,7 @@
 .property-stats-rank-name,
 .property-stats-property-name,
 .property-stats-player-name {
-	font-size: 14px;
+	font-size: 12px;
 	font-weight: 900;
 	white-space: nowrap;
 	text-overflow: ellipsis;
@@ -212,7 +222,7 @@
 
 .property-stats-rank-meta,
 .property-stats-property-meta {
-	font-size: 11px;
+	font-size: 9px;
 	font-weight: 800;
 	opacity: 0.65;
 	white-space: nowrap;
@@ -226,18 +236,18 @@
 	background-color: $monopoly-gold;
 	border-radius: $monopoly-radius-control;
 	color: $monopoly-ink;
-	font-size: 14px;
+	font-size: 12px;
 	font-weight: 900;
 }
 
 .property-stats-empty {
-	min-height: 42px;
-	padding: 10px;
+	min-height: 34px;
+	padding: 8px;
 	align-items: center;
 	justify-content: center;
 	background-color: $monopoly-board-surface-strong;
 	border-radius: $monopoly-radius-control;
-	font-size: 13px;
+	font-size: 11px;
 	font-weight: 800;
 	opacity: 0.68;
 }
@@ -249,8 +259,8 @@
 }
 
 .property-stats-player-row {
-	min-height: 44px;
-	padding: 8px;
+	min-height: 36px;
+	padding: 6px;
 	background-color: $monopoly-board-surface-strong;
 	border: 2px solid $monopoly-transparent;
 	border-radius: $monopoly-radius-control;
@@ -266,30 +276,30 @@
 }
 
 .property-stats-player-pill {
-	width: 72px;
+	width: 66px;
 	flex-shrink: 0;
 	padding: 4px 8px;
 	background-color: $monopoly-ink;
 	border-radius: $monopoly-radius-control;
 	color: $monopoly-board;
-	font-size: 13px;
+	font-size: 11px;
 	font-weight: 900;
 	text-align: center;
 }
 
 .property-stats-player-metric {
-	width: 58px;
+	width: 50px;
 	flex-shrink: 0;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 	gap: 0;
-	font-size: 13px;
+	font-size: 11px;
 	font-weight: 900;
 }
 
 .property-stats-player-metric label {
-	font-size: 9px;
+	font-size: 8px;
 	font-weight: 900;
 	opacity: 0.62;
 	text-transform: uppercase;
@@ -312,7 +322,7 @@
 	overflow-x: hidden;
 	display: flex;
 	flex-direction: column;
-	gap: 4px;
+	gap: 3px;
 }
 
 .property-stats-table-header,
@@ -327,7 +337,7 @@
 	flex-shrink: 0;
 	padding: 0 26px 3px 8px;
 	color: $monopoly-danger;
-	font-size: 11px;
+	font-size: 9px;
 	font-weight: 900;
 	text-transform: uppercase;
 }
@@ -339,11 +349,11 @@
 }
 
 .property-stats-table-row {
-	min-height: 46px;
-	padding: 7px 8px;
+	min-height: 38px;
+	padding: 6px 8px;
 	background-color: $monopoly-board-surface-strong;
 	border-radius: $monopoly-radius-control;
-	font-size: 13px;
+	font-size: 11px;
 	font-weight: 800;
 	cursor: pointer;
 	pointer-events: all;
@@ -368,12 +378,12 @@
 }
 
 .property-stats-table-small {
-	width: 52px;
+	width: 64px;
 	flex-shrink: 0;
 }
 
 .property-stats-table-money {
-	width: 64px;
+	width: 82px;
 	flex-shrink: 0;
 }
 

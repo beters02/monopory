@@ -12,7 +12,7 @@
 				<CloseButton Variant="property-stats-close" Title="Close" OnClick="@Close"></CloseButton>
 
 				<div class="property-stats-header">
-					<div>
+					<div class="property-stats-heading">
 						<div class="property-stats-kicker">Board Analytics</div>
 						<div class="property-stats-title">Property Stats</div>
 					</div>
@@ -112,7 +112,6 @@
 								<div class="property-stats-table-owner">Owner</div>
 								<div class="property-stats-table-small">Visits</div>
 								<div class="property-stats-table-money">Rent</div>
-								<div class="property-stats-table-small">Now</div>
 							</div>
 							<div class="property-stats-table-shell">
 								<div class="property-stats-table monopory-scroll-y" @ref="PropertyTablePanel">
@@ -129,7 +128,6 @@
 										<div class="property-stats-table-owner">@GetOwnerName( row.SpaceIndex )</div>
 										<div class="property-stats-table-small">@row.Landings</div>
 										<div class="property-stats-table-money">$@row.RentEarned</div>
-										<div class="property-stats-table-small">$@row.CurrentRent</div>
 									</div>
 								}
 								</div>
@@ -151,7 +149,7 @@
 
 	private Panel PropertyTablePanel = null!;
 
-	private readonly record struct PropertyStatsRow( int SpaceIndex, SpaceDef Space, string Name, int Landings, int RentEarned, int CurrentRent );
+	private readonly record struct PropertyStatsRow( int SpaceIndex, SpaceDef Space, string Name, int Landings, int RentEarned );
 	private readonly record struct PlayerStatsRow( int PlayerIndex, string Name, int Money, int PropertyCount, int Landings, int RentEarned, bool IsBankrupt, bool IsLocalPlayer );
 
 	private int TotalLandings => PropertyRows.Sum( row => row.Landings );
@@ -196,8 +194,7 @@
 				def,
 				def.DisplayName ?? $"Space {def.Index}",
 				GetTotalLandingsForSpace( def.Index ),
-				GetTotalRentEarnedForSpace( def.Index ),
-				GameRef.GetRentForSpace( def.Index )
+				GetTotalRentEarnedForSpace( def.Index )
 			) )
 			.OrderByDescending( row => row.Landings > 0 || row.RentEarned > 0 )
 			.ThenByDescending( row => row.RentEarned )
