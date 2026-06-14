@@ -16,12 +16,13 @@
 	align-items: center;
 	justify-content: center;
 
-	background-color: $monopoly-modal-backdrop;
-	pointer-events: all;
+	background-color: $monopoly-transparent;
+	pointer-events: none;
 }
 
 .trade-composer-modal {
 	position: relative;
+	z-index: 48;
 
 	width: 720px;
 	height: 620px;

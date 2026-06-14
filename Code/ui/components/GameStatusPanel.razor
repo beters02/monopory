@@ -35,6 +35,7 @@
 			@if ( GameRef.MatchState == MatchLifecycleState.InGame )
 			{
 				<HudPanelBody>@CurrentPlayer.PlayerName's turn (@CurrentTurnTimeText) </HudPanelBody>
+				<HudPanelBody>Last Roll: @GameRef.LastDieA + @GameRef.LastDieB</HudPanelBody>
 			}
 
 			@if ( IsCurrentPlayerInJail )
