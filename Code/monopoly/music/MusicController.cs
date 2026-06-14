@@ -54,7 +54,7 @@ public sealed class MusicController : Component
 	{
 		base.OnStart();
 
-		ApplySoundtrackScene( SceneSystemService.CurrentLoadedGameScene, false );
+		ApplySoundtrackScene( GetInitialGameScene(), false );
 
 		if ( StartEnabled )
 			StartSoundtrack();
@@ -163,6 +163,14 @@ public sealed class MusicController : Component
 	private void OnSceneLoaded( GameScene gameScene )
 	{
 		ApplySoundtrackScene( gameScene, true );
+	}
+
+	private GameScene GetInitialGameScene()
+	{
+		if ( SceneSystemService.TryGetGameScene( Scene, out GameScene gameScene ) )
+			return gameScene;
+
+		return SceneSystemService.CurrentLoadedGameScene;
 	}
 
 	private void ApplySoundtrackScene( GameScene gameScene, bool restartIfChanged )
