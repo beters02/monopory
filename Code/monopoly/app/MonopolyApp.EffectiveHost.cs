@@ -9,14 +9,14 @@ public partial class MonopolyApp
 
 	public static MonopolyApp Instance => instance;
 
-	public static long EffectiveHostOwnerId => ResolveEffectiveHostOwnerId();
+	public static long CurrentHostOwnerId => ResolveCurrentHostOwnerId();
 
 	public static bool IsLocalEffectiveHost
 	{
 		get
 		{
 			var localSteamId = GetLocalSteamId();
-			return localSteamId.HasValue && localSteamId.Value == EffectiveHostOwnerId;
+			return localSteamId.HasValue && localSteamId.Value == CurrentHostOwnerId;
 		}
 	}
 
@@ -28,7 +28,7 @@ public partial class MonopolyApp
 		if ( caller is null || caller == Connection.Local )
 			return true;
 
-		return caller.SteamId == EffectiveHostOwnerId;
+		return caller.SteamId == CurrentHostOwnerId;
 	}
 
 	public static long GetPreferredHostOwnerId()
@@ -77,22 +77,10 @@ public partial class MonopolyApp
 			instance = null;
 	}
 
-	private static long ResolveEffectiveHostOwnerId()
+	private static long ResolveCurrentHostOwnerId()
 	{
-		var preferredHost = instance?.PreferredHostOwnerId ?? 0L;
-		if ( preferredHost != 0 && HasConnection( preferredHost ) )
-			return preferredHost;
-
 		var hostConnection = Connection.Host ?? Connection.Local;
 		return hostConnection?.SteamId ?? 0L;
-	}
-
-	private static bool HasConnection( long steamId )
-	{
-		if ( steamId == 0 )
-			return false;
-
-		return Connection.All.Any( connection => connection is not null && connection.SteamId == steamId );
 	}
 
 	private static long? GetLocalSteamId()

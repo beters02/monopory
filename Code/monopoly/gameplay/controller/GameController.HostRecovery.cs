@@ -9,7 +9,7 @@ public sealed partial class GameController
 		return MonopolyApp.IsEffectiveHostCaller( caller );
 	}
 
-	public long EffectiveHostOwnerId => MonopolyApp.EffectiveHostOwnerId;
+	public long CurrentHostOwnerId => MonopolyApp.CurrentHostOwnerId;
 
 	private void EnsurePreferredHostOwnerId()
 	{
@@ -68,6 +68,22 @@ public sealed partial class GameController
 
 		PreferredHostDisconnected = !connected;
 		Log.Info( $"Preferred host {GetConnectionPlayerName( connection )} {eventName}." );
+
+		if ( connected )
+			TryRestorePreferredHost();
+	}
+
+	private void TryRestorePreferredHost()
+	{
+		if ( PreferredHostOwnerId == 0 || !Networking.IsHost || Connection.Local?.SteamId == PreferredHostOwnerId )
+			return;
+
+#if STANDALONE
+		if ( MonopolyApp.TryTransferSteamLobbyHostSync( PreferredHostOwnerId, out var message ) )
+			Log.Info( $"Restored Steam lobby host to preferred host. {message}" );
+		else
+			Log.Warning( $"Could not restore Steam lobby host to preferred host: {message}" );
+#endif
 	}
 
 	private void UpdateHostRecoveryWatchdog()

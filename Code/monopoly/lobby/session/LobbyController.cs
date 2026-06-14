@@ -20,6 +20,7 @@ public sealed partial class LobbyController : Component
 	[Sync] public string StagedLoadedSaveName { get; set; } = "";
 	[Sync] public string StagedLoadedGameIdentifier { get; set; } = "";
 	private string lastAppliedHostedConfigSnapshot = "";
+	private float lastPreferredHostRestoreAttemptAt;
 
 	public int MinPlayers => Math.Max( Config?.MinPlayers ?? 1, 1 );
 	public int MaxPlayers => Math.Max( Config?.MaxPlayers ?? MinPlayers, MinPlayers );
@@ -38,7 +39,7 @@ public sealed partial class LobbyController : Component
 	public bool HasStagedLoadedGame => !string.IsNullOrWhiteSpace( StagedLoadedSaveName );
 
 	public bool IsLocalEffectiveHost => MonopolyApp.IsLocalEffectiveHost;
-	public long EffectiveHostOwnerId => MonopolyApp.EffectiveHostOwnerId;
+	public long CurrentHostOwnerId => MonopolyApp.CurrentHostOwnerId;
 	public static LobbyController Instance => instance;
 
 	protected override void OnStart()
@@ -66,12 +67,36 @@ public sealed partial class LobbyController : Component
 		ApplyHostedConfigSnapshot();
 
 		if ( Networking.IsHost )
+		{
 			UpdateDisconnectedPlayers();
+			TryRestorePreferredHost();
+		}
 
 		Players = BuildPlayers();
 
 		if ( !Networking.IsHost )
 			return;
+	}
+
+	private void TryRestorePreferredHost()
+	{
+		if ( PreferredHostOwnerId == 0 || Connection.Local?.SteamId == PreferredHostOwnerId )
+			return;
+
+		if ( PreferredHostOwnerId == CurrentHostOwnerId || IsMarkedDisconnected( PreferredHostOwnerId ) || !HasConnection( PreferredHostOwnerId ) )
+			return;
+
+		if ( Time.Now - lastPreferredHostRestoreAttemptAt < 5f )
+			return;
+
+		lastPreferredHostRestoreAttemptAt = Time.Now;
+
+#if STANDALONE
+		if ( MonopolyApp.TryTransferSteamLobbyHostSync( PreferredHostOwnerId, out var message ) )
+			Log.Info( $"Restored Steam lobby host to preferred host. {message}" );
+		else
+			Log.Warning( $"Could not restore Steam lobby host to preferred host: {message}" );
+#endif
 	}
 
 	private void UpdateDisconnectedPlayers()

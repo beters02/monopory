@@ -54,7 +54,7 @@ public partial class MonopolyApp : Component
         return false;
     }
 
-    public static bool TryTransferSteamLobbyHost( string toPlayerSteamId, out string msg )
+    public static bool TryTransferSteamLobbyHost( string toPlayerSteamId, out string msg, bool setPreferredHost = false )
     {
         msg = "Transfer lobby host is available in standalone";
 
@@ -67,7 +67,7 @@ public partial class MonopolyApp : Component
                 return false;
             }
 
-            return TryTransferSteamLobbyHostSync( targetSteamId, out msg );
+			return TryTransferSteamLobbyHostSync( targetSteamId, out msg, setPreferredHost );
 #endif
         }
         
@@ -78,7 +78,7 @@ public partial class MonopolyApp : Component
 	private const BindingFlags SteamStaticReflectionFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
 	private const BindingFlags SteamInstanceReflectionFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
 
-	public static bool TryTransferSteamLobbyHostSync( long targetSteamId, out string message )
+	public static bool TryTransferSteamLobbyHostSync( long targetSteamId, out string message, bool setPreferredHost = false )
 	{
 		message = "";
 
@@ -115,8 +115,7 @@ public partial class MonopolyApp : Component
 
 		if ( Connection.Local is not null && Connection.Local.SteamId == targetSteamId )
 		{
-			SetPreferredHostOwnerId( targetSteamId );
-			SetPreferredHostDisconnected( false );
+			UpdatePreferredHostAfterTransfer( targetSteamId, setPreferredHost );
 			message = $"{targetConnection.Name} is already the local host.";
 			return true;
 		}
@@ -137,8 +136,7 @@ public partial class MonopolyApp : Component
 
 			TrySetSteamLobbySocketOwner( steamLobbySocket, targetSteamId );
 
-			SetPreferredHostOwnerId( targetSteamId );
-			SetPreferredHostDisconnected( false );
+			UpdatePreferredHostAfterTransfer( targetSteamId, setPreferredHost );
 			message = $"Transferred Steam lobby host to {targetConnection.Name} ({targetSteamId}).";
 			return true;
 		}
@@ -147,6 +145,15 @@ public partial class MonopolyApp : Component
 			message = $"Failed to transfer Steam lobby host: {exception.Message}";
 			return false;
 		}
+	}
+
+	private static void UpdatePreferredHostAfterTransfer( long targetSteamId, bool setPreferredHost )
+	{
+		if ( setPreferredHost )
+			SetPreferredHostOwnerId( targetSteamId );
+
+		if ( setPreferredHost || GetPreferredHostOwnerId() == targetSteamId )
+			SetPreferredHostDisconnected( false );
 	}
 
 	private static bool TryGetSteamLobbyFromSocket( object steamLobbySocket, out object steamLobby, out string message )

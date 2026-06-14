@@ -883,7 +883,7 @@ public static class GetHostId
 			if ( !GameCommandManager.TryParseBool( networkingHost, out bool shouldDisplayNetworkingHost ) )
 				StandaloneConsole.WriteLine($"Could not parse bool value {networkingHost}. Continuing with false.", StandaloneConsole.EWarning);
 			
-			long id = shouldDisplayNetworkingHost ?  Connection.Host.SteamId : MonopolyApp.EffectiveHostOwnerId;
+			long id = MonopolyApp.CurrentHostOwnerId;
 			string idString = Networking.IsHost ? id.ToString() : "Only the host can see player's steam ids.";
 			string playerName = MonopolyApp.GetPlayerDisplayName(id)?? "Unable to find player name.";
 

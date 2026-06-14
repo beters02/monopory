@@ -119,7 +119,7 @@ public sealed partial class LobbyController
 	{
 		var players = new List<LobbyPlayer>();
 		var localSteamId = GetLocalSteamId();
-		var effectiveHostOwnerId = EffectiveHostOwnerId;
+		var currentHostOwnerId = CurrentHostOwnerId;
 		var connectionsBySteamId = GetConnections().ToDictionary( connection => connection.SteamId, connection => connection );
 		var ownerIds = GetKnownOwnerIds()
 			.Where( ownerId => ownerId != 0 )
@@ -140,7 +140,7 @@ public sealed partial class LobbyController
 				SelectedPieceId = GetSelectedPieceForOwner( ownerId ),
 				IsReady = ReadyPlayers.TryGetValue( GetReadyKey( ownerId ), out var ready ) && ready,
 				IsConnected = connection is not null && !isDisconnected,
-				IsHost = ownerId == effectiveHostOwnerId,
+				IsHost = ownerId == currentHostOwnerId,
 				IsAbandoned = false,
 				AbandonEndsAt = GetDisconnectedDeadline( ownerId ),
 				SelectedDiceSkinId = GetSelectedDiceSkinForOwner( ownerId )
