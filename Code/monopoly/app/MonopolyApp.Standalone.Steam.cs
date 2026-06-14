@@ -54,21 +54,21 @@ public partial class MonopolyApp : Component
         return false;
     }
 
-    public static bool TryTransferSteamLobbyHost( Connection connection, string steamId, out string msg )
+    public static bool TryTransferSteamLobbyHost( string toPlayerSteamId, out string msg )
     {
         msg = "Transfer lobby host is available in standalone";
 
         if ( IsStandalone() )
         {
-#if STANDALONE
-            if ( !long.TryParse( steamId, out var targetSteamId ) || targetSteamId == 0 )
+//#if STANDALONE
+            if ( !long.TryParse( toPlayerSteamId, out var targetSteamId ) || targetSteamId == 0 )
             {
-                msg = $"Could not parse target SteamId \"{steamId}\".";
+                msg = $"Could not parse target SteamId \"{toPlayerSteamId}\".";
                 return false;
             }
 
-            return TryTransferSteamLobbyHost( targetSteamId, out msg );
-#endif
+            return TryTransferSteamLobbyHostSync( targetSteamId, out msg );
+//#endif
         }
         
         return false;
@@ -78,7 +78,7 @@ public partial class MonopolyApp : Component
 	private const BindingFlags SteamStaticReflectionFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
 	private const BindingFlags SteamInstanceReflectionFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
 
-	public static bool TryTransferSteamLobbyHost( long targetSteamId, out string message )
+	public static bool TryTransferSteamLobbyHostSync( long targetSteamId, out string message )
 	{
 		message = "";
 
