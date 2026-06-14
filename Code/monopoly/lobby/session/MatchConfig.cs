@@ -51,6 +51,9 @@ public sealed class MatchConfigOptionAttribute : Attribute
 
 public sealed class MatchConfig
 {
+	[MatchConfigOption( "Board Configuration", "Space Names", Description = "Serialized board space name overrides.", Order = -1, IsVisible = false )]
+	public string BoardSpaceNamesSnapshot { get; set; } = "";
+
 	[MatchConfigOption( "Lobby", "Min Players", Description = "Minimum ready players required before the host can start.", Order = 0, Min = 1, Max = 24, Step = 1 )]
 	public int MinPlayers { get; set; } = 1;
 

@@ -9,7 +9,8 @@ public enum MatchConfigOptionKind
 {
 	Bool,
 	Int,
-	Enum
+	Enum,
+	String
 }
 
 public sealed class MatchConfigOption
@@ -161,6 +162,9 @@ public static class MatchConfigSchema
 		if ( option.Kind == MatchConfigOptionKind.Int )
 			return Convert.ToInt32( value, CultureInfo.InvariantCulture ).ToString( CultureInfo.InvariantCulture );
 
+		if ( option.Kind == MatchConfigOptionKind.String )
+			return Uri.EscapeDataString( value?.ToString() ?? "" );
+
 		return value?.ToString() ?? "";
 	}
 
@@ -198,6 +202,10 @@ public static class MatchConfigSchema
 				{
 					return false;
 				}
+
+			case MatchConfigOptionKind.String:
+				parsedValue = Uri.UnescapeDataString( rawValue ?? "" );
+				return true;
 
 			default:
 				return false;
@@ -239,6 +247,7 @@ public static class MatchConfigSchema
 		var kind =
 			propertyType == typeof( bool ) ? MatchConfigOptionKind.Bool :
 			propertyType == typeof( int ) ? MatchConfigOptionKind.Int :
+			propertyType == typeof( string ) ? MatchConfigOptionKind.String :
 			propertyType.IsEnum ? MatchConfigOptionKind.Enum :
 			throw new InvalidOperationException( $"Unsupported MatchConfig option type '{propertyType.Name}' for '{property.Name}'." );
 
@@ -278,6 +287,9 @@ public static class MatchConfigSchema
 
 			return Enum.Parse( valueType, value?.ToString() ?? "", true );
 		}
+
+		if ( valueType == typeof( string ) )
+			return value?.ToString() ?? "";
 
 		return value;
 	}

@@ -327,7 +327,7 @@ public static class BoardData
 				BaseRent = 2
 			},
 			new()
-			{
+			{ // Quinn's
 				Index = 26,
 				Key = "property_yellow_0",
 				DisplayName = "LeBron's Room",
@@ -403,10 +403,10 @@ public static class BoardData
 				ColorGroup = ColorGroup.Green
 			},
 			new()
-			{
+			{ // Troops
 				Index = 32,
 				Key = "property_green_1",
-				DisplayName = "Troop",
+				DisplayName = "House\nMade Of\nVelos",
 				Type = SpaceType.Property,
 				Price = 300,
 				BaseRent = 26,

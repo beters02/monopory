@@ -247,6 +247,7 @@ public sealed class Board : Component
 	private void LoadBoardDefinitions()
 	{
 		SpaceDefs = BoardData.CreateSpaceDefs();
+		BoardSpaceNameConfig.ApplySnapshot( SpaceDefs, GameRef?.Config?.BoardSpaceNamesSnapshot );
 		RailroadData = BoardData.CreateRailroadDefs();
 		UtilityData = BoardData.CreateUtilityDefs();
 	}

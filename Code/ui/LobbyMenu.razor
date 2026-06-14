@@ -14,65 +14,140 @@
 			<ChildContent>
 				<OptionsPanelBody Copy="@ConfigMenuCopy">
 					<ChildContent Context="scrollPanel">
-						<OptionsPanelSectionList Sections="@EditableConfigSections" SectionOptionsVariant="reverse">
-							<ChildContent Context="section">
-								@foreach ( var option in GetConfigOptionsForGroup( section.Key ).Reverse() )
-								{
-									<OptionsPanelRow Title="@GetConfigOptionTitle( option )" Value="@option.Description">
-										<ChildContent>
-												@if ( option.Kind == MatchConfigOptionKind.Bool )
+						<div class="match-config-tabs">
+							<GameButton Variant="@GetConfigPageButtonClasses( MatchConfigPageGameRules )" OnClick="@(() => SetConfigPage( MatchConfigPageGameRules ))">Game Rules</GameButton>
+							<GameButton Variant="@GetConfigPageButtonClasses( MatchConfigPageBoardConfiguration )" OnClick="@(() => SetConfigPage( MatchConfigPageBoardConfiguration ))">Board Configuration</GameButton>
+						</div>
+						@if ( IsGameRulesConfigPage )
+						{
+							<div class="match-config-presets">
+								<OptionsPanelRow Title="Game Rule Presets" Value="Apply predefined rule sets or save your current draft as a custom preset.">
+									<ChildContent>
+										<div class="match-config-preset-actions">
+											@foreach ( var preset in GameRulePresets )
+											{
+												<GameButton Variant="options-panel-secondary-button match-config-preset-button" OnClick="@(() => ApplyGameRulesPreset( preset ))">@preset.Name</GameButton>
+												@if ( !preset.IsPredefined )
 												{
-													<GameButton Variant="@GetConfigToggleButtonClasses( GetConfigBoolValue( option ) )"
-														CanClick="@CanEditConfig"
-														BlockedPopupTitle="Host only"
-														BlockedPopupMessage="Only the host can change lobby game settings."
-														OnClick="@(() => ToggleConfigBoolValue( option ))">
-														@(GetConfigBoolValue( option ) ? "On" : "Off")
-													</GameButton>
+													<GameButton Variant="options-panel-danger-button match-config-preset-delete" OnClick="@(() => DeleteGameRulesPreset( preset ))">Delete</GameButton>
 												}
-												else if ( option.Kind == MatchConfigOptionKind.Enum )
-												{
-													@if ( CanEditConfig )
+											}
+											<TextEntry class="match-config-preset-name-input"
+												Text="@GameRulePresetNameDraft"
+												Placeholder="Preset name"
+												OnTextEdited="@((string value) => SetGameRulePresetNameDraft( value ))" />
+											<GameButton Variant="options-panel-primary-button match-config-preset-button" CanClick="@CanEditConfig" OnClick="@SaveGameRulesPreset" BlockedPopupTitle="Host only" BlockedPopupMessage="Only the host can save match setting presets.">Save Preset</GameButton>
+										</div>
+									</ChildContent>
+								</OptionsPanelRow>
+							</div>
+							<OptionsPanelSectionList Sections="@EditableConfigSections" SectionOptionsVariant="reverse">
+								<ChildContent Context="section">
+									@foreach ( var option in GetConfigOptionsForGroup( section.Key ).Reverse() )
+									{
+										<OptionsPanelRow Title="@GetConfigOptionTitle( option )" Value="@option.Description">
+											<ChildContent>
+													@if ( option.Kind == MatchConfigOptionKind.Bool )
 													{
-														<DropdownButton Value="@GetConfigEnumValue( option )" Items="@option.EnumNames" ScrollTarget="@scrollPanel" OnSelected="@((string value) => SetConfigEnumValue( option, value ))"></DropdownButton>
-													}
-													else
-													{
-														<div class="options-panel-readonly-value">@GetConfigFormattedValue( option )</div>
-													}
-												}
-												else if ( option.Kind == MatchConfigOptionKind.Int )
-												{
-													<div class="options-panel-stepper">
-														<GameButton Variant="options-panel-step-button"
+														<GameButton Variant="@GetConfigToggleButtonClasses( GetConfigBoolValue( option ) )"
 															CanClick="@CanEditConfig"
 															BlockedPopupTitle="Host only"
 															BlockedPopupMessage="Only the host can change lobby game settings."
-															OnClick="@(() => ChangeConfigIntValue( option, -option.Step ))">-</GameButton>
+															OnClick="@(() => ToggleConfigBoolValue( option ))">
+															@(GetConfigBoolValue( option ) ? "On" : "Off")
+														</GameButton>
+													}
+													else if ( option.Kind == MatchConfigOptionKind.Enum )
+													{
 														@if ( CanEditConfig )
 														{
-															<TextEntry class="options-panel-stepper-input"
-																Text="@GetConfigIntTextValue( option )"
-																Placeholder="0"
-																OnTextEdited="@((string value) => SetConfigIntDraftValue( option, value ))"
-																onsubmit="@(() => CommitConfigIntDraftValue( option ))" />
+															<DropdownButton Value="@GetConfigEnumValue( option )" Items="@option.EnumNames" ScrollTarget="@scrollPanel" OnSelected="@((string value) => SetConfigEnumValue( option, value ))"></DropdownButton>
 														}
 														else
 														{
-															<div class="options-panel-stepper-value">@GetConfigIntValue( option )</div>
+															<div class="options-panel-readonly-value">@GetConfigFormattedValue( option )</div>
 														}
-														<GameButton Variant="options-panel-step-button"
-															CanClick="@CanEditConfig"
-															BlockedPopupTitle="Host only"
-															BlockedPopupMessage="Only the host can change lobby game settings."
-															OnClick="@(() => ChangeConfigIntValue( option, option.Step ))">+</GameButton>
-													</div>
+													}
+													else if ( option.Kind == MatchConfigOptionKind.Int )
+													{
+														<div class="options-panel-stepper">
+															<GameButton Variant="options-panel-step-button"
+																CanClick="@CanEditConfig"
+																BlockedPopupTitle="Host only"
+																BlockedPopupMessage="Only the host can change lobby game settings."
+																OnClick="@(() => ChangeConfigIntValue( option, -option.Step ))">-</GameButton>
+															@if ( CanEditConfig )
+															{
+																<TextEntry class="options-panel-stepper-input"
+																	Text="@GetConfigIntTextValue( option )"
+																	Placeholder="0"
+																	OnTextEdited="@((string value) => SetConfigIntDraftValue( option, value ))"
+																	onsubmit="@(() => CommitConfigIntDraftValue( option ))" />
+															}
+															else
+															{
+																<div class="options-panel-stepper-value">@GetConfigIntValue( option )</div>
+															}
+															<GameButton Variant="options-panel-step-button"
+																CanClick="@CanEditConfig"
+																BlockedPopupTitle="Host only"
+																BlockedPopupMessage="Only the host can change lobby game settings."
+																OnClick="@(() => ChangeConfigIntValue( option, option.Step ))">+</GameButton>
+														</div>
+													}
+											</ChildContent>
+										</OptionsPanelRow>
+									}
+								</ChildContent>
+							</OptionsPanelSectionList>
+						}
+						else
+						{
+							<div class="match-config-presets">
+								<OptionsPanelRow Title="Board Presets" Value="Apply predefined board names or save your current board name draft.">
+									<ChildContent>
+										<div class="match-config-preset-actions">
+											@foreach ( var preset in BoardConfigPresets )
+											{
+												<GameButton Variant="options-panel-secondary-button match-config-preset-button" OnClick="@(() => ApplyBoardConfigPreset( preset ))">@preset.Name</GameButton>
+												@if ( !preset.IsPredefined )
+												{
+													<GameButton Variant="options-panel-danger-button match-config-preset-delete" OnClick="@(() => DeleteBoardConfigPreset( preset ))">Delete</GameButton>
 												}
-										</ChildContent>
-									</OptionsPanelRow>
-								}
-							</ChildContent>
-						</OptionsPanelSectionList>
+											}
+											<TextEntry class="match-config-preset-name-input"
+												Text="@BoardConfigPresetNameDraft"
+												Placeholder="Preset name"
+												OnTextEdited="@((string value) => SetBoardConfigPresetNameDraft( value ))" />
+											<GameButton Variant="options-panel-primary-button match-config-preset-button" CanClick="@CanEditConfig" OnClick="@SaveBoardConfigPreset" BlockedPopupTitle="Host only" BlockedPopupMessage="Only the host can save board presets.">Save Preset</GameButton>
+										</div>
+									</ChildContent>
+								</OptionsPanelRow>
+							</div>
+							<div class="options-panel-section">
+								<div class="options-panel-section-title">Space Names</div>
+								<div class="board-space-name-list">
+									@foreach ( var space in BoardConfigSpaces )
+									{
+										<OptionsPanelRow Title="@GetBoardSpaceTitle( space )" Value="@GetBoardSpaceDescription( space )">
+											<ChildContent>
+												@if ( CanEditConfig )
+												{
+													<TextEntry class="board-space-name-input"
+														Text="@GetBoardSpaceName( space.Index )"
+														Placeholder="@space.DisplayName"
+														OnTextEdited="@((string value) => SetBoardSpaceName( space.Index, value ))" />
+												}
+												else
+												{
+													<div class="options-panel-readonly-value">@GetBoardSpaceName( space.Index )</div>
+												}
+											</ChildContent>
+										</OptionsPanelRow>
+									}
+								</div>
+							</div>
+						}
 					</ChildContent>
 					<Footer>
 						@if ( CanEditConfig )
@@ -339,8 +414,17 @@
     private IReadOnlyList<string> ConfigGroups;
     private IReadOnlyList<OptionsPanelSection> EditableConfigSections;
 	private bool ShowHiddenMatchOptions;
+	private string ActiveConfigPage = MatchConfigPageGameRules;
+	private string GameRulePresetNameDraft = "";
+	private string BoardConfigPresetNameDraft = "";
+	private List<MatchSettingsPreset> CustomGameRulePresets = new();
+	private List<MatchSettingsPreset> CustomBoardConfigPresets = new();
 
 	private const string ShowHiddenMatchOptionsCallbackId = "toggleShowHiddenOptionsInMenu";
+	private const string MatchConfigPageGameRules = "Game Rules";
+	private const string MatchConfigPageBoardConfiguration = "Board Configuration";
+	private const string GameRulePresetFileName = "match_settings/game_rule_presets.json";
+	private const string BoardConfigPresetFileName = "match_settings/board_config_presets.json";
 
 	private void ApplyShowHiddenMatchOptions( bool showHidden )
 	{
@@ -364,6 +448,62 @@
 		} ).ToList();
 	}
 
+	private void LoadMatchSettingPresets()
+	{
+		CustomGameRulePresets = LoadCustomPresets( GameRulePresetFileName );
+		CustomBoardConfigPresets = LoadCustomPresets( BoardConfigPresetFileName );
+	}
+
+	private static List<MatchSettingsPreset> LoadCustomPresets( string path )
+	{
+		if ( !FileSystem.Data.FileExists( path ) )
+			return new();
+
+		return FileSystem.Data.ReadJson<List<MatchSettingsPreset>>( path )?
+			.Where( preset => preset is not null && !preset.IsPredefined && !string.IsNullOrWhiteSpace( preset.Snapshot ) )
+			.ToList() ?? new();
+	}
+
+	private static void SaveCustomPresets( string path, List<MatchSettingsPreset> presets )
+	{
+		FileSystem.Data.CreateDirectory( "match_settings" );
+		FileSystem.Data.WriteJson( path, presets ?? new() );
+	}
+
+	private IReadOnlyList<MatchSettingsPreset> CreatePredefinedGameRulePresets()
+	{
+		var defaultConfig = MatchConfigSchema.CreateDefault();
+		var quickConfig = MatchConfigSchema.CreateDefault();
+		quickConfig.StartingMoney = 1000;
+		quickConfig.TurnTimeLimitSeconds = 90;
+		quickConfig.VacationCash = false;
+		quickConfig.DoublesGoesAgain = true;
+		quickConfig.CanSkipUnowned = false;
+
+		var relaxedConfig = MatchConfigSchema.CreateDefault();
+		relaxedConfig.MinPlayers = 1;
+		relaxedConfig.MaxPlayers = 12;
+		relaxedConfig.TurnTimeLimitSeconds = 300;
+		relaxedConfig.CanSkipUnowned = true;
+		relaxedConfig.DoublesGoAgainOutOfJail = true;
+
+		return new[]
+		{
+			new MatchSettingsPreset { Id = "rules_default", Name = "Default Rules", Snapshot = MatchConfigSchema.Serialize( defaultConfig ), IsPredefined = true },
+			new MatchSettingsPreset { Id = "rules_quick", Name = "Quick Game", Snapshot = MatchConfigSchema.Serialize( quickConfig ), IsPredefined = true },
+			new MatchSettingsPreset { Id = "rules_relaxed", Name = "Relaxed Lobby", Snapshot = MatchConfigSchema.Serialize( relaxedConfig ), IsPredefined = true }
+		};
+	}
+
+	private IReadOnlyList<MatchSettingsPreset> CreatePredefinedBoardConfigPresets()
+	{
+		return new[]
+		{
+			new MatchSettingsPreset { Id = "board_default", Name = "Default Board", Snapshot = BoardSpaceNameConfig.CreateDefaultSnapshot(), IsPredefined = true },
+			new MatchSettingsPreset { Id = "board_classic", Name = "Classic Names", Snapshot = BoardSpaceNameConfig.SerializeNames( ClassicBoardSpaceNames ), IsPredefined = true }
+		};
+	}
+
     protected override void OnAwake()
     {
         base.OnAwake();
@@ -372,6 +512,7 @@
 
 		string showHiddenConVarValue = ConsoleSystem.GetValue("show_hidden_match_options");
 		ShowHiddenMatchOptions = showHiddenConVarValue is not null ? showHiddenConVarValue.ToBool() : ShowHiddenMatchOptionsConVar.Value;
+		LoadMatchSettingPresets();
 		RegisterConfigGroupsAndEditableSections();
 
 		ShowHiddenMatchOptionsConVar.RegisterOnChanged(ShowHiddenMatchOptionsCallbackId, (_, newValue) => {
@@ -429,8 +570,8 @@
 	private string ConfigButtonClasses => "flow-secondary-button flow-utility-button flow-config-button";
 	private string BackButtonLabel => Lobby?.IsLocalEffectiveHost == true ? "Back" : "Leave";
 	private string ConfigMenuCopy => CanEditConfig
-		? "Changes stay local to the host until you press Save."
-		: "Viewing current host settings. Only the host can change or save configuration.";
+		? $"Changes to {ActiveConfigPage.ToLower()} stay local to the host until you press Save."
+		: $"Viewing current {ActiveConfigPage.ToLower()} settings. Only the host can change or save configuration.";
 	private string LobbyScreenClasses => IsCustomizeMenuOpen ? "flow-screen lobby-screen customizing-piece" : "flow-screen lobby-screen";
 	private string StartBlockedMessage => Lobby?.OnlyHostStartsGame == true && Lobby?.IsLocalEffectiveHost != true
 		? "Only the host can start this game."
@@ -440,6 +581,10 @@
 		EditableConfig is not null &&
 		CanEditConfig &&
 		(ConfigIntDrafts.Count > 0 || !string.Equals( MatchConfigSchema.Serialize( EditableConfig ), LoadedConfigSnapshot, StringComparison.Ordinal ));
+	private bool IsGameRulesConfigPage => string.Equals( ActiveConfigPage, MatchConfigPageGameRules, StringComparison.Ordinal );
+	private IReadOnlyList<SpaceDef> BoardConfigSpaces => BoardData.CreateSpaceDefs().OrderBy( space => space.Index ).ToList();
+	private IReadOnlyList<MatchSettingsPreset> GameRulePresets => CreatePredefinedGameRulePresets().Concat( CustomGameRulePresets ).ToList();
+	private IReadOnlyList<MatchSettingsPreset> BoardConfigPresets => CreatePredefinedBoardConfigPresets().Concat( CustomBoardConfigPresets ).ToList();
 
 	private bool HasUnreadyPlayers
 	{
@@ -473,6 +618,9 @@
 		hash.Add( Lobby?.StagedLoadedGameIdentifier ?? "" );
 		hash.Add( configRevision );
 		hash.Add( saveRevision );
+		hash.Add( ActiveConfigPage );
+		hash.Add( GameRulePresetNameDraft );
+		hash.Add( BoardConfigPresetNameDraft );
 		hash.Add( PreviewPieceId ?? "" );
 		hash.Add( SelectedSaveId ?? "" );
 		hash.Add( IsManualSaveTab );
@@ -511,6 +659,14 @@
 			hash.Add( assignment.AssignedOwnerId );
 			hash.Add( assignment.AssignedPlayerName );
 			hash.Add( assignment.KeepDisconnected );
+		}
+
+		foreach ( var preset in GameRulePresets.Concat( BoardConfigPresets ) )
+		{
+			hash.Add( preset.Id );
+			hash.Add( preset.Name );
+			hash.Add( preset.Snapshot );
+			hash.Add( preset.IsPredefined );
 		}
 
 		if ( EditableConfig is not null )
@@ -718,6 +874,7 @@
 			return;
 
 		IsConfigMenuOpen = true;
+		ActiveConfigPage = MatchConfigPageGameRules;
 		IsOptionsMenuOpen = false;
 		IsCustomizeMenuOpen = false;
 		IsLoadMenuOpen = false;
@@ -1096,9 +1253,29 @@
 
 	private IEnumerable<MatchConfigOption> GetVisibleConfigOptions()
 	{
-		return ShowHiddenMatchOptions
+		var options = ShowHiddenMatchOptions
 			? MatchConfigSchema.Options
 			: MatchConfigSchema.Options.Where( option => option.IsVisible );
+
+		return options.Where( option => option.Kind != MatchConfigOptionKind.String );
+	}
+
+	private void SetConfigPage( string page )
+	{
+		if ( string.Equals( ActiveConfigPage, page, StringComparison.Ordinal ) )
+			return;
+
+		DropdownButton.CloseOpenDropdown();
+		CommitConfigIntDraftValues();
+		ActiveConfigPage = page;
+		configRevision++;
+	}
+
+	private string GetConfigPageButtonClasses( string page )
+	{
+		return string.Equals( ActiveConfigPage, page, StringComparison.Ordinal )
+			? "options-panel-primary-button match-config-tab-button"
+			: "options-panel-secondary-button match-config-tab-button";
 	}
 
 	private static string GetConfigOptionTitle( MatchConfigOption option )
@@ -1222,6 +1399,140 @@
 		EditableConfig = MatchConfigSchema.Normalize( EditableConfig, Lobby?.Players?.Count ?? 0 );
 	}
 
+	private void ApplyGameRulesPreset( MatchSettingsPreset preset )
+	{
+		if ( preset is null || EditableConfig is null || !CanEditConfig )
+			return;
+
+		var presetConfig = MatchConfigSchema.Deserialize( preset.Snapshot );
+		foreach ( var option in MatchConfigSchema.Options.Where( option => option.Key != nameof( MatchConfig.BoardSpaceNamesSnapshot ) ) )
+		{
+			MatchConfigSchema.SetOptionValue( option, EditableConfig, MatchConfigSchema.GetOptionValue( option, presetConfig ) );
+		}
+
+		NormalizeEditableConfig();
+		ConfigIntDrafts.Clear();
+		configRevision++;
+	}
+
+	private void ApplyBoardConfigPreset( MatchSettingsPreset preset )
+	{
+		if ( preset is null || EditableConfig is null || !CanEditConfig )
+			return;
+
+		EditableConfig.BoardSpaceNamesSnapshot = preset.Snapshot ?? "";
+		configRevision++;
+	}
+
+	private void SaveGameRulesPreset()
+	{
+		if ( EditableConfig is null || !CanEditConfig )
+			return;
+
+		CommitConfigIntDraftValues();
+		var presetName = string.IsNullOrWhiteSpace( GameRulePresetNameDraft )
+			? $"Custom Rules {CustomGameRulePresets.Count + 1}"
+			: GameRulePresetNameDraft.Trim();
+
+		CustomGameRulePresets.Add( new MatchSettingsPreset
+		{
+			Id = $"rules_custom_{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}",
+			Name = presetName,
+			Snapshot = MatchConfigSchema.Serialize( EditableConfig ),
+			IsPredefined = false
+		} );
+
+		GameRulePresetNameDraft = "";
+		SaveCustomPresets( GameRulePresetFileName, CustomGameRulePresets );
+		configRevision++;
+	}
+
+	private void SaveBoardConfigPreset()
+	{
+		if ( EditableConfig is null || !CanEditConfig )
+			return;
+
+		var presetName = string.IsNullOrWhiteSpace( BoardConfigPresetNameDraft )
+			? $"Custom Board {CustomBoardConfigPresets.Count + 1}"
+			: BoardConfigPresetNameDraft.Trim();
+
+		CustomBoardConfigPresets.Add( new MatchSettingsPreset
+		{
+			Id = $"board_custom_{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}",
+			Name = presetName,
+			Snapshot = EditableConfig.BoardSpaceNamesSnapshot ?? "",
+			IsPredefined = false
+		} );
+
+		BoardConfigPresetNameDraft = "";
+		SaveCustomPresets( BoardConfigPresetFileName, CustomBoardConfigPresets );
+		configRevision++;
+	}
+
+	private void DeleteGameRulesPreset( MatchSettingsPreset preset )
+	{
+		if ( preset is null || preset.IsPredefined )
+			return;
+
+		CustomGameRulePresets.RemoveAll( item => string.Equals( item.Id, preset.Id, StringComparison.Ordinal ) );
+		SaveCustomPresets( GameRulePresetFileName, CustomGameRulePresets );
+		configRevision++;
+	}
+
+	private void DeleteBoardConfigPreset( MatchSettingsPreset preset )
+	{
+		if ( preset is null || preset.IsPredefined )
+			return;
+
+		CustomBoardConfigPresets.RemoveAll( item => string.Equals( item.Id, preset.Id, StringComparison.Ordinal ) );
+		SaveCustomPresets( BoardConfigPresetFileName, CustomBoardConfigPresets );
+		configRevision++;
+	}
+
+	private void SetGameRulePresetNameDraft( string value )
+	{
+		GameRulePresetNameDraft = value ?? "";
+		configRevision++;
+	}
+
+	private void SetBoardConfigPresetNameDraft( string value )
+	{
+		BoardConfigPresetNameDraft = value ?? "";
+		configRevision++;
+	}
+
+	private string GetBoardSpaceName( int index )
+	{
+		return BoardSpaceNameConfig.DeserializeNames( EditableConfig?.BoardSpaceNamesSnapshot ).ElementAtOrDefault( index ) ?? "";
+	}
+
+	private void SetBoardSpaceName( int index, string value )
+	{
+		if ( EditableConfig is null || !CanEditConfig )
+			return;
+
+		var names = BoardSpaceNameConfig.DeserializeNames( EditableConfig.BoardSpaceNamesSnapshot );
+		if ( index < 0 || index >= names.Count )
+			return;
+
+		names[index] = value ?? "";
+		EditableConfig.BoardSpaceNamesSnapshot = BoardSpaceNameConfig.SerializeNames( names );
+		configRevision++;
+	}
+
+	private static string GetBoardSpaceTitle( SpaceDef space )
+	{
+		return space is null ? "Space" : $"{space.Index:00} - {space.Key}";
+	}
+
+	private static string GetBoardSpaceDescription( SpaceDef space )
+	{
+		if ( space is null )
+			return "";
+
+		return $"{space.Type} space";
+	}
+
 	private void ResetConfigMenu()
 	{
 		if ( Lobby is null || !CanEditConfig )
@@ -1237,7 +1548,7 @@
 
 		PopupGame.ShowLocalConfirmation(
 			"Reset match settings?",
-			"This will replace your current match settings draft with the default values. You will still need to press Save.",
+			$"This will replace the current {ActiveConfigPage.ToLower()} draft with the default values. You will still need to press Save.",
 			ResetConfigMenuWithoutConfirmation,
 			null,
 			"Reset",
@@ -1250,7 +1561,17 @@
 		if ( Lobby is null || !CanEditConfig )
 			return;
 
-		EditableConfig = MatchConfigSchema.Normalize( MatchConfigSchema.CreateDefault(), Lobby.Players?.Count ?? 0 );
+		if ( IsGameRulesConfigPage )
+		{
+			var boardNamesSnapshot = EditableConfig?.BoardSpaceNamesSnapshot ?? "";
+			EditableConfig = MatchConfigSchema.Normalize( MatchConfigSchema.CreateDefault(), Lobby.Players?.Count ?? 0 );
+			EditableConfig.BoardSpaceNamesSnapshot = boardNamesSnapshot;
+		}
+		else if ( EditableConfig is not null )
+		{
+			EditableConfig.BoardSpaceNamesSnapshot = BoardSpaceNameConfig.CreateDefaultSnapshot();
+		}
+
 		ConfigIntDrafts.Clear();
 		configRevision++;
 	}
@@ -1352,5 +1673,57 @@
 	private static string GetReadyLabel( LobbyPlayer player )
 	{
 		return player.IsReady ? "Ready" : "Not Ready";
+	}
+
+	private static readonly string[] ClassicBoardSpaceNames =
+	{
+		"GO",
+		"Mediterranean Avenue",
+		"Community Chest",
+		"Baltic Avenue",
+		"Income Tax",
+		"Reading Railroad",
+		"Oriental Avenue",
+		"Chance",
+		"Vermont Avenue",
+		"Connecticut Avenue",
+		"Jail",
+		"St. Charles Place",
+		"Electric Company",
+		"States Avenue",
+		"Virginia Avenue",
+		"Pennsylvania Railroad",
+		"St. James Place",
+		"Community Chest",
+		"Tennessee Avenue",
+		"New York Avenue",
+		"Free Parking",
+		"Kentucky Avenue",
+		"Chance",
+		"Indiana Avenue",
+		"Illinois Avenue",
+		"B&O Railroad",
+		"Atlantic Avenue",
+		"Ventnor Avenue",
+		"Water Works",
+		"Marvin Gardens",
+		"Go to Jail",
+		"Pacific Avenue",
+		"North Carolina Avenue",
+		"Community Chest",
+		"Pennsylvania Avenue",
+		"Short Line",
+		"Chance",
+		"Park Place",
+		"Luxury Tax",
+		"Boardwalk"
+	};
+
+	private sealed class MatchSettingsPreset
+	{
+		public string Id { get; set; } = "";
+		public string Name { get; set; } = "";
+		public string Snapshot { get; set; } = "";
+		public bool IsPredefined { get; set; }
 	}
 }

@@ -31,6 +31,81 @@
 	background-color: transparent;
 }
 
+.match-config-tabs {
+	display: flex;
+	gap: 8px;
+	width: 100%;
+	margin-bottom: 10px;
+	flex-shrink: 0;
+}
+
+.options-panel .monopoly-button.match-config-tab-button {
+	flex: 1 1 0;
+	min-width: 0;
+	height: 38px;
+}
+
+.match-config-presets {
+	margin-bottom: 10px;
+	flex-shrink: 0;
+}
+
+.match-config-preset-actions {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+	gap: 8px;
+}
+
+.options-panel .monopoly-button.match-config-preset-button {
+	min-width: 124px;
+	height: 34px;
+	padding: 0 10px;
+	font-size: 12px;
+}
+
+.options-panel .monopoly-button.match-config-preset-delete {
+	width: 70px;
+	min-width: 70px;
+	height: 34px;
+	padding: 0 10px;
+	font-size: 12px;
+}
+
+.match-config-preset-name-input {
+	width: 150px;
+	min-width: 120px;
+	height: 34px;
+	padding: 0 10px;
+	background-color: $monopoly-surface-soft;
+	border: 1px solid $monopoly-panel-line;
+	border-radius: $monopoly-radius-control;
+	color: $monopoly-text;
+	font-size: 12px;
+	font-weight: 800;
+	pointer-events: all;
+}
+
+.board-space-name-list {
+	display: flex;
+	flex-direction: column;
+	gap: 0;
+}
+
+.board-space-name-input {
+	width: 220px;
+	min-width: 160px;
+	height: 36px;
+	padding: 0 10px;
+	background-color: $monopoly-surface-soft;
+	border: 1px solid $monopoly-panel-line;
+	border-radius: $monopoly-radius-control;
+	color: $monopoly-text;
+	font-size: 13px;
+	font-weight: 800;
+	pointer-events: all;
+}
+
 .options-panel.piece-customize-panel {
 	width: 1040px;
 	background-color: transparent;
