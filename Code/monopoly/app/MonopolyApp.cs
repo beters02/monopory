@@ -28,6 +28,8 @@ public partial class MonopolyApp : Component
 		AwakeStandalone();
 		DebugEnabled = HandleLaunchedDebugEnabled();
 		Log.Info($"IsStandalone: {IsStandalone()}");
+
+        
 	}
 
 	protected override void OnStart()

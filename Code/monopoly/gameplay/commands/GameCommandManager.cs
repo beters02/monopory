@@ -9,6 +9,8 @@ public sealed class CheatCmdAttribute : Attribute {}
 public sealed class HostCheatCmdAttribute : Attribute {}
 [AttributeUsage( AttributeTargets.Method )]
 public sealed class HostCmdAttribute : Attribute {}
+[AttributeUsage( AttributeTargets.Method )]
+public sealed class StandaloneCmdAttribute : Attribute {}
 
 public sealed class CommandResult
 {
@@ -26,6 +28,7 @@ public sealed class CommandResult
 	public static CommandResult FailCheats() => new( false, "Cheats must be enabled to use this command." );
 	public static CommandResult FailHost() => new( false, "Must be host to use this command." );
 	public static CommandResult FailCheatsOrHost() => new( false, "Must be host or have cheats enabled to use this command." );
+	public static CommandResult FailStandalone() => new( false, "This command is only allowed in standalone." );
 }
 
 public enum GameCommandCheatType
@@ -36,14 +39,21 @@ public enum GameCommandCheatType
 	Host
 }
 
+public enum GameCommandAppType
+{
+	None,
+	Standalone
+}
+
 public sealed class GameCommand
 {
 	public string Name { get; init; }
 	public MethodDescription Method { get; init; }
 	public ConCmdAttribute Attribute { get; init; }
 	public GameCommandCheatType CheatType { get; init; }
+	public GameCommandAppType AppType { get; init; }
 
-	public GameCommand( string name, MethodDescription method, ConCmdAttribute attribute, GameCommandCheatType cheatType )
+	public GameCommand( string name, MethodDescription method, ConCmdAttribute attribute, GameCommandCheatType cheatType, GameCommandAppType appType )
 	{
 		Name = name;
 		Method = method;
@@ -88,7 +98,12 @@ public static class GameCommands
 			else if ( method.GetCustomAttribute<HostCmdAttribute>() is not null )
 				cheatType = GameCommandCheatType.Host;
 
-			Commands[name] = new GameCommand( name, method, attribute, cheatType );
+			GameCommandAppType appType = GameCommandAppType.None;
+
+			if ( method.GetCustomAttribute<StandaloneCmdAttribute>() is not null )
+				appType = GameCommandAppType.Standalone;
+
+			Commands[name] = new GameCommand( name, method, attribute, cheatType, appType );
 		}
 	}
 }
@@ -151,6 +166,12 @@ public sealed class GameCommandManager : Component
 		Log.Info(value.Name);
 		Log.Info(value.CheatType);
 
+		if ( value.AppType == GameCommandAppType.Standalone )
+			if ( !CanUseStandaloneCommand() )
+			{
+				LogCommandResult( commandName, CommandResult.FailStandalone() );
+			}
+
 		if ( value.CheatType == GameCommandCheatType.Cheats )
 			if ( !CanUseCheatCommand( caller ) )
 			{
@@ -192,6 +213,11 @@ public sealed class GameCommandManager : Component
 	internal static bool CanUseHostCommand( Connection caller )
 	{
 		return Networking.IsHost && (caller is null || caller == Connection.Local);
+	}
+
+	internal static bool CanUseStandaloneCommand()
+	{
+		return MonopolyApp.IsStandalone();
 	}
 
 	internal static bool HasUnresolvedPendingBuyDecision( GameController game, PlayerState player )
@@ -763,6 +789,26 @@ public static class GetHostId
 			string playerName = MonopolyApp.GetPlayerDisplayName(id)?? "Unable to find player name.";
 
 			return CommandResult.Success($"Player Name: {playerName} - SteamId: {idString}.");
+		}, connection );
+	}
+}
+
+public static class TryGetSteamLobbySocket
+{
+	public const string Name = "try_get_steam_lobby_socket";
+
+	[StandaloneCmd]
+	[HostCmd]
+	[ConCmd( Name )]
+	public static void Execute( Connection connection, string networkingHost = "false" )
+	{
+		GameCommandManager.RunCommand( Name, () =>
+		{
+			bool gotSocket = MonopolyApp.TryGetLobbySocket(out object socket, out string msg);
+			if ( gotSocket )
+				return CommandResult.Success(msg);
+
+			return CommandResult.Fail(msg);
 		}, connection );
 	}
 }
