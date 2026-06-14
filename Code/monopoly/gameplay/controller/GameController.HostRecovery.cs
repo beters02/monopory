@@ -76,9 +76,6 @@ public sealed partial class GameController
 		RecoverDisconnectedCurrentPlayerDecision();
 		UpdateHostRecoveryStateFlag();
 
-		if ( Phase != GamePhase.ResolvingSpace )
-			return;
-
 		var pendingRollStale = PendingRollPlayerIndex >= 0 &&
 			(PendingRollStartedAt <= 0f || Time.Now - PendingRollStartedAt > DiceSettleTimeout + ResolvingSpaceRecoveryDelay);
 
@@ -101,6 +98,9 @@ public sealed partial class GameController
 			RecoverGameplayState( true );
 			return;
 		}
+
+		if ( Phase != GamePhase.ResolvingSpace )
+			return;
 
 		if ( IsResolvingPhysicalDice && PhysicalDiceStartedAt > 0f && Time.Now - PhysicalDiceStartedAt > DiceSettleTimeout + ResolvingSpaceRecoveryDelay )
 		{
@@ -132,7 +132,7 @@ public sealed partial class GameController
 		if ( !Networking.IsHost || MatchState != MatchLifecycleState.InGame )
 			return;
 
-		if ( Phase != GamePhase.ResolvingSpace && !force )
+		if ( Phase is not (GamePhase.ResolvingDiceRoll or GamePhase.ResolvingSpace) && !force )
 			return;
 
 		SetHudIsVisibleAll( true );
@@ -160,6 +160,17 @@ public sealed partial class GameController
 		{
 			Log.Warning( "Recovering active movement after host interruption." );
 			_ = ContinueActiveMovementAsync();
+			return;
+		}
+
+		if ( Phase == GamePhase.ResolvingDiceRoll )
+		{
+			Log.Warning( "Recovering stuck ResolvingDiceRoll without pending roll data." );
+			IsResolvingPhysicalDice = false;
+			PhysicalDiceStartedAt = 0f;
+			Phase = GamePhase.WaitingToRoll;
+			StartTurnTimer();
+			UpdateHostRecoveryStateFlag();
 			return;
 		}
 
@@ -193,6 +204,7 @@ public sealed partial class GameController
 			return;
 
 		var hasRecoveryWork =
+			Phase == GamePhase.ResolvingDiceRoll ||
 			Phase == GamePhase.ResolvingSpace ||
 			PendingRollPlayerIndex >= 0 ||
 			ActiveMovementPlayerIndex >= 0 ||

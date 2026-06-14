@@ -16,9 +16,10 @@ public sealed partial class GameController : Component
     
     private Dictionary<GamePhase, GamePhaseDef> GamePhaseDefs = new()
     {
-        [GamePhase.Auctioning] = new("Auction started by {player}"),
-        [GamePhase.ResolvingSpace] = new("{player}'s piece is moving"),
-        [GamePhase.TurnEnded] = new("Turn actions finished, waiting on {player} to end turn"),
+		[GamePhase.Auctioning] = new("Auction started by {player}"),
+		[GamePhase.ResolvingDiceRoll] = new("{player} is rolling dice"),
+		[GamePhase.ResolvingSpace] = new("{player}'s piece is moving"),
+		[GamePhase.TurnEnded] = new("Turn actions finished, waiting on {player} to end turn"),
         [GamePhase.WaitingForBuyDecision] = new("Waiting for {player}'s decision on unowned property"),
         [GamePhase.WaitingToRoll] = new("Waiting for {player} to roll."),
         [GamePhase.Error] = new("Error parsing Phase")

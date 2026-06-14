@@ -32,7 +32,7 @@ public sealed partial class GameController : Component
 			}
 		}
 
-		if ( Phase == GamePhase.ResolvingSpace )
+		if ( Phase is GamePhase.ResolvingDiceRoll or GamePhase.ResolvingSpace )
 			return;
 
 		if ( IsGambleScreenActive )
@@ -565,6 +565,7 @@ public sealed partial class GameController : Component
 		if ( player is null )
 			return;
 
+		Phase = GamePhase.ResolvingSpace;
 		ActiveMovementPlayerIndex = playerIndex;
 		ActiveMovementRemainingSteps = steps;
 		ActiveMovementGoPassCount = 0;
@@ -804,7 +805,7 @@ public sealed partial class GameController : Component
 
 	private void BeginResolvedAction()
 	{
-		Phase = GamePhase.ResolvingSpace;
+		Phase = GamePhase.ResolvingDiceRoll;
 		CurrentTurnGetsExtraRoll = false;
 		resolvedActionOutcome = ResolvedActionOutcome.StayInTurnEnded;
 		ClearMovementRecoveryState();

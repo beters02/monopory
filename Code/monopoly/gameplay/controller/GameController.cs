@@ -11,7 +11,8 @@ public enum GamePhase
 	WaitingForBuyDecision,
 	Auctioning,
 	TurnEnded,
-	Error
+	Error,
+	ResolvingDiceRoll
 }
 
 public enum MatchLifecycleState
