@@ -1280,6 +1280,72 @@
 			: "options-panel-secondary-button match-config-tab-button";
 	}
 
+	private string GetGameRulesPresetButtonClasses( MatchSettingsPreset preset )
+	{
+		return IsGameRulesPresetSelected( preset )
+			? "options-panel-toggle-button selected match-config-preset-button"
+			: "options-panel-secondary-button match-config-preset-button";
+	}
+
+	private string GetBoardConfigPresetButtonClasses( MatchSettingsPreset preset )
+	{
+		return IsBoardConfigPresetSelected( preset )
+			? "options-panel-toggle-button selected match-config-preset-button"
+			: "options-panel-secondary-button match-config-preset-button";
+	}
+
+	private string GetCustomGameRulesPresetButtonClasses()
+	{
+		return GameRulePresets.Any( IsGameRulesPresetSelected )
+			? "options-panel-secondary-button match-config-preset-button"
+			: "options-panel-toggle-button selected match-config-preset-button";
+	}
+
+	private string GetCustomBoardConfigPresetButtonClasses()
+	{
+		return BoardConfigPresets.Any( IsBoardConfigPresetSelected )
+			? "options-panel-secondary-button match-config-preset-button"
+			: "options-panel-toggle-button selected match-config-preset-button";
+	}
+
+	private bool IsGameRulesPresetSelected( MatchSettingsPreset preset )
+	{
+		if ( preset is null || EditableConfig is null )
+			return false;
+
+		return string.Equals(
+			GetGameRulesPresetComparableSnapshot( EditableConfig ),
+			GetGameRulesPresetComparableSnapshot( MatchConfigSchema.Deserialize( preset.Snapshot ) ),
+			StringComparison.Ordinal );
+	}
+
+	private bool IsBoardConfigPresetSelected( MatchSettingsPreset preset )
+	{
+		if ( preset is null || EditableConfig is null )
+			return false;
+
+		return string.Equals(
+			NormalizeBoardPresetSnapshot( EditableConfig.BoardSpaceNamesSnapshot ),
+			NormalizeBoardPresetSnapshot( preset.Snapshot ),
+			StringComparison.Ordinal );
+	}
+
+	private static string GetGameRulesPresetComparableSnapshot( MatchConfig config )
+	{
+		var clone = MatchConfigSchema.Clone( config );
+		clone.BoardSpaceNamesSnapshot = "";
+		return MatchConfigSchema.Serialize( clone );
+	}
+
+	private static string NormalizeBoardPresetSnapshot( string snapshot )
+	{
+		return BoardSpaceNameConfig.SerializeNames( BoardSpaceNameConfig.DeserializeNames( snapshot ) );
+	}
+
+	private void MarkCustomPreset()
+	{
+	}
+
 	private static string GetConfigOptionTitle( MatchConfigOption option )
 	{
 		return option?.Label ?? "";
