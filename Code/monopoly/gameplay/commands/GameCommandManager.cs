@@ -800,7 +800,7 @@ public static class TryGetSteamLobbySocket
 	[StandaloneCmd]
 	[HostCmd]
 	[ConCmd( Name )]
-	public static void Execute( Connection connection, string networkingHost = "false" )
+	public static void Execute( Connection connection )
 	{
 		GameCommandManager.RunCommand( Name, () =>
 		{
@@ -824,6 +824,8 @@ public static class TryTransferSteamLobbyHost
 	{
 		GameCommandManager.RunCommand( Name, () =>
 		{
+			if (unresolvedPlayerName == "self")
+				unresolvedPlayerName = Connection.Local.Name;
 
 			var joinedPlayerName = GameCommandManager.JoinPlayerName( unresolvedPlayerName, unresolvedPlayerNameTail );
 			bool couldResolvePlayerName = MonopolyApp.TryGetPlayerFullNameFromString( joinedPlayerName, out string playerName );
@@ -834,12 +836,42 @@ public static class TryTransferSteamLobbyHost
 			if ( !couldResolvePlayer )
 				return CommandResult.Fail($"Unknown failure - could not find player in GameRef.Players or LobbyRef.Players");
 			
-			var steamId = gamePlayer is not null ? gamePlayer.SteamId : lobbyPlayer.SteamId;
+			var steamId = gamePlayer is not null ? gamePlayer.SteamId : (long)lobbyPlayer.SteamId;
+			Log.Info(steamId);
 			bool transferred = MonopolyApp.TryTransferSteamLobbyHost( steamId.ToString(), out string msg );
 			if ( !transferred )
 				return CommandResult.Fail(msg);
 
 			return CommandResult.Success(msg);
+		}, connection );
+	}
+}
+
+public static class DebugSteamId
+{
+	public const string Name = "debug_steam_id";
+
+	[HostCmd]
+	[ConCmd( Name )]
+	public static void Execute( Connection connection, string unresolvedPlayerName = "self", params string[] unresolvedPlayerNameTail )
+	{
+		GameCommandManager.RunCommand( Name, () =>
+		{
+			if (unresolvedPlayerName == "self")
+				unresolvedPlayerName = Connection.Local.Name;
+
+			var joinedPlayerName = GameCommandManager.JoinPlayerName( unresolvedPlayerName, unresolvedPlayerNameTail );
+			bool couldResolvePlayerName = MonopolyApp.TryGetPlayerFullNameFromString( joinedPlayerName, out string playerName );
+			if ( !couldResolvePlayerName )
+				return CommandResult.Fail($"Could not find player {joinedPlayerName}");
+
+			bool couldResolvePlayer = MonopolyApp.TryResolvePlayerReferenceSmart( playerName, out PlayerState gamePlayer, out LobbyPlayer lobbyPlayer );
+			if ( !couldResolvePlayer )
+				return CommandResult.Fail($"Unknown failure - could not find player in GameRef.Players or LobbyRef.Players");
+			
+			var steamId = gamePlayer is not null ? gamePlayer.SteamId : (long)lobbyPlayer.SteamId;
+
+			return CommandResult.Success(steamId.ToString());
 		}, connection );
 	}
 }

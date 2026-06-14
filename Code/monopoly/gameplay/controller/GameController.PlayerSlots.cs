@@ -104,7 +104,9 @@ public sealed partial class GameController : Component
 			if ( emptySlot is null )
 				return;
 
+			var startingSteamId = (long)startingPlayer.SteamId;
 			emptySlot.OwnerId = startingPlayer.OwnerId;
+			emptySlot.SteamId = startingSteamId != 0 ? startingSteamId : startingPlayer.OwnerId;
 			emptySlot.PlayerName = string.IsNullOrWhiteSpace( startingPlayer.Name ) ? "Player" : startingPlayer.Name;
 			emptySlot.IsReady = false;
 			ResetPlayerForGame( emptySlot );
@@ -205,6 +207,7 @@ public sealed partial class GameController : Component
 			return;
 
 		player.OwnerId = 0;
+		player.SteamId = 0;
 		player.PlayerName = "Player";
 		player.IsReady = false;
 		player.IsDisconnected = false;

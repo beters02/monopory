@@ -23,6 +23,7 @@ public partial class MonopolyApp : Component
     {
 #if STANDALONE
         Standalone = true;
+        InitializeSceneTraceStaticCollections();
         if ( AchievementServices.IsEnabled )
         {
             Sandbox.Services.RentRushService.TestInit();

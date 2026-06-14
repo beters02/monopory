@@ -83,6 +83,7 @@ public sealed class MatchBootstrap
 			.Select( player => new LobbyPlayer
 			{
 				OwnerId = player.OwnerId,
+				SteamId = ResolveSteamId( player ),
 				Name = player.Name,
 				IsReady = player.IsReady,
 				IsLocal = player.IsLocal,
@@ -111,6 +112,7 @@ public sealed class MatchBootstrap
 				return new LobbyPlayer
 				{
 					OwnerId = ownerId,
+					SteamId = (SteamId)ownerId,
 					Name = string.IsNullOrWhiteSpace( name ) ? "Player" : name,
 					IsReady = true,
 					SelectedPieceId = PieceCatalog.GetByIdOrDefault( player.SelectedPieceId ).Id,
@@ -118,6 +120,14 @@ public sealed class MatchBootstrap
 				};
 			} )
 			.ToList() ?? new();
+	}
+
+	private static SteamId ResolveSteamId( LobbyPlayer player )
+	{
+		if ( player is null )
+			return (SteamId)0L;
+
+		return (long)player.SteamId != 0 ? player.SteamId : (SteamId)player.OwnerId;
 	}
 
 	private static void ShufflePlayers( List<LobbyPlayer> players )

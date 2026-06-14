@@ -393,11 +393,14 @@ public sealed class PlayerToken : Component
 		if ( Scene is null )
 			return default;
 
-		return Scene.Trace
+		var trace = Scene.Trace
 			.Box( hull, startPosition, endPosition )
-			.IgnoreGameObjectHierarchy( GameObject )
 			.WithoutTags( "trigger" )
 			.Run();
+
+		return trace.GameObject is not null && IsTokenObject( trace.GameObject )
+			? default
+			: trace;
 	}
 
 	private BBox GetTokenControlHull()

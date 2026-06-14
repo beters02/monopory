@@ -134,6 +134,7 @@ public sealed partial class LobbyController
 			var player = new LobbyPlayer
 			{
 				OwnerId = ownerId,
+				SteamId = (SteamId)ownerId,
 				Name = connection is not null ? GetConnectionPlayerName( connection ) : GetKnownNameForOwner( ownerId ),
 				IsLocal = localSteamId.HasValue && ownerId == localSteamId.Value,
 				SelectedPieceId = GetSelectedPieceForOwner( ownerId ),
