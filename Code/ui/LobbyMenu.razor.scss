@@ -129,6 +129,23 @@
 	gap: 0;
 }
 
+.match-settings-page {
+	width: 100%;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	gap: 14px;
+	flex-shrink: 0;
+}
+
+.match-settings-page .options-panel-section-list,
+.match-settings-page .options-panel-section {
+	width: 100%;
+	min-width: 0;
+	flex-shrink: 0;
+}
+
 .board-space-name-input {
 	width: 220px;
 	min-width: 160px;

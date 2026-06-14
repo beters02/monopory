@@ -47,65 +47,17 @@
 									}
 								</div>
 							</div>
-							<OptionsPanelSectionList Sections="@EditableConfigSections" SectionOptionsVariant="reverse">
-								<ChildContent Context="section">
-									@foreach ( var option in GetConfigOptionsForGroup( section.Key ).Reverse() )
-									{
-										<OptionsPanelRow Title="@GetConfigOptionTitle( option )" Value="@option.Description">
-											<ChildContent>
-												@if ( option.Kind == MatchConfigOptionKind.Bool )
-												{
-													@if ( CanEditCurrentConfigPage )
-													{
-														<GameButton Variant="@GetConfigToggleButtonClasses( GetConfigBoolValue( option ) )"
-															OnClick="@(() => ToggleConfigBoolValue( option ))">
-															@(GetConfigBoolValue( option ) ? "On" : "Off")
-														</GameButton>
-													}
-													else
-													{
-														<div class="@GetConfigToggleDisplayClasses( GetConfigBoolValue( option ) )">
-															@(GetConfigBoolValue( option ) ? "On" : "Off")
-														</div>
-													}
-												}
-												else if ( option.Kind == MatchConfigOptionKind.Enum )
-												{
-													@if ( CanEditCurrentConfigPage )
-													{
-														<DropdownButton Value="@GetConfigEnumValue( option )" Items="@option.EnumNames" ScrollTarget="@scrollPanel" OnSelected="@((string value) => SetConfigEnumValue( option, value ))"></DropdownButton>
-													}
-													else
-													{
-														<div class="options-panel-readonly-value">@GetConfigFormattedValue( option )</div>
-													}
-												}
-												else if ( option.Kind == MatchConfigOptionKind.Int )
-												{
-													<div class="options-panel-stepper">
-														@if ( CanEditCurrentConfigPage )
-														{
-															<GameButton Variant="options-panel-step-button"
-																OnClick="@(() => ChangeConfigIntValue( option, -option.Step ))">-</GameButton>
-															<TextEntry class="options-panel-stepper-input"
-																Text="@GetConfigIntTextValue( option )"
-																Placeholder="0"
-																OnTextEdited="@((string value) => SetConfigIntDraftValue( option, value ))"
-																onsubmit="@(() => CommitConfigIntDraftValue( option ))" />
-															<GameButton Variant="options-panel-step-button"
-																OnClick="@(() => ChangeConfigIntValue( option, option.Step ))">+</GameButton>
-														}
-														else
-														{
-															<div class="options-panel-stepper-value readonly">@GetConfigIntValue( option )</div>
-														}
-													</div>
-												}
-											</ChildContent>
-										</OptionsPanelRow>
-									}
-								</ChildContent>
-							</OptionsPanelSectionList>
+							<MatchSettingsGameRulesPage Config="@EditableConfig"
+								CanEdit="@CanEditCurrentConfigPage"
+								ShowHiddenOptions="@ShowHiddenMatchOptions"
+								ScrollTarget="@scrollPanel"
+								SectionOptionsVariant="reverse"
+								IntTextValueProvider="@GetConfigIntTextValue"
+								OnToggleBool="@ToggleConfigBoolValue"
+								OnChangeInt="@ChangeConfigIntValue"
+								OnSetIntDraft="@SetConfigIntDraftValue"
+								OnCommitIntDraft="@CommitConfigIntDraftValue"
+								OnSetEnum="@SetConfigEnumValue"></MatchSettingsGameRulesPage>
 						}
 						else
 						{
@@ -136,29 +88,9 @@
 									}
 								</div>
 							</div>
-							<div class="options-panel-section">
-								<div class="options-panel-section-title">Space Names</div>
-								<div class="board-space-name-list">
-									@foreach ( var space in BoardConfigSpaces )
-									{
-										<OptionsPanelRow Title="@GetBoardSpaceTitle( space )" Value="@GetBoardSpaceDescription( space )">
-											<ChildContent>
-												@if ( CanEditCurrentConfigPage )
-												{
-													<TextEntry class="board-space-name-input"
-														Text="@GetBoardSpaceName( space.Index )"
-														Placeholder="@space.DisplayName"
-														OnTextEdited="@((string value) => SetBoardSpaceName( space.Index, value ))" />
-												}
-												else
-												{
-													<div class="board-space-name-input readonly">@GetBoardSpaceName( space.Index )</div>
-												}
-											</ChildContent>
-										</OptionsPanelRow>
-									}
-								</div>
-							</div>
+							<MatchSettingsBoardConfigurationPage Config="@EditableConfig"
+								CanEdit="@CanEditCurrentConfigPage"
+								OnSetSpaceName="@SetBoardSpaceName"></MatchSettingsBoardConfigurationPage>
 						}
 					</ChildContent>
 					<Footer>
@@ -602,7 +534,6 @@
 	private bool IsGameRulesCustomSelected => string.Equals( SelectedGameRulePresetId, CustomPresetId, StringComparison.Ordinal );
 	private bool IsBoardConfigCustomSelected => string.Equals( SelectedBoardConfigPresetId, CustomPresetId, StringComparison.Ordinal );
 	private bool CanEditCurrentConfigPage => CanEditConfig && (IsGameRulesConfigPage ? IsGameRulesCustomSelected : IsBoardConfigCustomSelected);
-	private IReadOnlyList<SpaceDef> BoardConfigSpaces => BoardData.CreateSpaceDefs().OrderBy( space => space.Index ).ToList();
 	private IReadOnlyList<MatchSettingsPreset> GameRulePresets => CreatePredefinedGameRulePresets().Concat( CustomGameRulePresets ).ToList();
 	private IReadOnlyList<MatchSettingsPreset> BoardConfigPresets => CreatePredefinedBoardConfigPresets().Concat( CustomBoardConfigPresets ).ToList();
 
@@ -1409,16 +1340,6 @@
 		configRevision++;
 	}
 
-	private static string GetConfigOptionTitle( MatchConfigOption option )
-	{
-		return option?.Label ?? "";
-	}
-
-	private string GetConfigFormattedValue( MatchConfigOption option )
-	{
-		return MatchConfigSchema.FormatValue( option, MatchConfigSchema.GetOptionValue( option, EditableConfig ) );
-	}
-
 	private void EnsureEditableConfigCurrent( bool forceReload = false )
 	{
 		if ( Lobby is null )
@@ -1506,11 +1427,6 @@
 	{
 		foreach ( var option in MatchConfigSchema.Options.Where( option => option.Kind == MatchConfigOptionKind.Int ).ToList() )
 			CommitConfigIntDraftValue( option );
-	}
-
-	private string GetConfigEnumValue( MatchConfigOption option )
-	{
-		return MatchConfigSchema.GetOptionValue( option, EditableConfig )?.ToString() ?? "";
 	}
 
 	private void SetConfigEnumValue( MatchConfigOption option, string rawValue )
@@ -1650,11 +1566,6 @@
 		configRevision++;
 	}
 
-	private string GetBoardSpaceName( int index )
-	{
-		return BoardSpaceNameConfig.DeserializeNames( EditableConfig?.BoardSpaceNamesSnapshot ).ElementAtOrDefault( index ) ?? "";
-	}
-
 	private void SetBoardSpaceName( int index, string value )
 	{
 		if ( EditableConfig is null || !CanEditCurrentConfigPage )
@@ -1667,19 +1578,6 @@
 		names[index] = value ?? "";
 		EditableConfig.BoardSpaceNamesSnapshot = BoardSpaceNameConfig.SerializeNames( names );
 		configRevision++;
-	}
-
-	private static string GetBoardSpaceTitle( SpaceDef space )
-	{
-		return space is null ? "Space" : $"{space.Index:00} - {space.Key}";
-	}
-
-	private static string GetBoardSpaceDescription( SpaceDef space )
-	{
-		if ( space is null )
-			return "";
-
-		return $"{space.Type} space";
 	}
 
 	private void ResetConfigMenu()
@@ -1748,22 +1646,6 @@
 		ShowLocalPopup( "Configuration saved", "Lobby game settings have been updated.", PopupKind.Success, true, 2.5f, false );
 		configRevision++;
 		LoadingState.HideAfterSceneReady( 4, 0.16f );
-	}
-
-	private string GetConfigToggleButtonClasses( bool enabled )
-	{
-		var classes = enabled ? "options-panel-toggle-button selected" : "options-panel-toggle-button";
-		if ( !CanEditCurrentConfigPage )
-			classes += " readonly";
-
-		return classes;
-	}
-
-	private string GetConfigToggleDisplayClasses( bool enabled )
-	{
-		return enabled
-			? "options-panel-toggle-display selected readonly"
-			: "options-panel-toggle-display readonly";
 	}
 
 	private void DismissPopup( int popupId )

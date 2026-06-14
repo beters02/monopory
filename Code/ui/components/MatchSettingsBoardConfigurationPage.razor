@@ -1,0 +1,77 @@
+@using Sandbox;
+@using Sandbox.UI;
+@using System;
+@using System.Linq;
+@inherits Panel
+
+<root class="match-settings-page match-settings-board-configuration-page">
+	<div class="@RootClasses">
+		<div class="options-panel-section-title">Space Names</div>
+		<div class="board-space-name-list">
+			@foreach ( var space in BoardConfigSpaces )
+			{
+				<OptionsPanelRow Title="@GetBoardSpaceTitle( space )" Value="@GetBoardSpaceDescription( space )">
+					<ChildContent>
+						@if ( CanEdit )
+						{
+							<TextEntry class="board-space-name-input"
+								Text="@GetBoardSpaceName( space.Index )"
+								Placeholder="@space.DisplayName"
+								OnTextEdited="@((string value) => SetBoardSpaceName( space.Index, value ))" />
+						}
+						else
+						{
+							<div class="board-space-name-input readonly">@GetBoardSpaceName( space.Index )</div>
+						}
+					</ChildContent>
+				</OptionsPanelRow>
+			}
+		</div>
+	</div>
+</root>
+
+@code
+{
+	[Parameter] public MatchConfig Config { get; set; }
+	[Parameter] public bool CanEdit { get; set; }
+	[Parameter] public string Variant { get; set; } = "";
+	[Parameter] public Action<int, string> OnSetSpaceName { get; set; }
+
+	private IReadOnlyList<SpaceDef> BoardConfigSpaces => BoardData.CreateSpaceDefs().OrderBy( space => space.Index ).ToList();
+
+	private string RootClasses => string.IsNullOrWhiteSpace( Variant )
+		? "options-panel-section"
+		: $"options-panel-section {Variant}";
+
+	private string GetBoardSpaceName( int index )
+	{
+		return BoardSpaceNameConfig.DeserializeNames( Config?.BoardSpaceNamesSnapshot ).ElementAtOrDefault( index ) ?? "";
+	}
+
+	private void SetBoardSpaceName( int index, string value )
+	{
+		OnSetSpaceName?.Invoke( index, value );
+	}
+
+	private static string GetBoardSpaceTitle( SpaceDef space )
+	{
+		return space is null ? "Space" : $"{space.Index:00} - {space.Key}";
+	}
+
+	private static string GetBoardSpaceDescription( SpaceDef space )
+	{
+		if ( space is null )
+			return "";
+
+		return $"{space.Type} space";
+	}
+
+	protected override int BuildHash()
+	{
+		var hash = new HashCode();
+		hash.Add( Config?.BoardSpaceNamesSnapshot ?? "" );
+		hash.Add( CanEdit );
+		hash.Add( Variant ?? "" );
+		return hash.ToHashCode();
+	}
+}

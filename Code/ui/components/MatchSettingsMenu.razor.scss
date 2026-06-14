@@ -1,0 +1,86 @@
+@import "OptionsPanel.razor.scss";
+
+.match-config-tabs {
+	display: flex;
+	gap: 8px;
+	width: 100%;
+	margin-bottom: 10px;
+	flex-shrink: 0;
+}
+
+.options-panel .monopoly-button.match-config-tab-button {
+	flex: 1 1 0;
+	min-width: 0;
+	height: 38px;
+}
+
+.board-space-name-list {
+	display: flex;
+	flex-direction: column;
+	gap: 0;
+}
+
+.match-settings-page {
+	width: 100%;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	gap: 14px;
+	flex-shrink: 0;
+}
+
+.match-settings-page .options-panel-section-list,
+.match-settings-page .options-panel-section {
+	width: 100%;
+	min-width: 0;
+	flex-shrink: 0;
+}
+
+.options-panel-stepper-value.readonly,
+.board-space-name-input.readonly {
+	display: flex;
+	align-items: center;
+	background-color: $monopoly-surface-strong;
+	border-color: $monopoly-panel-line;
+	opacity: 0.82;
+	pointer-events: none;
+}
+
+.board-space-name-input {
+	width: 220px;
+	min-width: 160px;
+	height: 36px;
+	padding: 0 10px;
+	background-color: $monopoly-surface-soft;
+	border: 1px solid $monopoly-panel-line;
+	border-radius: $monopoly-radius-control;
+	color: $monopoly-text;
+	font-size: 13px;
+	font-weight: 800;
+	pointer-events: all;
+}
+
+.options-panel-toggle-display {
+	min-width: 132px;
+	min-height: $monopoly-control-height;
+	padding: 0 $monopoly-control-padding-x;
+	background-color: $monopoly-surface-medium;
+	border: 1px solid $monopoly-panel-line;
+	border-radius: $monopoly-radius-control;
+	color: $monopoly-text;
+	font-size: $monopoly-font-button;
+	font-weight: 900;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+	opacity: 0.82;
+	pointer-events: none;
+}
+
+.options-panel-toggle-display.selected {
+	background-color: $monopoly-gold;
+	border-color: $monopoly-gold;
+	color: $monopoly-ink;
+}

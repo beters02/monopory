@@ -5,9 +5,9 @@
 @using System;
 @inherits Panel
 
-<OptionsPanel IsOpen="@(IsOpen && Config is not null)" Kicker="Match" Title="Match Settings" OnClose="@Close" RootVariant="options-panel-readonly-root">
+<OptionsPanel IsOpen="@(IsOpen && Config is not null)" Kicker="Match" Title="Match Settings" OnClose="@Close" RootVariant="match-settings-root">
 	<ChildContent>
-		<OptionsPanelBody Copy="Current match settings are read-only during a live game.">
+		<OptionsPanelBody Copy="@Copy">
 			<ChildContent Context="_">
 				<div class="match-config-tabs">
 					<GameButton Variant="@GetPageButtonClasses( MatchConfigPageGameRules )" OnClick="@(() => SetPage( MatchConfigPageGameRules ))">Game Rules</GameButton>
@@ -15,11 +15,11 @@
 				</div>
 				@if ( IsGameRulesPage )
 				{
-					<MatchConfigRulesReadOnlyPage Config="@Config"></MatchConfigRulesReadOnlyPage>
+					<MatchSettingsGameRulesPage Config="@Config" CanEdit="@CanEdit"></MatchSettingsGameRulesPage>
 				}
 				else
 				{
-					<BoardConfigReadOnlyPage Config="@Config"></BoardConfigReadOnlyPage>
+					<MatchSettingsBoardConfigurationPage Config="@Config" CanEdit="@CanEdit"></MatchSettingsBoardConfigurationPage>
 				}
 			</ChildContent>
 		</OptionsPanelBody>
@@ -30,6 +30,7 @@
 {
 	[Parameter] public bool IsOpen { get; set; }
 	[Parameter] public MatchConfig Config { get; set; }
+	[Parameter] public bool CanEdit { get; set; }
 	[Parameter] public Action OnClose { get; set; }
 
 	private const string MatchConfigPageGameRules = "Game Rules";
@@ -37,6 +38,9 @@
 	private string ActivePage = MatchConfigPageGameRules;
 
 	private bool IsGameRulesPage => string.Equals( ActivePage, MatchConfigPageGameRules, StringComparison.Ordinal );
+	private string Copy => CanEdit
+		? "Adjust match settings."
+		: "Current match settings are read-only during a live game.";
 
 	private void Close()
 	{
@@ -60,6 +64,7 @@
 		var hash = new HashCode();
 		hash.Add( IsOpen );
 		hash.Add( ActivePage );
+		hash.Add( CanEdit );
 
 		if ( Config is not null )
 		{

@@ -6,7 +6,7 @@
 
 <root>
 	<OptionsMenu IsOpen="@IsOptionsMenuOpen" OnClose="@CloseOptions" UseBlurBackdrop="@true"></OptionsMenu>
-	<MatchSettingsReadOnlyMenu IsOpen="@IsMatchSettingsMenuOpen" Config="@GameRef?.Config" OnClose="@CloseMatchSettings"></MatchSettingsReadOnlyMenu>
+	<MatchSettingsMenu IsOpen="@IsMatchSettingsMenuOpen" Config="@GameRef?.Config" CanEdit="@(false)" OnClose="@CloseMatchSettings"></MatchSettingsMenu>
 
 	@if ( GameRef?.MatchState == MatchLifecycleState.GameOver )
 	{
