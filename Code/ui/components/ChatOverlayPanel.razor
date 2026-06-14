@@ -299,16 +299,10 @@
 		if ( ChatInput is null )
 			return;
 
-		InputFocus.Clear(ChatInput);
-		Log.Info("Cleared panel focus");
-		StateHasChanged();
-
-		Log.Info( IsShiftDown() );
-
 		var message = (ChatInput.Text ?? "").Trim();
 		ChatInput.Text = "";
 		
-		if ( !string.IsNullOrWhiteSpace( message ) || !IsShiftDown() )
+		if ( !string.IsNullOrWhiteSpace( message ) )
 		{
 			var game = GameRef ?? GameController.Instance;
 			game?.RequestSendChatMessage( message );
@@ -318,6 +312,8 @@
 			StateHasChanged();
 			return;
 		}
+
+		Log.Info("cancelling");
 
 		CancelCompose();
 	}
