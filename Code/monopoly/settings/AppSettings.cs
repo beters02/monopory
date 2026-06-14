@@ -21,7 +21,7 @@ public class AppSettingsData
 	public Fsr3UpscalerQuality Fsr3Quality { get; set; } = Fsr3UpscalerQuality.Performance;
 	public float MotionBlurScale { get; set; } = 0f;
 	public int Volume { get; set; } = 100;
-	public int MusicVolume { get; set; } = 100;
+	public int MusicVolume { get; set; } = 30;
 	public List<AppSettingsKeybind> Keybinds { get; set; } = new();
 }
 

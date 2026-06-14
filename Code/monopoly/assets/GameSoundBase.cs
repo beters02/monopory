@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 
 public enum GameSoundType
 {
@@ -59,22 +60,39 @@ public abstract class GameSoundBase<TSelf> where TSelf : GameSoundBase<TSelf>
 		return true;
 	}
 
-	public SoundHandle PlayWithHandle( float volume = 1, float pitch = 1, float delay = 0, float fadeInTime = 0 )
+	public virtual SoundHandle PlayWithHandle( float volume = 1, float pitch = 1, float delay = 0, float fadeInTime = 0 )
 	{
 		if ( !IsAssigned )
 			return null;
 
 		if ( SoundType == GameSoundType.SoundFile )
-			return Sound.PlayFile( SoundFile.Load( Path ) );
+			return Sound.PlayFile( SoundFile.Load( Path ), volume, pitch, delay, fadeInTime );
 		else
-			return Sound.Play( Path );
+		{
+			var handle = Sound.Play( Path, fadeInTime );
+			Log.Info(handle);
+			if ( delay <= 0f )
+				return handle;
+
+			handle.Paused = true;
+			_ = ResumeAfterDelay( handle, delay );
+			return handle;
+		}
 	}
 
-	public SoundHandle PlayWithHandle( float delay = 0, float fadeInTime = 0 ) => 
-		PlayWithHandle(default, default, delay, fadeInTime);
+	private static async Task ResumeAfterDelay( SoundHandle handle, float delaySeconds )
+	{
+		await Task.Delay( (int) Math.Round(delaySeconds * 1000f) );
 
-	public SoundHandle PlayWithHandle() =>
-		PlayWithHandle(default, default, default, default);
+		if ( handle is not null )
+			handle.Paused = false;
+	}
+
+	public virtual SoundHandle PlayWithHandle( float delay = 0, float fadeInTime = 0 ) => 
+		PlayWithHandle(1f, 1f, delay, fadeInTime);
+
+	public virtual SoundHandle PlayWithHandle() =>
+		PlayWithHandle(1f, 1f, 0f, 0f);
 
 
 	private static GameSoundType GetSoundType( string path )

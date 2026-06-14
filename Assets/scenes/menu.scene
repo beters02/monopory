@@ -377,13 +377,6 @@
               ]
             }
           ],
-          "ShuffleSoundtracks": true,
-          "Soundtracks": [
-            {
-              "Path": "sounds/music/soundtrack1.sound",
-              "IsAssigned": true
-            }
-          ],
           "StartEnabled": true
         },
         {

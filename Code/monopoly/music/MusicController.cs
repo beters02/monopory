@@ -19,22 +19,17 @@ public sealed class MusicController : Component
 	private static MusicController Instance;
 
 	[Property] public bool StartEnabled { get; set; } = true;
-	[Property] public bool ShuffleSoundtracks { get; set; } = true;
-	[Property] public List<GameSoundtrack> Soundtracks { get; set; } = new()
-	{
-		GameAssets.Soundtracks.Nolan01
-	};
 	[Property] public List<SceneSoundtrackPlaylist> SceneSoundtracks { get; set; } = new()
 	{
 		new()
 		{
 			Scene = MusicPlaylistScene.MenuLobby,
-			Soundtracks = new() { GameAssets.Soundtracks.Nolan01 }
+			Soundtracks = new() { GameAssets.Soundtracks.Menu0 }
 		},
 		new()
 		{
 			Scene = MusicPlaylistScene.Game,
-			Soundtracks = new() { GameAssets.Soundtracks.Game01 }
+			Soundtracks = new() { GameAssets.Soundtracks.Game0 }
 		}
 	};
 
@@ -144,7 +139,7 @@ public sealed class MusicController : Component
 
 	private GameSoundtrack GetNextSoundtrack()
 	{
-		var availableSoundtracks = (activeSoundtracks ?? Soundtracks)
+		var availableSoundtracks = (activeSoundtracks ?? new())
 			.Where( soundtrack => soundtrack is not null && soundtrack.IsAssigned )
 			.ToList();
 
@@ -180,16 +175,8 @@ public sealed class MusicController : Component
 		soundtrackIndex = -1;
 
 		var playlist = SceneSoundtracks?.FirstOrDefault( playlist => playlist is not null && playlist.Scene == playlistScene );
-		if ( playlist is null )
-		{
-			activeSoundtracks = Soundtracks;
-			activeShuffleSoundtracks = ShuffleSoundtracks;
-		}
-		else
-		{
-			activeSoundtracks = playlist.Soundtracks;
-			activeShuffleSoundtracks = playlist.ShuffleSoundtracks;
-		}
+		activeSoundtracks = playlist?.Soundtracks;
+		activeShuffleSoundtracks = playlist?.ShuffleSoundtracks ?? false;
 
 		if ( !restartIfChanged )
 			return;

@@ -5,13 +5,14 @@ public sealed class GameSoundtrack : GameSoundBase<GameSoundtrack>
 	public float Delay { get; set; } = 0;
 
 	public GameSoundtrack( string path ) : base( path ) { }
-	public GameSoundtrack ( string path, float fadeInTime = 0, float delay = 0 ) : base ( path )
+	public GameSoundtrack ( string path, float delay = 0, float fadeInTime = 0 ) : base ( path )
 	{
 		FadeInTime = fadeInTime;
-		Delay = 0;
+		Delay = delay;
 	}
 
-	
-    
+	public override SoundHandle PlayWithHandle( ) => 
+		PlayWithHandle( Delay, FadeInTime );
+
 	public static implicit operator GameSoundtrack( string path ) => new( path );
 }
