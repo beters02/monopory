@@ -107,14 +107,15 @@
 
 						<div class="property-stats-section fill">
 							<div class="property-stats-section-title">Property Detail</div>
-							<div class="property-stats-table monopory-scroll-y">
-								<div class="property-stats-table-header">
-									<div class="property-stats-table-property">Property</div>
-									<div class="property-stats-table-owner">Owner</div>
-									<div class="property-stats-table-small">Visits</div>
-									<div class="property-stats-table-money">Rent</div>
-									<div class="property-stats-table-small">Now</div>
-								</div>
+							<div class="property-stats-table-header">
+								<div class="property-stats-table-property">Property</div>
+								<div class="property-stats-table-owner">Owner</div>
+								<div class="property-stats-table-small">Visits</div>
+								<div class="property-stats-table-money">Rent</div>
+								<div class="property-stats-table-small">Now</div>
+							</div>
+							<div class="property-stats-table-shell">
+								<div class="property-stats-table monopory-scroll-y" @ref="PropertyTablePanel">
 								@foreach ( var row in PropertyRows )
 								{
 									<div class="property-stats-table-row" onclick="@(() => SelectProperty( row.SpaceIndex ))">
@@ -131,6 +132,8 @@
 										<div class="property-stats-table-small">$@row.CurrentRent</div>
 									</div>
 								}
+								</div>
+								<MonoScrollbar Target="@PropertyTablePanel" Variant="property-stats-scrollbar"></MonoScrollbar>
 							</div>
 						</div>
 					</div>
@@ -145,6 +148,8 @@
 	[Parameter] public GameController GameRef { get; set; }
 	[Parameter] public bool IsOpen { get; set; }
 	[Parameter] public Action OnClose { get; set; }
+
+	private Panel PropertyTablePanel = null!;
 
 	private readonly record struct PropertyStatsRow( int SpaceIndex, SpaceDef Space, string Name, int Landings, int RentEarned, int CurrentRent );
 	private readonly record struct PlayerStatsRow( int PlayerIndex, string Name, int Money, int PropertyCount, int Landings, int RentEarned, bool IsBankrupt, bool IsLocalPlayer );

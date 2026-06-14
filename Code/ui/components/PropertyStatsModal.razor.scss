@@ -1,5 +1,6 @@
 @import "../GameTheme.scss";
 @import "buttons/CloseButton.razor.scss";
+@import "MonoScrollbar.razor.scss";
 
 .property-stats-backdrop {
 	position: absolute;
@@ -153,6 +154,7 @@
 
 .property-stats-section.fill {
 	flex: 1;
+	gap: 6px;
 }
 
 .property-stats-section-title {
@@ -293,9 +295,19 @@
 	text-transform: uppercase;
 }
 
-.property-stats-table {
+.property-stats-table-shell {
 	flex: 1;
 	min-height: 0;
+	position: relative;
+}
+
+.property-stats-table {
+	position: absolute;
+	left: 0;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	padding-right: 18px;
 	overflow-y: scroll;
 	overflow-x: hidden;
 	display: flex;
@@ -312,11 +324,18 @@
 }
 
 .property-stats-table-header {
-	padding: 0 8px 4px 8px;
+	flex-shrink: 0;
+	padding: 0 26px 3px 8px;
 	color: $monopoly-danger;
 	font-size: 11px;
 	font-weight: 900;
 	text-transform: uppercase;
+}
+
+.property-stats-scrollbar {
+	right: 4px;
+	top: 2px;
+	bottom: 2px;
 }
 
 .property-stats-table-row {
