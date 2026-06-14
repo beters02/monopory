@@ -19,7 +19,7 @@ public sealed class MusicController : Component
 	private static MusicController Instance;
 
 	[Property] public bool StartEnabled { get; set; } = true;
-	[Property] public List<SceneSoundtrackPlaylist> SceneSoundtracks { get; set; } = new()
+	public List<SceneSoundtrackPlaylist> SceneSoundtracks { get; set; } = new()
 	{
 		new()
 		{
@@ -134,6 +134,12 @@ public sealed class MusicController : Component
 
 		SoundHandle?.Dispose();
 		SoundHandle = soundtrack.PlayWithHandle();
+		if ( SoundHandle is null )
+		{
+			Log.Warning( $"Failed to play soundtrack '{soundtrack.Path}'." );
+			return;
+		}
+
 		SoundHandle.TargetMixer = AppSettings.GetMusicMixer();
 	}
 

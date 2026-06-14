@@ -70,9 +70,11 @@ public abstract class GameSoundBase<TSelf> where TSelf : GameSoundBase<TSelf>
 		else
 		{
 			var handle = Sound.Play( Path, fadeInTime );
-			Log.Info(handle);
 			if ( delay <= 0f )
 				return handle;
+
+			if ( handle is null )
+				return null;
 
 			handle.Paused = true;
 			_ = ResumeAfterDelay( handle, delay );

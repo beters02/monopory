@@ -355,33 +355,54 @@
           "OnComponentFixedUpdate": null,
           "OnComponentStart": null,
           "OnComponentUpdate": null,
-          "SceneSoundtracks": [
-            {
-              "Scene": "MenuLobby",
-              "ShuffleSoundtracks": true,
-              "Soundtracks": [
-                {
-                  "Path": "sounds/music/soundtrack1.sound",
-                  "IsAssigned": true
-                }
-              ]
-            },
-            {
-              "Scene": "Game",
-              "ShuffleSoundtracks": true,
-              "Soundtracks": [
-                {
-                  "Path": "sounds/music/soundtrack1.sound",
-                  "IsAssigned": true
-                }
-              ]
-            }
-          ],
           "StartEnabled": true
         },
         {
           "__type": "Sandbox.ScenePersistentObject",
           "__guid": "7c55e0ba-d692-4c6b-8044-84821f9a20a6",
+          "__enabled": true,
+          "Flags": 0,
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null
+        }
+      ],
+      "Children": []
+    },
+    {
+      "__guid": "36cb1f3f-6db3-4406-9396-11c2eed1b0e4",
+      "__version": 2,
+      "Flags": 0,
+      "Name": "InputHelperService",
+      "Position": "-318.339783,-313.679993,67.1079865",
+      "Rotation": "0,0,0,1",
+      "Scale": "1,1,1",
+      "Tags": "",
+      "Enabled": true,
+      "NetworkMode": 2,
+      "NetworkFlags": 0,
+      "NetworkOrphaned": 0,
+      "NetworkTransmit": true,
+      "OwnerTransfer": 1,
+      "Components": [
+        {
+          "__type": "InputHelperService",
+          "__guid": "dc58e0bb-2089-43d9-8eb5-acce8f50c1e4",
+          "__enabled": true,
+          "Flags": 0,
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null
+        },
+        {
+          "__type": "Sandbox.ScenePersistentObject",
+          "__guid": "b004f84a-61ac-4d25-9dcc-5dcd381e3370",
           "__enabled": true,
           "Flags": 0,
           "OnComponentDestroy": null,
@@ -417,14 +438,14 @@
       "CustomBounds": false
     },
     "GameObjectSystems": {
-      "Sandbox.Clutter.ClutterGridSystem": {
-        "Storage": {
-          "$blob": "1038bcfc-1f47-4964-962a-e0cb2849ee20"
-        }
-      },
       "Sandbox.SelectionSetsSystem": {
         "Data": {
           "SelectionSets": []
+        }
+      },
+      "Sandbox.Clutter.ClutterGridSystem": {
+        "Storage": {
+          "$blob": "1038bcfc-1f47-4964-962a-e0cb2849ee20"
         }
       }
     }
