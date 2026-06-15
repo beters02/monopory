@@ -625,12 +625,26 @@
 		return HashCode.Combine(
 			board?.UseProceduralBoardPanel ?? true,
 			board?.SpaceDefs?.Count ?? 0,
+			GetBoardDefsHash(),
 			CornerSizePercent,
 			TrackDepthPercent,
 			GetWeightsHash(),
 			GetStyleHash(),
 			GetGameplayHash()
 		);
+	}
+
+	private int GetBoardDefsHash()
+	{
+		var hash = new HashCode();
+		foreach ( var space in SpaceDefs )
+		{
+			hash.Add( space.Index );
+			hash.Add( space.Key );
+			hash.Add( space.DisplayName );
+		}
+
+		return hash.ToHashCode();
 	}
 
 	private int GetGameplayHash()

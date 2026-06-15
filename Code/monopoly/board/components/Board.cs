@@ -50,6 +50,7 @@ public sealed class Board : Component
 	private float lastProcRefPanelSize;
 	private string lastCursorType;
 	private Vector2? lastPointerHoverPosition;
+	private string appliedBoardSpaceNamesSnapshot = "";
 
 	// Component
 
@@ -83,6 +84,7 @@ public sealed class Board : Component
 
 	protected override void OnUpdate()
 	{
+		EnsureBoardSpaceNameConfigApplied();
 		DrawAllHitboxesDebug();
 		UpdateSpaceHoverCursor();
 		UpdateLocalSpaceSelection();
@@ -247,9 +249,52 @@ public sealed class Board : Component
 	private void LoadBoardDefinitions()
 	{
 		SpaceDefs = BoardData.CreateSpaceDefs();
-		BoardSpaceNameConfig.ApplySnapshot( SpaceDefs, GameRef?.Config?.BoardSpaceNamesSnapshot );
+		appliedBoardSpaceNamesSnapshot = "";
+		EnsureBoardSpaceNameConfigApplied( true );
 		RailroadData = BoardData.CreateRailroadDefs();
 		UtilityData = BoardData.CreateUtilityDefs();
+	}
+
+	private void EnsureBoardSpaceNameConfigApplied( bool force = false )
+	{
+		if ( SpaceDefs is null || SpaceDefs.Count == 0 )
+			return;
+
+		var snapshot = GetCurrentBoardSpaceNamesSnapshot();
+		if ( !force && string.Equals( appliedBoardSpaceNamesSnapshot, snapshot, StringComparison.Ordinal ) )
+			return;
+
+		BoardSpaceNameConfig.ApplySnapshot( SpaceDefs, snapshot );
+		appliedBoardSpaceNamesSnapshot = snapshot;
+		RefreshSpaceDefinitions();
+		LoadCardDefinitions();
+		RefreshProceduralBoardPanel();
+	}
+
+	private string GetCurrentBoardSpaceNamesSnapshot()
+	{
+		EnsureGameControllerRef();
+
+		var snapshot = GameRef?.Config?.BoardSpaceNamesSnapshot ?? "";
+		if ( !string.IsNullOrWhiteSpace( snapshot ) )
+			return snapshot;
+
+		var bootstrap = MatchBootstrap.Current;
+		return bootstrap?.HasConfig == true ? bootstrap.Config?.BoardSpaceNamesSnapshot ?? "" : "";
+	}
+
+	private void RefreshSpaceDefinitions()
+	{
+		if ( Spaces is null )
+			return;
+
+		foreach ( var space in Spaces )
+		{
+			if ( space is null )
+				continue;
+
+			space.EnsureDef( GetSpaceDef( space.Index ) );
+		}
 	}
 
 	private void LoadCardDefinitions()

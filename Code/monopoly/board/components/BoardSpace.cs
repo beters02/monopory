@@ -84,6 +84,21 @@ public sealed class BoardSpace : Component
 	{
 		Def = def;
 		DisplayName = def.DisplayName;
+		RefreshLabelText();
+	}
+
+	public void RefreshLabelText()
+	{
+		DisplayName = Def?.DisplayName ?? "";
+
+		if ( LabelRenderer is not null )
+			LabelRenderer.Text = DisplayName;
+
+		if ( WorldPanelLabel is not null )
+		{
+			WorldPanelLabel.SpaceName = DisplayName;
+			WorldPanelLabel.StateHasChanged();
+		}
 	}
 
 	public Vector3? GetColliderCenter()
