@@ -47,7 +47,6 @@
       "VR": false,
       "Gamepad": false
     },
-    "SystemScene": "scenes/additive.scene",
     "StartupScene": "scenes/menu.scene"
   }
 }
