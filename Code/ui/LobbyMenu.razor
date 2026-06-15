@@ -284,7 +284,7 @@
 		<div class="flow-panel lobby-panel">
 			<div class="flow-kicker">Lobby</div>
 			<div class="flow-title">Players</div>
-			<div class="lobby-player-detail cheats">Cheats Enabled: <span class=""> @CheatsEnabled </span></div>
+			<div class="lobby-player-detail cheats">Cheats Enabled: <span class="@GetCheatsEnabledValueClasses()">@CheatsEnabled </span></div>
 
 			@if ( Lobby is null )
 			{
@@ -652,6 +652,11 @@
 		}
 
 		return hash.ToHashCode();
+	}
+
+	private string GetCheatsEnabledValueClasses()
+	{
+		return CheatsEnabled ? "cheats-value true" : "cheats-value false";
 	}
 
 	private void ToggleReady()

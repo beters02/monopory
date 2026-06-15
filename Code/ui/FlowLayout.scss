@@ -267,6 +267,15 @@ LobbyMenu {
 		color: $monopoly-ink;
 		left: 58%;
 		opacity: 1;
+		white-space: pre;
+	}
+
+	.lobby-player-detail.cheats .cheats-value.false {
+		color: $monopoly-danger;
+	}
+
+	.lobby-player-detail.cheats .cheats-value.true {
+		color: $monopoly-success;
 	}
 
 	.lobby-ready-pill {

@@ -228,6 +228,7 @@ public sealed class GameCommandManager : Component
 			if ( !CanUseStandaloneCommand() )
 			{
 				LogCommandResult( commandName, CommandResult.FailStandalone() );
+				return;
 			}
 
 		if ( value.CheatType == GameCommandCheatType.Cheats )
@@ -268,8 +269,7 @@ public sealed class GameCommandManager : Component
 
 		CommandResult callback()
 		{
-			command.Method.Invoke( null, useArgs );
-			return CommandResult.Success();
+			return (CommandResult) command.Method.Invoke( null, useArgs );
 		}
 
 		RunCommand( commandName, callback, caller );
@@ -377,7 +377,7 @@ public sealed class GameCommandManager : Component
 
 	public static void OnSvCheatsChangedStatic( bool oldValue, bool newValue, bool wasFirstRun = false )
 	{
-		Log.Info( $"sv_cheats changed: {oldValue} -> {newValue}" );
+		//Log.Info( $"sv_cheats changed: {oldValue} -> {newValue}" );
 
 		if ( wasFirstRun )
 			return;
