@@ -4,7 +4,7 @@
 @inherits Panel
 
 <root class="steam-friends-root">
-	<div class="steam-friends-panel" @ref="FriendsPanel">
+	<div class="@PanelClasses" @ref="FriendsPanel">
 		<div class="steam-friends-header">
 			<div class="steam-friends-title">Friends</div>
 			<div class="@GetStandaloneBadgeClasses()">@GetStandaloneBadgeText()</div>
@@ -43,7 +43,7 @@
 	</div>
 	@if ( SelectedFriend is not null )
 	{
-		<div class="steam-friend-popup" style="@PopupStyle">
+		<div class="steam-friend-popup" style="@PopupStyle" @ref="PopupPanel">
 			<div class="steam-friend-popup-top">
 				<div class="steam-friend-popup-avatar">
 					@if ( SelectedFriend.AvatarTexture is not null )
@@ -82,9 +82,13 @@
 {
 	private SteamFriendListEntry SelectedFriend;
 	private Panel FriendsPanel = null!;
+	private Panel PopupPanel = null!;
 	private float PopupRight;
 	private float PopupTop;
 	private int actionRevision;
+	private bool IsFriendUiHovered;
+	private float lastHoverTime;
+	private const float HoverCloseDelay = 0.12f;
 	private const float FriendsHeaderHeight = 46f;
 	private const float FriendsListPaddingTop = 8f;
 	private const float FriendRowHeight = 58f;
@@ -99,6 +103,18 @@
 	public override void Tick()
 	{
 		base.Tick();
+
+		var wasHovered = IsFriendUiHovered;
+		IsFriendUiHovered = IsMouseInsideFriendUi();
+
+		if ( IsFriendUiHovered )
+			lastHoverTime = Time.Now;
+		else if ( SelectedFriend is not null && Time.Now - lastHoverTime > HoverCloseDelay )
+			ClosePopup();
+
+		if ( wasHovered != IsFriendUiHovered )
+			actionRevision++;
+
 		StateHasChanged();
 	}
 
@@ -123,6 +139,7 @@
 		
 		PopupTop = Mouse.Position.y * (1/this.ScaleToScreen) - (FriendRowHeight/2)/2;
 		Mouse.Visibility = MouseVisibility.Visible;
+		lastHoverTime = Time.Now;
 		actionRevision++;
 	}
 
@@ -154,7 +171,23 @@
 		actionRevision++;
 	}
 
+	private string PanelClasses => IsFriendUiHovered ? "steam-friends-panel is-expanded" : "steam-friends-panel";
 	private string PopupStyle => $"right: {PopupRight:0}px; top: {PopupTop:0}px;";
+
+	private bool IsMouseInsideFriendUi()
+	{
+		var position = Mouse.Position;
+		return (FriendsPanel is not null && IsPointInside( FriendsPanel.Box.Rect, position ))
+			|| (PopupPanel is not null && IsPointInside( PopupPanel.Box.Rect, position ));
+	}
+
+	private static bool IsPointInside( Rect rect, Vector2 point )
+	{
+		return point.x >= rect.Left
+			&& point.x <= rect.Right
+			&& point.y >= rect.Top
+			&& point.y <= rect.Bottom;
+	}
 
 	private string GetStandaloneBadgeClasses()
 	{
@@ -229,6 +262,7 @@
 		hash.Add( PopupRight );
 		hash.Add( PopupTop );
 		hash.Add( actionRevision );
+		hash.Add( IsFriendUiHovered );
 		hash.Add( MathF.Floor( Time.Now * 0.5f ) );
 
 		foreach ( var friend in Friends )

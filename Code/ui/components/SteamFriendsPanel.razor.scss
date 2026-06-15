@@ -36,7 +36,8 @@ SteamFriendsPanel {
 		transition: width 0.12s ease-out;
 	}
 
-	.steam-friends-panel:hover {
+	.steam-friends-panel:hover,
+	.steam-friends-panel.is-expanded {
 		width: 286px;
 	}
 
@@ -55,7 +56,8 @@ SteamFriendsPanel {
 		transition: opacity 0.08s ease-out;
 	}
 
-	.steam-friends-panel:hover .steam-friends-header {
+	.steam-friends-panel:hover .steam-friends-header,
+	.steam-friends-panel.is-expanded .steam-friends-header {
 		opacity: 1;
 	}
 
@@ -113,7 +115,8 @@ SteamFriendsPanel {
 		transition: background-color 0.12s ease-out, border-color 0.12s ease-out;
 	}
 
-	.steam-friends-panel:hover .steam-friend-row {
+	.steam-friends-panel:hover .steam-friend-row,
+	.steam-friends-panel.is-expanded .steam-friend-row {
 		background-color: rgba(241, 247, 243, 0.06);
 		border-color: rgba(241, 247, 243, 0.08);
 		justify-content: flex-start;
@@ -177,7 +180,8 @@ SteamFriendsPanel {
 		transition: opacity 0.08s ease-out;
 	}
 
-	.steam-friends-panel:hover .steam-friend-body {
+	.steam-friends-panel:hover .steam-friend-body,
+	.steam-friends-panel.is-expanded .steam-friend-body {
 		opacity: 1;
 	}
 
