@@ -29,8 +29,8 @@
 						<div class="property-stats-summary-value">$@TotalRentEarned</div>
 					</div>
 					<div class="property-stats-summary-card">
-						<div class="property-stats-summary-label">Most Landed</div>
-						<div class="property-stats-summary-value small">@GetTopLandingName()</div>
+						<div class="property-stats-summary-label">Biggest Loser</div>
+						<div class="property-stats-summary-value small">@GetBiggestLoserName()</div>
 					</div>
 					<div class="property-stats-summary-card">
 						<div class="property-stats-summary-label">Top Earner</div>
@@ -80,28 +80,31 @@
 					</div>
 
 					<div class="property-stats-column wide">
-						<div class="property-stats-section">
+						<div class="property-stats-section player-totals">
 							<div class="property-stats-section-title">Player Totals</div>
-							<div class="property-stats-player-list">
-								@foreach ( var row in PlayerRows )
-								{
-									<div class="@GetPlayerRowClasses( row )">
-										<div class="property-stats-player-name">@row.Name</div>
-										<div class="property-stats-player-pill">$@row.Money</div>
-										<div class="property-stats-player-metric">
-											<span>@row.PropertyCount</span>
-											<label>Props</label>
+							<div class="property-stats-player-shell">
+								<div class="property-stats-player-list monopory-scroll-y" @ref="PlayerListPanel">
+									@foreach ( var row in PlayerRows )
+									{
+										<div class="@GetPlayerRowClasses( row )">
+											<div class="property-stats-player-name">@row.Name</div>
+											<div class="property-stats-player-pill">$@row.Money</div>
+											<div class="property-stats-player-metric">
+												<span>@row.PropertyCount</span>
+												<label>Props</label>
+											</div>
+											<div class="property-stats-player-metric">
+												<span>@row.Landings</span>
+												<label>Visits</label>
+											</div>
+											<div class="property-stats-player-metric">
+												<span>$@row.RentEarned</span>
+												<label>Rent</label>
+											</div>
 										</div>
-										<div class="property-stats-player-metric">
-											<span>@row.Landings</span>
-											<label>Visits</label>
-										</div>
-										<div class="property-stats-player-metric">
-											<span>$@row.RentEarned</span>
-											<label>Rent</label>
-										</div>
-									</div>
-								}
+									}
+								</div>
+								<MonoScrollbar Target="@PlayerListPanel" Variant="property-stats-scrollbar"></MonoScrollbar>
 							</div>
 						</div>
 
@@ -148,9 +151,10 @@
 	[Parameter] public Action OnClose { get; set; }
 
 	private Panel PropertyTablePanel = null!;
+	private Panel PlayerListPanel = null!;
 
 	private readonly record struct PropertyStatsRow( int SpaceIndex, SpaceDef Space, string Name, int Landings, int RentEarned );
-	private readonly record struct PlayerStatsRow( int PlayerIndex, string Name, int Money, int PropertyCount, int Landings, int RentEarned, bool IsBankrupt, bool IsLocalPlayer );
+	private readonly record struct PlayerStatsRow( int PlayerIndex, string Name, int Money, int NetLoss, int PropertyCount, int Landings, int RentEarned, bool IsBankrupt, bool IsLocalPlayer );
 
 	private int TotalLandings => PropertyRows.Sum( row => row.Landings );
 	private int TotalRentEarned => PropertyRows.Sum( row => row.RentEarned );
@@ -180,6 +184,12 @@
 	{
 		var row = TopRentRows.FirstOrDefault();
 		return row.SpaceIndex <= 0 && row.RentEarned <= 0 ? "None yet" : row.Name;
+	}
+
+	private string GetBiggestLoserName()
+	{
+		var row = PlayerRows.Where( row => row.NetLoss > 0 ).OrderByDescending( row => row.NetLoss ).FirstOrDefault();
+		return row.PlayerIndex < 0 || row.NetLoss <= 0 ? "None yet" : row.Name;
 	}
 
 	private List<PropertyStatsRow> BuildPropertyRows()
@@ -215,6 +225,7 @@
 				entry.index,
 				entry.player.PlayerName ?? $"Player {entry.index + 1}",
 				entry.player.Money,
+				Math.Max( GetStartingMoney() - entry.player.Money, 0 ),
 				GameRef.GetOwnedPropertyIndexes( entry.index ).Count,
 				GetTotalLandingsForPlayer( entry.index ),
 				GetTotalRentEarnedForPlayer( entry.index ),
@@ -231,6 +242,7 @@
 	private int GetTotalRentEarnedForSpace( int spaceIndex ) => SumPropertyStatForSpace( GameRef.PropertyRentEarned, spaceIndex );
 	private int GetTotalLandingsForPlayer( int playerIndex ) => SumPropertyStatForPlayer( GameRef.PropertyLandingCounts, playerIndex );
 	private int GetTotalRentEarnedForPlayer( int playerIndex ) => SumPropertyStatForPlayer( GameRef.PropertyRentEarned, playerIndex );
+	private int GetStartingMoney() => Math.Max( GameRef?.Config?.StartingMoney ?? 1500, 0 );
 
 	private static int SumPropertyStatForSpace( NetDictionary<int, int> stats, int spaceIndex )
 	{
@@ -303,6 +315,17 @@
 		hash.Add( GameRef?.PropertyOwners?.Count ?? 0 );
 		hash.Add( GameRef?.PropertyImprovements?.Count ?? 0 );
 		hash.Add( GameRef?.MortgagedProperties?.Count ?? 0 );
+
+		if ( GameRef?.Players is not null )
+		{
+			foreach ( var entry in GameRef.Players.Select( ( player, index ) => new { player, index } ).Where( entry => entry.player is not null && entry.player.IsAssigned ) )
+			{
+				hash.Add( entry.index );
+				hash.Add( entry.player.PlayerName );
+				hash.Add( entry.player.Money );
+				hash.Add( entry.player.IsBankrupt );
+			}
+		}
 
 		if ( GameRef?.PropertyLandingCounts is not null )
 		{

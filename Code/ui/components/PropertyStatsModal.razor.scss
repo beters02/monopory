@@ -17,10 +17,10 @@
 
 .property-stats-modal {
 	position: relative;
-	width: 900px;
-	max-width: 50%;
-	height: 610px;
-	max-height: 76%;
+	width: 860px;
+	max-width: 48%;
+	height: 900px;
+	max-height: 92%;
 	padding: 18px;
 	background-color: $monopoly-board;
 	border: 4px solid $monopoly-ink;
@@ -142,7 +142,7 @@
 }
 
 .property-stats-column {
-	width: 32%;
+	width: 30%;
 	min-width: 0;
 	display: flex;
 	flex-direction: column;
@@ -160,11 +160,18 @@
 	flex-direction: column;
 	gap: 6px;
 	min-height: 0;
+	overflow: hidden;
 }
 
 .property-stats-section.fill {
 	flex: 1;
 	gap: 6px;
+	min-height: 230px;
+}
+
+.property-stats-section.player-totals {
+	flex: 0 1 190px;
+	max-height: 210px;
 }
 
 .property-stats-section-title {
@@ -184,8 +191,8 @@
 }
 
 .property-stats-rank-row {
-	min-height: 36px;
-	padding: 7px;
+	min-height: 32px;
+	padding: 5px;
 	background-color: $monopoly-board-surface-strong;
 	border-radius: $monopoly-radius-control;
 }
@@ -253,9 +260,23 @@
 }
 
 .property-stats-player-list {
+	position: absolute;
+	left: 0;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	padding-right: 18px;
+	overflow-y: scroll;
+	overflow-x: hidden;
 	display: flex;
 	flex-direction: column;
 	gap: 6px;
+}
+
+.property-stats-player-shell {
+	flex: 1;
+	min-height: 0;
+	position: relative;
 }
 
 .property-stats-player-row {
@@ -389,7 +410,7 @@
 
 .property-stats-color-swatch {
 	width: 12px;
-	height: 28px;
+	height: 24px;
 	border: 2px solid $monopoly-ink;
 	border-radius: 3px;
 	flex-shrink: 0;
