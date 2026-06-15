@@ -224,10 +224,6 @@ public sealed class GameCommandManager : Component
 			return;
 		}
 
-		Log.Info("Found command.");
-		Log.Info(value.Name);
-		Log.Info(value.CheatType);
-
 		if ( value.AppType == GameCommandAppType.Standalone )
 			if ( !CanUseStandaloneCommand() )
 			{
@@ -258,24 +254,23 @@ public sealed class GameCommandManager : Component
 
 	public static void RunCommandFromName( Connection caller, string commandName, params string[] args )
 	{
-		if ( Commands[commandName] is null )
+		if ( !Commands.TryGetValue( commandName, out var command ) )
 		{
 			LogCommandResult(commandName, CommandResult.Fail($"Could not find command {commandName}"));
 			return;
 		}
 
-		object[] useArgs = [caller];
+		var useArgs = new object[1 + (args?.Length ?? 0)];
+		useArgs[0] = caller;
 
-		foreach(var a in args)
-		{
-			useArgs.Append(a);
-		}
+		for ( var i = 0; i < (args?.Length ?? 0); i++ )
+			useArgs[i + 1] = args[i];
 
-		Func<CommandResult> callback = () =>
+		CommandResult callback()
 		{
-			Commands[commandName].Method.Invoke( null, useArgs );
+			command.Method.Invoke( null, useArgs );
 			return CommandResult.Success();
-		};
+		}
 
 		RunCommand( commandName, callback, caller );
 	}
@@ -325,6 +320,7 @@ public sealed class GameCommandManager : Component
 
 	private static void LogCommandResult( string commandName, CommandResult result )
 	{
+
 		if ( result is null )
 		{
 			var message = $"{commandName} command failed: no command result.";
@@ -381,16 +377,16 @@ public sealed class GameCommandManager : Component
 
 	public static void OnSvCheatsChangedStatic( bool oldValue, bool newValue, bool wasFirstRun = false )
 	{
-		Log.Info( $"mn_cheats changed: {oldValue} -> {newValue}" );
+		Log.Info( $"sv_cheats changed: {oldValue} -> {newValue}" );
 
 		if ( wasFirstRun )
 			return;
 
 		GameController.Instance?.SendTableChatMessage(
 			"Server cheats changed",
-			$"mn_cheats is now {(newValue ? "enabled" : "disabled")}."
+			$"sv_cheats is now {(newValue ? "enabled" : "disabled")}."
 		);
-		GameController.Instance?.SendGlobalPopupToAll("Server Cheats Changed", $"mn_cheats is now {(newValue ? "enabled" : "disabled")}.");
+		GameController.Instance?.SendGlobalPopupToAll("Server Cheats Changed", $"sv_cheats is now {(newValue ? "enabled" : "disabled")}.");
 	}
 
 	public static bool TryParseBool(string value, out bool parsed)
@@ -420,12 +416,7 @@ public sealed class GameCommandManager : Component
 
 	public static bool IsCommandSourceOverwrite( string command )
 	{
-		if ( Commands[command] is not null )
-		{
-			return Commands[command].IsSourceOverwrite;
-		}
-
-		return false;
+		return Commands.TryGetValue( command, out var gameCommand ) && gameCommand.IsSourceOverwrite;
 	}
 }
 
@@ -1094,6 +1085,36 @@ public static class DebugSteamId
 			var steamId = gamePlayer is not null ? gamePlayer.SteamId : (long)lobbyPlayer.SteamId;
 
 			return CommandResult.Success(steamId.ToString());
+		}, connection );
+	}
+}
+
+public static class Exit
+{
+	public const string Name = "exit";
+
+	[SourceOverwriteCmd( Name )]
+	public static void Execute( Connection connection )
+	{
+		GameCommandManager.RunCommand( Name, () =>
+		{
+			Game.Close();
+			return CommandResult.Success();
+		}, connection );
+	}
+}
+
+public static class Quit
+{
+	public const string Name = "quit";
+
+	[SourceOverwriteCmd( Name )]
+	public static void Execute( Connection connection )
+	{
+		GameCommandManager.RunCommand( Name, () =>
+		{
+			Game.Close();
+			return CommandResult.Success();
 		}, connection );
 	}
 }
