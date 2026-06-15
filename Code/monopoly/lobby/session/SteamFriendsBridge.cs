@@ -294,7 +294,9 @@ public static class SteamFriendsBridge
 
 	private static object GetPropertyValue( object instance, string propertyName )
 	{
-		return instance.GetType().GetProperty( propertyName, InstanceReflectionFlags )?.GetValue( instance );
+		var type = instance.GetType();
+		return type.GetProperty( propertyName, InstanceReflectionFlags )?.GetValue( instance ) ??
+			type.GetField( propertyName, InstanceReflectionFlags )?.GetValue( instance );
 	}
 
 	private static string GetStringValue( object value )
@@ -318,8 +320,8 @@ public static class SteamFriendsBridge
 		if ( value is ulong unsigned )
 			return unchecked((long)unsigned);
 
-		var rawValue = value.GetType().GetProperty( "Value", InstanceReflectionFlags )?.GetValue( value ) ??
-			value.GetType().GetProperty( "ValueUnsigned", InstanceReflectionFlags )?.GetValue( value );
+		var rawValue = GetPropertyValue( value, "Value" ) ?? GetPropertyValue( value, "ValueUnsigned" );
+		Log.Info(rawValue);
 
 		return rawValue switch
 		{
