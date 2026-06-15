@@ -743,6 +743,19 @@
 	white-space: nowrap;
 }
 
+.options-panel-stepper-value.readonly {
+	width: 100%;
+	min-width: 0;
+	flex-shrink: 1;
+	overflow: visible;
+}
+
+.options-panel-stepper-value.readonly .label {
+	width: 100%;
+	min-width: 0;
+	overflow: visible;
+}
+
 .options-panel-stepper-value .label,
 .options-panel-stepper-input .placeholder,
 .options-panel-stepper-input .content-label,
