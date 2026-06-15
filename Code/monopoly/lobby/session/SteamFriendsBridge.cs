@@ -53,20 +53,14 @@ public static class SteamFriendsBridge
 //#if STANDALONE
 		try
 		{
-			var steamFriendsType = FindLoadedType( "Steamworks.SteamFriends" );
-			var inviteMethod = steamFriendsType?.GetMethod( "InviteUserToGame", StaticReflectionFlags );
 			var connectTarget = GetInviteConnectTarget();
+			var friendObject = GetFriendObject( friend.SteamId );
+			var friendInviteMethod = friendObject?.GetType().GetMethod( "InviteToGame", InstanceReflectionFlags, null, new[] { typeof( string ) }, null );
 
-			if ( inviteMethod is not null && TryInvokeFriendAction( inviteMethod, friend.SteamId, connectTarget ) )
+			if ( TryInvokeInstanceFriendAction( friendObject, friendInviteMethod, connectTarget ) )
 				return true;
 
-			var friendObject = GetFriendObject( friend.SteamId );
-			var friendInviteMethod = friendObject?.GetType().GetMethod( "InviteToGame", InstanceReflectionFlags );
-			if ( friendInviteMethod is not null )
-			{
-				var result = friendInviteMethod.Invoke( friendObject, new object[] { connectTarget } );
-				return result is not bool success || success;
-			}
+			return TryInviteUserToGame( friend.SteamId, connectTarget );
 		}
 		catch ( Exception exception )
 		{
@@ -80,11 +74,23 @@ public static class SteamFriendsBridge
 	public static bool TryOpenProfile( SteamFriendListEntry friend )
 	{
 		if ( friend is null || friend.SteamId == 0 || !MonopolyApp.IsStandalone() )
-			return false;
+		{
+			Log.Info($"Friend is null: {friend is null}");
+			Log.Info($"friend.steamid == 0 {friend.SteamId == 0}  {friend.SteamId}");
+			Log.Info($"standalone {MonopolyApp.IsStandalone()}");
+			Log.Info("Open profile failed sanity checks");
+		}
 
 //#if STANDALONE
 		try
 		{
+			var friendObject = GetFriendObject( friend.SteamId );
+			var friendOverlayMethod = friendObject?.GetType().GetMethod( "OpenInOverlay", InstanceReflectionFlags, null, new[] { typeof( string ) }, null );
+			if ( TryInvokeInstanceFriendAction( friendObject, friendOverlayMethod, "steamid" ) )
+				return true;
+
+			Log.Info("OpenInOverlay failed");
+
 			var steamFriendsType = FindLoadedType( "Steamworks.SteamFriends" );
 			var overlayMethod = steamFriendsType?.GetMethod( "OpenUserOverlay", StaticReflectionFlags );
 
@@ -204,6 +210,51 @@ public static class SteamFriendsBridge
 			return false;
 		}
 
+		return result is not bool success || success;
+	}
+
+	private static bool TryInvokeInstanceFriendAction( object target, MethodInfo method, string value )
+	{
+		if ( target is null || method is null )
+			return false;
+
+		var parameters = method.GetParameters();
+		object result;
+
+		if ( parameters.Length == 0 )
+		{
+			result = method.Invoke( target, null );
+		}
+		else if ( parameters.Length == 1 )
+		{
+			result = method.Invoke( target, new object[] { value ?? "" } );
+		}
+		else
+		{
+			return false;
+		}
+
+		return result is not bool success || success;
+	}
+
+	private static bool TryInviteUserToGame( long steamId, string connectTarget )
+	{
+		var steamFriendsType = FindLoadedType( "Steamworks.SteamFriends" );
+		var internalProperty = steamFriendsType?.GetProperty( "Internal", StaticReflectionFlags );
+		var steamFriendsInternal = internalProperty?.GetValue( null );
+		var inviteMethod = steamFriendsInternal?.GetType().GetMethod( "InviteUserToGame", InstanceReflectionFlags );
+		if ( inviteMethod is null )
+			return false;
+
+		var parameters = inviteMethod.GetParameters();
+		if ( parameters.Length != 2 )
+			return false;
+
+		var friendArgument = CreateSteamIdArgument( steamId, parameters[0].ParameterType );
+		if ( friendArgument is null )
+			return false;
+
+		var result = inviteMethod.Invoke( steamFriendsInternal, new object[] { friendArgument, connectTarget ?? "" } );
 		return result is not bool success || success;
 	}
 
