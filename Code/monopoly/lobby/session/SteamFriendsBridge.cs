@@ -69,11 +69,13 @@ public static class SteamFriendsBridge
 	};
 	private static IReadOnlyList<SteamFriendListEntry> cachedFriends = Array.Empty<SteamFriendListEntry>();
 	private static readonly Dictionary<long, Texture> cachedAvatarTextures = new();
-	private static readonly Dictionary<ulong, string> cachedAppNames = new();
 	private static readonly HashSet<long> loadingAvatarTextures = new();
+#if STANDALONE
+	private static readonly Dictionary<ulong, string> cachedAppNames = new();
 	private static readonly HashSet<ulong> loadingAppNames = new();
-	private static readonly HashSet<string> avatarLogKeys = new();
 	private static readonly HttpClient appNameHttp = new();
+#endif
+	private static readonly HashSet<string> avatarLogKeys = new();
 	private static float nextRefreshTime;
 
 	public static IReadOnlyList<SteamFriendListEntry> GetFriends()
@@ -221,6 +223,47 @@ public static class SteamFriendsBridge
 #endif
 
 		return Array.Empty<SteamFriendListEntry>();
+	}
+
+	private static void HydrateCachedGameNames( IReadOnlyList<SteamFriendListEntry> friends )
+	{
+#if STANDALONE
+		if ( friends is null || friends.Count == 0 || cachedAppNames.Count == 0 )
+			return;
+
+		foreach ( var friend in friends )
+		{
+			if ( friend is null || !friend.IsPlayingAnyGame || friend.IsPlayingThisGame )
+				continue;
+
+			if ( !friend.GameName.StartsWith( "Steam app ", StringComparison.OrdinalIgnoreCase ) )
+				continue;
+
+			if ( ulong.TryParse( friend.GameName["Steam app ".Length..], out var gameId ) && cachedAppNames.TryGetValue( gameId, out var appName ) )
+				friend.GameName = appName;
+		}
+#else
+		return;
+#endif
+	}
+
+	private static void HydrateCachedAvatarTextures( IReadOnlyList<SteamFriendListEntry> friends )
+	{
+#if STANDALONE
+		if ( friends is null || friends.Count == 0 || cachedAvatarTextures.Count == 0 )
+			return;
+
+		foreach ( var friend in friends )
+		{
+			if ( friend is null || friend.AvatarTexture is not null )
+				continue;
+
+			if ( cachedAvatarTextures.TryGetValue( friend.SteamId, out var texture ) )
+				friend.AvatarTexture = texture;
+		}
+#else
+		return;
+#endif
 	}
 
 #if STANDALONE
@@ -451,24 +494,6 @@ public static class SteamFriendsBridge
 		};
 	}
 
-	private static void HydrateCachedGameNames( IReadOnlyList<SteamFriendListEntry> friends )
-	{
-		if ( friends is null || friends.Count == 0 || cachedAppNames.Count == 0 )
-			return;
-
-		foreach ( var friend in friends )
-		{
-			if ( friend is null || !friend.IsPlayingAnyGame || friend.IsPlayingThisGame )
-				continue;
-
-			if ( !friend.GameName.StartsWith( "Steam app ", StringComparison.OrdinalIgnoreCase ) )
-				continue;
-
-			if ( ulong.TryParse( friend.GameName["Steam app ".Length..], out var gameId ) && cachedAppNames.TryGetValue( gameId, out var appName ) )
-				friend.GameName = appName;
-		}
-	}
-
 	private static async Task LoadSteamAppNameAsync( ulong appId )
 	{
 		try
@@ -524,21 +549,6 @@ public static class SteamFriendsBridge
 		}
 
 		return null;
-	}
-
-	private static void HydrateCachedAvatarTextures( IReadOnlyList<SteamFriendListEntry> friends )
-	{
-		if ( friends is null || friends.Count == 0 || cachedAvatarTextures.Count == 0 )
-			return;
-
-		foreach ( var friend in friends )
-		{
-			if ( friend is null || friend.AvatarTexture is not null )
-				continue;
-
-			if ( cachedAvatarTextures.TryGetValue( friend.SteamId, out var texture ) )
-				friend.AvatarTexture = texture;
-		}
 	}
 
 	private static async Task LoadAvatarTextureAsync( long steamId, object friend )
