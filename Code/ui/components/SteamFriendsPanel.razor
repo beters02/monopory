@@ -23,7 +23,14 @@
 				{
 					<div class="@GetFriendRowClasses( friend )" title="@friend.Name" onclick="@(() => ToggleFriendPopup( friend ))">
 						<div class="steam-friend-avatar">
-							@RenderAvatarContent( friend )
+							@if ( friend.AvatarTexture is not null )
+							{
+								<Image class="steam-avatar-image" Texture="@friend.AvatarTexture"></Image>
+							}
+							else
+							{
+								<div class="steam-avatar-initials">@GetInitials( friend.Name )</div>
+							}
 						</div>
 						<div class="steam-friend-body">
 							<div class="steam-friend-name">@friend.Name</div>
@@ -39,7 +46,14 @@
 		<div class="steam-friend-popup" style="@PopupStyle">
 			<div class="steam-friend-popup-top">
 				<div class="steam-friend-popup-avatar">
-					@RenderAvatarContent( SelectedFriend )
+					@if ( SelectedFriend.AvatarTexture is not null )
+					{
+						<Image class="steam-avatar-image" Texture="@SelectedFriend.AvatarTexture"></Image>
+					}
+					else
+					{
+						<div class="steam-avatar-initials">@GetInitials( SelectedFriend.Name )</div>
+					}
 				</div>
 				<div class="steam-friend-popup-main">
 					<div class="steam-friend-popup-name">@SelectedFriend.Name</div>
@@ -206,23 +220,6 @@
 
 		return name.Trim()[0].ToString().ToUpper();
 	}
-
-	private static RenderFragment RenderAvatarContent( SteamFriendListEntry friend ) => builder =>
-	{
-		if ( friend?.AvatarTexture is not null )
-		{
-			builder.OpenComponent<Image>( 0 );
-			builder.AddAttribute( 1, "class", "steam-avatar-image" );
-			builder.AddAttribute( 2, "Texture", friend.AvatarTexture );
-			builder.CloseComponent();
-			return;
-		}
-
-		builder.OpenElement( 3, "div" );
-		builder.AddAttribute( 4, "class", "steam-avatar-initials" );
-		builder.AddContent( 5, GetInitials( friend?.Name ) );
-		builder.CloseElement();
-	};
 
 	protected override int BuildHash()
 	{
