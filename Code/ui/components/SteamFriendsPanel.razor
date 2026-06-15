@@ -9,7 +9,7 @@
 			<div class="steam-friends-title">Friends</div>
 			<div class="@GetStandaloneBadgeClasses()">@GetStandaloneBadgeText()</div>
 		</div>
-		<div class="steam-friends-list monopory-scroll-y" @ref="FriendsListPanel">
+		<div class="steam-friends-list monopory-scroll-y">
 			@if ( Friends.Count == 0 )
 			{
 				<div class="steam-friends-empty">
@@ -64,7 +64,6 @@
 {
 	private SteamFriendListEntry SelectedFriend;
 	private Panel FriendsPanel = null!;
-	private Panel FriendsListPanel = null!;
 	private float PopupRight;
 	private float PopupTop;
 	private int actionRevision;
@@ -97,37 +96,16 @@
 		}
 
 		SelectedFriend = friend;
-		var friends = Friends;
-		var friendIndex = GetFriendIndex( friends, friend );
 		var panelOrigin = FriendsPanel is not null
 			? ScreenPositionToPanelPosition( FriendsPanel.PanelPositionToScreenPosition( Vector2.Zero ) )
 			: ScreenPositionToPanelPosition( Mouse.Position );
-		var rowTop = panelOrigin.y + FriendsHeaderHeight + FriendsListPaddingTop + friendIndex * (FriendRowHeight + FriendRowGap) - (FriendsListPanel?.ScrollOffset.y ?? 0f);
+		var clickPosition = ScreenPositionToPanelPosition( Mouse.Position );
 
 		PopupRight = FriendsPanelRight + FriendsPanelWidth + PopupGap;
-		PopupTop = Math.Max( 12f, rowTop - 8f );
+		
+		PopupTop = Mouse.Position.y * (1/this.ScaleToScreen) - (FriendRowHeight/2)/2;
 		Mouse.Visibility = MouseVisibility.Visible;
 		actionRevision++;
-	}
-
-	private static int GetFriendIndex( IReadOnlyList<SteamFriendListEntry> friends, SteamFriendListEntry friend )
-	{
-		if ( friends is null || friend is null )
-			return 0;
-
-		for ( var i = 0; i < friends.Count; i++ )
-		{
-			if ( ReferenceEquals( friends[i], friend ) )
-				return i;
-		}
-
-		for ( var i = 0; i < friends.Count; i++ )
-		{
-			if ( friends[i]?.SteamId == friend.SteamId && string.Equals( friends[i]?.Name, friend.Name, StringComparison.Ordinal ) )
-				return i;
-		}
-
-		return 0;
 	}
 
 	private void InviteSelectedFriend()
