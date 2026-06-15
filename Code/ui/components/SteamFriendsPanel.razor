@@ -4,7 +4,7 @@
 @inherits Panel
 
 <root class="steam-friends-root">
-	<div class="steam-friends-panel">
+	<div class="steam-friends-panel" @ref="FriendsPanel">
 		<div class="steam-friends-header">
 			<div class="steam-friends-title">Friends</div>
 			<div class="@GetStandaloneBadgeClasses()">@GetStandaloneBadgeText()</div>
@@ -63,6 +63,7 @@
 @code
 {
 	private SteamFriendListEntry SelectedFriend;
+	private Panel FriendsPanel = null!;
 	private float PopupLeft;
 	private float PopupTop;
 	private int actionRevision;
@@ -88,8 +89,18 @@
 		}
 
 		SelectedFriend = friend;
-		PopupLeft = Math.Max( 12f, Mouse.Position.x - 430f );
-		PopupTop = Math.Max( 12f, Mouse.Position.y - 54f );
+		var panelOrigin = FriendsPanel is not null
+			? ScreenPositionToPanelPosition( FriendsPanel.PanelPositionToScreenPosition( Vector2.Zero ) )
+			: ScreenPositionToPanelPosition( Mouse.Position );
+		var mousePosition = ScreenPositionToPanelPosition( Mouse.Position );
+		var screenBottomRight = ScreenPositionToPanelPosition( new Vector2( Screen.Width, Screen.Height ) );
+		var popupWidth = 390f;
+		var popupHeight = 148f;
+		var gap = 12f;
+
+		PopupLeft = Math.Max( 12f, panelOrigin.x + (popupWidth*.75f) /*- popupWidth - gap*/ );
+		PopupTop = panelOrigin.y + popupHeight;
+		//PopupTop = Math.Clamp( mousePosition.y - 36f, 12f, Math.Max( 12f, screenBottomRight.y - popupHeight - 12f ) );
 		Mouse.Visibility = MouseVisibility.Visible;
 		actionRevision++;
 	}
