@@ -7,7 +7,7 @@ SteamFriendsPanel {
 	right: 0;
 	bottom: 0;
 	pointer-events: none;
-	z-index: 80;
+	z-index: 180;
 
 	.steam-friends-root {
 		position: absolute;
@@ -33,7 +33,7 @@ SteamFriendsPanel {
 		display: flex;
 		flex-direction: column;
 		overflow: hidden;
-		transition: width 0.12s ease-out;
+		transition: width 0.2s ease-out, background-color 0.2s ease-out, box-shadow 0.2s ease-out;
 	}
 
 	.steam-friends-panel:hover,
@@ -53,7 +53,7 @@ SteamFriendsPanel {
 		gap: 10px;
 		opacity: 0;
 		overflow: hidden;
-		transition: opacity 0.08s ease-out;
+		transition: opacity 0.14s ease-out;
 	}
 
 	.steam-friends-panel:hover .steam-friends-header,
@@ -112,7 +112,7 @@ SteamFriendsPanel {
 		pointer-events: all;
 		cursor: pointer;
 		overflow: hidden;
-		transition: background-color 0.12s ease-out, border-color 0.12s ease-out;
+		transition: background-color 0.16s ease-out, border-color 0.16s ease-out;
 	}
 
 	.steam-friends-panel:hover .steam-friend-row,
@@ -177,7 +177,7 @@ SteamFriendsPanel {
 		gap: 3px;
 		justify-content: center;
 		opacity: 0;
-		transition: opacity 0.08s ease-out;
+		transition: opacity 0.14s ease-out;
 	}
 
 	.steam-friends-panel:hover .steam-friend-body,
@@ -244,6 +244,20 @@ SteamFriendsPanel {
 		display: flex;
 		flex-direction: column;
 		z-index: 200;
+		opacity: 1;
+		transform: translateX(0px) scale(1);
+		transition: opacity 0.14s ease-out, transform 0.14s ease-out;
+		animation-name: steam-friend-popup-in;
+		animation-duration: 0.14s;
+		animation-timing-function: ease-out;
+	}
+
+	.steam-friend-popup.is-closing {
+		opacity: 0;
+		transform: translateX(8px) scale(0.98);
+		animation-name: steam-friend-popup-out;
+		animation-duration: 0.14s;
+		animation-timing-function: ease-out;
 	}
 
 	.steam-friend-popup-top {
@@ -338,5 +352,29 @@ SteamFriendsPanel {
 		font-size: 14px;
 		font-weight: 900;
 		text-align: center;
+	}
+
+	@keyframes steam-friend-popup-in {
+		from {
+			opacity: 0;
+			transform: translateX(8px) scale(0.98);
+		}
+
+		to {
+			opacity: 1;
+			transform: translateX(0px) scale(1);
+		}
+	}
+
+	@keyframes steam-friend-popup-out {
+		from {
+			opacity: 1;
+			transform: translateX(0px) scale(1);
+		}
+
+		to {
+			opacity: 0;
+			transform: translateX(8px) scale(0.98);
+		}
 	}
 }

@@ -43,7 +43,7 @@
 	</div>
 	@if ( SelectedFriend is not null )
 	{
-		<div class="steam-friend-popup" style="@PopupStyle" @ref="PopupPanel">
+		<div class="@PopupClasses" style="@PopupStyle" @ref="PopupPanel">
 			<div class="steam-friend-popup-top">
 				<div class="steam-friend-popup-avatar">
 					@if ( SelectedFriend.AvatarTexture is not null )
@@ -61,15 +61,18 @@
 				</div>
 			</div>
 			<div class="steam-friend-popup-actions">
-				<button class="steam-friend-popup-action primary" onclick="@InviteSelectedFriend">
-					<div class="steam-friend-popup-action-icon">+</div>
-					<div>Invite</div>
-				</button>
+				@if ( CanInviteFriends )
+				{
+					<button class="steam-friend-popup-action primary" onclick="@InviteSelectedFriend">
+						<div class="steam-friend-popup-action-icon">+</div>
+						<div>Invite</div>
+					</button>
+				}
 				<button class="steam-friend-popup-action" onclick="@OpenSelectedFriendProfile">
 					<div class="steam-friend-popup-action-icon">P</div>
 					<div>Profile</div>
 				</button>
-				<button class="steam-friend-popup-action" onclick="@ClosePopup">
+				<button class="steam-friend-popup-action" onclick="@RequestClosePopup">
 					<div class="steam-friend-popup-action-icon">x</div>
 					<div>Close</div>
 				</button>
@@ -87,8 +90,11 @@
 	private float PopupTop;
 	private int actionRevision;
 	private bool IsFriendUiHovered;
+	private bool IsPopupClosing;
 	private float lastHoverTime;
+	private float popupCloseStartedAt;
 	private const float HoverCloseDelay = 0.12f;
+	private const float PopupOutroDuration = 0.14f;
 	private const float FriendsHeaderHeight = 46f;
 	private const float FriendsListPaddingTop = 8f;
 	private const float FriendRowHeight = 58f;
@@ -110,7 +116,10 @@
 
 		if ( IsFriendUiHovered )
 			lastHoverTime = Time.Now;
-		else if ( SelectedFriend is not null && Time.Now - lastHoverTime > HoverCloseDelay )
+		else if ( SelectedFriend is not null && !IsPopupClosing && Time.Now - lastHoverTime > HoverCloseDelay )
+			RequestClosePopup();
+
+		if ( IsPopupClosing && Time.Now - popupCloseStartedAt > PopupOutroDuration )
 			ClosePopup();
 
 		if ( wasHovered != IsFriendUiHovered )
@@ -126,11 +135,12 @@
 
 		if ( ReferenceEquals( SelectedFriend, friend ) )
 		{
-			ClosePopup();
+			RequestClosePopup();
 			return;
 		}
 
 		SelectedFriend = friend;
+		IsPopupClosing = false;
 		var panelOrigin = FriendsPanel is not null
 			? ScreenPositionToPanelPosition( FriendsPanel.PanelPositionToScreenPosition( Vector2.Zero ) )
 			: ScreenPositionToPanelPosition( Mouse.Position );
@@ -152,7 +162,7 @@
 		if ( !SteamFriendsBridge.TryInviteFriend( SelectedFriend ) )
 			Log.Warning( $"Could not invite Steam friend {SelectedFriend.Name}." );
 
-		ClosePopup();
+		RequestClosePopup();
 	}
 
 	private void OpenSelectedFriendProfile()
@@ -163,17 +173,31 @@
 		if ( !SteamFriendsBridge.TryOpenProfile( SelectedFriend ) )
 			Log.Warning( $"Could not open Steam profile for {SelectedFriend.Name}." );
 
-		ClosePopup();
+		RequestClosePopup();
+	}
+
+	private void RequestClosePopup()
+	{
+		if ( SelectedFriend is null || IsPopupClosing )
+			return;
+
+		IsPopupClosing = true;
+		popupCloseStartedAt = Time.Now;
+		actionRevision++;
 	}
 
 	private void ClosePopup()
 	{
 		SelectedFriend = null;
+		IsPopupClosing = false;
+		PopupPanel = null!;
 		actionRevision++;
 	}
 
 	private string PanelClasses => IsFriendUiHovered ? "steam-friends-panel is-expanded" : "steam-friends-panel";
+	private string PopupClasses => IsPopupClosing ? "steam-friend-popup is-closing" : "steam-friend-popup is-open";
 	private string PopupStyle => $"right: {PopupRight:0}px; top: {PopupTop:0}px;";
+	private bool CanInviteFriends => MonopolyApp.LobbyRef is not null;
 
 	private bool IsMouseInsideFriendUi()
 	{
@@ -283,6 +307,8 @@
 		hash.Add( PopupTop );
 		hash.Add( actionRevision );
 		hash.Add( IsFriendUiHovered );
+		hash.Add( IsPopupClosing );
+		hash.Add( CanInviteFriends );
 		hash.Add( MathF.Floor( Time.Now * 0.5f ) );
 
 		foreach ( var friend in Friends )

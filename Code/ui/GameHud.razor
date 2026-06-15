@@ -117,7 +117,10 @@
 			}
 		}
 	}
-	<SteamFriendsPanel></SteamFriendsPanel>
+	@if ( IsEscapeMenuOpen )
+	{
+		<SteamFriendsPanel></SteamFriendsPanel>
+	}
 </root>
 
 @code
@@ -233,7 +236,14 @@
 		if ( MonopolyApp.IsStandalone() )
 		{
 			if (Input.EscapePressed)
+			{
+				// Cancel escape pressed when MonopolyApp.EditorIsStandalone
+				if ( Application.IsEditor )
+					Input.EscapePressed = false;
+
 				ToggleEscapeMenu();
+			}
+				
 			
 			return;
 		}
