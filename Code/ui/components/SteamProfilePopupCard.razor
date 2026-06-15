@@ -56,10 +56,10 @@
 	[Parameter] public Action OnClose { get; set; }
 
 	private string RootClasses => IsClosing
-		? "steam-profile-popup-card steam-friend-popup is-closing"
-		: "steam-profile-popup-card steam-friend-popup is-open";
+		? "is-closing"
+		: "is-open";
 
-	private string AvatarClasses => $"steam-profile-popup-avatar steam-friend-popup-avatar {GetPresenceClass( Entry )}";
+	private string AvatarClasses => $"steam-profile-popup-avatar {GetPresenceClass( Entry )}";
 	private bool ShowInviteAction => CanInvite && OnInvite is not null;
 	private bool CanOpenProfile => Entry is not null && Entry.SteamId != 0 && OnOpenProfile is not null;
 
