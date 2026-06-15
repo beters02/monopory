@@ -23,6 +23,13 @@
 			</div>
 		</div>
 		<div class="steam-profile-popup-actions">
+			@if ( ShowJoinAction )
+			{
+				<button class="steam-profile-popup-action primary" onclick="@HandleJoin">
+					<div class="steam-profile-popup-action-icon">J</div>
+					<div>Join</div>
+				</button>
+			}
 			@if ( ShowInviteAction )
 			{
 				<button class="steam-profile-popup-action primary" onclick="@HandleInvite">
@@ -51,7 +58,9 @@
 	[Parameter] public string PopupStyle { get; set; } = "";
 	[Parameter] public bool IsClosing { get; set; }
 	[Parameter] public bool CanInvite { get; set; }
+	[Parameter] public bool CanJoin { get; set; }
 	[Parameter] public Action OnInvite { get; set; }
+	[Parameter] public Action OnJoin { get; set; }
 	[Parameter] public Action OnOpenProfile { get; set; }
 	[Parameter] public Action OnClose { get; set; }
 
@@ -61,9 +70,11 @@
 
 	private string AvatarClasses => $"steam-profile-popup-avatar {GetPresenceClass( Entry )}";
 	private bool ShowInviteAction => CanInvite && OnInvite is not null;
+	private bool ShowJoinAction => CanJoin && Entry?.CanJoinLobby == true && OnJoin is not null;
 	private bool CanOpenProfile => Entry is not null && Entry.SteamId != 0 && OnOpenProfile is not null;
 
 	private void HandleInvite() => OnInvite?.Invoke();
+	private void HandleJoin() => OnJoin?.Invoke();
 	private void HandleOpenProfile() => OnOpenProfile?.Invoke();
 	private void HandleClose() => OnClose?.Invoke();
 
@@ -125,7 +136,12 @@
 		hash.Add( PopupStyle );
 		hash.Add( IsClosing );
 		hash.Add( CanInvite );
+		hash.Add( CanJoin );
+		hash.Add( Entry?.CanJoinLobby ?? false );
+		hash.Add( Entry?.JoinLobbyId ?? 0 );
+		hash.Add( Entry?.JoinConnectTarget ?? "" );
 		hash.Add( OnInvite is not null );
+		hash.Add( OnJoin is not null );
 		hash.Add( OnOpenProfile is not null );
 		return hash.ToHashCode();
 	}

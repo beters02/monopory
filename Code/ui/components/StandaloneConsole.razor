@@ -268,17 +268,103 @@
 			var commandName = commandParts.FirstOrDefault() ?? "";
 			var args = commandParts.Skip( 1 ).ToArray();
 
-			if (GameCommandManager.IsCommandSourceOverwrite(commandName))
+			if ( TryRunGameConVarCommand( commandName, args ) )
 			{
-				GameCommandManager.RunCommandFromName(Connection.Local, commandName, args);
+				return;
+			}
+
+			if ( GameCommandManager.IsCommandSourceOverwrite( commandName ) )
+			{
+				GameCommandManager.RunCommandFromName( Connection.Local, commandName, args );
 			}
 			else
+			{
 				ConsoleSystem.Run( command );
+			}
 		}
 		catch ( Exception exception )
 		{
 			AddEntry( exception.Message, "err" );
 		}
+	}
+
+	private bool TryRunGameConVarCommand( string commandName, string[] args )
+	{
+		if ( !GameConVars.All.TryGetValue( commandName, out var conVar ) )
+			return false;
+
+		if ( args is null || args.Length == 0 )
+		{
+			AddEntry( $"{conVar.Name} {FormatConVarValue( conVar.BoxedValue )}", "msg" );
+			return true;
+		}
+
+		var rawValue = string.Join( " ", args );
+		if ( !TryParseConVarValue( conVar.ValueType, rawValue, out var parsedValue, out var errorMessage ) )
+		{
+			AddEntry( $"{conVar.Name}: {errorMessage}", "err" );
+			return true;
+		}
+
+		SetGameConVarValue( conVar, parsedValue );
+		AddEntry( $"{conVar.Name} => {FormatConVarValue( conVar.BoxedValue )}", "msg" );
+		return true;
+	}
+
+	private static void SetGameConVarValue( GameConVar conVar, object value )
+	{
+		if ( string.Equals( conVar.Name, ShowHiddenMatchOptionsConVar.Name, StringComparison.OrdinalIgnoreCase ) && value is bool showHiddenMatchOptions )
+		{
+			ShowHiddenMatchOptionsConVar.SetValue( showHiddenMatchOptions );
+			return;
+		}
+
+		conVar.BoxedValue = value;
+	}
+
+	private static bool TryParseConVarValue( Type valueType, string rawValue, out object value, out string errorMessage )
+	{
+		value = null;
+		errorMessage = "";
+
+		if ( valueType == typeof( string ) )
+		{
+			value = rawValue ?? "";
+			return true;
+		}
+
+		if ( valueType == typeof( bool ) )
+		{
+			if ( GameCommandManager.TryParseBool( rawValue, out var boolValue ) )
+			{
+				value = boolValue;
+				return true;
+			}
+
+			errorMessage = $"Unable to parse bool value \"{rawValue}\".";
+			return false;
+		}
+
+		try
+		{
+			value = Convert.ChangeType( rawValue, valueType );
+			return true;
+		}
+		catch
+		{
+			errorMessage = $"Unable to parse {valueType.Name} value \"{rawValue}\".";
+			return false;
+		}
+	}
+
+	private static string FormatConVarValue( object value )
+	{
+		return value switch
+		{
+			null => "",
+			bool boolValue => boolValue ? "true" : "false",
+			_ => value.ToString()
+		};
 	}
 
 	private static List<string> SplitCommandArguments( string command )

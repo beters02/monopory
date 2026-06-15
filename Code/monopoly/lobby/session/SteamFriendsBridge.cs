@@ -13,11 +13,14 @@ public sealed class SteamFriendListEntry
 	public string Status { get; set; } = "";
 	public string RichPresence { get; set; } = "";
 	public string GameName { get; set; } = "";
+	public long JoinLobbyId { get; set; }
+	public string JoinConnectTarget { get; set; } = "";
 	public bool IsOnline { get; set; }
 	public bool IsAway { get; set; }
 	public bool IsPlayingAnyGame { get; set; }
 	public bool IsPlayingThisGame { get; set; }
 	public Texture AvatarTexture { get; set; }
+	public bool CanJoinLobby => JoinLobbyId != 0 || !string.IsNullOrWhiteSpace( JoinConnectTarget );
 
 	public SteamFriendPresenceGroup PresenceGroup
 	{
@@ -191,6 +194,43 @@ public static class SteamFriendsBridge
 		return false;
 	}
 
+	public static async Task<bool> TryJoinFriend( SteamFriendListEntry friend, Scene scene )
+	{
+		if ( friend is null || !friend.CanJoinLobby || !MonopolyApp.IsStandalone() )
+			return false;
+
+#if STANDALONE
+		try
+		{
+			if ( Networking.IsActive )
+				Networking.Disconnect();
+
+			var connected = false;
+			if ( friend.JoinLobbyId != 0 )
+			{
+				connected = await Networking.TryConnectSteamId( friend.JoinLobbyId, 3 );
+			}
+			else if ( !string.IsNullOrWhiteSpace( friend.JoinConnectTarget ) )
+			{
+				Networking.Connect( friend.JoinConnectTarget );
+				connected = await WaitForConnectionAsync( 6f );
+			}
+
+			if ( connected )
+			{
+				SceneFlow.LoadLobby( scene );
+				return true;
+			}
+		}
+		catch ( Exception exception )
+		{
+			Log.Warning( $"Failed to join Steam friend {friend.SteamId}: {exception.Message}" );
+		}
+#endif
+
+		return false;
+	}
+
 	private static IReadOnlyList<SteamFriendListEntry> LoadFriends()
 	{
 #if STANDALONE
@@ -282,6 +322,8 @@ public static class SteamFriendsBridge
 			Status = GetStatus( friend ),
 			RichPresence = GetRichPresence( friend ),
 			GameName = GetGameName( friend ),
+			JoinLobbyId = GetJoinLobbyId( friend ),
+			JoinConnectTarget = GetJoinConnectTarget( friend ),
 			IsOnline = GetBoolValue( GetPropertyValue( friend, "IsOnline" ) ),
 			IsAway = IsAway( friend ),
 			IsPlayingAnyGame = IsPlayingAnyGame( friend ),
@@ -440,6 +482,70 @@ public static class SteamFriendsBridge
 	{
 		var method = friend.GetType().GetMethod( "GetRichPresence", InstanceReflectionFlags, null, new[] { typeof( string ) }, null );
 		return GetStringValue( method?.Invoke( friend, new object[] { key } ) );
+	}
+
+	private static long GetJoinLobbyId( object friend )
+	{
+		var connectTarget = GetJoinConnectTarget( friend );
+		if ( TryParseLobbyIdFromConnectTarget( connectTarget, out var richPresenceLobbyId ) )
+			return richPresenceLobbyId;
+
+		var directLobbyId = GetSteamIdValue(
+			GetPropertyValue( friend, "LobbyId" ) ??
+			GetPropertyValue( friend, "LobbyID" ) ??
+			GetPropertyValue( friend, "GameLobbyId" ) ??
+			GetPropertyValue( friend, "GameLobbyID" ) ??
+			GetPropertyValue( friend, "SteamIDLobby" ) ??
+			GetPropertyValue( friend, "LobbySteamId" ) );
+		if ( directLobbyId != 0 )
+			return directLobbyId;
+
+		var gameInfo = GetPropertyValue( friend, "GameInfo" );
+		if ( gameInfo is null )
+			return 0;
+
+		return GetSteamIdValue(
+			GetPropertyValue( gameInfo, "LobbyId" ) ??
+			GetPropertyValue( gameInfo, "LobbyID" ) ??
+			GetPropertyValue( gameInfo, "GameLobbyId" ) ??
+			GetPropertyValue( gameInfo, "GameLobbyID" ) ??
+			GetPropertyValue( gameInfo, "SteamIDLobby" ) ??
+			GetPropertyValue( gameInfo, "LobbySteamId" ) ??
+			GetPropertyValue( gameInfo, "Lobby" ) );
+	}
+
+	private static string GetJoinConnectTarget( object friend )
+	{
+		var connect = GetRichPresenceValue( friend, "connect" );
+		if ( !string.IsNullOrWhiteSpace( connect ) )
+			return connect;
+
+		var connectLobby = GetRichPresenceValue( friend, "connect_lobby" );
+		if ( !string.IsNullOrWhiteSpace( connectLobby ) )
+			return connectLobby.StartsWith( "+connect_lobby ", StringComparison.OrdinalIgnoreCase )
+				? connectLobby
+				: $"+connect_lobby {connectLobby}";
+
+		return "";
+	}
+
+	private static bool TryParseLobbyIdFromConnectTarget( string connectTarget, out long lobbyId )
+	{
+		lobbyId = 0;
+		if ( string.IsNullOrWhiteSpace( connectTarget ) )
+			return false;
+
+		var parts = connectTarget.Split( ' ', StringSplitOptions.RemoveEmptyEntries );
+		for ( var i = 0; i < parts.Length - 1; i++ )
+		{
+			if ( parts[i].Equals( "+connect_lobby", StringComparison.OrdinalIgnoreCase )
+				|| parts[i].Equals( "connect_lobby", StringComparison.OrdinalIgnoreCase ) )
+			{
+				return long.TryParse( parts[i + 1], out lobbyId ) && lobbyId != 0;
+			}
+		}
+
+		return long.TryParse( connectTarget, out lobbyId ) && lobbyId != 0;
 	}
 
 	private static bool IsAway( object friend )
@@ -658,6 +764,20 @@ public static class SteamFriendsBridge
 			return $"+connect_lobby {lobbyId}";
 
 		return Networking.ServerName ?? "";
+	}
+
+	private static async Task<bool> WaitForConnectionAsync( float timeoutSeconds )
+	{
+		var deadline = Time.Now + Math.Max( timeoutSeconds, 0.25f );
+		while ( Time.Now < deadline )
+		{
+			if ( Networking.IsActive )
+				return true;
+
+			await Task.Delay( 100 );
+		}
+
+		return Networking.IsActive;
 	}
 
 	private static object GetPropertyValue( object instance, string propertyName )

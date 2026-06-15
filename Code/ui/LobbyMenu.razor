@@ -386,6 +386,19 @@
 		StateHasChanged();
 	}
 
+	private static bool GetShowHiddenMatchOptionsValue()
+	{
+		try
+		{
+			var value = ConsoleSystem.GetValue( ShowHiddenMatchOptionsConVar.Name );
+			return string.IsNullOrWhiteSpace( value ) ? ShowHiddenMatchOptionsConVar.Value : value.ToBool();
+		}
+		catch ( KeyNotFoundException )
+		{
+			return ShowHiddenMatchOptionsConVar.Value;
+		}
+	}
+
 	private void RegisterConfigGroupsAndEditableSections()
 	{
 		var options = GetVisibleConfigOptions();
@@ -461,13 +474,12 @@
 
 		Log.Info("Added");
 
-		string showHiddenConVarValue = ConsoleSystem.GetValue("show_hidden_match_options");
-		ShowHiddenMatchOptions = showHiddenConVarValue is not null ? showHiddenConVarValue.ToBool() : ShowHiddenMatchOptionsConVar.Value;
+		ShowHiddenMatchOptions = GetShowHiddenMatchOptionsValue();
 		LoadMatchSettingPresets();
 		RegisterConfigGroupsAndEditableSections();
 
-		ShowHiddenMatchOptionsConVar.RegisterOnChanged(ShowHiddenMatchOptionsCallbackId, (_, newValue) => {
-			ApplyShowHiddenMatchOptions(newValue);
+		ShowHiddenMatchOptionsConVar.RegisterOnChanged( ShowHiddenMatchOptionsCallbackId, (_, newValue ) => {
+			ApplyShowHiddenMatchOptions( newValue );
 		});
     }
 

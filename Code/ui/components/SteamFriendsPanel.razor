@@ -49,7 +49,9 @@
 				PopupStyle="@PopupStyle"
 				IsClosing="@IsPopupClosing"
 				CanInvite="@CanInviteFriends"
+				CanJoin="@CanJoinFriends"
 			OnInvite="@InviteSelectedFriend"
+			OnJoin="@JoinSelectedFriend"
 			OnOpenProfile="@OpenSelectedFriendProfile"
 			OnClose="@RequestClosePopup">
 		</SteamProfilePopupCard>
@@ -58,6 +60,8 @@
 
 @code
 {
+	[Parameter] public bool EnableJoin { get; set; } = true;
+
 	private SteamFriendListEntry SelectedFriend;
 	private Panel FriendsPanel = null!;
 	private SteamProfilePopupCard PopupPanel = null!;
@@ -140,6 +144,21 @@
 		RequestClosePopup();
 	}
 
+	private async void JoinSelectedFriend()
+	{
+		if ( SelectedFriend is null )
+			return;
+
+		LoadingState.Show( "Joining lobby", $"Connecting to {SelectedFriend.Name}'s lobby." );
+		if ( !await SteamFriendsBridge.TryJoinFriend( SelectedFriend, null ) )
+		{
+			LoadingState.Hide();
+			Log.Warning( $"Could not join Steam friend {SelectedFriend.Name}." );
+		}
+
+		RequestClosePopup();
+	}
+
 	private void OpenSelectedFriendProfile()
 	{
 		if ( SelectedFriend is null )
@@ -172,6 +191,7 @@
 	private string PanelClasses => IsFriendUiHovered ? "steam-friends-panel is-expanded" : "steam-friends-panel";
 	private string PopupStyle => $"right: {PopupRight:0}px; top: {PopupTop:0}px;";
 	private bool CanInviteFriends => MonopolyApp.LobbyRef is not null;
+	private bool CanJoinFriends => EnableJoin;
 
 	private bool IsMouseInsideFriendUi()
 	{
@@ -304,6 +324,7 @@
 		hash.Add( IsFriendUiHovered );
 		hash.Add( IsPopupClosing );
 		hash.Add( CanInviteFriends );
+		hash.Add( CanJoinFriends );
 		hash.Add( MathF.Floor( Time.Now * 0.5f ) );
 
 		foreach ( var friend in Friends )
@@ -313,6 +334,8 @@
 			hash.Add( friend.Status );
 			hash.Add( friend.RichPresence );
 			hash.Add( friend.GameName );
+			hash.Add( friend.JoinLobbyId );
+			hash.Add( friend.JoinConnectTarget );
 			hash.Add( friend.IsOnline );
 			hash.Add( friend.IsAway );
 			hash.Add( friend.IsPlayingAnyGame );

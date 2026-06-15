@@ -114,6 +114,16 @@ public static class ShowHiddenMatchOptionsConVar
 
 	private static readonly Dictionary<string, Action<bool, bool>> Callbacks = new();
 
+	public static void SetValue( bool value )
+	{
+		var oldValue = Value;
+		if ( oldValue == value )
+			return;
+
+		Value = value;
+		OnValueChanged( oldValue, value );
+	}
+
 	public static void RegisterOnChanged(string id, Action<bool, bool> callback)
 	{
 		if ( string.IsNullOrWhiteSpace( id ) || callback is null )
