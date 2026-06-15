@@ -133,7 +133,7 @@ public static class SteamFriendsBridge
 		if ( friend is null || friend.SteamId == 0 || !MonopolyApp.IsStandalone() )
 			return false;
 
-//#if STANDALONE
+#if STANDALONE
 		try
 		{
 			var connectTarget = GetInviteConnectTarget();
@@ -149,7 +149,7 @@ public static class SteamFriendsBridge
 		{
 			Log.Warning( $"Failed to invite Steam friend {friend.SteamId}: {exception.Message}" );
 		}
-//#endif
+#endif
 
 		return false;
 	}
@@ -164,7 +164,7 @@ public static class SteamFriendsBridge
 			Log.Info("Open profile failed sanity checks");
 		}
 
-//#if STANDALONE
+#if STANDALONE
 		try
 		{
 			var friendObject = GetFriendObject( friend.SteamId );
@@ -184,14 +184,14 @@ public static class SteamFriendsBridge
 		{
 			Log.Warning( $"Failed to open Steam profile {friend.SteamId}: {exception.Message}" );
 		}
-//#endif
+#endif
 
 		return false;
 	}
 
 	private static IReadOnlyList<SteamFriendListEntry> LoadFriends()
 	{
-//#if STANDALONE
+#if STANDALONE
 		try
 		{
 			var steamFriendsType = FindLoadedType( "Steamworks.SteamFriends" );
@@ -218,12 +218,12 @@ public static class SteamFriendsBridge
 		{
 			Log.Warning( $"Failed to load Steam friends: {exception.Message}" );
 		}
-//#endif
+#endif
 
 		return Array.Empty<SteamFriendListEntry>();
 	}
 
-//#if STANDALONE
+#if STANDALONE
 	private static SteamFriendListEntry CreateEntry( object friend )
 	{
 		if ( friend is null )
@@ -731,5 +731,5 @@ public static class SteamFriendsBridge
 
 		return null;
 	}
-//#endif
+#endif
 }
