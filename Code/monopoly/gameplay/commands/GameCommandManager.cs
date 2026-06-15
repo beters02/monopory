@@ -266,13 +266,8 @@ public sealed class GameCommandManager : Component
 
 		for ( var i = 0; i < (args?.Length ?? 0); i++ )
 			useArgs[i + 1] = args[i];
-
-		CommandResult callback()
-		{
-			return (CommandResult) command.Method.Invoke( null, useArgs );
-		}
-
-		RunCommand( commandName, callback, caller );
+		
+		command.Method.Invoke( null, useArgs );
 	}
 
 	internal static bool CanUseCheatCommand( Connection caller )
