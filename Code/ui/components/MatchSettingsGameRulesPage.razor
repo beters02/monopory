@@ -8,7 +8,7 @@
 <root class="match-settings-page match-settings-game-rules-page">
 	<OptionsPanelSectionList Sections="@ConfigSections" SectionOptionsVariant="@SectionOptionsVariant">
 		<ChildContent Context="section">
-			@foreach ( var option in GetConfigOptionsForGroup( section.Key ) )
+		@foreach ( var option in GetConfigOptionsForGroupForDisplay( section.Key ) )
 			{
 				<OptionsPanelRow Title="@option.Label" Value="@option.Description">
 					<ChildContent>
@@ -74,6 +74,7 @@
 	[Parameter] public bool ShowHiddenOptions { get; set; }
 	[Parameter] public Panel ScrollTarget { get; set; }
 	[Parameter] public string SectionOptionsVariant { get; set; } = "";
+	[Parameter] public bool ReverseOptionsInGroup { get; set; }
 	[Parameter] public Func<MatchConfigOption, string> IntTextValueProvider { get; set; }
 	[Parameter] public Action<MatchConfigOption> OnToggleBool { get; set; }
 	[Parameter] public Action<MatchConfigOption, int> OnChangeInt { get; set; }
@@ -94,6 +95,12 @@
 	private IEnumerable<MatchConfigOption> GetConfigOptionsForGroup( string group )
 	{
 		return GetVisibleConfigOptions().Where( option => string.Equals( option.Group, group, StringComparison.Ordinal ) );
+	}
+
+	private IEnumerable<MatchConfigOption> GetConfigOptionsForGroupForDisplay( string group )
+	{
+		var options = GetConfigOptionsForGroup( group );
+		return ReverseOptionsInGroup ? options.Reverse() : options;
 	}
 
 	private IEnumerable<MatchConfigOption> GetVisibleConfigOptions()
@@ -197,6 +204,7 @@
 		hash.Add( CanEdit );
 		hash.Add( ShowHiddenOptions );
 		hash.Add( SectionOptionsVariant ?? "" );
+		hash.Add( ReverseOptionsInGroup );
 
 		if ( Config is not null )
 		{
