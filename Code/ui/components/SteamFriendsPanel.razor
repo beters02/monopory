@@ -92,15 +92,13 @@
 		var panelOrigin = FriendsPanel is not null
 			? ScreenPositionToPanelPosition( FriendsPanel.PanelPositionToScreenPosition( Vector2.Zero ) )
 			: ScreenPositionToPanelPosition( Mouse.Position );
-		var mousePosition = ScreenPositionToPanelPosition( Mouse.Position );
+		var clickPosition = ScreenPositionToPanelPosition( Mouse.Position );
 		var screenBottomRight = ScreenPositionToPanelPosition( new Vector2( Screen.Width, Screen.Height ) );
 		var popupWidth = 390f;
 		var popupHeight = 148f;
-		var gap = 12f;
 
 		PopupLeft = Math.Max( 12f, panelOrigin.x + (popupWidth*.75f) /*- popupWidth - gap*/ );
-		PopupTop = panelOrigin.y + popupHeight;
-		//PopupTop = Math.Clamp( mousePosition.y - 36f, 12f, Math.Max( 12f, screenBottomRight.y - popupHeight - 12f ) );
+		PopupTop = Math.Clamp( clickPosition.y - 36f, 12f, Math.Max( 12f, screenBottomRight.y - popupHeight - 12f ) );
 		Mouse.Visibility = MouseVisibility.Visible;
 		actionRevision++;
 	}
