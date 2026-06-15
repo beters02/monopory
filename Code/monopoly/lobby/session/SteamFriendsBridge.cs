@@ -1,7 +1,9 @@
 using Sandbox;
 using System;
 using System.Collections;
+using System.Net.Http;
 using System.Reflection;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 public sealed class SteamFriendListEntry
@@ -10,9 +12,41 @@ public sealed class SteamFriendListEntry
 	public string Name { get; set; } = "";
 	public string Status { get; set; } = "";
 	public string RichPresence { get; set; } = "";
+	public string GameName { get; set; } = "";
 	public bool IsOnline { get; set; }
+	public bool IsAway { get; set; }
+	public bool IsPlayingAnyGame { get; set; }
 	public bool IsPlayingThisGame { get; set; }
 	public Texture AvatarTexture { get; set; }
+
+	public SteamFriendPresenceGroup PresenceGroup
+	{
+		get
+		{
+			if ( IsPlayingThisGame )
+				return SteamFriendPresenceGroup.InRentRush;
+
+			if ( IsPlayingAnyGame )
+				return SteamFriendPresenceGroup.InOtherGame;
+
+			if ( IsAway )
+				return SteamFriendPresenceGroup.Away;
+
+			if ( IsOnline )
+				return SteamFriendPresenceGroup.Online;
+
+			return SteamFriendPresenceGroup.Offline;
+		}
+	}
+}
+
+public enum SteamFriendPresenceGroup
+{
+	InRentRush,
+	InOtherGame,
+	Online,
+	Away,
+	Offline
 }
 
 public static class SteamFriendsBridge
@@ -27,14 +61,19 @@ public static class SteamFriendsBridge
 			Name = "Editor Test Friend",
 			Status = "Online",
 			RichPresence = "Testing friend popup",
+			GameName = "Rent Rush",
 			IsOnline = true,
+			IsPlayingAnyGame = true,
 			IsPlayingThisGame = true
 		}
 	};
 	private static IReadOnlyList<SteamFriendListEntry> cachedFriends = Array.Empty<SteamFriendListEntry>();
 	private static readonly Dictionary<long, Texture> cachedAvatarTextures = new();
+	private static readonly Dictionary<ulong, string> cachedAppNames = new();
 	private static readonly HashSet<long> loadingAvatarTextures = new();
+	private static readonly HashSet<ulong> loadingAppNames = new();
 	private static readonly HashSet<string> avatarLogKeys = new();
+	private static readonly HttpClient appNameHttp = new();
 	private static float nextRefreshTime;
 
 	public static IReadOnlyList<SteamFriendListEntry> GetFriends()
@@ -45,12 +84,14 @@ public static class SteamFriendsBridge
 		if ( Time.Now < nextRefreshTime )
 		{
 			HydrateCachedAvatarTextures( cachedFriends );
+			HydrateCachedGameNames( cachedFriends );
 			return cachedFriends;
 		}
 
 		nextRefreshTime = Time.Now + 5f;
 		cachedFriends = LoadFriends();
 		HydrateCachedAvatarTextures( cachedFriends );
+		HydrateCachedGameNames( cachedFriends );
 		return cachedFriends;
 	}
 
@@ -136,8 +177,7 @@ public static class SteamFriendsBridge
 			}
 
 			return entries
-				.OrderByDescending( friend => friend.IsPlayingThisGame )
-				.ThenByDescending( friend => friend.IsOnline )
+				.OrderBy( friend => friend.PresenceGroup )
 				.ThenBy( friend => friend.Name )
 				.ToList();
 		}
@@ -167,7 +207,10 @@ public static class SteamFriendsBridge
 			Name = GetStringValue( GetPropertyValue( friend, "Name" ) ),
 			Status = GetStatus( friend ),
 			RichPresence = GetRichPresence( friend ),
+			GameName = GetGameName( friend ),
 			IsOnline = GetBoolValue( GetPropertyValue( friend, "IsOnline" ) ),
+			IsAway = IsAway( friend ),
+			IsPlayingAnyGame = IsPlayingAnyGame( friend ),
 			IsPlayingThisGame = GetBoolValue( GetPropertyValue( friend, "IsPlayingThisGame" ) ),
 			AvatarTexture = GetAvatarTexture( steamId, friend )
 		};
@@ -291,6 +334,143 @@ public static class SteamFriendsBridge
 			return status;
 
 		return GetStringValue( method.Invoke( friend, new object[] { "steam_display" } ) );
+	}
+
+	private static string GetGameName( object friend )
+	{
+		var gameTitle = GetRichPresenceValue( friend, "gametitle" );
+		if ( !string.IsNullOrWhiteSpace( gameTitle ) && gameTitle != "menu" )
+			return gameTitle;
+
+		var gameName = GetRichPresenceValue( friend, "gamename" );
+		if ( !string.IsNullOrWhiteSpace( gameName ) && gameName != "menu" )
+			return gameName;
+
+		if ( GetBoolValue( GetPropertyValue( friend, "IsPlayingThisGame" ) ) )
+			return "Rent Rush";
+
+		var gameId = GetGameId( friend );
+		if ( gameId == 0 )
+			return "";
+
+		if ( cachedAppNames.TryGetValue( gameId, out var cachedName ) )
+			return cachedName;
+
+		if ( loadingAppNames.Add( gameId ) )
+			_ = LoadSteamAppNameAsync( gameId );
+
+		return $"Steam app {gameId}";
+	}
+
+	private static string GetRichPresenceValue( object friend, string key )
+	{
+		var method = friend.GetType().GetMethod( "GetRichPresence", InstanceReflectionFlags, null, new[] { typeof( string ) }, null );
+		return GetStringValue( method?.Invoke( friend, new object[] { key } ) );
+	}
+
+	private static bool IsAway( object friend )
+	{
+		return GetBoolValue( GetPropertyValue( friend, "IsAway" ) )
+			|| GetBoolValue( GetPropertyValue( friend, "IsBusy" ) )
+			|| GetBoolValue( GetPropertyValue( friend, "IsSnoozing" ) )
+			|| IsAwayStatus( GetStatus( friend ) );
+	}
+
+	private static bool IsAwayStatus( string status )
+	{
+		if ( string.IsNullOrWhiteSpace( status ) )
+			return false;
+
+		return status.Equals( "Away", StringComparison.OrdinalIgnoreCase )
+			|| status.Equals( "Busy", StringComparison.OrdinalIgnoreCase )
+			|| status.Equals( "Snooze", StringComparison.OrdinalIgnoreCase )
+			|| status.Equals( "Snoozing", StringComparison.OrdinalIgnoreCase );
+	}
+
+	private static bool IsPlayingAnyGame( object friend )
+	{
+		if ( GetBoolValue( GetPropertyValue( friend, "IsPlayingAGame" ) ) )
+			return true;
+
+		if ( GetBoolValue( GetPropertyValue( friend, "IsPlaying" ) ) )
+			return true;
+
+		if ( GetBoolValue( GetPropertyValue( friend, "IsPlayingThisGame" ) ) )
+			return true;
+
+		return GetGameId( friend ) != 0;
+	}
+
+	private static ulong GetGameId( object friend )
+	{
+		var gameInfo = GetPropertyValue( friend, "GameInfo" );
+		if ( gameInfo is null )
+			return 0;
+
+		var gameId = GetPropertyValue( gameInfo, "GameId" ) ?? GetPropertyValue( gameInfo, "GameID" );
+		return gameId switch
+		{
+			ulong unsigned => unsigned,
+			long signed => unchecked((ulong)signed),
+			uint unsignedInt => unsignedInt,
+			int signedInt => unchecked((ulong)signedInt),
+			_ => ulong.TryParse( gameId?.ToString() ?? "", out var parsed ) ? parsed : 0
+		};
+	}
+
+	private static void HydrateCachedGameNames( IReadOnlyList<SteamFriendListEntry> friends )
+	{
+		if ( friends is null || friends.Count == 0 || cachedAppNames.Count == 0 )
+			return;
+
+		foreach ( var friend in friends )
+		{
+			if ( friend is null || !friend.IsPlayingAnyGame || friend.IsPlayingThisGame )
+				continue;
+
+			if ( !friend.GameName.StartsWith( "Steam app ", StringComparison.OrdinalIgnoreCase ) )
+				continue;
+
+			if ( ulong.TryParse( friend.GameName["Steam app ".Length..], out var gameId ) && cachedAppNames.TryGetValue( gameId, out var appName ) )
+				friend.GameName = appName;
+		}
+	}
+
+	private static async Task LoadSteamAppNameAsync( ulong appId )
+	{
+		try
+		{
+			using var response = await appNameHttp.GetAsync( $"https://store.steampowered.com/api/appdetails?appids={appId}&filters=basic" );
+			if ( !response.IsSuccessStatusCode )
+			{
+				Log.Warning( $"Steam app name lookup failed for {appId}: {(int)response.StatusCode} {response.ReasonPhrase}" );
+				return;
+			}
+
+			var body = await response.Content.ReadAsStringAsync();
+			using var document = JsonDocument.Parse( body );
+			if ( !document.RootElement.TryGetProperty( appId.ToString(), out var appElement ) )
+				return;
+
+			if ( !appElement.TryGetProperty( "success", out var successElement ) || !successElement.GetBoolean() )
+				return;
+
+			if ( appElement.TryGetProperty( "data", out var dataElement )
+				&& dataElement.TryGetProperty( "name", out var nameElement ) )
+			{
+				var name = nameElement.GetString();
+				if ( !string.IsNullOrWhiteSpace( name ) )
+					cachedAppNames[appId] = name;
+			}
+		}
+		catch ( Exception exception )
+		{
+			Log.Warning( $"Failed to load Steam app name {appId}: {exception.Message}" );
+		}
+		finally
+		{
+			loadingAppNames.Remove( appId );
+		}
 	}
 
 	private static Texture GetAvatarTexture( long steamId, object friend )
@@ -426,8 +606,8 @@ public static class SteamFriendsBridge
 
 	private static void LogAvatarOnce( long steamId, string key, string message )
 	{
-		if ( avatarLogKeys.Add( $"{steamId}:{key}" ) )
-			Log.Info( message );
+		/*if ( avatarLogKeys.Add( $"{steamId}:{key}" ) )
+			Log.Info( message );*/
 	}
 
 	private static string GetInviteConnectTarget()

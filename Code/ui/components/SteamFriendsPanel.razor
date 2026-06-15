@@ -22,7 +22,7 @@
 				@foreach ( var friend in Friends )
 				{
 					<div class="@GetFriendRowClasses( friend )" title="@friend.Name" onclick="@(() => ToggleFriendPopup( friend ))">
-						<div class="steam-friend-avatar">
+						<div class="@GetFriendAvatarClasses( friend )">
 							@if ( friend.AvatarTexture is not null )
 							{
 								<Image class="steam-avatar-image" Texture="@friend.AvatarTexture"></Image>
@@ -45,7 +45,7 @@
 	{
 		<div class="@PopupClasses" style="@PopupStyle" @ref="PopupPanel">
 			<div class="steam-friend-popup-top">
-				<div class="steam-friend-popup-avatar">
+				<div class="@GetFriendPopupAvatarClasses( SelectedFriend )">
 					@if ( SelectedFriend.AvatarTexture is not null )
 					{
 						<Image class="steam-avatar-image" Texture="@SelectedFriend.AvatarTexture"></Image>
@@ -259,14 +259,19 @@
 	{
 		var classes = "steam-friend-row";
 
-		if ( friend?.IsPlayingThisGame == true )
-			classes += " in-game";
-		else if ( friend?.IsOnline == true )
-			classes += " online";
-		else
-			classes += " offline";
+		classes += $" {GetPresenceClass( friend )}";
 
 		return classes;
+	}
+
+	private static string GetFriendAvatarClasses( SteamFriendListEntry friend )
+	{
+		return $"steam-friend-avatar {GetPresenceClass( friend )}";
+	}
+
+	private static string GetFriendPopupAvatarClasses( SteamFriendListEntry friend )
+	{
+		return $"steam-friend-popup-avatar {GetPresenceClass( friend )}";
 	}
 
 	private static string GetFriendStatus( SteamFriendListEntry friend )
@@ -274,16 +279,36 @@
 		if ( friend is null )
 			return "";
 
-		if ( !string.IsNullOrWhiteSpace( friend.RichPresence ) )
-			return friend.RichPresence;
+		if ( friend.IsPlayingAnyGame )
+			return $"In game {GetFriendGameName( friend )}";
 
-		if ( friend.IsPlayingThisGame )
-			return "Playing Rent Rush";
+		if ( friend.IsAway )
+			return string.IsNullOrWhiteSpace( friend.Status ) ? "Away" : friend.Status;
 
 		if ( !string.IsNullOrWhiteSpace( friend.Status ) )
 			return friend.Status;
 
 		return friend.IsOnline ? "Online" : "Offline";
+	}
+
+	private static string GetFriendGameName( SteamFriendListEntry friend )
+	{
+		if ( !string.IsNullOrWhiteSpace( friend.GameName ) )
+			return friend.GameName;
+
+		return friend.IsPlayingThisGame ? "Rent Rush" : "another game";
+	}
+
+	private static string GetPresenceClass( SteamFriendListEntry friend )
+	{
+		return friend?.PresenceGroup switch
+		{
+			SteamFriendPresenceGroup.InRentRush => "in-game-rent-rush",
+			SteamFriendPresenceGroup.InOtherGame => "in-game-other",
+			SteamFriendPresenceGroup.Online => "online",
+			SteamFriendPresenceGroup.Away => "away",
+			_ => "offline"
+		};
 	}
 
 	private static string GetInitials( string name )
@@ -317,7 +342,10 @@
 			hash.Add( friend.Name );
 			hash.Add( friend.Status );
 			hash.Add( friend.RichPresence );
+			hash.Add( friend.GameName );
 			hash.Add( friend.IsOnline );
+			hash.Add( friend.IsAway );
+			hash.Add( friend.IsPlayingAnyGame );
 			hash.Add( friend.IsPlayingThisGame );
 			hash.Add( friend.AvatarTexture is not null );
 		}

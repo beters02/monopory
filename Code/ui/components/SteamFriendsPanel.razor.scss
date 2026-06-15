@@ -132,12 +132,25 @@ SteamFriendsPanel {
 		opacity: 0.62;
 	}
 
-	.steam-friend-row.online .steam-friend-avatar {
+	.steam-friend-row.in-game-rent-rush .steam-friend-avatar,
+	.steam-friend-row.in-game-other .steam-friend-avatar,
+	.steam-friend-avatar.in-game-rent-rush,
+	.steam-friend-avatar.in-game-other {
 		border-color: $monopoly-success;
 	}
 
-	.steam-friend-row.in-game .steam-friend-avatar {
+	.steam-friend-row.online .steam-friend-avatar {
+		border-color: #4f9de8;
+	}
+
+	.steam-friend-row.away .steam-friend-avatar,
+	.steam-friend-avatar.away {
 		border-color: $monopoly-gold;
+	}
+
+	.steam-friend-row.offline .steam-friend-avatar,
+	.steam-friend-avatar.offline {
+		border-color: rgba(213, 235, 230, 0.38);
 	}
 
 	.steam-friend-avatar {
@@ -273,7 +286,7 @@ SteamFriendsPanel {
 		height: 58px;
 		min-width: 58px;
 		background-color: rgba(213, 235, 230, 0.12);
-		border: 2px solid $monopoly-gold;
+		border: 2px solid rgba(213, 235, 230, 0.38);
 		border-radius: 4px;
 		color: $monopoly-text;
 		font-size: 15px;
@@ -288,6 +301,23 @@ SteamFriendsPanel {
 		width: 58px;
 		height: 58px;
 		min-width: 58px;
+	}
+
+	.steam-friend-popup-avatar.in-game-rent-rush,
+	.steam-friend-popup-avatar.in-game-other {
+		border-color: $monopoly-success;
+	}
+
+	.steam-friend-popup-avatar.online {
+		border-color: #4f9de8;
+	}
+
+	.steam-friend-popup-avatar.away {
+		border-color: $monopoly-gold;
+	}
+
+	.steam-friend-popup-avatar.offline {
+		border-color: rgba(213, 235, 230, 0.38);
 	}
 
 	.steam-friend-popup-main {
