@@ -68,6 +68,18 @@
 	overflow: hidden;
 }
 
+.property-player-card-hit-area {
+	width: 100%;
+	min-height: 50px;
+	display: flex;
+	flex-direction: column;
+	cursor: pointer;
+}
+
+.property-player-card-hit-area:hover {
+	background-color: $monopoly-surface-hover;
+}
+
 .property-player-panel.local-player {
 	border-color: $monopoly-panel-line;
 }

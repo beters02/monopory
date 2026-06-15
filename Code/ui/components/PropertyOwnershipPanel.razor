@@ -17,21 +17,32 @@
 
 					<Sandbox.ui.components.HudPanel.HudPanel Variant="@GetPropertyPanelClasses( playerIndex )" style="@GetPlayerCardStyle( player )">
 						<ChildContent>
-							<div class="property-player-name-row">
-								<div class="property-player-name">@player.PlayerName</div>
-								<div class="property-player-chip" style="@GetPlayerChipStyle( player )"></div>
+							<div class="property-player-card-hit-area" onclick="@(() => TogglePlayerProfilePopup( player ))">
+								<div class="property-player-name-row">
+									<div class="property-player-name">@player.PlayerName</div>
+									<div class="property-player-chip" style="@GetPlayerChipStyle( player )"></div>
+								</div>
+								<div class="property-player-money">$@player.Money</div>
+								@if ( player.IsDisconnected && !player.IsBankrupt )
+								{
+									<div class="property-player-money">Rejoin: @Math.Max( 0, (int)MathF.Ceiling( player.AbandonEndsAt - Time.Now ) )s</div>
+								}
 							</div>
-							<div class="property-player-money">$@player.Money</div>
-							@if ( player.IsDisconnected && !player.IsBankrupt )
-							{
-								<div class="property-player-money">Rejoin: @Math.Max( 0, (int)MathF.Ceiling( player.AbandonEndsAt - Time.Now ) )s</div>
-							}
 						</ChildContent>
 					</Sandbox.ui.components.HudPanel.HudPanel>
 				}
 				</div>
 			</ChildContent>
 		</Sandbox.ui.components.HudPanel.HudPanel>
+		@if ( SelectedPlayerProfile is not null )
+		{
+			<SteamProfilePopupCard
+				Entry="@SelectedPlayerProfile"
+				PopupStyle="@PlayerProfilePopupStyle"
+				OnOpenProfile="@OpenSelectedPlayerProfile"
+				OnClose="@ClosePlayerProfilePopup">
+			</SteamProfilePopupCard>
+		}
 
 		<Sandbox.ui.components.HudPanel.HudPanel Variant="property-manager-hud">
 			<ChildContent>
@@ -93,6 +104,8 @@
 {
 	[Parameter] public GameController GameRef { get; set; }
 	private Panel PropertyManagerContentPanel = null!;
+	private SteamFriendListEntry SelectedPlayerProfile;
+	private float PlayerProfilePopupTop = 96f;
 	private int InitialTurnOrderStartIndex = -1;
 
 	private List<PlayerState> PropertyHudPlayers
@@ -242,6 +255,42 @@
 		return classes;
 	}
 
+	private string PlayerProfilePopupStyle => $"right: 32px; top: {PlayerProfilePopupTop:0}px;";
+
+	private void TogglePlayerProfilePopup( PlayerState player )
+	{
+		if ( player is null )
+			return;
+
+		if ( SelectedPlayerProfile is not null && SelectedPlayerProfile.SteamId == player.OwnerId )
+		{
+			ClosePlayerProfilePopup();
+			return;
+		}
+
+		SelectedPlayerProfile = SteamFriendsBridge.GetProfileEntry( player.OwnerId, player.PlayerName );
+		PlayerProfilePopupTop = Math.Max( 86f, Mouse.Position.y * (1 / this.ScaleToScreen) + 12f );
+		Mouse.Visibility = MouseVisibility.Visible;
+		StateHasChanged();
+	}
+
+	private void OpenSelectedPlayerProfile()
+	{
+		if ( SelectedPlayerProfile is null )
+			return;
+
+		if ( !SteamFriendsBridge.TryOpenProfile( SelectedPlayerProfile ) )
+			Log.Warning( $"Could not open Steam profile for {SelectedPlayerProfile.Name}." );
+
+		ClosePlayerProfilePopup();
+	}
+
+	private void ClosePlayerProfilePopup()
+	{
+		SelectedPlayerProfile = null;
+		StateHasChanged();
+	}
+
 	private string GetPlayerCardStyle( PlayerState player )
 	{
 		var color = GetPlayerColor( player );
@@ -306,6 +355,9 @@
 		hash.Add( HudUi.GetPropertyOwnersHash( GameRef ) );
 		hash.Add( HudUi.GetMortgagedPropertiesHash( GameRef ) );
 		hash.Add( HudUi.GetPlayersHash( GameRef ) );
+		hash.Add( SelectedPlayerProfile?.SteamId ?? 0 );
+		hash.Add( SelectedPlayerProfile?.AvatarTexture is not null );
+		hash.Add( PlayerProfilePopupTop );
 
 		if ( GameRef is not null )
 		{

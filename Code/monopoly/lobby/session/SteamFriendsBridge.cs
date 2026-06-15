@@ -95,6 +95,39 @@ public static class SteamFriendsBridge
 		return cachedFriends;
 	}
 
+	public static SteamFriendListEntry GetProfileEntry( long steamId, string fallbackName = "" )
+	{
+		if ( steamId == 0 )
+		{
+			return new SteamFriendListEntry
+			{
+				Name = string.IsNullOrWhiteSpace( fallbackName ) ? "Player" : fallbackName,
+				Status = "Steam unavailable"
+			};
+		}
+
+		var friend = GetFriends().FirstOrDefault( friend => friend is not null && friend.SteamId == steamId );
+		if ( friend is not null )
+			return friend;
+
+		var connection = Connection.All.FirstOrDefault( connection => connection is not null && connection.SteamId == steamId );
+		var entry = new SteamFriendListEntry
+		{
+			SteamId = steamId,
+			Name = !string.IsNullOrWhiteSpace( fallbackName ) ? fallbackName : connection?.Name ?? $"Player {steamId}",
+			Status = connection is not null ? "In match" : "Offline",
+			IsOnline = connection is not null,
+			IsPlayingAnyGame = connection is not null,
+			IsPlayingThisGame = connection is not null,
+			GameName = connection is not null ? "Rent Rush" : ""
+		};
+
+		if ( cachedAvatarTextures.TryGetValue( steamId, out var texture ) )
+			entry.AvatarTexture = texture;
+
+		return entry;
+	}
+
 	public static bool TryInviteFriend( SteamFriendListEntry friend )
 	{
 		if ( friend is null || friend.SteamId == 0 || !MonopolyApp.IsStandalone() )

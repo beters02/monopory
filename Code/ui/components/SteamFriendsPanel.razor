@@ -43,41 +43,16 @@
 	</div>
 	@if ( SelectedFriend is not null )
 	{
-		<div class="@PopupClasses" style="@PopupStyle" @ref="PopupPanel">
-			<div class="steam-friend-popup-top">
-				<div class="@GetFriendPopupAvatarClasses( SelectedFriend )">
-					@if ( SelectedFriend.AvatarTexture is not null )
-					{
-						<Image class="steam-avatar-image" Texture="@SelectedFriend.AvatarTexture"></Image>
-					}
-					else
-					{
-						<div class="steam-avatar-initials">@GetInitials( SelectedFriend.Name )</div>
-					}
-				</div>
-				<div class="steam-friend-popup-main">
-					<div class="steam-friend-popup-name">@SelectedFriend.Name</div>
-					<div class="steam-friend-popup-status">@GetFriendStatus( SelectedFriend )</div>
-				</div>
-			</div>
-			<div class="steam-friend-popup-actions">
-				@if ( CanInviteFriends )
-				{
-					<button class="steam-friend-popup-action primary" onclick="@InviteSelectedFriend">
-						<div class="steam-friend-popup-action-icon">+</div>
-						<div>Invite</div>
-					</button>
-				}
-				<button class="steam-friend-popup-action" onclick="@OpenSelectedFriendProfile">
-					<div class="steam-friend-popup-action-icon">P</div>
-					<div>Profile</div>
-				</button>
-				<button class="steam-friend-popup-action" onclick="@RequestClosePopup">
-					<div class="steam-friend-popup-action-icon">x</div>
-					<div>Close</div>
-				</button>
-			</div>
-		</div>
+			<SteamProfilePopupCard
+				@ref="PopupPanel"
+				Entry="@SelectedFriend"
+				PopupStyle="@PopupStyle"
+				IsClosing="@IsPopupClosing"
+				CanInvite="@CanInviteFriends"
+			OnInvite="@InviteSelectedFriend"
+			OnOpenProfile="@OpenSelectedFriendProfile"
+			OnClose="@RequestClosePopup">
+		</SteamProfilePopupCard>
 	}
 </root>
 
@@ -85,7 +60,7 @@
 {
 	private SteamFriendListEntry SelectedFriend;
 	private Panel FriendsPanel = null!;
-	private Panel PopupPanel = null!;
+	private SteamProfilePopupCard PopupPanel = null!;
 	private float PopupRight;
 	private float PopupTop;
 	private int actionRevision;
@@ -195,7 +170,6 @@
 	}
 
 	private string PanelClasses => IsFriendUiHovered ? "steam-friends-panel is-expanded" : "steam-friends-panel";
-	private string PopupClasses => IsPopupClosing ? "steam-friend-popup is-closing" : "steam-friend-popup is-open";
 	private string PopupStyle => $"right: {PopupRight:0}px; top: {PopupTop:0}px;";
 	private bool CanInviteFriends => MonopolyApp.LobbyRef is not null;
 
@@ -269,10 +243,6 @@
 		return $"steam-friend-avatar {GetPresenceClass( friend )}";
 	}
 
-	private static string GetFriendPopupAvatarClasses( SteamFriendListEntry friend )
-	{
-		return $"steam-friend-popup-avatar {GetPresenceClass( friend )}";
-	}
 
 	private static string GetFriendStatus( SteamFriendListEntry friend )
 	{
