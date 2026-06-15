@@ -41,25 +41,21 @@ SteamFriendsPanel {
 	}
 
 	.steam-friends-header {
-		height: 0;
-		min-height: 0;
-		padding: 0 12px;
+		height: 46px;
+		min-height: 46px;
+		padding: 10px 12px;
 		background-color: rgba(23, 38, 48, 0.64);
-		border-bottom: 0 solid rgba(213, 235, 230, 0.18);
+		border-bottom: 1px solid rgba(213, 235, 230, 0.18);
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
 		gap: 10px;
 		opacity: 0;
 		overflow: hidden;
-		transition: height 0.12s ease-out, padding 0.12s ease-out, opacity 0.08s ease-out;
+		transition: opacity 0.08s ease-out;
 	}
 
 	.steam-friends-panel:hover .steam-friends-header {
-		height: 46px;
-		min-height: 46px;
-		padding: 10px 12px;
-		border-bottom-width: 1px;
 		opacity: 1;
 	}
 
