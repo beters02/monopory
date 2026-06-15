@@ -261,6 +261,14 @@ LobbyMenu {
 		opacity: 0.62;
 	}
 
+	.lobby-player-detail.cheats {
+		position: absolute;
+		font-weight: 900;
+		color: $monopoly-ink;
+		left: 58%;
+		opacity: 1;
+	}
+
 	.lobby-ready-pill {
 		min-width: 92px;
 		padding: 8px 10px;

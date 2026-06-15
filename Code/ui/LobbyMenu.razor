@@ -284,6 +284,7 @@
 		<div class="flow-panel lobby-panel">
 			<div class="flow-kicker">Lobby</div>
 			<div class="flow-title">Players</div>
+			<div class="lobby-player-detail cheats">Cheats Enabled: <span class=""> @CheatsEnabled </span></div>
 
 			@if ( Lobby is null )
 			{
@@ -376,6 +377,8 @@
 	private const string CustomPresetId = "custom";
 	private const string GameRulePresetFileName = "match_settings/game_rule_presets.json";
 	private const string BoardConfigPresetFileName = "match_settings/board_config_presets.json";
+
+	private bool CheatsEnabled => MonopolyApp.CheatsEnabled;
 
 	private void ApplyShowHiddenMatchOptions( bool showHidden )
 	{
@@ -600,6 +603,7 @@
 		hash.Add( AppSettings.GetUpscaler() );
 		hash.Add( AppSettings.GetFsr3Quality() );
 		hash.Add( GetPopupsHash() );
+		hash.Add( CheatsEnabled );
 
 		foreach ( var player in Players )
 		{

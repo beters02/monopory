@@ -230,6 +230,7 @@ SteamFriendsPanel {
 		flex-direction: column;
 		justify-content: center;
 		gap: 6px;
+		opacity: 0;
 	}
 
 	.steam-friends-empty-title {
@@ -243,6 +244,11 @@ SteamFriendsPanel {
 		font-size: 11px;
 		font-weight: 700;
 		line-height: 15px;
+	}
+
+	.steam-friends-panel:hover .steam-friends-empty,
+	.steam-friends-panel.is-expanded .steam-friends-empty {
+		opacity: 1;
 	}
 
 	.steam-friend-popup {
