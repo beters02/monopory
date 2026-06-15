@@ -20,6 +20,8 @@ public partial class MonopolyApp : Component
     public static readonly InputActionIconType InputActionIconType = InputActionIconType.Outline;
     public static readonly bool IsGameStatusPanelActionButtonsEnabled = false;
 
+    private static readonly bool EditorIsStandalone = true;
+
     [Sync( SyncFlags.FromHost )] public static bool CheatsEnabled { get; set; } = false;
 
 	protected override void OnAwake()
@@ -103,7 +105,13 @@ public partial class MonopolyApp : Component
         CheatsEnabled = enabled;        
     }
 
-    public static bool IsStandalone() => Standalone;
+    public static bool IsStandalone()
+    {
+        if (Application.IsEditor && EditorIsStandalone)
+            return true;
+        
+        return Standalone;
+    }
     public static bool IsDebugEnabled() => DebugEnabled;
     public static bool IsGameLaunchedWithDebugConvar() => GameLaunchedWithDebugConvar;
 }
