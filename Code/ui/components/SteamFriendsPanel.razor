@@ -96,6 +96,7 @@
 	private const float FriendsPanelRight = 12f;
 	private const float FriendsPanelWidth = 286f;
 	private const float PopupGap = 12f;
+	private const float PopupHoverBridgePadding = 12f;
 
 	private IReadOnlyList<SteamFriendListEntry> Friends => SteamFriendsBridge.GetFriends();
 	private bool IsStandalone => MonopolyApp.IsStandalone();
@@ -178,7 +179,26 @@
 	{
 		var position = Mouse.Position;
 		return (FriendsPanel is not null && IsPointInside( FriendsPanel.Box.Rect, position ))
-			|| (PopupPanel is not null && IsPointInside( PopupPanel.Box.Rect, position ));
+			|| (PopupPanel is not null && IsPointInside( PopupPanel.Box.Rect, position ))
+			|| IsPointInsidePopupBridge( position );
+	}
+
+	private bool IsPointInsidePopupBridge( Vector2 point )
+	{
+		if ( SelectedFriend is null || FriendsPanel is null || PopupPanel is null )
+			return false;
+
+		var panelRect = FriendsPanel.Box.Rect;
+		var popupRect = PopupPanel.Box.Rect;
+		var left = MathF.Min( panelRect.Left, popupRect.Left ) - PopupHoverBridgePadding;
+		var right = MathF.Max( panelRect.Right, popupRect.Right ) + PopupHoverBridgePadding;
+		var top = popupRect.Top - PopupHoverBridgePadding;
+		var bottom = popupRect.Bottom + PopupHoverBridgePadding;
+
+		return point.x >= left
+			&& point.x <= right
+			&& point.y >= top
+			&& point.y <= bottom;
 	}
 
 	private static bool IsPointInside( Rect rect, Vector2 point )
