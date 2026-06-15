@@ -2,6 +2,7 @@ using Sandbox;
 using System;
 using System.Collections;
 using System.Reflection;
+using System.Threading.Tasks;
 
 public sealed class SteamFriendListEntry
 {
@@ -11,6 +12,7 @@ public sealed class SteamFriendListEntry
 	public string RichPresence { get; set; } = "";
 	public bool IsOnline { get; set; }
 	public bool IsPlayingThisGame { get; set; }
+	public Texture AvatarTexture { get; set; }
 }
 
 public static class SteamFriendsBridge
@@ -30,6 +32,9 @@ public static class SteamFriendsBridge
 		}
 	};
 	private static IReadOnlyList<SteamFriendListEntry> cachedFriends = Array.Empty<SteamFriendListEntry>();
+	private static readonly Dictionary<long, Texture> cachedAvatarTextures = new();
+	private static readonly HashSet<long> loadingAvatarTextures = new();
+	private static readonly HashSet<string> avatarLogKeys = new();
 	private static float nextRefreshTime;
 
 	public static IReadOnlyList<SteamFriendListEntry> GetFriends()
@@ -38,10 +43,14 @@ public static class SteamFriendsBridge
 			return Application.IsEditor ? EditorFriends : Array.Empty<SteamFriendListEntry>();
 
 		if ( Time.Now < nextRefreshTime )
+		{
+			HydrateCachedAvatarTextures( cachedFriends );
 			return cachedFriends;
+		}
 
 		nextRefreshTime = Time.Now + 5f;
 		cachedFriends = LoadFriends();
+		HydrateCachedAvatarTextures( cachedFriends );
 		return cachedFriends;
 	}
 
@@ -159,7 +168,8 @@ public static class SteamFriendsBridge
 			Status = GetStatus( friend ),
 			RichPresence = GetRichPresence( friend ),
 			IsOnline = GetBoolValue( GetPropertyValue( friend, "IsOnline" ) ),
-			IsPlayingThisGame = GetBoolValue( GetPropertyValue( friend, "IsPlayingThisGame" ) )
+			IsPlayingThisGame = GetBoolValue( GetPropertyValue( friend, "IsPlayingThisGame" ) ),
+			AvatarTexture = GetAvatarTexture( steamId, friend )
 		};
 	}
 
@@ -283,6 +293,143 @@ public static class SteamFriendsBridge
 		return GetStringValue( method.Invoke( friend, new object[] { "steam_display" } ) );
 	}
 
+	private static Texture GetAvatarTexture( long steamId, object friend )
+	{
+		if ( steamId == 0 )
+		{
+			LogAvatarOnce( steamId, "zero-id", "Steam avatar skipped because the friend SteamId is 0." );
+			return null;
+		}
+
+		if ( cachedAvatarTextures.TryGetValue( steamId, out var texture ) )
+			return texture;
+
+		if ( loadingAvatarTextures.Add( steamId ) )
+		{
+			LogAvatarOnce( steamId, "start", $"Loading Steam avatar for {steamId}." );
+			_ = LoadAvatarTextureAsync( steamId, friend );
+		}
+
+		return null;
+	}
+
+	private static void HydrateCachedAvatarTextures( IReadOnlyList<SteamFriendListEntry> friends )
+	{
+		if ( friends is null || friends.Count == 0 || cachedAvatarTextures.Count == 0 )
+			return;
+
+		foreach ( var friend in friends )
+		{
+			if ( friend is null || friend.AvatarTexture is not null )
+				continue;
+
+			if ( cachedAvatarTextures.TryGetValue( friend.SteamId, out var texture ) )
+				friend.AvatarTexture = texture;
+		}
+	}
+
+	private static async Task LoadAvatarTextureAsync( long steamId, object friend )
+	{
+		try
+		{
+			var avatarImage = await GetAvatarImageAsync( steamId, friend );
+			var avatarTexture = CreateAvatarTexture( steamId, avatarImage );
+			if ( avatarTexture is not null )
+			{
+				cachedAvatarTextures[steamId] = avatarTexture;
+				LogAvatarOnce( steamId, "success", $"Loaded Steam avatar texture for {steamId}." );
+			}
+			else
+			{
+				LogAvatarOnce( steamId, "null-texture", $"Steam avatar texture was not created for {steamId}." );
+			}
+		}
+		catch ( Exception exception )
+		{
+			Log.Warning( $"Failed to load Steam avatar for {steamId}: {exception.Message}" );
+		}
+		finally
+		{
+			loadingAvatarTextures.Remove( steamId );
+		}
+	}
+
+	private static async Task<object> GetAvatarImageAsync( long steamId, object friend )
+	{
+		var friendAvatarMethod = friend?.GetType().GetMethod( "GetMediumAvatarAsync", InstanceReflectionFlags, null, Type.EmptyTypes, null );
+		var friendAvatarTask = friendAvatarMethod?.Invoke( friend, null );
+		if ( friendAvatarTask is not null )
+		{
+			LogAvatarOnce( steamId, "friend-method", $"Steam avatar using Friend.GetMediumAvatarAsync for {steamId}." );
+			return await GetTaskResultAsync( friendAvatarTask );
+		}
+
+		LogAvatarOnce( steamId, "friend-method-missing", $"Friend.GetMediumAvatarAsync was not available for {steamId}; trying SteamFriends.GetMediumAvatarAsync." );
+
+		var steamFriendsType = FindLoadedType( "Steamworks.SteamFriends" );
+		var avatarMethod = steamFriendsType?.GetMethod( "GetMediumAvatarAsync", StaticReflectionFlags );
+		if ( avatarMethod is null )
+		{
+			LogAvatarOnce( steamId, "static-method-missing", $"SteamFriends.GetMediumAvatarAsync was not found for {steamId}." );
+			return null;
+		}
+
+		var parameters = avatarMethod.GetParameters();
+		if ( parameters.Length != 1 )
+		{
+			LogAvatarOnce( steamId, "bad-signature", $"SteamFriends.GetMediumAvatarAsync had {parameters.Length} parameters for {steamId}." );
+			return null;
+		}
+
+		var steamIdArgument = CreateSteamIdArgument( steamId, parameters[0].ParameterType );
+		if ( steamIdArgument is null )
+		{
+			LogAvatarOnce( steamId, "bad-steamid-argument", $"Could not convert {steamId} to {parameters[0].ParameterType.FullName} for Steam avatar loading." );
+			return null;
+		}
+
+		LogAvatarOnce( steamId, "static-method", $"Steam avatar using SteamFriends.GetMediumAvatarAsync for {steamId}." );
+		return await GetTaskResultAsync( avatarMethod.Invoke( null, new[] { steamIdArgument } ) );
+	}
+
+	private static async Task<object> GetTaskResultAsync( object taskObject )
+	{
+		if ( taskObject is not Task task )
+			return null;
+
+		await task;
+		return task.GetType().GetProperty( "Result", InstanceReflectionFlags )?.GetValue( task );
+	}
+
+	private static Texture CreateAvatarTexture( long steamId, object avatarImage )
+	{
+		if ( avatarImage is null )
+		{
+			LogAvatarOnce( steamId, "null-image", $"Steam avatar image result was null for {steamId}." );
+			return null;
+		}
+
+		var width = Convert.ToInt32( GetPropertyValue( avatarImage, "Width" ) ?? 0 );
+		var height = Convert.ToInt32( GetPropertyValue( avatarImage, "Height" ) ?? 0 );
+		var data = GetPropertyValue( avatarImage, "Data" ) as byte[];
+		if ( width <= 0 || height <= 0 || data is null || data.Length == 0 )
+		{
+			LogAvatarOnce( steamId, "bad-image", $"Steam avatar image was invalid for {steamId}: {width}x{height}, {data?.Length ?? 0} bytes." );
+			return null;
+		}
+
+		return Texture.Create( width, height, ImageFormat.RGBA8888 )
+			.WithName( $"steam-avatar-{steamId}" )
+			.WithData( data )
+			.Finish();
+	}
+
+	private static void LogAvatarOnce( long steamId, string key, string message )
+	{
+		if ( avatarLogKeys.Add( $"{steamId}:{key}" ) )
+			Log.Info( message );
+	}
+
 	private static string GetInviteConnectTarget()
 	{
 		var lobbyId = SteamInviteBridge.GetActiveLobbyIdValue();
@@ -321,7 +468,6 @@ public static class SteamFriendsBridge
 			return unchecked((long)unsigned);
 
 		var rawValue = GetPropertyValue( value, "Value" ) ?? GetPropertyValue( value, "ValueUnsigned" );
-		Log.Info(rawValue);
 
 		return rawValue switch
 		{

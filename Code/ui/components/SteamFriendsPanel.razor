@@ -22,7 +22,9 @@
 				@foreach ( var friend in Friends )
 				{
 					<div class="@GetFriendRowClasses( friend )" title="@friend.Name" onclick="@(() => ToggleFriendPopup( friend ))">
-						<div class="steam-friend-avatar">@GetInitials( friend.Name )</div>
+						<div class="steam-friend-avatar">
+							@RenderAvatarContent( friend )
+						</div>
 						<div class="steam-friend-body">
 							<div class="steam-friend-name">@friend.Name</div>
 							<div class="steam-friend-status">@GetFriendStatus( friend )</div>
@@ -36,7 +38,9 @@
 	{
 		<div class="steam-friend-popup" style="@PopupStyle">
 			<div class="steam-friend-popup-top">
-				<div class="steam-friend-popup-avatar">@GetInitials( SelectedFriend.Name )</div>
+				<div class="steam-friend-popup-avatar">
+					@RenderAvatarContent( SelectedFriend )
+				</div>
 				<div class="steam-friend-popup-main">
 					<div class="steam-friend-popup-name">@SelectedFriend.Name</div>
 					<div class="steam-friend-popup-status">@GetFriendStatus( SelectedFriend )</div>
@@ -203,6 +207,23 @@
 		return name.Trim()[0].ToString().ToUpper();
 	}
 
+	private static RenderFragment RenderAvatarContent( SteamFriendListEntry friend ) => builder =>
+	{
+		if ( friend?.AvatarTexture is not null )
+		{
+			builder.OpenComponent<Image>( 0 );
+			builder.AddAttribute( 1, "class", "steam-avatar-image" );
+			builder.AddAttribute( 2, "Texture", friend.AvatarTexture );
+			builder.CloseComponent();
+			return;
+		}
+
+		builder.OpenElement( 3, "div" );
+		builder.AddAttribute( 4, "class", "steam-avatar-initials" );
+		builder.AddContent( 5, GetInitials( friend?.Name ) );
+		builder.CloseElement();
+	};
+
 	protected override int BuildHash()
 	{
 		var hash = new HashCode();
@@ -221,6 +242,7 @@
 			hash.Add( friend.RichPresence );
 			hash.Add( friend.IsOnline );
 			hash.Add( friend.IsPlayingThisGame );
+			hash.Add( friend.AvatarTexture is not null );
 		}
 
 		return hash.ToHashCode();
