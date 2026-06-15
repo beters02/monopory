@@ -65,13 +65,16 @@
 	private SteamFriendListEntry SelectedFriend;
 	private Panel FriendsPanel = null!;
 	private Panel FriendsListPanel = null!;
-	private float PopupLeft;
+	private float PopupRight;
 	private float PopupTop;
 	private int actionRevision;
 	private const float FriendsHeaderHeight = 46f;
 	private const float FriendsListPaddingTop = 8f;
 	private const float FriendRowHeight = 58f;
 	private const float FriendRowGap = 5f;
+	private const float FriendsPanelRight = 12f;
+	private const float FriendsPanelWidth = 286f;
+	private const float PopupGap = 12f;
 
 	private IReadOnlyList<SteamFriendListEntry> Friends => SteamFriendsBridge.GetFriends();
 	private bool IsStandalone => MonopolyApp.IsStandalone();
@@ -99,10 +102,9 @@
 		var panelOrigin = FriendsPanel is not null
 			? ScreenPositionToPanelPosition( FriendsPanel.PanelPositionToScreenPosition( Vector2.Zero ) )
 			: ScreenPositionToPanelPosition( Mouse.Position );
-		var popupWidth = 390f;
 		var rowTop = panelOrigin.y + FriendsHeaderHeight + FriendsListPaddingTop + friendIndex * (FriendRowHeight + FriendRowGap) - (FriendsListPanel?.ScrollOffset.y ?? 0f);
 
-		PopupLeft = panelOrigin.x + (popupWidth*.75f); //Math.Max( 12f,  /*- popupWidth - gap*/ );
+		PopupRight = FriendsPanelRight + FriendsPanelWidth + PopupGap;
 		PopupTop = Math.Max( 12f, rowTop - 8f );
 		Mouse.Visibility = MouseVisibility.Visible;
 		actionRevision++;
@@ -156,7 +158,7 @@
 		actionRevision++;
 	}
 
-	private string PopupStyle => $"left: {PopupLeft:0}px; top: {PopupTop:0}px;";
+	private string PopupStyle => $"right: {PopupRight:0}px; top: {PopupTop:0}px;";
 
 	private string GetStandaloneBadgeClasses()
 	{
@@ -228,7 +230,7 @@
 		var hash = new HashCode();
 		hash.Add( IsStandalone );
 		hash.Add( SelectedFriend?.SteamId ?? 0 );
-		hash.Add( PopupLeft );
+		hash.Add( PopupRight );
 		hash.Add( PopupTop );
 		hash.Add( actionRevision );
 		hash.Add( MathF.Floor( Time.Now * 0.5f ) );
