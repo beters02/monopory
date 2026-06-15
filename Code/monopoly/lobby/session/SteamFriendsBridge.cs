@@ -242,9 +242,8 @@ public static class SteamFriendsBridge
 			if ( ulong.TryParse( friend.GameName["Steam app ".Length..], out var gameId ) && cachedAppNames.TryGetValue( gameId, out var appName ) )
 				friend.GameName = appName;
 		}
-#else
-		return;
 #endif
+		return;
 	}
 
 	private static void HydrateCachedAvatarTextures( IReadOnlyList<SteamFriendListEntry> friends )
@@ -261,9 +260,8 @@ public static class SteamFriendsBridge
 			if ( cachedAvatarTextures.TryGetValue( friend.SteamId, out var texture ) )
 				friend.AvatarTexture = texture;
 		}
-#else
-		return;
 #endif
+		return;
 	}
 
 #if STANDALONE

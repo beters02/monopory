@@ -1,21 +1,21 @@
 using Sandbox;
-//#if STANDALONE
+#if STANDALONE
 using System;
 using System.Collections;
 using System.Reflection;
-//#endif
+#endif
 
 public static class SteamInviteBridge
 {
-//#if STANDALONE
+#if STANDALONE
 	private static bool isRegistered;
 	private static Scene currentScene;
 	private static Delegate joinRequestedHandler;
-//#endif
+#endif
 
 	public static void Register( Scene scene )
 	{
-//#if STANDALONE
+#if STANDALONE
 		currentScene = scene;
 
 		if ( isRegistered )
@@ -45,12 +45,12 @@ public static class SteamInviteBridge
 		{
 			Log.Warning( $"Failed to register Steam lobby join callback: {exception.Message}" );
 		}
-//#endif
+#endif
 	}
 
 	public static long GetActiveLobbyIdValue()
 	{
-//#if STANDALONE
+#if STANDALONE
 		try
 		{
 			var lobbyManagerType = FindLoadedType( "Sandbox.LobbyManager" );
@@ -69,13 +69,13 @@ public static class SteamInviteBridge
 		catch
 		{
 		}
-//#endif
+#endif
 		return 0;
 	}
 	
 	
 
-//#if STANDALONE
+#if STANDALONE
 	private static void PrintAssemblyTypes( )
 	{
 		var assemblies = AppDomain.CurrentDomain.GetAssemblies();
@@ -121,5 +121,5 @@ public static class SteamInviteBridge
 		Log.Info( $"Joined Steam lobby invite {lobbyIdValue}." );
 		SceneFlow.LoadLobby( currentScene );
 	}
-//#endif
+#endif
 }
