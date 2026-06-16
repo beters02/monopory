@@ -7,7 +7,7 @@ public partial class MonopolyApp
 	[Sync] public long PreferredHostOwnerId { get; set; }
 	[Sync] public bool PreferredHostDisconnected { get; set; }
 
-	public static MonopolyApp Instance => instance;
+	public static MonopolyApp Instance => GetInstance();
 
 	public static long CurrentHostOwnerId => ResolveCurrentHostOwnerId();
 
@@ -33,37 +33,40 @@ public partial class MonopolyApp
 
 	public static long GetPreferredHostOwnerId()
 	{
-		return instance?.PreferredHostOwnerId ?? 0L;
+		return Instance?.PreferredHostOwnerId ?? 0L;
 	}
 
 	public static void SetPreferredHostOwnerId( long ownerId )
 	{
-		if ( instance is null )
+		var app = Instance;
+		if ( app is null )
 			return;
 
-		instance.PreferredHostOwnerId = ownerId;
+		app.PreferredHostOwnerId = ownerId;
 	}
 
 	public static bool GetPreferredHostDisconnected()
 	{
-		return instance?.PreferredHostDisconnected ?? false;
+		return Instance?.PreferredHostDisconnected ?? false;
 	}
 
 	public static void SetPreferredHostDisconnected( bool disconnected )
 	{
-		if ( instance is null )
+		var app = Instance;
+		if ( app is null )
 			return;
 
-		instance.PreferredHostDisconnected = disconnected;
+		app.PreferredHostDisconnected = disconnected;
 	}
 
 	public static void EnsurePreferredHostOwnerId()
 	{
-		if ( instance is null || instance.PreferredHostOwnerId != 0 )
+		var app = Instance;
+		if ( app is null || app.PreferredHostOwnerId != 0 )
 			return;
 
-		instance.PreferredHostOwnerId = Connection.Local?.SteamId ?? Connection.Host?.SteamId ?? 0L;
-		instance.PreferredHostDisconnected = false;
+		app.PreferredHostOwnerId = Connection.Local?.SteamId ?? Connection.Host?.SteamId ?? 0L;
+		app.PreferredHostDisconnected = false;
 	}
 
 	private void RegisterInstance()
@@ -75,6 +78,25 @@ public partial class MonopolyApp
 	{
 		if ( instance == this )
 			instance = null;
+	}
+
+	private static MonopolyApp GetInstance()
+	{
+		if ( instance is not null && instance.IsValid )
+			return instance;
+
+		foreach ( var scene in Scene.All )
+		{
+			var app = scene?.GetComponentInChildren<MonopolyApp>();
+			if ( app is not null && app.IsValid )
+			{
+				instance = app;
+				return instance;
+			}
+		}
+
+		instance = null;
+		return null;
 	}
 
 	private static long ResolveCurrentHostOwnerId()

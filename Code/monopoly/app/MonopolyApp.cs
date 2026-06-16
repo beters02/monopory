@@ -26,6 +26,7 @@ public partial class MonopolyApp : Component
 
 	protected override void OnAwake()
 	{
+        Log.Info("Instance registered");
 		RegisterInstance();
 		AwakeStandalone();
 		DebugEnabled = HandleLaunchedDebugEnabled();
@@ -64,6 +65,7 @@ public partial class MonopolyApp : Component
 
 	protected override void OnDestroy()
 	{
+        Log.Info("Instance destroyedf");
 		UnregisterInstance();
 	}
 
@@ -88,11 +90,13 @@ public partial class MonopolyApp : Component
     {
         if (Networking.IsHost)
         {
-            Instance.CheatsEnabled = enabled;
+            if ( Instance is not null )
+                Instance.CheatsEnabled = enabled;
+
             return;
         }
 
-        instance?.SetCheatsEnabledHost(enabled);
+        Instance?.SetCheatsEnabledHost(enabled);
     }
 
     [Rpc.Host]
@@ -103,7 +107,7 @@ public partial class MonopolyApp : Component
 
     public static bool IsCheatsEnabled()
     {
-        return Instance.CheatsEnabled;
+        return Instance?.CheatsEnabled ?? false;
     }
 
     public static bool IsStandalone()
