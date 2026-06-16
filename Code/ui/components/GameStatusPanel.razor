@@ -43,6 +43,17 @@
 				<HudPanelBody>Last Roll: @GameRef.LastDieA + @GameRef.LastDieB</HudPanelBody>
 			}
 
+			@if ( ShouldShowForcedPaymentStatus )
+			{
+				<div class="forced-payment-status">
+					<div class="forced-payment-copy">
+						<div class="forced-payment-title">Forced Payment</div>
+						<div class="forced-payment-needed">Need $@ForcedPaymentAmountNeeded more</div>
+					</div>
+					<GameButton Variant="forced-payment-bankrupt-button" OnClick="@ConfirmDeclareBankruptcy">Bankrupt</GameButton>
+				</div>
+			}
+
 			@if ( IsCurrentPlayerInJail )
 			{
 				<HudPanelBody>Jail Turns: @CurrentPlayer.JailTurnsRemaining</HudPanelBody>
@@ -318,6 +329,12 @@
 
 	private bool CanFinishActiveMovement =>
 		GameRef?.CanFinishActiveMovement( LocalPlayer ) == true;
+	private bool ShouldShowForcedPaymentStatus =>
+		GameRef?.HasPendingForcedPayment == true &&
+		GameRef.PendingForcedPaymentPlayerIndex == GameRef.LocalPlayerIndex &&
+		ForcedPaymentAmountNeeded > 0;
+	private int ForcedPaymentAmountNeeded =>
+		Math.Max( (GameRef?.PendingForcedPaymentAmount ?? 0) - (LocalPlayer?.Money ?? 0), 0 );
 
 	private void SetCameraMode( BoardCameraMode mode )
 	{
@@ -441,6 +458,29 @@
 		GameRef?.RequestFinishActiveMovement();
 	}
 
+	private void ConfirmDeclareBankruptcy()
+	{
+		GameRef?.ShowLocalConfirmation(
+			"Declare bankruptcy?",
+			"You will instantly go bankrupt but stay connected to the match.",
+			DeclareBankruptcy,
+			confirmLabel: "Bankrupt" );
+	}
+
+	private void DeclareBankruptcy()
+	{
+		if ( GameRef is null )
+			return;
+
+		if ( Networking.IsHost )
+		{
+			GameRef.TryDeclareBankruptcy( GameRef.LocalPlayer );
+			return;
+		}
+
+		GameRef.RequestDeclareBankruptcy();
+	}
+
 	private void ShowStatsLog()
 	{
 		if ( GameRef is null )
@@ -487,6 +527,8 @@
 		hash.Add( GameRef?.Config?.CanSkipUnowned ?? false );
 		hash.Add( CurrentTurnRemainingSeconds );
 		hash.Add( GameRef?.HasPendingForcedPayment ?? false );
+		hash.Add( GameRef?.PendingForcedPaymentPlayerIndex ?? -1 );
+		hash.Add( GameRef?.PendingForcedPaymentAmount ?? 0 );
 		hash.Add( GameRef?.ActiveMovementPlayerIndex ?? -1 );
 		hash.Add( GameRef?.ActiveMovementRemainingSteps ?? 0 );
 		hash.Add( GameRef?.ActiveMovementTargetSpaceIndex ?? -1 );

@@ -122,6 +122,54 @@
 	background-color: $monopoly-gold-hover;
 }
 
+.forced-payment-status {
+	padding: 8px;
+	background-color: $monopoly-surface;
+	border: 2px solid $monopoly-danger;
+	border-radius: $monopoly-radius-control;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.forced-payment-copy {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+
+.forced-payment-title {
+	color: $monopoly-text-muted;
+	font-size: $monopoly-font-small;
+	font-weight: 900;
+	text-transform: uppercase;
+}
+
+.forced-payment-needed {
+	color: $monopoly-text;
+	font-size: $monopoly-font-button;
+	font-weight: 900;
+}
+
+.monopoly-button.forced-payment-bankrupt-button {
+	width: 100%;
+	min-height: $monopoly-control-height-small;
+	margin: 0;
+	padding: 0 10px;
+	align-items: center;
+	justify-content: center;
+	background-color: $monopoly-danger;
+	color: $monopoly-text;
+	border-radius: $monopoly-radius-control;
+	font-size: $monopoly-font-button;
+	font-weight: 900;
+	text-transform: uppercase;
+}
+
+.monopoly-button.forced-payment-bankrupt-button:hover {
+	background-color: $monopoly-danger-hover;
+}
+
 .jail-action-buttons {
 	display: flex;
 	flex-direction: column;

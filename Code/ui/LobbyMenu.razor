@@ -347,6 +347,7 @@
     private bool CanEditConfig => Lobby?.IsLocalEffectiveHost == true;
     private IReadOnlyList<PieceDefinition> AvailablePieces => PieceCatalog.All;
     private string PreviewPieceId = "";
+	private string LastRequestedSavedPieceId = "";
     private PieceDefinition PreviewedPiece => PieceCatalog.GetByIdOrDefault( string.IsNullOrWhiteSpace( PreviewPieceId ) ? LocalPlayer?.SelectedPieceId : PreviewPieceId );
     private MatchConfig EditableConfig;
     private string LoadedConfigSnapshot = "";
@@ -378,7 +379,7 @@
 	private const string GameRulePresetFileName = "match_settings/game_rule_presets.json";
 	private const string BoardConfigPresetFileName = "match_settings/board_config_presets.json";
 
-	private bool CheatsEnabled => MonopolyApp.CheatsEnabled;
+	private bool CheatsEnabled => MonopolyApp.IsCheatsEnabled();
 
 	private void ApplyShowHiddenMatchOptions( bool showHidden )
 	{
@@ -498,7 +499,27 @@
 		if ( IsConfigMenuOpen )
 			EnsureEditableConfigCurrent();
 
+		ApplySavedLocalPieceSelection();
 		UpdatePiecePreview();
+	}
+
+	private void ApplySavedLocalPieceSelection()
+	{
+		if ( Lobby is null || LocalPlayer is null )
+			return;
+
+		var savedPieceId = AppSettings.GetSelectedPieceId();
+		if ( string.IsNullOrWhiteSpace( savedPieceId ) || string.Equals( savedPieceId, LocalPlayer.SelectedPieceId, StringComparison.OrdinalIgnoreCase ) )
+			return;
+
+		if ( string.Equals( LastRequestedSavedPieceId, savedPieceId, StringComparison.OrdinalIgnoreCase ) )
+			return;
+
+		LastRequestedSavedPieceId = savedPieceId;
+		if ( Networking.IsHost )
+			Lobby.TrySetSelectedPiece( LocalPlayer.OwnerId, savedPieceId );
+		else
+			Lobby.RequestSetSelectedPiece( savedPieceId );
 	}
 
 	private string LobbyStatusText
@@ -601,7 +622,7 @@
 		hash.Add( AppSettings.GetUpscaler() );
 		hash.Add( AppSettings.GetFsr3Quality() );
 		hash.Add( GetPopupsHash() );
-		hash.Add( CheatsEnabled );
+		hash.Add( MonopolyApp.IsCheatsEnabled() );
 
 		foreach ( var player in Players )
 		{
@@ -812,6 +833,8 @@
 			return;
 
 		SetPreviewPiece( pieceId );
+		AppSettings.TrySetSelectedPieceId( pieceId );
+		LastRequestedSavedPieceId = AppSettings.GetSelectedPieceId();
 
 		if ( Networking.IsHost )
 			Lobby.TrySetSelectedPiece( LocalPlayer.OwnerId, pieceId );

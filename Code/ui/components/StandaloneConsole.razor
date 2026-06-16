@@ -453,7 +453,7 @@
 	{
 		LogGameConsoleWithEntryKind( message, kind );
 
-		if ( MonopolyApp.IsStandalone() )
+		if ( MonopolyApp.IsStandalone() && !Application.IsEditor )
 			return;
 		
 		if ( string.IsNullOrWhiteSpace( message ) )

@@ -301,6 +301,22 @@
 		if ( GameRef is null || ComposerReceiverPlayerIndex < 0 )
 			return;
 
+		var senderImprovedProperties = ComposerSenderPropertyIndexes
+			.Where( propertyIndex => GameRef.GetImprovementCount( propertyIndex ) > 0 )
+			.OrderBy( propertyIndex => propertyIndex )
+			.ToList();
+
+		if ( senderImprovedProperties.Count > 0 )
+		{
+			var propertyNames = string.Join( ", ", senderImprovedProperties.Select( GetPropertyName ) );
+			GameRef.ShowLocalConfirmation(
+				"Sell improvements?",
+				$"You must sell the improvements on {propertyNames} before sending this trade. Would you like to sell them now?",
+				() => SellTradeBlockingImprovements( senderImprovedProperties ),
+				confirmLabel: "Sell Now" );
+			return;
+		}
+
 		var isNegotiation = NegotiatedTradeId >= 0;
 		var isEdit = EditedTradeId >= 0;
 		if ( !isEdit && GameRef.MaxPendingSentTradesPerPlayer > 0 && GameRef.GetTrades().Count( trade => trade.SenderPlayerIndex == GameRef.LocalPlayerIndex ) >= GameRef.MaxPendingSentTradesPerPlayer )
@@ -353,6 +369,19 @@
 		IsTradeComposerOpen = false;
 	}
 
+	private void SellTradeBlockingImprovements( List<int> propertyIndexes )
+	{
+		if ( GameRef is null )
+			return;
+
+		foreach ( var propertyIndex in propertyIndexes )
+		{
+			var count = GameRef.GetImprovementCount( propertyIndex );
+			for ( var i = 0; i < count; i++ )
+				GameRef.RequestSellImprovement( propertyIndex );
+		}
+	}
+
 	private void NegotiateTrade( int tradeId )
 	{
 		if ( GameRef is null || !GameRef.TryGetTrade( tradeId, out var trade ) )
@@ -365,7 +394,9 @@
 		EditingStatusTradeId = tradeId;
 		GameRef.RequestSetTradeEditing( tradeId, true );
 		IsTradeComposerOpen = true;
-		ComposerReceiverPlayerIndex = trade.SenderPlayerIndex;
+		ComposerReceiverPlayerIndex = trade.SenderPlayerIndex == GameRef.LocalPlayerIndex
+			? trade.ReceiverPlayerIndex
+			: trade.SenderPlayerIndex;
 		ComposerSenderMoney = Math.Clamp( trade.ReceiverMoney, 0, LocalPlayerMoney );
 		ComposerReceiverMoney = Math.Clamp( trade.SenderMoney, 0, GetPlayerMoney( ComposerReceiverPlayerIndex ) );
 		ComposerSenderPropertyIndexes.Clear();
@@ -535,6 +566,11 @@
 	private int GetPlayerMoney( int playerIndex )
 	{
 		return GameRef?.Players?.ElementAtOrDefault( playerIndex )?.Money ?? 0;
+	}
+
+	private string GetPropertyName( int propertyIndex )
+	{
+		return GameRef?.Board?.GetSpaceDef( propertyIndex )?.DisplayName ?? $"Space {propertyIndex}";
 	}
 
 	private static string ToCsv( IEnumerable<int> values )

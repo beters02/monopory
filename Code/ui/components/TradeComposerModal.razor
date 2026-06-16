@@ -25,6 +25,7 @@
 								onsubmit="@CommitSenderMoneyDraft" />
 							<GameButton OnClick="@(() => AdjustSenderMoney( 50 ))">+</GameButton>
 						</div>
+						<div class="trade-total-worth">Total: $@GetSideWorthTotal( true )</div>
 						<div class="trade-property-sections">
 							<div class="trade-property-section trade-giving-section">
 								<div class="trade-property-section-title">Giving</div>
@@ -136,6 +137,7 @@
 								onsubmit="@CommitReceiverMoneyDraft" />
 							<GameButton OnClick="@(() => AdjustReceiverMoney( 50 ))">+</GameButton>
 						</div>
+						<div class="trade-total-worth">Total: $@GetSideWorthTotal( false )</div>
 						<div class="trade-property-sections">
 							<div class="trade-property-section trade-giving-section">
 								<div class="trade-property-section-title">Giving</div>
@@ -369,28 +371,81 @@
 	{
 		var ownedIndexes = senderSide ? LocalOwnedPropertyIndexes : ReceiverOwnedPropertyIndexes;
 		var selectedIndexes = senderSide ? SenderPropertyIndexes : ReceiverPropertyIndexes;
-		return ownedIndexes.Where( selectedIndexes.Contains ).ToList();
+		return SortTradePropertyIndexes( ownedIndexes.Where( selectedIndexes.Contains ) );
 	}
 
 	private List<int> GetHasPropertyIndexes( bool senderSide )
 	{
 		var ownedIndexes = senderSide ? LocalOwnedPropertyIndexes : ReceiverOwnedPropertyIndexes;
 		var selectedIndexes = senderSide ? SenderPropertyIndexes : ReceiverPropertyIndexes;
-		return ownedIndexes.Where( index => !selectedIndexes.Contains( index ) ).ToList();
+		return SortTradePropertyIndexes( ownedIndexes.Where( index => !selectedIndexes.Contains( index ) ) );
 	}
 
 	private List<string> GetGivingCardIds( bool senderSide )
 	{
 		var ownedCardIds = senderSide ? LocalOwnedCardIds : ReceiverOwnedCardIds;
 		var selectedCardIds = senderSide ? SenderCardIds : ReceiverCardIds;
-		return ownedCardIds.Where( selectedCardIds.Contains ).ToList();
+		return ownedCardIds.Where( selectedCardIds.Contains ).OrderBy( GetCardSortKey ).ToList();
 	}
 
 	private List<string> GetHasCardIds( bool senderSide )
 	{
 		var ownedCardIds = senderSide ? LocalOwnedCardIds : ReceiverOwnedCardIds;
 		var selectedCardIds = senderSide ? SenderCardIds : ReceiverCardIds;
-		return ownedCardIds.Where( cardId => !selectedCardIds.Contains( cardId ) ).ToList();
+		return ownedCardIds.Where( cardId => !selectedCardIds.Contains( cardId ) ).OrderBy( GetCardSortKey ).ToList();
+	}
+
+	private int GetSideWorthTotal( bool senderSide )
+	{
+		var money = senderSide ? SenderMoney : ReceiverMoney;
+		var propertyIndexes = senderSide ? SenderPropertyIndexes : ReceiverPropertyIndexes;
+		return Math.Max( money, 0 ) + propertyIndexes.Sum( GetPropertyTradeValue );
+	}
+
+	private int GetPropertyTradeValue( int propertyIndex )
+	{
+		return GameRef?.Board?.GetSpaceDef( propertyIndex )?.Price ?? 0;
+	}
+
+	private List<int> SortTradePropertyIndexes( IEnumerable<int> propertyIndexes )
+	{
+		return propertyIndexes
+			.OrderBy( GetPropertyTypeSortKey )
+			.ThenBy( GetPropertyColorSortKey )
+			.ThenBy( propertyIndex => propertyIndex )
+			.ToList();
+	}
+
+	private int GetPropertyTypeSortKey( int propertyIndex )
+	{
+		return GameRef?.Board?.GetSpaceDef( propertyIndex )?.Type switch
+		{
+			SpaceType.Property => 0,
+			SpaceType.Railroad => 1,
+			SpaceType.Utility => 2,
+			_ => 3
+		};
+	}
+
+	private int GetPropertyColorSortKey( int propertyIndex )
+	{
+		return GameRef?.Board?.GetSpaceDef( propertyIndex )?.ColorGroup switch
+		{
+			ColorGroup.Brown => 0,
+			ColorGroup.LightBlue => 1,
+			ColorGroup.Pink => 2,
+			ColorGroup.Orange => 3,
+			ColorGroup.Red => 4,
+			ColorGroup.Yellow => 5,
+			ColorGroup.Green => 6,
+			ColorGroup.DarkBlue => 7,
+			_ => 8
+		};
+	}
+
+	private static string GetCardSortKey( string cardId )
+	{
+		return cardId ?? "";
 	}
 
 	private string GetComposerPropertyClasses( int propertyIndex, bool senderSide )

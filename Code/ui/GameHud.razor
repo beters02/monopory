@@ -532,7 +532,17 @@
 
 	private void HandleConfirmationDecision( int popupId, bool confirmed )
 	{
+		var popup = Popups.FirstOrDefault( popup => popup.Id == popupId );
+		var shouldDeclareBankruptcy =
+			!confirmed &&
+			GameRef?.HasPendingForcedPayment == true &&
+			GameRef.PendingForcedPaymentPlayerIndex == GameRef.LocalPlayerIndex &&
+			string.Equals( popup?.Title, "Mortgage required", StringComparison.OrdinalIgnoreCase );
+
 		GameRef?.ResolveConfirmationPopup( popupId, confirmed );
+
+		if ( shouldDeclareBankruptcy )
+			DeclareBankruptcy();
 	}
 
 	private int GetPopupsHash()

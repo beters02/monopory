@@ -52,8 +52,8 @@
 					<div class="property-manager-content monopory-scroll-y" @ref="PropertyManagerContentPanel">
 						@foreach ( var ownershipGroup in PropertyManagerSections )
 						{
-							<div class="@GetPropertyManagerSectionClasses( ownershipGroup )">
-								<div class="property-manager-section-title">@ownershipGroup.Title</div>
+							<div class="@GetPropertyManagerSectionClasses( ownershipGroup )" style="@GetPropertyManagerSectionStyle( ownershipGroup )">
+								<div class="property-manager-section-title" style="@GetPropertyManagerSectionTitleStyle( ownershipGroup )">@ownershipGroup.Title</div>
 								@if ( ownershipGroup.Properties.Count == 0 && ownershipGroup.CardIds.Count == 0 )
 								{
 									<div class="property-manager-empty">None</div>
@@ -254,6 +254,27 @@
 			classes += " current-player";
 
 		return classes;
+	}
+
+	private string GetPropertyManagerSectionStyle( PropertyManagerSection section )
+	{
+		if ( section.PlayerIndex < 0 || section.PlayerIndex == GameRef?.CurrentPlayerIndex )
+			return "";
+
+		var player = GameRef?.Players?.ElementAtOrDefault( section.PlayerIndex );
+		var color = GetPlayerColor( player );
+		var outlineColor = ToCssColor( color );
+		var glowColor = ToCssColor( color.WithAlpha( 0.45f ) );
+		return $"border-color: {outlineColor}; box-shadow: 0 0 0 1px {glowColor};";
+	}
+
+	private string GetPropertyManagerSectionTitleStyle( PropertyManagerSection section )
+	{
+		if ( section.PlayerIndex < 0 || section.PlayerIndex == GameRef?.CurrentPlayerIndex )
+			return "";
+
+		var player = GameRef?.Players?.ElementAtOrDefault( section.PlayerIndex );
+		return $"color: {ToCssColor( GetPlayerColor( player ) )};";
 	}
 
 	private string PlayerProfilePopupStyle => $"right: 32px; top: {PlayerProfilePopupTop:0}px;";

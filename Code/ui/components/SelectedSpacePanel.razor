@@ -27,13 +27,28 @@
 					{
 						<button class="space-card-menu-button" onclick="@ToggleColorSetMenu">&#9776;</button>
 						@if ( IsColorSetMenuOpen )
-						{
-							<div class="space-card-menu">
-								<GameButton Variant="@GetColorSetMenuButtonClasses( selection.CanBuildColorSetImprovement )" CanClick="@selection.CanBuildColorSetImprovement" OnClick="@BuildColorSetImprovement">Buy 1 house on color set</GameButton>
-								<GameButton Variant="@GetColorSetMenuButtonClasses( selection.CanSellColorSetImprovement )" CanClick="@selection.CanSellColorSetImprovement" OnClick="@SellColorSetImprovement">Sell 1 house on color set</GameButton>
-								<GameButton Variant="@GetColorSetMenuButtonClasses( selection.CanMortgageColorSet )" CanClick="@selection.CanMortgageColorSet" OnClick="@MortgageColorSet">Mortgage color set</GameButton>
-							</div>
-						}
+							{
+								<div class="space-card-menu">
+									<GameButton Variant="@GetColorSetMenuButtonClasses( selection.CanBuildColorSetImprovement )" CanClick="@selection.CanBuildColorSetImprovement" OnClick="@BuildColorSetImprovement">
+										<ChildContent>
+											<span class="space-action-price">@selection.BuildColorSetImprovementPriceLabel</span>
+											<span class="space-action-label">Buy Set House</span>
+										</ChildContent>
+									</GameButton>
+									<GameButton Variant="@GetColorSetMenuButtonClasses( selection.CanSellColorSetImprovement )" CanClick="@selection.CanSellColorSetImprovement" OnClick="@SellColorSetImprovement">
+										<ChildContent>
+											<span class="space-action-price">@selection.SellColorSetImprovementPriceLabel</span>
+											<span class="space-action-label">Sell Set House</span>
+										</ChildContent>
+									</GameButton>
+									<GameButton Variant="@GetColorSetMenuButtonClasses( selection.CanMortgageColorSet )" CanClick="@selection.CanMortgageColorSet" OnClick="@MortgageColorSet">
+										<ChildContent>
+											<span class="space-action-price">@selection.MortgageColorSetPriceLabel</span>
+											<span class="space-action-label">Mortgage Set</span>
+										</ChildContent>
+									</GameButton>
+								</div>
+							}
 					}
 					<CloseButton Variant="@GetSpaceCardCloseButtonClasses( selection )" CanClick="@(!selection.IsClosing && selection.CanClose)" OnClick="@CloseSelectedSpace" BlockedPopupTitle="Decision required" BlockedPopupMessage="@selection.CloseBlockedMessage"></CloseButton>
 				</OverlayContent>
@@ -181,6 +196,9 @@
 			HousePriceLabel = SelectedHousePriceLabel,
 			BuildImprovementPriceLabel = BuildImprovementPriceLabel,
 			SellImprovementPriceLabel = SellImprovementPriceLabel,
+			BuildColorSetImprovementPriceLabel = BuildColorSetImprovementPriceLabel,
+			SellColorSetImprovementPriceLabel = SellColorSetImprovementPriceLabel,
+			MortgageColorSetPriceLabel = MortgageColorSetPriceLabel,
 			MortgageActionLabel = MortgageActionLabel,
 			CannotAffordBuyMessage = CannotAffordBuyMessage,
 			CloseBlockedMessage = SelectedSpaceCloseBlockedMessage
@@ -405,6 +423,16 @@
 	private bool CanSellColorSetImprovement =>
 		GetSelectedColorSetProperties().Any( property => GameRef?.CanSellImprovement( GameRef.LocalPlayerIndex, property.Index ) == true );
 
+	private int BuildColorSetImprovementCost =>
+		GetSelectedColorSetProperties()
+			.Where( property => GameRef?.CanBuildImprovement( GameRef.LocalPlayerIndex, property.Index ) == true )
+			.Sum( property => GameRef?.GetImprovementCost( property.Index ) ?? 0 );
+
+	private int SellColorSetImprovementValue =>
+		GetSelectedColorSetProperties()
+			.Where( property => GameRef?.CanSellImprovement( GameRef.LocalPlayerIndex, property.Index ) == true )
+			.Sum( property => GameRef?.GetImprovementSellValue( property.Index ) ?? 0 );
+
 	private int SelectedMortgageValue =>
 		SelectedSpaceIndex < 0 ? 0 : GameRef?.GetMortgageValue( SelectedSpaceIndex ) ?? 0;
 
@@ -424,10 +452,24 @@
 	private bool CanMortgageColorSet =>
 		GetSelectedColorSetProperties().Any( property => GameRef?.CanMortgageProperty( GameRef.LocalPlayerIndex, property.Index ) == true );
 
+	private int MortgageColorSetValue =>
+		GetSelectedColorSetProperties()
+			.Where( property => GameRef?.CanMortgageProperty( GameRef.LocalPlayerIndex, property.Index ) == true )
+			.Sum( property => GameRef?.GetMortgageValue( property.Index ) ?? 0 );
+
 	private string MortgageActionLabel =>
 		IsSelectedSpaceMortgaged
 			? $"Unmortgage -${SelectedUnmortgageCost}"
 			: $"Mortgage +${SelectedMortgageValue}";
+
+	private string BuildColorSetImprovementPriceLabel =>
+		BuildColorSetImprovementCost > 0 ? $"-${BuildColorSetImprovementCost}" : "-";
+
+	private string SellColorSetImprovementPriceLabel =>
+		SellColorSetImprovementValue > 0 ? $"+${SellColorSetImprovementValue}" : "-";
+
+	private string MortgageColorSetPriceLabel =>
+		MortgageColorSetValue > 0 ? $"+${MortgageColorSetValue}" : "-";
 
 	private string MortgageButtonClasses =>
 		CanMortgageSelectedSpace || CanUnmortgageSelectedSpace ? "mortgage-action" : "mortgage-action disabled";
@@ -611,6 +653,9 @@
 		hash.Add( HudUi.GetPropertyOwnersHash( GameRef ) );
 		hash.Add( HudUi.GetMortgagedPropertiesHash( GameRef ) );
 		hash.Add( SelectedImprovementCount );
+		hash.Add( BuildColorSetImprovementCost );
+		hash.Add( SellColorSetImprovementValue );
+		hash.Add( MortgageColorSetValue );
 		hash.Add( IsColorSetMenuOpen );
 		return hash.ToHashCode();
 	}
@@ -647,6 +692,9 @@
 		public string HousePriceLabel { get; set; } = "";
 		public string BuildImprovementPriceLabel { get; set; } = "";
 		public string SellImprovementPriceLabel { get; set; } = "";
+		public string BuildColorSetImprovementPriceLabel { get; set; } = "";
+		public string SellColorSetImprovementPriceLabel { get; set; } = "";
+		public string MortgageColorSetPriceLabel { get; set; } = "";
 		public string MortgageActionLabel { get; set; } = "";
 		public string CannotAffordBuyMessage { get; set; } = "";
 		public string CloseBlockedMessage { get; set; } = "";

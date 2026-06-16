@@ -81,12 +81,58 @@
 }
 
 .property-player-panel.local-player {
-	border-color: $monopoly-panel-line;
+	border-color: $monopoly-gold;
+	box-shadow: 0 0 0 1px $monopoly-gold-glow;
 }
 
 .property-player-panel.current-player {
 	border-color: $monopoly-gold;
 	box-shadow: 0 0 0 1px $monopoly-gold-glow;
+}
+
+.property-square.color-brown {
+	border-color: $monopoly-gold;
+	box-shadow: 0 0 0 1px $monopoly-gold-glow;
+}
+
+.property-square.color-light_blue {
+	background-color: $property-light-blue;
+}
+
+.property-square.color-pink {
+	background-color: $property-pink;
+}
+
+.property-square.color-orange {
+	background-color: $property-orange;
+}
+
+.property-square.color-red {
+	background-color: $property-red;
+}
+
+.property-square.color-yellow {
+	background-color: $property-yellow;
+}
+
+.property-square.color-green {
+	background-color: $property-green;
+}
+
+.property-square.color-dark_blue {
+	background-color: $property-dark-blue;
+}
+
+.property-square.color-railroad {
+	background-color: $property-railroad;
+}
+
+.property-square.color-utility {
+	background-color: $property-utility;
+}
+
+.property-square.color-none {
+	background-color: $property-none;
 }
 
 .property-player-name {

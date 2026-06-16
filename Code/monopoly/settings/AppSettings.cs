@@ -22,6 +22,8 @@ public class AppSettingsData
 	public float MotionBlurScale { get; set; } = 0f;
 	public int Volume { get; set; } = 100;
 	public int MusicVolume { get; set; } = 30;
+	public string SelectedPieceId { get; set; } = PieceCatalog.DefaultPieceId;
+	public string SelectedDiceSkinId { get; set; } = DiceSkinCatalog.DefaultDiceSkinId;
 	public List<AppSettingsKeybind> Keybinds { get; set; } = new();
 }
 
@@ -102,6 +104,8 @@ public class AppSettings : Component
 			MotionBlurScale = source.MotionBlurScale,
 			Volume = source.Volume,
 			MusicVolume = source.MusicVolume,
+			SelectedPieceId = PieceCatalog.GetByIdOrDefault( source.SelectedPieceId ).Id,
+			SelectedDiceSkinId = DiceSkinCatalog.GetByIdOrDefault( source.SelectedDiceSkinId ).Id,
 			Keybinds = CopyKeybinds( source.Keybinds )
 		};
 	}
@@ -155,6 +159,8 @@ public class AppSettings : Component
 	public static UpscalerMode GetUpscaler() => Data.UpscalerMode; 
 	public static int GetVolume() => Math.Clamp( Data.Volume, 0, 100 );
 	public static int GetMusicVolume() => Math.Clamp( Data.MusicVolume, 0, 100 );
+	public static string GetSelectedPieceId() => PieceCatalog.GetByIdOrDefault( Data.SelectedPieceId ).Id;
+	public static string GetSelectedDiceSkinId() => DiceSkinCatalog.GetByIdOrDefault( Data.SelectedDiceSkinId ).Id;
 	public static string GetKeybind( InputAction action )
 	{
 		if ( action is null )
@@ -230,6 +236,22 @@ public class AppSettings : Component
 		volume = Math.Clamp( volume, 0, 100 );
 		Data.MusicVolume = volume;
 		ApplyAudio();
+		return true;
+	}
+
+	public static bool TrySetSelectedPieceId( string pieceId, bool save = true )
+	{
+		Data.SelectedPieceId = PieceCatalog.GetByIdOrDefault( pieceId ).Id;
+		if ( save )
+			Save();
+		return true;
+	}
+
+	public static bool TrySetSelectedDiceSkinId( string diceSkinId, bool save = true )
+	{
+		Data.SelectedDiceSkinId = DiceSkinCatalog.GetByIdOrDefault( diceSkinId ).Id;
+		if ( save )
+			Save();
 		return true;
 	}
 

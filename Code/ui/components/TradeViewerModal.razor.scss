@@ -190,6 +190,20 @@
 	font-weight: 900;
 }
 
+.trade-view-modal .trade-total-worth {
+	min-height: 26px;
+	padding: 3px 8px;
+	align-items: center;
+	justify-content: center;
+	background-color: $monopoly-card-ink-surface;
+	border: 2px solid $monopoly-card-ink-line;
+	border-radius: $monopoly-radius-control;
+	color: $monopoly-ink;
+	font-size: $monopoly-font-small;
+	font-weight: 900;
+	text-transform: uppercase;
+}
+
 .trade-swap-column {
 	width: 54px;
 	min-height: 190px;

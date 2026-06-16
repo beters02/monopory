@@ -22,7 +22,7 @@ public partial class MonopolyApp : Component
 
     private static readonly bool EditorIsStandalone = true;
 
-    [Sync( SyncFlags.FromHost )] public static bool CheatsEnabled { get; set; } = false;
+    [Sync( SyncFlags.FromHost )] public bool CheatsEnabled { get; set; } = false;
 
 	protected override void OnAwake()
 	{
@@ -30,8 +30,6 @@ public partial class MonopolyApp : Component
 		AwakeStandalone();
 		DebugEnabled = HandleLaunchedDebugEnabled();
 		Log.Info($"IsStandalone: {IsStandalone()}");
-
-        
 	}
 
 	protected override void OnStart()
@@ -88,13 +86,11 @@ public partial class MonopolyApp : Component
 
     public static void SetCheatsEnabled(bool enabled)
     {
-
         if (Networking.IsHost)
         {
-            CheatsEnabled = enabled;
+            Instance.CheatsEnabled = enabled;
             return;
         }
-            
 
         instance?.SetCheatsEnabledHost(enabled);
     }
@@ -103,6 +99,11 @@ public partial class MonopolyApp : Component
     private void SetCheatsEnabledHost(bool enabled)
     {
         CheatsEnabled = enabled;        
+    }
+
+    public static bool IsCheatsEnabled()
+    {
+        return Instance.CheatsEnabled;
     }
 
     public static bool IsStandalone()

@@ -281,11 +281,17 @@ public sealed partial class GameController : Component
 		{
 			if ( GetOwnerIndexForSpace( spaceIndex ) != trade.SenderPlayerIndex )
 				return false;
+
+			if ( GetImprovementCount( spaceIndex ) > 0 )
+				return false;
 		}
 
 		foreach ( var spaceIndex in trade.ReceiverPropertyIndexes )
 		{
 			if ( GetOwnerIndexForSpace( spaceIndex ) != trade.ReceiverPlayerIndex )
+				return false;
+
+			if ( GetImprovementCount( spaceIndex ) > 0 )
 				return false;
 		}
 
@@ -302,6 +308,19 @@ public sealed partial class GameController : Component
 		}
 
 		return true;
+	}
+
+	public List<int> GetImprovedTradePropertyIndexes( TradeRequest trade )
+	{
+		if ( trade is null )
+			return new();
+
+		return trade.SenderPropertyIndexes
+			.Concat( trade.ReceiverPropertyIndexes )
+			.Where( spaceIndex => GetImprovementCount( spaceIndex ) > 0 )
+			.Distinct()
+			.OrderBy( spaceIndex => spaceIndex )
+			.ToList();
 	}
 
 	private void RemoveInvalidTrades()

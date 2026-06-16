@@ -16,6 +16,7 @@
 					<div class="@GetSummarySideClasses( Trade.SenderPlayerIndex )">
 						<div class="trade-player-name">@GetPlayerName( Trade.SenderPlayerIndex ) gives</div>
 						<div class="trade-money-pill">$@Trade.SenderMoney</div>
+						<div class="trade-total-worth">Total: $@GetSideWorthTotal( true )</div>
 						@foreach ( var propertyIndex in Trade.SenderPropertyIndexes )
 						{
 							<div class="@GetPropertyChipClasses( propertyIndex )" onclick="@(() => SelectPropertySpace( propertyIndex ))">
@@ -34,6 +35,7 @@
 					<div class="@GetSummarySideClasses( Trade.ReceiverPlayerIndex )">
 						<div class="trade-player-name">@GetPlayerName( Trade.ReceiverPlayerIndex ) gives</div>
 						<div class="trade-money-pill">$@Trade.ReceiverMoney</div>
+						<div class="trade-total-worth">Total: $@GetSideWorthTotal( false )</div>
 						@foreach ( var propertyIndex in Trade.ReceiverPropertyIndexes )
 						{
 							<div class="@GetPropertyChipClasses( propertyIndex )" onclick="@(() => SelectPropertySpace( propertyIndex ))">
@@ -87,6 +89,18 @@
 	private string GetPropertyName( int propertyIndex )
 	{
 		return GameRef?.Board?.GetSpaceDef( propertyIndex )?.DisplayName ?? $"Space {propertyIndex}";
+	}
+
+	private int GetSideWorthTotal( bool senderSide )
+	{
+		var money = senderSide ? Trade?.SenderMoney ?? 0 : Trade?.ReceiverMoney ?? 0;
+		var propertyIndexes = senderSide ? Trade?.SenderPropertyIndexes : Trade?.ReceiverPropertyIndexes;
+		return Math.Max( money, 0 ) + (propertyIndexes?.Sum( GetPropertyTradeValue ) ?? 0);
+	}
+
+	private int GetPropertyTradeValue( int propertyIndex )
+	{
+		return GameRef?.Board?.GetSpaceDef( propertyIndex )?.Price ?? 0;
 	}
 
 	private string GetSummarySideClasses( int playerIndex )

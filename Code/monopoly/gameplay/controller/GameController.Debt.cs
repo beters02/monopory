@@ -106,7 +106,8 @@ public sealed partial class GameController : Component
 		var player = Players.ElementAtOrDefault( playerIndex );
 		if ( player is not null )
 		{
-			SendConfirmationNoticeToPlayer( player, "Mortgage required", "You need to mortgage properties to continue", "OK", "Cancel" );
+			var needed = Math.Max( amount - player.Money, 0 );
+			SendConfirmationNoticeToPlayer( player, "Mortgage required", $"You need ${needed} more to pay this ${amount} debt.", "OK", "Bankrupt" );
 			Log.Info( $"{player.PlayerName} must raise ${amount} before their turn can end." );
 		}
 	}
@@ -129,7 +130,8 @@ public sealed partial class GameController : Component
 		var player = Players.ElementAtOrDefault( playerIndex );
 		if ( player is not null )
 		{
-			SendConfirmationNoticeToPlayer( player, "Mortgage required", "You need to mortgage properties to continue", "OK", "Cancel" );
+			var needed = Math.Max( total - player.Money, 0 );
+			SendConfirmationNoticeToPlayer( player, "Mortgage required", $"You need ${needed} more to pay ${amountPerPlayer} to each player.", "OK", "Bankrupt" );
 			Log.Info( $"{player.PlayerName} must raise ${total} to pay each player ${amountPerPlayer}." );
 		}
 	}

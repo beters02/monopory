@@ -269,7 +269,7 @@ public sealed class GameCommandManager : Component
 
 	internal static bool CanUseCheatCommand( Connection caller )
 	{
-		return MonopolyApp.CheatsEnabled;
+		return MonopolyApp.IsCheatsEnabled();
 	}
 
 	internal static bool CanUseHostCheatCommand( Connection caller )
@@ -280,7 +280,7 @@ public sealed class GameCommandManager : Component
 		if ( GameController.Instance?.IsEffectiveHostCaller( caller ) == true )
 			return true;
 
-		return MonopolyApp.CheatsEnabled;
+		return MonopolyApp.IsCheatsEnabled();
 	}
 
 	internal static bool CanUseHostCommand( Connection caller )
@@ -416,7 +416,7 @@ public static class SvCheatsCommand
 	{
 		GameCommandManager.RunCommand( Name, () =>
 		{
-			bool oldValue = MonopolyApp.CheatsEnabled;
+			bool oldValue = MonopolyApp.IsCheatsEnabled();
 
 			if ( value is null || value == "_" )
 				return CommandResult.Success($"sv_cheats {oldValue}");

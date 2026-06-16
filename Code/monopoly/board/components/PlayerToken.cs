@@ -117,15 +117,17 @@ public sealed class PlayerToken : Component
 			return;
 		}
 
-		DestroyBoardSpotSilhouette();
 		tokenControlVelocity = Vector3.Zero;
 		tokenControlGrounded = false;
 
 		if ( IsRemoteTokenControlActive() )
 		{
+			UpdateBoardSpotSilhouette( target, targetRot );
 			UpdateRemoteTokenControl();
 			return;
 		}
+
+		DestroyBoardSpotSilhouette();
 
 		var isMoving = !GameObject.WorldPosition.AlmostEqual( target, 0.1f );
 

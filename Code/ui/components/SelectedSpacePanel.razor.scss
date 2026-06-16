@@ -64,6 +64,32 @@
 	line-height: 14px;
 	text-transform: uppercase;
 	white-space: normal;
+	align-items: center;
+	justify-content: flex-start;
+	gap: 8px;
+}
+
+.space-card-menu .monopoly-button.color-set-menu-action .monopoly-button-content {
+	width: 100%;
+	align-items: center;
+	justify-content: flex-start;
+	gap: 8px;
+}
+
+.space-card-menu .space-action-price {
+	flex: 0 0 48px;
+	text-align: right;
+	font-size: 13px;
+	line-height: 13px;
+}
+
+.space-card-menu .space-action-label {
+	flex: 1;
+	min-width: 0;
+	text-align: left;
+	font-size: $monopoly-font-small;
+	line-height: 13px;
+	white-space: normal;
 }
 
 .space-card-menu .monopoly-button.color-set-menu-action.disabled {
