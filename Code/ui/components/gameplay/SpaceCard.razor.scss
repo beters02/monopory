@@ -1,0 +1,674 @@
+@import "../../styles/GameTheme.scss";
+
+.monopoly-space-card {
+	position: relative;
+	z-index: 1;
+	width: 292px;
+	min-height: 360px;
+
+	background-color: $monopoly-board;
+	border-radius: $monopoly-radius-board;
+	box-shadow: $monopoly-card-shadow;
+
+	color: $monopoly-ink;
+	font-family: $monopoly-font-family;
+
+	display: flex;
+	flex-direction: column;
+
+	pointer-events: all;
+}
+
+.monopoly-space-card-outline {
+	position: absolute;
+	left: -4px;
+	top: -4px;
+	right: -4px;
+	bottom: -4px;
+	z-index: 0;
+
+	background-color: $monopoly-board-outline;
+	border-radius: $monopoly-radius-board;
+
+	pointer-events: none;
+}
+
+.monopoly-space-card-inner {
+	position: relative;
+	z-index: 1;
+	flex: 1;
+	overflow: hidden;
+
+	background-color: $monopoly-board;
+	border: 4px solid $monopoly-ink;
+	border-radius: $monopoly-radius-board;
+
+	display: flex;
+	flex-direction: column;
+}
+
+.monopoly-space-card-overlay {
+	position: absolute;
+	top: 3px;
+	right: 3px;
+	z-index: 4;
+
+	pointer-events: all;
+}
+
+.monopoly-space-card-header {
+	min-height: 82px;
+	padding: 12px 14px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	border-bottom: 4px solid $monopoly-ink;
+	text-align: center;
+}
+
+.monopoly-space-card-type {
+	width: 100%;
+	text-align: center;
+	font-size: 13px;
+	font-weight: 900;
+	line-height: 16px;
+	text-transform: uppercase;
+}
+
+.monopoly-space-card-name {
+	width: 100%;
+	text-align: center;
+	font-size: 26px;
+	font-weight: 900;
+	line-height: 30px;
+	text-transform: uppercase;
+	white-space: normal;
+}
+
+.monopoly-space-card-rents {
+	flex: 1;
+	padding: 14px 16px;
+
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+
+	font-size: 16px;
+	font-weight: 800;
+}
+
+.monopoly-space-card-rents div {
+	display: flex;
+	justify-content: space-between;
+	gap: 10px;
+}
+
+.monopoly-special-title {
+	min-height: 164px;
+	padding: 18px 44px 12px;
+
+	background-color: $monopoly-board;
+	border-bottom: 4px solid $monopoly-ink;
+
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 10px;
+
+	text-align: center;
+}
+
+.monopoly-special-card {
+	flex: 1;
+	padding: 20px 18px 16px;
+
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: space-evenly;
+	gap: 12px;
+
+	text-align: center;
+	font-weight: 800;
+}
+
+.monopoly-special-icon {
+	width: 94px;
+	height: 76px;
+	align-items: center;
+	justify-content: center;
+}
+
+.railroad-icon {
+	flex-direction: column;
+	gap: 2px;
+}
+
+.railroad-smoke {
+	width: 42px;
+	height: 10px;
+	margin-left: -22px;
+	border-top: 4px solid $monopoly-ink;
+	border-bottom: 4px solid $monopoly-ink;
+}
+
+.railroad-engine {
+	height: 32px;
+	align-items: flex-end;
+	justify-content: center;
+	gap: 0;
+}
+
+.railroad-cab {
+	width: 28px;
+	height: 28px;
+	background-color: $monopoly-ink;
+	border-radius: 2px 2px 0 0;
+}
+
+.railroad-body {
+	width: 54px;
+	height: 22px;
+	background-color: $monopoly-ink;
+	border-radius: 2px 8px 0 0;
+}
+
+.railroad-wheels {
+	width: 92px;
+	justify-content: center;
+	gap: 8px;
+}
+
+.railroad-wheels div {
+	width: 17px;
+	height: 17px;
+	background-color: $monopoly-ink;
+	border-radius: 50%;
+}
+
+.utility-icon {
+	position: relative;
+	width: 78px;
+	height: 88px;
+}
+
+.utility-bolt {
+	position: absolute;
+	background-color: $monopoly-ink;
+	transform: rotate(-24deg);
+}
+
+.utility-bolt.top {
+	left: 34px;
+	top: 2px;
+	width: 24px;
+	height: 42px;
+}
+
+.utility-bolt.middle {
+	left: 20px;
+	top: 34px;
+	width: 38px;
+	height: 20px;
+}
+
+.utility-bolt.bottom {
+	left: 18px;
+	top: 46px;
+	width: 24px;
+	height: 42px;
+}
+
+.monopoly-special-rules {
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	font-size: 14px;
+	line-height: 18px;
+}
+
+.monopoly-special-rules div {
+	display: flex;
+	justify-content: space-between;
+	gap: 10px;
+}
+
+.utility-rules {
+	gap: 10px;
+}
+
+.utility-rules div {
+	display: flex;
+}
+
+.monopoly-special-mortgage {
+	margin-top: 2px;
+	font-size: 13px;
+	line-height: 16px;
+	text-transform: uppercase;
+	opacity: 0.8;
+}
+
+.monopoly-space-card-status {
+	margin: 12px 14px 0;
+	padding: 10px 12px;
+
+	background-color: $monopoly-ink;
+	border: 3px solid $monopoly-gold;
+	border-radius: $monopoly-radius-board;
+	color: $monopoly-board;
+
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+
+.monopoly-space-card-status-title {
+	color: $monopoly-gold-soft;
+	font-size: 15px;
+	font-weight: 900;
+	text-transform: uppercase;
+}
+
+.monopoly-space-card-status-copy {
+	font-size: 12px;
+	font-weight: 800;
+	line-height: 15px;
+	opacity: 0.82;
+}
+
+.monopoly-space-card-status-value {
+	color: $monopoly-board;
+	font-size: 28px;
+	font-weight: 900;
+	line-height: 32px;
+}
+
+.monopoly-space-card-improvements {
+	margin: -2px 16px 12px;
+
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 4px;
+
+	color: $monopoly-ink;
+	font-size: 15px;
+	font-weight: 800;
+	line-height: 20px;
+}
+
+.monopoly-space-card-improvement-count,
+.monopoly-space-card-owner-inline {
+	min-width: 0;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.monopoly-space-card-improvement-count {
+	justify-content: flex-start;
+}
+
+.monopoly-space-card-owner-inline {
+	justify-content: center;
+	text-align: center;
+}
+
+.monopoly-space-card-improvement-count span,
+.monopoly-space-card-owner-inline span {
+	flex: 0 0 auto;
+	text-transform: uppercase;
+	opacity: 0.72;
+}
+
+.monopoly-space-card-improvement-count strong,
+.monopoly-space-card-owner-inline strong {
+	min-width: 0;
+	font-weight: 900;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
+}
+
+.monopoly-space-card-footer {
+	min-height: 68px;
+	padding: 10px 16px;
+
+	background-color: $monopoly-dark-surface;
+	border-top: 3px solid $monopoly-ink;
+
+	display: flex;
+	justify-content: space-around;
+	gap: 18px;
+}
+
+.monopoly-space-card-footer div {
+	align-items: center;
+	flex-direction: column;
+	gap: 2px;
+}
+
+.monopoly-space-card-footer span {
+	font-size: 12px;
+	font-weight: 900;
+	text-transform: uppercase;
+	opacity: 0.72;
+}
+
+.monopoly-space-card-footer strong {
+	font-size: 18px;
+	font-weight: 900;
+}
+
+.monopoly-space-card-actions {
+	position: relative;
+	z-index: 2;
+
+	margin-top: auto;
+	padding: 0 14px 14px;
+
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.monopoly-space-card-stamp {
+	position: absolute;
+	left: -28px;
+	right: -28px;
+	top: 45%;
+	z-index: 3;
+	transform: rotate(-13deg);
+
+	height: 52px;
+
+	background-color: $monopoly-card-ink-surface-hover;
+	border-top: 4px solid $monopoly-card-ink-soft;
+	border-bottom: 4px solid $monopoly-card-ink-soft;
+	color: $monopoly-card-ink-soft;
+
+	align-items: center;
+	justify-content: center;
+
+	font-size: 31px;
+	font-weight: 900;
+	letter-spacing: 0;
+	text-transform: uppercase;
+
+	pointer-events: none;
+}
+
+.monopoly-card-space-art {
+	flex: 1;
+	width: 100%;
+	min-height: 100%;
+
+	align-items: center;
+	justify-content: center;
+}
+
+.monopoly-card-space-image-icon {
+	width: 190px;
+	height: 240px;
+	object-fit: contain;
+	background-size: contain;
+	background-repeat: no-repeat;
+	background-position: center;
+	flex-shrink: 0;
+}
+
+.monopoly-card-space-text-icon {
+	width: 100%;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+
+	color: $property-light-blue;
+	font-size: 54px;
+	font-weight: 900;
+	line-height: 54px;
+	text-transform: uppercase;
+}
+
+.monopoly-chance-mark {
+	width: 170px;
+	height: 210px;
+
+	align-items: center;
+	justify-content: center;
+
+	color: $property-orange;
+	font-size: 178px;
+	font-weight: 900;
+	line-height: 178px;
+	text-shadow: 6px 6px 0 $monopoly-card-ink-surface-hover;
+}
+
+.monopoly-chest-art {
+	position: relative;
+	width: 178px;
+	height: 138px;
+
+	align-items: center;
+	justify-content: center;
+}
+
+.monopoly-chest-lid {
+	position: absolute;
+	left: 12px;
+	top: 4px;
+	width: 154px;
+	height: 46px;
+
+	background-color: $property-light-blue;
+	border: 8px solid $monopoly-ink;
+	border-radius: 8px 8px 2px 2px;
+}
+
+.monopoly-chest-body {
+	position: absolute;
+	left: 0;
+	top: 44px;
+	width: 178px;
+	height: 86px;
+
+	background-color: $property-light-blue;
+	border: 8px solid $monopoly-ink;
+	border-radius: 4px 4px 10px 10px;
+}
+
+.monopoly-chest-lock {
+	position: absolute;
+	left: 70px;
+	top: 56px;
+	width: 38px;
+	height: 44px;
+
+	background-color: $monopoly-gold;
+	border: 6px solid $monopoly-ink;
+	border-radius: 4px;
+}
+
+.drawn-space-card {
+	width: 450px;
+	min-height: 260px;
+	height: 260px;
+}
+
+.drawn-space-card .monopoly-space-card-inner {
+	min-height: 260px;
+	align-items: center;
+	justify-content: center;
+}
+
+.drawn-space-card .monopoly-drawn-space-card-text {
+	width: 100%;
+	padding: 18px 48px;
+
+	text-align: center;
+	font-size: 25px;
+	font-weight: 900;
+	line-height: 31px;
+}
+
+.monopoly-space-card.color-brown .monopoly-space-card-header { background-color: $property-brown; color: $monopoly-text; }
+.monopoly-space-card.color-light_blue .monopoly-space-card-header { background-color: $property-light-blue; }
+.monopoly-space-card.color-pink .monopoly-space-card-header { background-color: $property-pink; color: $monopoly-text; }
+.monopoly-space-card.color-orange .monopoly-space-card-header { background-color: $property-orange; }
+.monopoly-space-card.color-red .monopoly-space-card-header { background-color: $property-red; color: $monopoly-text; }
+.monopoly-space-card.color-yellow .monopoly-space-card-header { background-color: $property-yellow; }
+.monopoly-space-card.color-green .monopoly-space-card-header { background-color: $property-green; color: $monopoly-text; }
+.monopoly-space-card.color-dark_blue .monopoly-space-card-header { background-color: $property-dark-blue; color: $monopoly-text; }
+.monopoly-space-card.color-railroad .monopoly-space-card-header { background-color: $property-railroad; }
+.monopoly-space-card.color-utility .monopoly-space-card-header { background-color: $property-utility; }
+.monopoly-space-card.color-none .monopoly-space-card-header { background-color: $property-none; color: $monopoly-text; }
+
+.selected-space-card {
+	width: 320px;
+	height: 450px;
+	min-height: 450px;
+	box-shadow: none;
+}
+
+.selected-space-card.drawn-space-card {
+	width: 450px;
+	height: 260px;
+	min-height: 260px;
+}
+
+.selected-space-card .monopoly-space-card-inner {
+	min-height: 450px;
+}
+
+.selected-space-card.drawn-space-card .monopoly-space-card-inner {
+	min-height: 260px;
+}
+
+.selected-space-card .monopoly-space-card-header {
+	height: 96px;
+	padding-left: 48px;
+	padding-right: 48px;
+}
+
+.monopoly-space-card.selected-space-card .monopoly-space-card-header,
+.monopoly-space-card.selected-space-card .monopoly-special-title,
+.monopoly-space-card.selected-space-card .monopoly-space-card-type,
+.monopoly-space-card.selected-space-card .monopoly-space-card-name {
+	color: $monopoly-ink;
+}
+
+.selected-space-card .monopoly-special-title {
+	min-height: 174px;
+	padding: 20px 48px 14px;
+}
+
+.selected-space-card .monopoly-card-space-image-icon {
+	width: 210px;
+	height: 280px;
+}
+
+.selected-space-card .monopoly-card-space-text-icon {
+	font-size: 58px;
+	line-height: 58px;
+}
+
+.selected-space-card .monopoly-space-card-type {
+	font-size: 11px;
+	line-height: 14px;
+}
+
+.selected-space-card .monopoly-space-card-name {
+	font-size: 20px;
+	line-height: 24px;
+	white-space: nowrap;
+}
+
+.selected-space-card .monopoly-space-card-status {
+	margin: 10px 12px 0;
+	padding: 8px 10px;
+}
+
+.selected-space-card .monopoly-space-card-status-title {
+	font-size: 13px;
+}
+
+.selected-space-card .monopoly-space-card-status-copy {
+	font-size: 11px;
+	line-height: 14px;
+}
+
+.selected-space-card .monopoly-space-card-rents {
+	flex: 1;
+	padding: 16px 18px;
+	font-size: 14px;
+	line-height: 18px;
+}
+
+.selected-space-card .monopoly-space-card-rents.property-rents {
+	justify-content: space-evenly;
+	gap: 0;
+}
+
+.selected-space-card .monopoly-space-card-rents.summary-rents {
+	justify-content: center;
+	gap: 16px;
+}
+
+.selected-space-card .monopoly-special-card {
+	padding: 22px 22px 18px;
+	gap: 14px;
+}
+
+.selected-space-card .monopoly-special-rules {
+	font-size: 14px;
+	line-height: 18px;
+	gap: 8px;
+}
+
+.selected-space-card .utility-rules {
+	gap: 14px;
+}
+
+.selected-space-card .monopoly-space-card-improvements {
+	margin: -2px 14px 10px;
+	gap: 2px;
+	font-size: 12px;
+	line-height: 16px;
+}
+
+.selected-space-card .monopoly-space-card-footer {
+	min-height: 62px;
+	padding: 10px 14px;
+}
+
+.selected-space-card .monopoly-space-card-footer span {
+	font-size: 10px;
+}
+
+.selected-space-card .monopoly-space-card-footer strong {
+	font-size: 15px;
+}
+
+.selected-space-card .monopoly-space-card-actions {
+	padding: 8px 10px 10px;
+	gap: 7px;
+}
+
+.selected-space-card .monopoly-space-card-stamp {
+	top: 41%;
+	height: 46px;
+	font-size: 25px;
+}
+
+.auction-space-card {
+	width: 292px;
+	min-height: 360px;
+}
+
+
+

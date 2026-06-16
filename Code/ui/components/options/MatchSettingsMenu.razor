@@ -1,0 +1,78 @@
+@namespace Sandbox.ui.components
+@using Sandbox;
+@using Sandbox.UI;
+@using Sandbox.ui.components;
+@using Sandbox.ui.components.buttons;
+@using System;
+@inherits Panel
+
+<OptionsPanel IsOpen="@(IsOpen && Config is not null)" Kicker="Match" Title="Match Settings" OnClose="@Close" RootVariant="match-settings-root">
+	<ChildContent>
+		<OptionsPanelBody Copy="@Copy">
+			<ChildContent Context="_">
+				<div class="match-config-tabs">
+					<GameButton Variant="@GetPageButtonClasses( MatchConfigPageGameRules )" OnClick="@(() => SetPage( MatchConfigPageGameRules ))">Game Rules</GameButton>
+					<GameButton Variant="@GetPageButtonClasses( MatchConfigPageBoardConfiguration )" OnClick="@(() => SetPage( MatchConfigPageBoardConfiguration ))">Board Configuration</GameButton>
+				</div>
+				@if ( IsGameRulesPage )
+				{
+					<MatchSettingsGameRulesPage Config="@Config" CanEdit="@CanEdit"></MatchSettingsGameRulesPage>
+				}
+				else
+				{
+					<MatchSettingsBoardConfigurationPage Config="@Config" CanEdit="@CanEdit"></MatchSettingsBoardConfigurationPage>
+				}
+			</ChildContent>
+		</OptionsPanelBody>
+	</ChildContent>
+</OptionsPanel>
+
+@code
+{
+	[Parameter] public bool IsOpen { get; set; }
+	[Parameter] public MatchConfig Config { get; set; }
+	[Parameter] public bool CanEdit { get; set; }
+	[Parameter] public Action OnClose { get; set; }
+
+	private const string MatchConfigPageGameRules = "Game Rules";
+	private const string MatchConfigPageBoardConfiguration = "Board Configuration";
+	private string ActivePage = MatchConfigPageGameRules;
+
+	private bool IsGameRulesPage => string.Equals( ActivePage, MatchConfigPageGameRules, StringComparison.Ordinal );
+	private string Copy => CanEdit
+		? "Adjust match settings."
+		: "Current match settings are read-only during a live game.";
+
+	private void Close()
+	{
+		OnClose?.Invoke();
+	}
+
+	private void SetPage( string page )
+	{
+		ActivePage = page;
+	}
+
+	private string GetPageButtonClasses( string page )
+	{
+		return string.Equals( ActivePage, page, StringComparison.Ordinal )
+			? "options-panel-primary-button match-config-tab-button"
+			: "options-panel-secondary-button match-config-tab-button";
+	}
+
+	protected override int BuildHash()
+	{
+		var hash = new HashCode();
+		hash.Add( IsOpen );
+		hash.Add( ActivePage );
+		hash.Add( CanEdit );
+
+		if ( Config is not null )
+		{
+			foreach ( var option in MatchConfigSchema.Options )
+				hash.Add( MatchConfigSchema.FormatValue( option, MatchConfigSchema.GetOptionValue( option, Config ) ) );
+		}
+
+		return hash.ToHashCode();
+	}
+}

@@ -1,0 +1,358 @@
+@import "../../styles/GameTheme.scss";
+@import "../buttons/GameButton.razor.scss";
+@import "../buttons/CloseButton.razor.scss";
+@import "SpaceCard.razor.scss";
+
+
+
+.space-card-close {
+	position: absolute;
+	top: 8px;
+	right: 8px;
+	z-index: 20;
+	pointer-events: all;
+}
+
+.space-card-close span {
+	pointer-events: none;
+}
+
+.space-card-menu-button {
+	position: absolute;
+	top: 8px;
+	right: 50px;
+	z-index: 20;
+	width: 34px;
+	height: 34px;
+	border-radius: $monopoly-radius-control;
+	background-color: $monopoly-ink;
+	color: $monopoly-board;
+	font-size: 22px;
+	font-weight: 900;
+	align-items: center;
+	justify-content: center;
+	pointer-events: all;
+	cursor: pointer;
+}
+
+.space-card-menu {
+	position: absolute;
+	top: 48px;
+	right: 8px;
+	z-index: 21;
+	width: 210px;
+	padding: 8px;
+	border: 2px solid $monopoly-gold;
+	border-radius: $monopoly-radius-control;
+	background-color: $monopoly-panel-strong;
+	box-shadow: $monopoly-panel-shadow-soft;
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	pointer-events: all;
+}
+
+.space-card-menu .monopoly-button.color-set-menu-action {
+	min-height: $monopoly-control-height-small;
+	margin-top: 0;
+	padding: 5px 8px;
+	background-color: $monopoly-gold;
+	color: $monopoly-ink;
+	border-radius: $monopoly-radius-control;
+	font-size: $monopoly-font-button;
+	font-weight: 900;
+	line-height: 14px;
+	text-transform: uppercase;
+	white-space: normal;
+	align-items: center;
+	justify-content: flex-start;
+	gap: 8px;
+}
+
+.space-card-menu .monopoly-button.color-set-menu-action .monopoly-button-content {
+	width: 100%;
+	align-items: center;
+	justify-content: flex-start;
+	gap: 8px;
+}
+
+.space-card-menu .space-action-price {
+	flex: 0 0 48px;
+	text-align: right;
+	font-size: 13px;
+	line-height: 13px;
+}
+
+.space-card-menu .space-action-label {
+	flex: 1;
+	min-width: 0;
+	text-align: left;
+	font-size: $monopoly-font-small;
+	line-height: 13px;
+	white-space: normal;
+}
+
+.space-card-menu .monopoly-button.color-set-menu-action.disabled {
+	background-color: $monopoly-blocked-action;
+	color: $monopoly-text-muted;
+}
+
+.space-management {
+	margin-top: auto;
+
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.space-buttons {
+	margin-top: auto;
+
+	display: flex;
+	gap: 10px;
+}
+
+.space-management .space-buttons {
+	margin-top: 0;
+}
+
+.space-buttons .monopoly-button {
+	flex: 1;
+	height: $monopoly-control-height;
+	min-height: $monopoly-control-height;
+	margin-top: 0;
+
+	background-color: $monopoly-ink-soft;
+	color: $monopoly-text;
+
+	border-radius: $monopoly-radius-control;
+	border: 0;
+
+	font-size: $monopoly-font-button;
+	font-weight: 900;
+
+	cursor: pointer;
+}
+
+.space-buttons .monopoly-button:hover {
+	background-color: $monopoly-ink-hover;
+}
+
+.space-card-board .space-buttons {
+	gap: 8px;
+}
+
+.space-card-board .space-buttons .monopoly-button {
+	background-color: $monopoly-ink;
+	border: 3px solid $monopoly-ink;
+	border-radius: $monopoly-radius-board;
+
+	color: $monopoly-board;
+	text-transform: uppercase;
+}
+
+.space-card-board .space-buttons .monopoly-button:hover {
+	background-color: $monopoly-ink-hover;
+}
+
+.space-card-board .space-buttons .monopoly-button.disabled {
+	background-color: $monopoly-disabled-surface;
+	border-color: $monopoly-disabled-surface;
+	color: $monopoly-disabled-text;
+	cursor: default;
+}
+
+.space-card-board .space-buttons .monopoly-button.disabled:hover {
+	background-color: $monopoly-disabled-surface;
+}
+
+.selected-space-card-panel {
+	//transition: none;
+	position: absolute;
+	right: 48px;
+	top: 50%;
+	z-index: 70;
+	transform: scale( 1 ) translateY( -50% ) translateZ( 0px ) rotateX( 0deg );
+	transition: all 0.03s ease-out;
+
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+
+	pointer-events: none;
+
+	&:intro {
+		transition: all 0.07s ease-out;
+		transform: scale( 0 );
+		opacity: 0;
+	}
+
+	&:outro,
+	&.closing {
+		transition: all 0.14s ease-out;
+		transform: scale( 0 );
+		opacity: 0;
+	}
+}
+
+.selected-space-card-panel .selected-space-card,
+.selected-space-card-panel .selected-space-card * {
+	pointer-events: none;
+}
+
+.selected-space-card-panel .selected-space-card .space-card-close,
+.selected-space-card-panel .selected-space-card .space-card-close * {
+	pointer-events: all;
+}
+
+.selected-space-card-panel .selected-space-card .space-card-menu-button,
+.selected-space-card-panel .selected-space-card .space-card-menu-button *,
+.selected-space-card-panel .selected-space-card .space-card-menu,
+.selected-space-card-panel .selected-space-card .space-card-menu * {
+	pointer-events: all;
+}
+
+.selected-space-actions,
+.selected-space-actions *,
+.space-card-close,
+.space-card-menu-button,
+.space-card-menu,
+.space-card-menu * {
+	pointer-events: all;
+}
+
+.selected-space-card-panel .selected-space-card {
+	position: relative;
+	z-index: 2;
+}
+
+.selected-space-actions {
+	position: relative;
+	z-index: 3;
+	transform: translateZ(5px);
+
+	align-self: center;
+	width: 220px;
+	padding: 10px;
+
+	background-color: $monopoly-panel-strong;
+	border: 2px solid $monopoly-gold;
+	border-radius: $monopoly-radius-control;
+	box-shadow: $monopoly-panel-shadow-soft;
+
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	overflow: visible;
+}
+
+.selected-space-actions .space-management {
+	margin-top: 0;
+
+	display: flex;
+	flex-direction: column;
+	gap: 7px;
+}
+
+.selected-space-actions .space-buttons {
+	margin-top: 0;
+
+	display: flex;
+	gap: 7px;
+}
+
+.selected-space-actions .space-buttons .monopoly-button {
+	flex: 1;
+	height: auto;
+	min-height: $monopoly-control-height-small;
+	margin-top: 0;
+	padding: 5px 8px;
+
+	background-color: $monopoly-gold;
+	border: 0;
+	border-radius: $monopoly-radius-control;
+
+	color: $monopoly-ink;
+	font-size: $monopoly-font-button;
+	font-weight: 900;
+	line-height: 14px;
+	text-transform: uppercase;
+	white-space: nowrap;
+	overflow: visible;
+}
+
+.selected-space-actions .mortgage-buttons .monopoly-button {
+	width: 100%;
+	min-height: 36px;
+	align-items: center;
+	justify-content: center;
+}
+
+.selected-space-actions .improvement-buttons .monopoly-button {
+	align-items: center;
+	justify-content: center;
+	gap: 2px;
+	min-height: 38px;
+	padding: 5px 8px;
+}
+
+.selected-space-actions .improvement-buttons .buy-improvement-action {
+	background-color: $monopoly-success;
+	color: $monopoly-text;
+}
+
+.selected-space-actions .improvement-buttons .sell-improvement-action {
+	background-color: $monopoly-danger;
+	color: $monopoly-text;
+}
+
+.space-action-price {
+	flex: 0 0 46px;
+	text-align: right;
+	font-size: 14px;
+	font-weight: 900;
+	line-height: 14px;
+}
+
+.space-action-house-icon {
+	flex: 0 0 26px;
+	width: 27px;
+	height: 27px;
+	object-fit: contain;
+}
+
+.space-action-symbol {
+	flex: 0 0 5px;
+	color: $monopoly-text;
+	align-items: center;
+	justify-content: flex-end;
+	font-size: 17px;
+	font-weight: 900;
+	line-height: 17px;
+}
+
+.selected-space-actions .space-buttons .monopoly-button:hover {
+	background-color: $monopoly-gold-hover;
+}
+
+.selected-space-actions .improvement-buttons .buy-improvement-action:hover {
+	background-color: $monopoly-success;
+}
+
+.selected-space-actions .improvement-buttons .sell-improvement-action:hover {
+	background-color: $monopoly-danger-hover;
+}
+
+.selected-space-actions .space-buttons .monopoly-button.disabled {
+	background-color: $monopoly-blocked-action;
+	border-color: $monopoly-blocked-action;
+	color: $monopoly-text-muted;
+	cursor: default;
+}
+
+.selected-space-actions .space-buttons .monopoly-button.disabled:hover {
+	background-color: $monopoly-blocked-action-hover;
+}
+
+
+

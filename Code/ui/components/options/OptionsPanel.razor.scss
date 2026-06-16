@@ -1,0 +1,817 @@
+@import "../../styles/GameTheme.scss";
+@import "../buttons/CloseButton.razor.scss";
+@import "../buttons/GameButton.razor.scss";
+@import "../buttons/DropdownButton.razor.scss";
+
+.options-panel-root {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	pointer-events: none;
+}
+
+.options-panel-root.options-menu-root {
+	z-index: 1000;
+}
+
+.options-panel-root.lobby-options-root {
+	z-index: 82;
+}
+
+.options-panel-root.match-settings-root {
+	z-index: 1001;
+}
+
+.options-panel-root.piece-customize-root {
+	z-index: 83;
+}
+
+.options-panel-root.open {
+	pointer-events: all;
+}
+
+.options-panel-screen {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+
+	background-color: $monopoly-ink;
+
+	display: flex;
+	align-items: center;
+	justify-content: center;
+
+	pointer-events: all;
+}
+
+.options-panel-screen.blur-backdrop {
+	background-color: $monopoly-modal-backdrop;
+	backdrop-filter: blur( 8px );
+}
+
+.options-panel {
+	width: 820px;
+	max-width: 92%;
+	height: 88%;
+	max-height: 88%;
+	padding: $monopoly-panel-padding;
+
+	background-color: $monopoly-panel-strong;
+	border: 3px solid $monopoly-panel-line;
+	border-radius: $monopoly-radius-panel;
+	box-shadow: $monopoly-panel-shadow-strong;
+
+	color: $monopoly-text;
+	font-family: $monopoly-font-family;
+
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	gap: $monopoly-panel-gap;
+	overflow: hidden;
+}
+
+.options-panel.options-menu-panel {
+	height: 86%;
+	max-height: 86%;
+}
+
+.options-panel.compact-panel {
+	width: 760px;
+	max-width: 88%;
+	height: 76%;
+	max-height: 76%;
+}
+
+.options-panel-header {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 14px;
+	flex-shrink: 0;
+}
+
+.options-panel-header-text {
+	flex: 1;
+	min-width: 0;
+
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 2px;
+}
+
+.options-panel-kicker {
+	width: 100%;
+	min-width: 0;
+
+	color: $monopoly-gold-soft;
+	font-size: $monopoly-font-kicker;
+	font-weight: 900;
+	text-transform: uppercase;
+	text-align: left;
+	white-space: normal;
+	text-overflow: clip;
+	overflow: visible;
+}
+
+.options-panel-title {
+	width: 100%;
+	min-width: 0;
+
+	color: $monopoly-text;
+	font-size: $monopoly-font-title;
+	font-weight: 900;
+	line-height: $monopoly-font-title-line;
+	text-align: left;
+	white-space: normal;
+	text-overflow: clip;
+	overflow: visible;
+}
+
+.options-panel-kicker .label,
+.options-panel-title .label {
+	width: 100%;
+	min-width: 0;
+
+	text-align: left;
+	white-space: normal;
+	text-overflow: clip;
+	overflow: visible;
+}
+
+.options-panel-close-button,
+.options-panel-toggle-button,
+.options-panel-step-button,
+.options-panel-primary-button,
+.options-panel-danger-button,
+.options-panel-secondary-button {
+	height: $monopoly-control-height;
+	min-width: 96px;
+	margin-top: 0;
+	padding: 0 14px;
+
+	border-radius: $monopoly-radius-control;
+	font-size: $monopoly-font-button;
+	font-weight: 900;
+	text-transform: uppercase;
+	justify-content: center;
+}
+
+.options-panel .monopoly-button.options-panel-close-button,
+.options-panel .monopoly-button.options-panel-toggle-button,
+.options-panel .monopoly-button.options-panel-step-button,
+.options-panel .monopoly-button.options-panel-primary-button,
+.options-panel .monopoly-button.options-panel-danger-button,
+.options-panel .monopoly-button.options-panel-secondary-button {
+	height: $monopoly-control-height;
+	min-height: $monopoly-control-height;
+	margin: 0;
+	padding: 0 14px;
+
+	border-radius: $monopoly-radius-control;
+	font-size: $monopoly-font-button;
+	font-weight: 900;
+	text-transform: uppercase;
+	align-items: center;
+	justify-content: center;
+}
+
+.options-panel .monopoly-button.options-panel-close-button .label,
+.options-panel .monopoly-button.options-panel-toggle-button .label,
+.options-panel .monopoly-button.options-panel-step-button .label,
+.options-panel .monopoly-button.options-panel-primary-button .label,
+.options-panel .monopoly-button.options-panel-danger-button .label,
+.options-panel .monopoly-button.options-panel-secondary-button .label {
+	height: 100%;
+	margin: 0;
+	padding: 0;
+
+	align-items: center;
+	justify-content: center;
+	line-height: $monopoly-control-height;
+}
+
+.options-panel-close-button {
+	flex-shrink: 0;
+}
+
+.options-panel-toggle-button,
+.options-panel-step-button,
+.options-panel-secondary-button {
+	background-color: $monopoly-surface-medium;
+	border: 1px solid $monopoly-panel-line;
+	color: $monopoly-text;
+}
+
+.options-panel .monopoly-button.options-panel-toggle-button,
+.options-panel .monopoly-button.options-panel-step-button,
+.options-panel .monopoly-button.options-panel-secondary-button {
+	background-color: $monopoly-surface-medium;
+	border: 1px solid $monopoly-panel-line;
+	color: $monopoly-text;
+}
+
+.options-panel-primary-button,
+.options-panel-toggle-button.selected {
+	min-width: 132px;
+	background-color: $monopoly-gold;
+	border: 1px solid $monopoly-gold;
+	color: $monopoly-ink;
+}
+
+.options-panel .monopoly-button.options-panel-primary-button,
+.options-panel .monopoly-button.options-panel-toggle-button.selected {
+	min-width: 132px;
+	background-color: $monopoly-gold;
+	border: 1px solid $monopoly-gold;
+	color: $monopoly-ink;
+}
+
+.options-panel-danger-button {
+	min-width: 132px;
+	background-color: $monopoly-danger;
+	border: 1px solid $monopoly-danger;
+	color: $monopoly-text;
+}
+
+.options-panel .monopoly-button.options-panel-danger-button {
+	min-width: 132px;
+	background-color: $monopoly-danger;
+	border: 1px solid $monopoly-danger;
+	color: $monopoly-text;
+}
+
+.options-panel-toggle-button:hover,
+.options-panel-step-button:hover,
+.options-panel-secondary-button:hover {
+	background-color: $monopoly-surface-strong;
+}
+
+.options-panel .monopoly-button.options-panel-toggle-button:hover,
+.options-panel .monopoly-button.options-panel-step-button:hover,
+.options-panel .monopoly-button.options-panel-secondary-button:hover {
+	background-color: $monopoly-surface-strong;
+}
+
+.options-panel-primary-button:hover,
+.options-panel-toggle-button.selected:hover {
+	background-color: $monopoly-gold-hover;
+}
+
+.options-panel .monopoly-button.options-panel-primary-button:hover,
+.options-panel .monopoly-button.options-panel-toggle-button.selected:hover {
+	background-color: $monopoly-gold-hover;
+}
+
+.options-panel-danger-button:hover {
+	background-color: $monopoly-danger-hover;
+}
+
+.options-panel .monopoly-button.options-panel-danger-button:hover {
+	background-color: $monopoly-danger-hover;
+}
+
+.options-panel .monopoly-button.disabled.options-panel-close-button:hover,
+.options-panel .monopoly-button.disabled.options-panel-toggle-button:hover,
+.options-panel .monopoly-button.disabled.options-panel-step-button:hover,
+.options-panel .monopoly-button.disabled.options-panel-secondary-button:hover,
+.options-panel .monopoly-button.blocked-action-button.options-panel-close-button:hover,
+.options-panel .monopoly-button.blocked-action-button.options-panel-toggle-button:hover,
+.options-panel .monopoly-button.blocked-action-button.options-panel-step-button:hover,
+.options-panel .monopoly-button.blocked-action-button.options-panel-secondary-button:hover {
+	background-color: $monopoly-blocked-action-hover;
+}
+
+.options-panel-body {
+	flex: 1;
+	min-height: 0;
+
+	display: flex;
+	flex-direction: column;
+	gap: $monopoly-panel-gap;
+}
+
+.options-panel-scroll-shell {
+	flex: 1;
+	min-height: 0;
+	position: relative;
+}
+
+.options-panel-scroll {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	padding-right: 18px;
+
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	gap: 14px;
+}
+
+.options-panel-scroll.reverse {
+	flex-direction: column-reverse;
+}
+
+.options-panel-footer {
+	width: 100%;
+	flex-shrink: 0;
+
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 10px;
+	pointer-events: none;
+}
+
+.options-panel-footer .monopoly-button {
+	pointer-events: all;
+}
+
+.options-panel-copy,
+.options-panel-row-value {
+	width: 100%;
+	min-width: 0;
+
+	color: $monopoly-text-muted;
+	font-size: $monopoly-font-kicker;
+	font-weight: 800;
+	line-height: 18px;
+
+	white-space: normal;
+	text-overflow: clip;
+	overflow: visible;
+}
+
+.options-panel-copy .label,
+.options-panel-row-value .label {
+	width: 100%;
+	min-width: 0;
+
+	white-space: normal;
+	text-overflow: clip;
+	overflow: visible;
+}
+
+.options-panel-section {
+	padding: 14px;
+
+	background-color: $monopoly-surface-soft;
+	border: 1px solid $monopoly-panel-line;
+	border-radius: $monopoly-radius-control;
+
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	gap: 10px;
+	flex-shrink: 0;
+	pointer-events: none;
+}
+
+.options-panel-section-list {
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	gap: 14px;
+	flex-shrink: 0;
+}
+
+.options-panel-section-list.reverse {
+	flex-direction: column-reverse;
+}
+
+.options-panel-section-options {
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	gap: 10px;
+}
+
+.options-panel-section-options.reverse {
+	flex-direction: column-reverse;
+}
+
+.options-panel-subsection-list {
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	gap: 10px;
+	flex-shrink: 0;
+}
+
+.options-panel-subsection-list.reverse {
+	flex-direction: column-reverse;
+}
+
+.options-panel-subsection {
+	padding: 12px;
+
+	background-color: $monopoly-surface-soft;
+	border: 1px solid $monopoly-panel-line;
+	border-radius: $monopoly-radius-control;
+
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	gap: 10px;
+	flex-shrink: 0;
+	pointer-events: none;
+}
+
+.options-panel-subsection-options {
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	gap: 10px;
+}
+
+.options-panel-subsection-options.reverse {
+	flex-direction: column-reverse;
+}
+
+.options-panel-subsection-title {
+	width: 100%;
+	min-width: 0;
+	min-height: 28px;
+	flex-shrink: 0;
+
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: flex-start;
+
+	color: $monopoly-gold-soft;
+	font-size: 18px;
+	font-weight: 900;
+	line-height: 22px;
+	text-transform: uppercase;
+	white-space: normal;
+	text-overflow: clip;
+	overflow: visible;
+}
+
+.options-panel-subsection-title .label {
+	width: 100%;
+	min-width: 0;
+
+	color: $monopoly-gold-soft;
+	font-size: 18px;
+	font-weight: 900;
+	line-height: 22px;
+	text-align: left;
+	text-transform: uppercase;
+	white-space: normal;
+	text-overflow: clip;
+	overflow: visible;
+}
+
+.options-panel-section-title {
+	width: 100%;
+	min-width: 0;
+	min-height: 34px;
+	height: 34px;
+	flex-shrink: 0;
+
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: flex-start;
+
+	color: $monopoly-gold-soft;
+	font-size: $monopoly-font-panel-title;
+	font-weight: 900;
+	line-height: 24px;
+	text-transform: uppercase;
+	white-space: normal;
+	text-overflow: clip;
+	overflow: visible;
+}
+
+.options-panel-section-heading {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 4px;
+	flex-shrink: 0;
+}
+
+.options-panel-section-kicker {
+	width: 100%;
+	min-width: 0;
+
+	color: $monopoly-gold-soft;
+	font-size: $monopoly-font-panel-title;
+	font-weight: 900;
+	line-height: 24px;
+	text-transform: uppercase;
+	text-align: left;
+	white-space: normal;
+	text-overflow: clip;
+	overflow: visible;
+}
+
+.options-panel-section-copy {
+	font-size: 13px;
+	font-weight: 800;
+	line-height: 18px;
+	color: $monopoly-text-muted;
+}
+
+.options-panel-section-title .label {
+	width: 100%;
+	min-width: 0;
+
+	color: $monopoly-gold-soft;
+	font-size: $monopoly-font-panel-title;
+	font-weight: 900;
+	line-height: 24px;
+	text-align: left;
+	text-transform: uppercase;
+	white-space: normal;
+	text-overflow: clip;
+	overflow: visible;
+}
+
+.options-panel-row {
+	min-height: 82px;
+
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	flex-wrap: nowrap;
+	flex-shrink: 0;
+	gap: 14px;
+	overflow: visible;
+	pointer-events: none;
+}
+
+.options-panel-row-text {
+	flex: 1;
+	min-width: 0;
+	max-width: 100%;
+
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 4px;
+	justify-content: flex-start;
+	overflow: visible;
+
+	pointer-events: none;
+}
+
+.options-panel-row-title {
+	width: 100%;
+	min-width: 0;
+	flex-shrink: 0;
+
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: flex-start;
+
+	color: $monopoly-text;
+	font-size: $monopoly-font-panel-title;
+	font-weight: 900;
+	line-height: 24px;
+	text-align: left;
+	white-space: normal;
+	text-overflow: clip;
+	overflow: visible;
+}
+
+.options-panel-row-title .label {
+	width: 100%;
+	min-width: 0;
+
+	color: $monopoly-text;
+	font-size: $monopoly-font-panel-title;
+	font-weight: 900;
+	line-height: 24px;
+	text-align: left;
+	text-transform: none;
+	white-space: normal;
+	text-overflow: clip;
+	overflow: visible;
+}
+
+.options-panel-row-control {
+	position: relative;
+	width: 320px;
+	min-width: 220px;
+	min-height: 42px;
+
+	display: flex;
+	justify-content: flex-end;
+	align-items: center;
+	flex-shrink: 1;
+	gap: 8px;
+	overflow: visible;
+	pointer-events: none;
+}
+
+.options-panel-row-control .monopoly-button,
+.options-panel-row-control .dropdown-button,
+.options-panel-row-control .slidercontrol,
+.options-panel-row-control .textentry {
+	pointer-events: all;
+}
+
+.options-panel-row .dropdown-button {
+	width: 100%;
+	min-width: 0;
+}
+
+.options-panel-row .slidercontrol.options-slider {
+	width: 100%;
+	height: 42px;
+	min-height: 42px;
+}
+
+.options-panel-row .slidercontrol.options-slider .entry {
+	width: 64px;
+	min-width: 64px;
+}
+
+.options-panel-row .slidercontrol.options-slider .inner {
+	flex: 1;
+	min-width: 0;
+}
+
+.options-panel-row .slidercontrol.options-slider .track {
+	height: 12px;
+	background-color: $monopoly-surface-medium;
+	border: 1px solid $monopoly-panel-line;
+	border-radius: 6px;
+}
+
+.options-panel-row .slidercontrol.options-slider .track-active {
+	background-color: $monopoly-gold;
+	border-radius: 6px;
+}
+
+.options-panel-row .slidercontrol.options-slider .thumb {
+	width: 18px;
+	height: 28px;
+	top: -8px;
+	background-color: $monopoly-gold;
+	border: 2px solid $monopoly-text;
+	border-radius: $monopoly-radius-board;
+	box-shadow: $monopoly-control-shadow;
+}
+
+.options-panel-readonly-value {
+	width: 100%;
+	min-width: 0;
+	min-height: 42px;
+	padding: 10px 12px;
+
+	background-color: $monopoly-surface-medium;
+	border: 1px solid $monopoly-panel-line;
+	border-radius: $monopoly-radius-control;
+
+	color: $monopoly-text;
+	font-size: 14px;
+	font-weight: 900;
+	line-height: 18px;
+	display: flex;
+	align-items: center;
+	justify-content: flex-start;
+	white-space: normal;
+	overflow: visible;
+	text-overflow: clip;
+}
+
+.options-panel-readonly-value .label {
+	width: 100%;
+	min-width: 0;
+	white-space: normal;
+	overflow: visible;
+	text-overflow: clip;
+}
+
+.options-panel-stepper {
+	width: 100%;
+	height: 42px;
+
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 8px;
+	flex-shrink: 0;
+}
+
+.options-panel-step-button {
+	width: 44px;
+	min-width: 44px;
+	padding: 0;
+}
+
+.options-panel-stepper-value,
+.options-panel-stepper-input {
+	min-width: 96px;
+	width: 96px;
+	height: $monopoly-control-height;
+	padding: 10px 12px;
+
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: flex-start;
+
+	background-color: $monopoly-surface-medium;
+	border: 1px solid $monopoly-panel-line;
+	border-radius: $monopoly-radius-control;
+
+	color: $monopoly-text;
+	font-family: $monopoly-font-family;
+	font-size: 16px;
+	font-weight: 900;
+	line-height: 20px;
+	text-align: left;
+	flex-shrink: 0;
+	pointer-events: all;
+	overflow: hidden;
+	white-space: nowrap;
+}
+
+.options-panel-stepper-value.readonly {
+	width: 100%;
+	min-width: 0;
+	flex-shrink: 1;
+	overflow: visible;
+}
+
+.options-panel-stepper-value.readonly .label {
+	width: 100%;
+	min-width: 0;
+	overflow: visible;
+}
+
+.options-panel-stepper-value .label,
+.options-panel-stepper-input .placeholder,
+.options-panel-stepper-input .content-label,
+.options-panel-stepper-input .label,
+.options-panel-stepper-input .text {
+	text-align: left;
+	color: $monopoly-text;
+	font-size: 16px;
+	font-weight: 900;
+	line-height: 20px;
+	white-space: nowrap;
+	text-overflow: clip;
+	overflow: visible;
+}
+
+.options-panel-stepper-input .cursor,
+.options-panel-stepper-input .caret {
+	width: 2px;
+	height: 20px;
+	min-width: 2px;
+	background-color: $monopoly-text;
+}
+
+.options-panel .monopoly-button.dropdown-toggle {
+	background-color: $monopoly-surface-medium;
+	border: 1px solid $monopoly-panel-line;
+	border-radius: $monopoly-radius-control;
+	color: $monopoly-text;
+}
+
+.options-panel .monopoly-button.dropdown-toggle:hover {
+	background-color: $monopoly-surface-strong;
+}
+
+.options-panel-empty-state {
+	padding: 18px 16px;
+
+	background-color: $monopoly-surface-soft;
+	border: 1px solid $monopoly-panel-line;
+	border-radius: $monopoly-radius-control;
+
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.options-panel-empty-title {
+	color: $monopoly-gold-soft;
+	font-size: 18px;
+	font-weight: 900;
+	text-transform: uppercase;
+}
+
+.options-panel-empty-copy {
+	color: $monopoly-text-muted;
+	font-size: 13px;
+	font-weight: 800;
+	line-height: 18px;
+}

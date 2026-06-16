@@ -5,7 +5,8 @@
       "command": "lean-ctx",
       "env": {
         "LEAN_CTX_DATA_DIR": "C:\\Users\\Bryce\\.lean-ctx"
-      }
+      },
+      "autoStart": true
     }
   }
 }

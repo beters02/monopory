@@ -1,0 +1,299 @@
+@import "../../styles/GameTheme.scss";
+@import "../buttons/GameButton.razor.scss";
+@import "../buttons/CloseButton.razor.scss";
+
+
+.trade-create-button {
+	width: 116px;
+	height: $monopoly-control-height-small;
+	min-height: $monopoly-control-height-small;
+	padding: 0 12px;
+	align-items: center;
+	justify-content: center;
+
+	background-color: $monopoly-gold;
+	color: $monopoly-ink;
+	border-radius: $monopoly-radius-control;
+	text-transform: uppercase;
+}
+
+.trade-create-button:hover {
+	background-color: $monopoly-gold-hover;
+}
+
+
+.trade-panel {
+	position: absolute;
+	right: 32px;
+	bottom: 32px;
+	z-index: 36;
+
+	width: 29%;
+	max-width: 400px;
+	min-height: 126px;
+	padding: 14px;
+
+	background-color: $monopoly-panel-strong;
+	border: 2px solid $monopoly-gold;
+	border-radius: $monopoly-radius-control;
+	color: $monopoly-text;
+	font-family: $monopoly-font-family;
+
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+
+	pointer-events: all;
+	opacity: 1;
+	transition: opacity 0.2s ease;
+}
+
+.trade-panel.invisible {
+	opacity: $monopoly-roll-dice-translucent-panel-opacity;
+	pointer-events: none;
+}
+
+.trade-panel-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.trade-panel-title {
+	flex: 1;
+	text-align: left;
+	font-size: $monopoly-font-panel-title;
+	font-weight: 900;
+	color: $monopoly-text-muted;
+}
+
+
+
+.trade-empty {
+	justify-content: center;
+	align-items: center;
+	min-height: 52px;
+
+	color: $monopoly-text-soft;
+	font-size: $monopoly-font-body;
+	font-weight: 700;
+}
+
+.trade-list {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+
+.trade-row {
+	min-height: 16px;
+
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.trade-row.involves-local-player .trade-row-main {
+	background-color: $monopoly-card-ink-surface;
+	border: 1px solid $monopoly-gold;
+	box-shadow: 0 0 0 1px $monopoly-gold-glow;
+}
+
+.trade-row.incoming:not(.involves-local-player) .trade-row-main {
+	background-color: $monopoly-gold;
+	color: $monopoly-ink;
+}
+
+.trade-row.incoming:not(.involves-local-player) .trade-party-name,
+.trade-row.incoming:not(.involves-local-player) .trade-arrow {
+	color: $monopoly-ink;
+}
+
+.trade-row-main {
+	flex: 1;
+	min-width: 0;
+	min-height: 16px;
+	margin: 0;
+	padding: 1px 4px;
+	cursor: pointer;
+	pointer-events: all;
+
+	background-color: $monopoly-surface;
+	border: 0;
+	border-radius: 4px;
+	color: $monopoly-text;
+
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+
+	font-size: 12px;
+	font-weight: 700;
+}
+
+.trade-row-main:hover {
+	background-color: $monopoly-surface-hover;
+}
+
+.trade-party {
+	flex: 1;
+	min-width: 0;
+
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.trade-party-name {
+	flex: 1;
+	min-width: 0;
+	color: $monopoly-text;
+	font-size: 12px;
+	font-weight: 700;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
+}
+
+.trade-arrow {
+	flex-shrink: 0;
+	color: $monopoly-text-muted;
+	font-size: 11px;
+	font-weight: 900;
+}
+
+.trade-view-status {
+	position: relative;
+	flex-shrink: 0;
+	width: 13px;
+	height: 13px;
+
+	align-items: center;
+	justify-content: center;
+
+	background-color: $monopoly-surface-strong;
+	border: 1px solid $monopoly-selected-ring-soft;
+	border-radius: 2px;
+}
+
+.trade-view-status.viewing {
+	background-color: $monopoly-surface-selected;
+	border-color: $monopoly-selected-ring;
+}
+
+.trade-edit-status {
+	flex-shrink: 0;
+	width: 13px;
+	height: 13px;
+	align-items: center;
+	justify-content: center;
+	background-color: $monopoly-surface-strong;
+	border: 1px solid $monopoly-selected-ring-soft;
+	border-radius: 2px;
+	color: $monopoly-text-muted;
+	font-size: 8px;
+	font-weight: 900;
+	line-height: 10px;
+	opacity: 0.35;
+}
+
+.trade-edit-status.editing {
+	background-color: $monopoly-gold;
+	border-color: $monopoly-gold-hover;
+	color: $monopoly-ink;
+	opacity: 1;
+}
+
+.trade-eye-outline {
+	width: 8px;
+	height: 5px;
+	border: 1px solid $monopoly-selected-ring-soft;
+	border-radius: 50%;
+
+	align-items: center;
+	justify-content: center;
+}
+
+.trade-eye-pupil {
+	width: 2px;
+	height: 2px;
+	background-color: $monopoly-text-muted;
+	border-radius: 50%;
+}
+
+.trade-view-status.viewing .trade-eye-outline {
+	border-color: $monopoly-selected-ring;
+}
+
+.trade-view-status.viewing .trade-eye-pupil {
+	background-color: $monopoly-text;
+}
+
+.trade-eye-slash {
+	position: absolute;
+	width: 11px;
+	height: 1px;
+
+	background-color: $monopoly-text-muted;
+	transform: rotate(-35deg);
+}
+
+.monopoly-button.trade-icon-button {
+	width: 22px;
+	height: 22px;
+	min-height: 16px;
+	margin: 0;
+	padding: 0;
+	align-self: center;
+	margin-top: 0;
+
+	display: flex;
+	align-items: center;
+	justify-content: center;
+
+	border-radius: 4px;
+	color: $monopoly-text;
+	font-size: 11px;
+	line-height: 11px;
+	font-weight: 900;
+	text-align: center;
+	white-space: nowrap;
+	text-overflow: clip;
+	overflow: hidden;
+}
+
+.monopoly-button.trade-icon-button .label {
+	width: 100%;
+	text-align: center;
+	white-space: nowrap;
+	text-overflow: clip;
+	overflow: hidden;
+}
+
+.monopoly-button.trade-icon-button.accept {
+	background-color: $monopoly-surface;
+}
+
+.monopoly-button.trade-icon-button.negotiate {
+	width: 52px;
+	background-color: $monopoly-surface;
+	color: $monopoly-text;
+}
+
+.monopoly-button.trade-icon-button.edit {
+	width: 44px;
+	background-color: $monopoly-surface;
+	color: $monopoly-text;
+}
+
+.monopoly-button.trade-icon-button.deny {
+	background-color: $monopoly-surface;
+}
+
+.monopoly-button.trade-icon-button:hover {
+	background-color: $monopoly-surface-hover;
+}
+
+
+

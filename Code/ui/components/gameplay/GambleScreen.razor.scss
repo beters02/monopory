@@ -1,0 +1,192 @@
+@import "../../styles/GameTheme.scss";
+
+.gamble-screen-backdrop {
+	position: absolute;
+	left: 0;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	z-index: 130;
+
+	align-items: center;
+	justify-content: center;
+
+	background-color: $monopoly-modal-backdrop;
+	backdrop-filter: blur(6px);
+	transition: opacity 0.16s ease;
+	pointer-events: all;
+}
+
+.gamble-screen-backdrop.hidden-by-menu {
+	opacity: 0;
+	pointer-events: none;
+}
+
+.gamble-card {
+	width: 520px;
+	min-height: 560px;
+	padding: 30px 34px;
+
+	background-color: $monopoly-panel-strong;
+	border: 3px solid $monopoly-gold;
+	border-radius: $monopoly-radius-panel;
+	box-shadow: 0 24px 90px $monopoly-modal-backdrop, 0 0 42px $monopoly-gold-glow;
+
+	color: $monopoly-text;
+	font-family: $monopoly-font-family;
+
+	align-items: center;
+	flex-direction: column;
+	gap: 14px;
+}
+
+.gamble-card.resolved.won {
+	border-color: $monopoly-success;
+	box-shadow: 0 24px 90px $monopoly-modal-backdrop, 0 0 44px rgba(76, 196, 120, 0.42);
+}
+
+.gamble-card.resolved.lost {
+	border-color: $monopoly-danger;
+	box-shadow: 0 24px 90px $monopoly-modal-backdrop, 0 0 44px rgba(230, 72, 72, 0.4);
+}
+
+.gamble-kicker {
+	color: $monopoly-gold-soft;
+	font-size: 15px;
+	font-weight: 900;
+	letter-spacing: 2px;
+	text-transform: uppercase;
+}
+
+.gamble-title {
+	font-size: 42px;
+	font-weight: 900;
+	line-height: 46px;
+	text-align: center;
+}
+
+.gamble-player {
+	padding: 8px 16px;
+
+	background-color: $monopoly-surface-medium;
+	border-radius: 999px;
+
+	color: $monopoly-text-muted;
+	font-size: 16px;
+	font-weight: 900;
+}
+
+.gamble-description {
+	min-height: 48px;
+	max-width: 420px;
+
+	color: $monopoly-text-muted;
+	font-size: 18px;
+	font-weight: 800;
+	line-height: 24px;
+	text-align: center;
+}
+
+.gamble-coin {
+	position: relative;
+	width: 188px;
+	height: 188px;
+	margin: 22px 0 16px;
+	//background-color: rgba(0,0,0,0);
+}
+
+.gamble-coin.flipping {
+	animation-name: gamble-coin-flip;
+	animation-duration: 0.42s;
+	animation-timing-function: linear;
+	animation-iteration-count: infinite;
+}
+
+.gamble-coin.result-win {
+	transform: rotateZ(0deg);
+}
+
+.gamble-coin.result-lose {
+	transform: rotateZ(180deg);
+}
+
+.coin-face {
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 188px;
+	height: 188px;
+
+	align-items: center;
+	justify-content: center;
+
+	border: 9px solid $monopoly-ink;
+	border-radius: 50%;
+	box-shadow: 0 18px 34px rgba(0, 0, 0, 0.38);
+
+	color: $monopoly-ink;
+	font-size: 38px;
+	font-weight: 1000;
+	letter-spacing: 1px;
+}
+
+.coin-win {
+	background-color: $monopoly-gold;
+}
+
+.coin-lose {
+	background-color: $monopoly-danger;
+	color: $monopoly-text;
+	display: none;
+	transform: rotateZ(180deg);
+}
+
+.gamble-coin.result-lose .coin-win {
+	display: none;
+}
+
+.gamble-coin.result-lose .coin-lose {
+	display: flex;
+}
+
+.gamble-result {
+	min-height: 54px;
+	max-width: 430px;
+
+	font-size: 22px;
+	font-weight: 900;
+	line-height: 27px;
+	text-align: center;
+}
+
+.gamble-progress-track {
+	width: 78%;
+	height: 14px;
+	overflow: hidden;
+
+	background-color: $monopoly-surface-medium;
+	border-radius: 999px;
+}
+
+.gamble-progress-fill {
+	height: 100%;
+	min-width: 4%;
+
+	background-color: $monopoly-gold;
+	border-radius: 999px;
+	box-shadow: 0 0 18px $monopoly-gold-glow;
+}
+
+@keyframes gamble-coin-flip {
+	from {
+		transform: rotateZ(0deg) translateY(0);
+	}
+
+	50% {
+		transform: rotateZ(540deg) translateY(-14px);
+	}
+
+	to {
+		transform: rotateZ(1080deg) translateY(0);
+	}
+}

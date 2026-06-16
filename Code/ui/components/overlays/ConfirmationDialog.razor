@@ -1,0 +1,50 @@
+@namespace Sandbox.ui.components
+@using Sandbox;
+@using Sandbox.UI;
+@using Sandbox.ui.components.buttons
+@using System;
+@inherits Panel
+
+<root class="@RootClasses">
+	@if ( IsOpen )
+	{
+		<div class="confirmation-dialog-overlay">
+			<div class="confirmation-dialog">
+				<div class="confirmation-dialog-content">
+					@if ( !string.IsNullOrWhiteSpace( Title ) )
+					{
+						<div class="confirmation-dialog-title">@Title</div>
+					}
+					<div class="confirmation-dialog-message">@Message</div>
+				</div>
+				<div class="confirmation-dialog-actions">
+					<GameButton Variant="confirmation-dialog-cancel" OnClick="@Cancel" SoundEnabled="@false" IgnoreGlobalPopupBlock="@true">@CancelLabel</GameButton>
+					<GameButton Variant="confirmation-dialog-confirm" OnClick="@Confirm" SoundEnabled="@false" IgnoreGlobalPopupBlock="@true">@ConfirmLabel</GameButton>
+				</div>
+			</div>
+		</div>
+	}
+</root>
+
+@code
+{
+	[Parameter] public bool IsOpen { get; set; }
+	[Parameter] public string Title { get; set; } = "Confirm action";
+	[Parameter] public string Message { get; set; } = "";
+	[Parameter] public string ConfirmLabel { get; set; } = "Confirm";
+	[Parameter] public string CancelLabel { get; set; } = "Cancel";
+	[Parameter] public Action OnConfirm { get; set; }
+	[Parameter] public Action OnCancel { get; set; }
+
+	private string RootClasses => IsOpen ? "confirmation-dialog-root open" : "confirmation-dialog-root";
+
+	private void Confirm()
+	{
+		OnConfirm?.Invoke();
+	}
+
+	private void Cancel()
+	{
+		OnCancel?.Invoke();
+	}
+}

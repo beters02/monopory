@@ -1,0 +1,419 @@
+@namespace Sandbox.ui.components
+@using Sandbox;
+@using Sandbox.UI;
+@using Sandbox.ui.components.HudPanel;
+@using Sandbox.ui.components.buttons
+@using System;
+@inherits Panel
+
+<root>
+	@if ( PropertyHudPlayers.Count > 0 )
+	{
+		<Sandbox.ui.components.HudPanel.HudPanel Variant="property-hud-card">
+			<ChildContent>
+				<div class="property-player-list">
+				@foreach ( var player in PropertyHudPlayers )
+				{
+					var playerIndex = GameRef.GetPlayerIndex( player );
+
+					<Sandbox.ui.components.HudPanel.HudPanel Variant="@GetPropertyPanelClasses( playerIndex )" style="@GetPlayerCardStyle( player )">
+						<ChildContent>
+							<div class="property-player-card-hit-area" onclick="@(() => TogglePlayerProfilePopup( player ))">
+								<div class="property-player-name-row">
+									<div class="property-player-name">@player.PlayerName</div>
+									<div class="property-player-chip" style="@GetPlayerChipStyle( player )"></div>
+								</div>
+								<div class="property-player-money">$@player.Money</div>
+								@if ( player.IsDisconnected && !player.IsBankrupt )
+								{
+									<div class="property-player-money">Rejoin: @Math.Max( 0, (int)MathF.Ceiling( player.AbandonEndsAt - Time.Now ) )s</div>
+								}
+							</div>
+						</ChildContent>
+					</Sandbox.ui.components.HudPanel.HudPanel>
+				}
+				</div>
+			</ChildContent>
+		</Sandbox.ui.components.HudPanel.HudPanel>
+		@if ( SelectedPlayerProfile is not null )
+		{
+			<SteamProfilePopupCard
+				Entry="@SelectedPlayerProfile"
+				PopupStyle="@PlayerProfilePopupStyle"
+				OnOpenProfile="@OpenSelectedPlayerProfile"
+				OnChat="@OpenSelectedPlayerProfileChat"
+				OnClose="@ClosePlayerProfilePopup">
+			</SteamProfilePopupCard>
+		}
+
+		<Sandbox.ui.components.HudPanel.HudPanel Variant="property-manager-hud">
+			<ChildContent>
+				<div class="property-manager-title">Property Manager</div>
+				<div class="property-manager-scroll-shell">
+					<div class="property-manager-content monopory-scroll-y" @ref="PropertyManagerContentPanel">
+						@foreach ( var ownershipGroup in PropertyManagerSections )
+						{
+							<div class="@GetPropertyManagerSectionClasses( ownershipGroup )" style="@GetPropertyManagerSectionStyle( ownershipGroup )">
+								<div class="property-manager-section-title" style="@GetPropertyManagerSectionTitleStyle( ownershipGroup )">@ownershipGroup.Title</div>
+								@if ( ownershipGroup.Properties.Count == 0 && ownershipGroup.CardIds.Count == 0 )
+								{
+									<div class="property-manager-empty">None</div>
+								}
+								else
+								{
+									<div class="property-manager-grid">
+										@foreach ( var property in ownershipGroup.Properties )
+										{
+											<GameButton
+												Variant="property-manager-item"
+												Title="@property.DisplayName"
+												OnClick="@(() => SelectPropertySpace( property.Index ))">
+												<ChildContent>
+													<div class="@GetPropertySquareClasses( property, ownershipGroup.PlayerIndex )">
+														@if ( GameRef.IsMortgaged( property.Index ) )
+														{
+															<div class="property-mortgage-marker">M</div>
+														}
+													</div>
+													<div class="property-manager-name">@property.DisplayName</div>
+												</ChildContent>
+											</GameButton>
+										}
+										@foreach ( var cardId in ownershipGroup.CardIds )
+										{
+											<GameButton
+												Variant="property-manager-item jail-free-card"
+												Title="@GameRef.GetTradableCardName( cardId )">
+												<ChildContent>
+													<div class="property-square jail-free-square">JF</div>
+													<div class="property-manager-name">@GameRef.GetTradableCardName( cardId )</div>
+												</ChildContent>
+											</GameButton>
+										}
+									</div>
+								}
+							</div>
+						}
+					</div>
+					<MonoScrollbar Target="@PropertyManagerContentPanel"></MonoScrollbar>
+				</div>
+			</ChildContent>
+		</Sandbox.ui.components.HudPanel.HudPanel>
+	}
+</root>
+
+@code
+{
+	[Parameter] public GameController GameRef { get; set; }
+	private Panel PropertyManagerContentPanel = null!;
+	private SteamFriendListEntry SelectedPlayerProfile;
+	private float PlayerProfilePopupTop = 96f;
+	private int InitialTurnOrderStartIndex = -1;
+
+	private List<PlayerState> PropertyHudPlayers
+	{
+		get
+		{
+			if ( GameRef is null )
+				return new();
+
+			var assignedPlayers = GameRef.Players
+				.Where( player => player is not null && player.IsAssigned )
+				.ToList();
+
+			if ( assignedPlayers.Count == 0 )
+				return assignedPlayers;
+
+			var startIndex = GetTurnOrderStartIndex();
+			if ( startIndex < 0 )
+				return assignedPlayers;
+
+			return assignedPlayers
+				.OrderBy( player =>
+				{
+					var index = GameRef.GetPlayerIndex( player );
+					if ( index < 0 )
+						return int.MaxValue;
+
+					return index >= startIndex
+						? index - startIndex
+						: index + GameRef.MaxPlayers - startIndex;
+				} )
+				.ToList();
+		}
+	}
+
+	private int GetTurnOrderStartIndex()
+	{
+		if ( GameRef is null )
+			return -1;
+
+		if ( InitialTurnOrderStartIndex < 0 && GameRef.CurrentPlayerIndex >= 0 )
+			InitialTurnOrderStartIndex = GameRef.CurrentPlayerIndex;
+
+		return InitialTurnOrderStartIndex;
+	}
+
+	private List<SpaceDef> OrderedPropertySpaces =>
+		(GameRef?.Board?.SpaceDefs ?? new())
+			.Where( HudUi.IsPurchasableSpace )
+			.OrderBy( GetPropertyOrderGroup )
+			.ThenBy( property => property.Index )
+			.ToList();
+
+	private List<PropertyManagerSection> PropertyManagerSections
+	{
+		get
+		{
+			var sections = new List<PropertyManagerSection>();
+			if ( GameRef is null )
+				return sections;
+
+			var localPlayer = GameRef.LocalPlayer;
+			if ( localPlayer is not null && localPlayer.IsAssigned )
+			{
+				sections.Add( CreatePlayerSection( localPlayer, "Owned by you" ) );
+			}
+
+			foreach ( var player in PropertyHudPlayers )
+			{
+				if ( player == localPlayer )
+					continue;
+
+				sections.Add( CreatePlayerSection( player, $"Owned by {player.PlayerName}" ) );
+			}
+
+			sections.Add( new PropertyManagerSection
+			{
+				Title = "Unowned",
+				PlayerIndex = -1,
+				Properties = OrderedPropertySpaces
+					.Where( property => (GameRef?.GetOwnerIndexForSpace( property.Index ) ?? -1) < 0 )
+					.ToList()
+			} );
+
+			return sections;
+		}
+	}
+
+	private PropertyManagerSection CreatePlayerSection( PlayerState player, string title )
+	{
+		var playerIndex = GameRef?.GetPlayerIndex( player ) ?? -1;
+
+		return new PropertyManagerSection
+		{
+			Title = title,
+			PlayerIndex = playerIndex,
+			Properties = OrderedPropertySpaces
+				.Where( property => (GameRef?.GetOwnerIndexForSpace( property.Index ) ?? -1) == playerIndex )
+				.ToList(),
+			CardIds = GameRef?.GetOwnedTradableCardIds( playerIndex ) ?? new()
+		};
+	}
+
+	private static int GetPropertyOrderGroup( SpaceDef property )
+	{
+		if ( property.Type == SpaceType.Railroad )
+			return 100;
+
+		if ( property.Type == SpaceType.Utility )
+			return 200;
+
+		return property.ColorGroup switch
+		{
+			ColorGroup.Brown => 0,
+			ColorGroup.LightBlue => 10,
+			ColorGroup.Pink => 20,
+			ColorGroup.Orange => 30,
+			ColorGroup.Red => 40,
+			ColorGroup.Yellow => 50,
+			ColorGroup.Green => 60,
+			ColorGroup.DarkBlue => 70,
+			_ => 90
+		};
+	}
+
+	private void SelectPropertySpace( int spaceIndex ) => GameRef?.SelectSpace( spaceIndex );
+
+	private string GetPropertyPanelClasses( int playerIndex )
+	{
+		var classes = $"property-player-panel player-{playerIndex}";
+
+		if ( GameRef?.LocalPlayerIndex == playerIndex )
+			classes += " local-player";
+
+		if ( GameRef?.CurrentPlayerIndex == playerIndex )
+			classes += " current-player";
+
+		return classes;
+	}
+
+	private string GetPropertyManagerSectionClasses( PropertyManagerSection section )
+	{
+		var classes = "property-manager-section";
+		if ( section.PlayerIndex >= 0 && section.PlayerIndex == GameRef?.CurrentPlayerIndex )
+			classes += " current-player";
+
+		return classes;
+	}
+
+	private string GetPropertyManagerSectionStyle( PropertyManagerSection section )
+	{
+		if ( section.PlayerIndex < 0 || section.PlayerIndex == GameRef?.CurrentPlayerIndex )
+			return "";
+
+		var player = GameRef?.Players?.ElementAtOrDefault( section.PlayerIndex );
+		var color = GetPlayerColor( player );
+		var outlineColor = ToCssColor( color );
+		var glowColor = ToCssColor( color.WithAlpha( 0.45f ) );
+		return $"border-color: {outlineColor}; box-shadow: 0 0 0 1px {glowColor};";
+	}
+
+	private string GetPropertyManagerSectionTitleStyle( PropertyManagerSection section )
+	{
+		if ( section.PlayerIndex < 0 || section.PlayerIndex == GameRef?.CurrentPlayerIndex )
+			return "";
+
+		var player = GameRef?.Players?.ElementAtOrDefault( section.PlayerIndex );
+		return $"color: {ToCssColor( GetPlayerColor( player ) )};";
+	}
+
+	private string PlayerProfilePopupStyle => $"right: 32px; top: {PlayerProfilePopupTop:0}px;";
+
+	private void TogglePlayerProfilePopup( PlayerState player )
+	{
+		if ( player is null )
+			return;
+
+		if ( SelectedPlayerProfile is not null && SelectedPlayerProfile.SteamId == player.OwnerId )
+		{
+			GameAssets.Sounds.ClickAndClose.Play();
+			ClosePlayerProfilePopup();
+			return;
+		}
+
+		GameAssets.Sounds.ClickAndOpen.Play();
+		SelectedPlayerProfile = SteamFriendsBridge.GetProfileEntry( player.OwnerId, player.PlayerName );
+		PlayerProfilePopupTop = Math.Max( 86f, Mouse.Position.y * (1 / this.ScaleToScreen) + 12f );
+		Mouse.Visibility = MouseVisibility.Visible;
+		StateHasChanged();
+	}
+
+	private void TryOpenSteamFriendsProfile( SteamUserOverlayType overlayType = SteamUserOverlayType.steamid )
+	{
+
+		if ( SelectedPlayerProfile is null )
+			return;
+
+		if ( !SteamFriendsBridge.TryOpenProfile( SelectedPlayerProfile ) )
+			Log.Warning( $"Could not open Steam profile for {SelectedPlayerProfile.Name}." );
+
+		ClosePlayerProfilePopup();
+	}
+
+	private void OpenSelectedPlayerProfile() =>
+		TryOpenSteamFriendsProfile();
+
+	private void OpenSelectedPlayerProfileChat() =>
+		TryOpenSteamFriendsProfile( SteamUserOverlayType.chat );
+
+	private void ClosePlayerProfilePopup()
+	{
+		SelectedPlayerProfile = null;
+		StateHasChanged();
+	}
+
+	private string GetPlayerCardStyle( PlayerState player )
+	{
+		var color = GetPlayerColor( player );
+		return $"border-color: {ToCssColor( color )};";
+	}
+
+	private string GetPlayerChipStyle( PlayerState player )
+	{
+		var color = GetPlayerColor( player );
+		return $"background-color: {ToCssColor( color )};";
+	}
+
+	private Color GetPlayerColor( PlayerState player )
+	{
+		if ( GameRef?.Theme is null || player is null )
+			return Color.White;
+
+		var colorIndex = player.ColorSlot >= 0 ? player.ColorSlot : GameRef.GetPlayerIndex( player );
+		return GameRef.Theme.GetPlayerColor( colorIndex );
+	}
+
+	private static string ToCssColor( Color color )
+	{
+		var r = (int)(Math.Clamp( color.r, 0f, 1f ) * 255f);
+		var g = (int)(Math.Clamp( color.g, 0f, 1f ) * 255f);
+		var b = (int)(Math.Clamp( color.b, 0f, 1f ) * 255f);
+		var a = Math.Clamp( color.a, 0f, 1f );
+		return $"rgba({r},{g},{b},{a:0.###})";
+	}
+
+	private string GetPropertySquareClasses( SpaceDef property, int playerIndex )
+	{
+		var ownerIndex = GameRef?.GetOwnerIndexForSpace( property.Index ) ?? -1;
+		var colorGroup = HudUi.GetPropertyColorClass( property );
+		var classes = $"property-square color-{colorGroup} space-{property.Index}";
+
+		if ( ownerIndex == playerIndex )
+			classes += " owned-by-panel-player";
+		else if ( ownerIndex >= 0 )
+			classes += " owned-by-other-player";
+		else
+			classes += " unowned";
+
+		if ( GameRef?.PendingPurchaseSpaceIndex == property.Index )
+			classes += " pending-purchase";
+
+		if ( GameRef?.IsMortgaged( property.Index ) == true )
+			classes += " mortgaged";
+
+		if ( GameRef?.LocalSelectedSpaceIndex == property.Index )
+			classes += " selected";
+
+		return classes;
+	}
+
+	protected override int BuildHash()
+	{
+		var hash = new HashCode();
+		hash.Add( GameRef?.CurrentPlayerIndex ?? -1 );
+		hash.Add( GameRef?.PendingPurchaseSpaceIndex ?? -1 );
+		hash.Add( GameRef?.LocalSelectedSpaceIndex ?? -1 );
+		hash.Add( HudUi.GetPropertyOwnersHash( GameRef ) );
+		hash.Add( HudUi.GetMortgagedPropertiesHash( GameRef ) );
+		hash.Add( HudUi.GetPlayersHash( GameRef ) );
+		hash.Add( SelectedPlayerProfile?.SteamId ?? 0 );
+		hash.Add( SelectedPlayerProfile?.AvatarTexture is not null );
+		hash.Add( PlayerProfilePopupTop );
+
+		if ( GameRef is not null )
+		{
+			foreach ( var player in GameRef.Players.Where( player => player is not null && player.IsAssigned ) )
+			{
+				hash.Add( player.OwnerId );
+				hash.Add( player.ColorSlot );
+				hash.Add( player.ChanceGetOutOfJailFreeCards );
+				hash.Add( player.CommunityChestGetOutOfJailFreeCards );
+				hash.Add( player.IsDisconnected );
+				hash.Add( player.AbandonEndsAt > 0f ? MathF.Ceiling( Math.Max( 0f, player.AbandonEndsAt - Time.Now ) ) : 0f );
+			}
+		}
+
+		return hash.ToHashCode();
+	}
+
+	private sealed class PropertyManagerSection
+	{
+		public string Title { get; init; } = "";
+		public int PlayerIndex { get; init; } = -1;
+		public List<SpaceDef> Properties { get; init; } = new();
+		public List<string> CardIds { get; init; } = new();
+	}
+
+}
+

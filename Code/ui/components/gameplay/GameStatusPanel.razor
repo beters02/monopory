@@ -1,0 +1,575 @@
+@namespace Sandbox.ui.components
+@using Sandbox;
+@using Sandbox.UI;
+@using Sandbox.ui.components.HudPanel;
+@using Sandbox.ui.components.buttons
+@using System;
+@inherits Panel
+
+<root>
+	@if ( gamePanelEnabled )
+	{
+		<Sandbox.ui.components.HudPanel.HudPanel Variant="hud-card">
+			<ChildContent>
+				<HudPanelSubtitle>Game</HudPanelSubtitle>
+				<HudPanelBody>Time Left: @CurrentTurnTimeText</HudPanelBody>
+				<HudPanelBody>Current Player: @CurrentPlayerName</HudPanelBody>
+				<HudPanelBody>Last Roll: @GameRef.LastDieA + @GameRef.LastDieB</HudPanelBody>
+				<HudPanelBody>Phase: @GameRef.ParseCurrentGamePhaseWithCurrentPlayer()</HudPanelBody>		
+			</ChildContent>
+		</Sandbox.ui.components.HudPanel.HudPanel>
+	}
+
+	<Sandbox.ui.components.HudPanel.HudPanel Variant="hud-card actions">
+		<ChildContent>
+			<HudPanelSubtitle>Camera</HudPanelSubtitle>
+			<div class="camera-mode-buttons">
+				<div class="camera-mode-button-row">
+					<GameButton Variant="@GetCameraModeButtonClasses( BoardCameraMode.Default )" OnClick="@(() => SetCameraMode( BoardCameraMode.Default ))">Default</GameButton>
+					<GameButton Variant="@GetCameraModeButtonClasses( BoardCameraMode.Board )" OnClick="@(() => SetCameraMode( BoardCameraMode.Board ))">Board</GameButton>
+				</div>
+				<div class="camera-mode-button-row">
+					<GameButton Variant="@GetCameraModeButtonClasses( BoardCameraMode.FreeCam )" OnClick="@(() => SetCameraMode( BoardCameraMode.FreeCam ))">Free Cam</GameButton>
+					<GameButton Variant="@GetCameraModeButtonClasses( BoardCameraMode.Token )" OnClick="@(() => SetCameraMode( BoardCameraMode.Token ))">Token</GameButton>
+				</div>
+			</div>
+			<HudPanelEmptyLine></HudPanelEmptyLine>
+			<HudPanelSubtitle>Game</HudPanelSubtitle>
+
+			<GameButton Variant="stats-log-button" OnClick="@ShowStatsLog">Stats</GameButton>
+
+			@if ( GameRef.MatchState == MatchLifecycleState.InGame )
+			{
+				<HudPanelBody>@CurrentPlayer.PlayerName's turn (@CurrentTurnTimeText) </HudPanelBody>
+				<HudPanelBody>Last Roll: @GameRef.LastDieA + @GameRef.LastDieB</HudPanelBody>
+			}
+
+			@if ( ShouldShowForcedPaymentStatus )
+			{
+				<div class="forced-payment-status">
+					<div class="forced-payment-copy">
+						<div class="forced-payment-title">Forced Payment</div>
+						<div class="forced-payment-needed">Need $@ForcedPaymentAmountNeeded more</div>
+					</div>
+					<GameButton Variant="forced-payment-bankrupt-button" OnClick="@ConfirmDeclareBankruptcy">Bankrupt</GameButton>
+				</div>
+			}
+
+			@if ( IsCurrentPlayerInJail )
+			{
+				<HudPanelBody>Jail Turns: @CurrentPlayer.JailTurnsRemaining</HudPanelBody>
+			}
+
+			@if ( ShouldShowActionButtons && CanActOnCurrentTurn )
+			{
+				@if ( IsCurrentPlayerInJail )
+				{
+					<div class="jail-action-buttons">
+						@if ( CurrentPlayerHasGetOutOfJailFreeCard && !CurrentPlayerMustPayForcedJailFine )
+						{
+							<GameButton Variant="action-buttons jail-action-button" OnClick="@UseGetOutOfJailFreeCard">Use Card</GameButton>
+						}
+						<GameButton Variant="action-buttons jail-action-button" OnClick="@PayToLeaveJail">Pay $50</GameButton>
+						@if ( !CurrentPlayerMustPayForcedJailFine )
+						{
+							<GameButton @ref="ActionJailRollButton" Variant="action-buttons jail-action-button" OnHoldComplete="@RollForJailRelease" HoldMaxSeconds="@RollHoldMaxSeconds" KeyboardInputAction="@GetRollInputAction()">
+								<ChildContent>
+									Try Doubles
+									<HoldIndicator Variant="compact" ParentButton="@ActionJailRollButton"></HoldIndicator>
+								</ChildContent>
+							</GameButton>
+						}
+					</div>
+				} else {
+					<GameButton @ref="ActionRollButton" Variant="action-buttons" OnHoldComplete="@RollDice" HoldMaxSeconds="@RollHoldMaxSeconds" KeyboardInputAction="@GetRollInputAction()">
+						<ChildContent>
+							Roll Dice
+							<HoldIndicator Variant="compact" ParentButton="@ActionRollButton"></HoldIndicator>
+						</ChildContent>
+					</GameButton>
+				}
+			}
+
+			@if ( ShouldShowActionButtons && GameRef.MatchState == MatchLifecycleState.InGame && CurrentPlayer == LocalPlayer )
+			{
+				<GameButton @ref="ActionEndTurnButton" Variant="@EndTurnButtonClasses" CanClick="@CanEndTurn" OnClick="@EndTurn" BlockedPopupTitle="Cannot end turn yet" BlockedPopupMessage="@GetEndTurnBlockedMessage()" KeyboardInputAction="@GetEndTurnInputAction()">End Turn</GameButton>
+			}
+		</ChildContent>
+	</Sandbox.ui.components.HudPanel.HudPanel>
+
+	@if ( GameRef.MatchState == MatchLifecycleState.InGame && CurrentPlayer == LocalPlayer )
+	{
+
+		<Sandbox.ui.components.HudPanel.HudPanel Variant="@GetRollButtonPanelClass()">
+			<ChildContent>
+				<GameButton @ref="StatusRollButton" Variant="@GetRollDiceButtonClass()" OnHoldComplete="@RollDice" HoldMaxSeconds="@RollHoldMaxSeconds" KeyboardInputAction="@GetRollInputAction()">
+					<ChildContent>
+						Roll Dice
+						<HoldIndicator Variant="status-roll" ParentButton="@StatusRollButton"></HoldIndicator>
+					</ChildContent>
+				</GameButton>
+			</ChildContent>
+		</Sandbox.ui.components.HudPanel.HudPanel>
+
+		<Sandbox.ui.components.HudPanel.HudPanel Variant="@GetEndTurnButtonPanelClass()">
+			<ChildContent>
+				<GameButton @ref="StatusEndTurnButton" Variant="@GetEndTurnButtonClass()" OnClick="@EndTurn" KeyboardInputAction="@GetEndTurnInputAction()">End Turn</GameButton>
+			</ChildContent>
+		</Sandbox.ui.components.HudPanel.HudPanel>		
+
+		<Sandbox.ui.components.HudPanel.HudPanel Variant="@GetFinishMoveButtonPanelClass()">
+			<ChildContent>
+				<GameButton Variant="@GetFinishMoveButtonClass()" OnClick="@FinishActiveMovement" KeyboardInputAction="@GetFinishMoveInputAction()">Finish Move</GameButton>
+			</ChildContent>
+		</Sandbox.ui.components.HudPanel.HudPanel>
+
+		<Sandbox.ui.components.HudPanel.HudPanel Variant="@GetJailButtonPanelClass()">
+			<ChildContent>
+				@if ( CurrentPlayerHasGetOutOfJailFreeCard && !CurrentPlayerMustPayForcedJailFine )
+				{
+					<GameButton Variant="@GetJailButtonClass()" OnClick="@UseGetOutOfJailFreeCard">Use Card</GameButton>
+				}
+				<GameButton Variant="@GetJailButtonClass()" OnClick="@PayToLeaveJail">Pay $50</GameButton>
+				@if ( !CurrentPlayerMustPayForcedJailFine )
+				{
+					<GameButton @ref="StatusJailRollButton" Variant="@GetJailButtonClass()" OnHoldComplete="@RollForJailRelease" HoldMaxSeconds="@RollHoldMaxSeconds" KeyboardInputAction="@GetRollInputAction()">
+						<ChildContent>
+							Try Doubles
+							<HoldIndicator Variant="status-roll" ParentButton="@StatusJailRollButton"></HoldIndicator>
+						</ChildContent>
+					</GameButton>
+				}
+			</ChildContent>
+		</Sandbox.ui.components.HudPanel.HudPanel>		
+	}
+	<PropertyStatsModal GameRef="@GameRef" IsOpen="@IsStatsPanelOpen" OnClose="@CloseStatsPanel"></PropertyStatsModal>
+</root>
+
+@code
+{
+    [Parameter] public GameController GameRef { get; set; }
+
+	private GameButton ActionRollButton = null!;
+	private GameButton ActionJailRollButton = null!;
+	private GameButton ActionEndTurnButton = null!;
+	private GameButton StatusRollButton = null!;
+	private GameButton StatusJailRollButton = null!;
+	private GameButton StatusEndTurnButton = null!;
+	private GameButton KeyboardRollButton;
+	private bool IsStatsPanelOpen;
+
+    private PlayerState CurrentPlayer => GameRef?.CurrentPlayer;
+    private PlayerState LocalPlayer => GameRef?.LocalPlayer;
+    private string CurrentPlayerName => CurrentPlayer?.PlayerName ?? "None";
+    private int LocalPlayerMoney => LocalPlayer?.Money ?? 0;
+    private SpaceDef PendingDef => GameRef?.Board?.GetSpaceDef( GameRef.PendingPurchaseSpaceIndex );
+    private string PendingPropertyName => PendingDef?.DisplayName ?? "Unknown Property";
+    private const float RollHoldMaxSeconds = 1.25f;
+    private bool gamePanelEnabled = false;
+	private bool ShouldShowActionButtons => MonopolyApp.IsGameStatusPanelActionButtonsEnabled;
+	private bool didRefreshAfterRefs;
+
+	private InputAction GetInputAction(string name, string defaultKeyCode)
+	{
+		var action = Input.GetActions().FirstOrDefault( action => string.Equals( action.Name, name, StringComparison.Ordinal ) );
+		if ( action is null )
+		{
+			Log.Warning($"Could not find {name} action. Setting to default {defaultKeyCode}");
+			return new(name, defaultKeyCode);
+		}
+
+		return action;
+	}
+
+	private InputAction GetRollInputAction()
+	{
+		return GetInputAction("RollDice", "R");
+	}
+
+	private InputAction GetEndTurnInputAction()
+	{
+		return GetInputAction("EndTurn", "E");
+	}
+
+	private InputAction GetFinishMoveInputAction()
+	{
+		return GetInputAction( "FinishMove", "F" );
+	}
+
+	protected override void OnAfterTreeRender( bool firstTime )
+	{
+		base.OnAfterTreeRender( firstTime );
+
+		if ( didRefreshAfterRefs )
+			return;
+
+		didRefreshAfterRefs = true;
+		StateHasChanged();
+	}
+
+	public override void Tick()
+	{
+		base.Tick();
+
+		UpdateActionKeybinds();
+	}
+
+	private void UpdateActionKeybinds()
+	{
+		if ( GameRef?.MatchState != MatchLifecycleState.InGame || CurrentPlayer != LocalPlayer )
+		{
+			CancelRollInputActionHold();
+			return;
+		}
+
+		if ( Input.Pressed( "RollDice" ) )
+			StartRollInputActionHold();
+
+		if ( KeyboardRollButton is not null && !Input.Down( "RollDice" ) )
+			CompleteRollInputActionHold();
+
+		if ( Input.Pressed( "EndTurn" ) )
+			TriggerEndTurnInputAction();
+
+		if ( Input.Pressed( "FinishMove" ) )
+			TriggerFinishMoveInputAction();
+	}
+
+	private void StartRollInputActionHold()
+	{
+		if ( !CanActOnCurrentTurn )
+			return;
+
+		var rollButton = GetRollInputActionButton();
+		if ( rollButton is null )
+			return;
+
+		KeyboardRollButton = rollButton;
+		KeyboardRollButton.StartInputActionHold();
+	}
+
+	private void CompleteRollInputActionHold()
+	{
+		var rollButton = KeyboardRollButton;
+		KeyboardRollButton = null;
+		rollButton?.CompleteInputActionHold();
+	}
+
+	private void CancelRollInputActionHold()
+	{
+		var rollButton = KeyboardRollButton;
+		KeyboardRollButton = null;
+		rollButton?.CancelInputActionHold();
+	}
+
+	private GameButton GetRollInputActionButton()
+	{
+		if ( IsCurrentPlayerInJail )
+		{
+			if ( !CurrentPlayerMustPayForcedJailFine )
+				return StatusJailRollButton ?? ActionJailRollButton;
+
+			return null;
+		}
+
+		return StatusRollButton ?? ActionRollButton;
+	}
+
+	private void TriggerEndTurnInputAction()
+	{
+		if ( ShouldShowActionButtons )
+		{
+			ActionEndTurnButton?.TriggerInputAction();
+			return;
+		}
+
+		if ( CanEndTurn )
+			StatusEndTurnButton?.TriggerInputAction();
+	}
+
+	private void TriggerFinishMoveInputAction()
+	{
+		if ( CanFinishActiveMovement )
+			FinishActiveMovement();
+	}
+
+	private int CurrentTurnRemainingSeconds =>
+		GameRef is null || GameRef.CurrentTurnEndsAt <= 0f
+			? -1
+			: Math.Max( 0, (int)MathF.Ceiling( GameRef.CurrentTurnEndsAt - Time.Now ) );
+
+	private string CurrentTurnTimeText =>
+		CurrentTurnRemainingSeconds < 0
+			? "Off"
+			: $"{CurrentTurnRemainingSeconds / 60:00}:{CurrentTurnRemainingSeconds % 60:00}";
+
+	private string EndTurnButtonClasses =>
+		CanEndTurn ? "action-buttons" : "action-buttons blocked-action-button";
+
+	private bool CanActOnCurrentTurn =>
+		GameRef?.MatchState == MatchLifecycleState.InGame &&
+		GameRef.Phase == GamePhase.WaitingToRoll &&
+		CurrentPlayer == LocalPlayer;
+
+	private bool IsCurrentPlayerInJail =>
+		CurrentPlayer?.IsInJail == true;
+
+	private bool CurrentPlayerHasGetOutOfJailFreeCard =>
+		(CurrentPlayer?.ChanceGetOutOfJailFreeCards ?? 0) > 0 ||
+		(CurrentPlayer?.CommunityChestGetOutOfJailFreeCards ?? 0) > 0;
+
+	private bool CurrentPlayerMustPayForcedJailFine =>
+		GameRef?.IsForcedJailFineDue( CurrentPlayer ) == true;
+
+	private BoardCameraMode CurrentCameraMode =>
+		GameCamera.Instance?.Mode ?? BoardCameraMode.Board;
+
+	private bool CanEndTurn =>
+		GameRef?.Phase == GamePhase.TurnEnded &&
+		GameRef.HasPendingForcedPayment != true;
+
+	private bool CanFinishActiveMovement =>
+		GameRef?.CanFinishActiveMovement( LocalPlayer ) == true;
+	private bool ShouldShowForcedPaymentStatus =>
+		GameRef?.HasPendingForcedPayment == true &&
+		GameRef.PendingForcedPaymentPlayerIndex == GameRef.LocalPlayerIndex &&
+		ForcedPaymentAmountNeeded > 0;
+	private int ForcedPaymentAmountNeeded =>
+		Math.Max( (GameRef?.PendingForcedPaymentAmount ?? 0) - (LocalPlayer?.Money ?? 0), 0 );
+
+	private void SetCameraMode( BoardCameraMode mode )
+	{
+		GameCamera.Instance?.SetMode( mode );
+	}
+
+	private string GetCameraModeButtonClasses( BoardCameraMode mode )
+	{
+		return CurrentCameraMode == mode
+			? "camera-mode-button selected"
+			: "camera-mode-button";
+	}
+
+	private string GetRollButtonPanelClass()
+	{
+		var str = "status-roll-button-panel status-roll-panel";
+		if ( !CanActOnCurrentTurn || IsCurrentPlayerInJail )
+			str += " hidden";
+
+		return str;
+	}
+
+	private string GetEndTurnButtonPanelClass()
+	{
+		var str = "status-roll-button-panel status-end-turn-panel";
+		if ( !CanEndTurn )
+			str += " hidden";
+
+		return str;
+	}
+
+	private string GetRollDiceButtonClass()
+	{
+		var str = "status-roll-button";
+		if ( !CanActOnCurrentTurn || IsCurrentPlayerInJail )
+			str += " hidden";
+
+		return str;
+	}
+
+	private string GetEndTurnButtonClass()
+	{
+		var str = "status-roll-button";
+		if ( !CanEndTurn )
+			str += " hidden";
+
+		return str;
+	}
+
+	private string GetFinishMoveButtonPanelClass()
+	{
+		var str = "status-roll-button-panel status-finish-move-panel";
+		if ( !CanFinishActiveMovement )
+			str += " hidden";
+
+		return str;
+	}
+
+	private string GetFinishMoveButtonClass()
+	{
+		var str = "status-roll-button";
+		if ( !CanFinishActiveMovement )
+			str += " hidden";
+
+		return str;
+	}
+
+	private string GetJailButtonClass()
+	{
+		var str = "status-roll-button";
+		if ( !CanActOnCurrentTurn || !IsCurrentPlayerInJail )
+			str += " hidden";
+
+		str += " jail";
+
+		return str;
+	}
+
+	private string GetJailButtonPanelClass()
+	{
+		var str = "status-roll-button-panel status-jail-panel";
+		if ( !CanActOnCurrentTurn || !IsCurrentPlayerInJail )
+			str += " hidden";
+
+		str += " jail";
+
+		return str;
+	}
+
+	private void RollDice( float throwStrength )
+	{
+		Log.Info( $"Roll dice button released with throw strength {throwStrength:0.00}." );
+		GameRef?.RequestRollDice( -1, throwStrength );
+	}
+
+	private void PayToLeaveJail()
+	{
+		GameRef?.RequestPayToLeaveJail();
+	}
+
+	private void UseGetOutOfJailFreeCard()
+	{
+		GameRef?.RequestUseGetOutOfJailFreeCard();
+	}
+
+	private void RollForJailRelease( float throwStrength )
+	{
+		GameRef?.RequestRollForJailRelease( throwStrength );
+	}
+
+	private void EndTurn()
+	{
+		if ( CanEndTurn )
+			GameRef?.ClearSelectedSpace();
+
+		GameRef?.RequestEndTurn();
+	}
+
+	private void FinishActiveMovement()
+	{
+		GameRef?.RequestFinishActiveMovement();
+	}
+
+	private void ConfirmDeclareBankruptcy()
+	{
+		GameRef?.ShowLocalConfirmation(
+			"Declare bankruptcy?",
+			"You will instantly go bankrupt but stay connected to the match.",
+			DeclareBankruptcy,
+			confirmLabel: "Bankrupt" );
+	}
+
+	private void DeclareBankruptcy()
+	{
+		if ( GameRef is null )
+			return;
+
+		if ( Networking.IsHost )
+		{
+			GameRef.TryDeclareBankruptcy( GameRef.LocalPlayer );
+			return;
+		}
+
+		GameRef.RequestDeclareBankruptcy();
+	}
+
+	private void ShowStatsLog()
+	{
+		if ( GameRef is null )
+			return;
+
+		IsStatsPanelOpen = true;
+		StateHasChanged();
+	}
+
+	private void CloseStatsPanel()
+	{
+		IsStatsPanelOpen = false;
+		StateHasChanged();
+	}
+
+	private string GetEndTurnBlockedMessage()
+	{
+		if ( GameRef?.HasPendingForcedPayment == true )
+			return $"Raise ${GameRef.PendingForcedPaymentAmount} before ending your turn.";
+
+		return GameRef?.Phase switch
+		{
+			GamePhase.WaitingToRoll => "Roll the dice before ending your turn.",
+			GamePhase.ResolvingSpace => "Wait for your move to finish resolving.",
+			GamePhase.WaitingForBuyDecision => $"{GameRef?.GetPendingPropertyDecisionPrompt() ?? $"Buy or auction {PendingPropertyName}"} before ending your turn.",
+			GamePhase.Auctioning => "Wait for the auction to finish before ending your turn.",
+			_ => "Finish the current action before ending your turn."
+		};
+	}
+
+	protected override int BuildHash()
+	{
+		var hash = new HashCode();
+		hash.Add( GameRef?.MatchState ?? 0 );
+		hash.Add( GameRef?.Phase ?? 0 );
+		hash.Add( GameRef?.PendingPurchaseSpaceIndex ?? -1 );
+		hash.Add( GameRef?.CurrentPlayerIndex ?? -1 );
+		hash.Add( CurrentPlayer?.OwnerId ?? 0 );
+		hash.Add( CurrentPlayer?.PlayerName ?? "" );
+		hash.Add( LocalPlayer?.OwnerId ?? 0 );
+		hash.Add( GameRef?.LastDieA ?? 0 );
+		hash.Add( GameRef?.LastDieB ?? 0 );
+		hash.Add( LocalPlayerMoney );
+		hash.Add( GameRef?.Config?.CanSkipUnowned ?? false );
+		hash.Add( CurrentTurnRemainingSeconds );
+		hash.Add( GameRef?.HasPendingForcedPayment ?? false );
+		hash.Add( GameRef?.PendingForcedPaymentPlayerIndex ?? -1 );
+		hash.Add( GameRef?.PendingForcedPaymentAmount ?? 0 );
+		hash.Add( GameRef?.ActiveMovementPlayerIndex ?? -1 );
+		hash.Add( GameRef?.ActiveMovementRemainingSteps ?? 0 );
+		hash.Add( GameRef?.ActiveMovementTargetSpaceIndex ?? -1 );
+		hash.Add( GameRef?.GameStartedAt ?? 0f );
+		hash.Add( GameRef?.Config?.InstantMoveButtonUnlockMinutes ?? 0 );
+		hash.Add( CurrentPlayer?.IsInJail ?? false );
+		hash.Add( CurrentPlayer?.JailTurnsRemaining ?? 0 );
+		hash.Add( CurrentPlayer?.ChanceGetOutOfJailFreeCards ?? 0 );
+		hash.Add( CurrentPlayer?.CommunityChestGetOutOfJailFreeCards ?? 0 );
+		hash.Add( CurrentPlayerMustPayForcedJailFine );
+		hash.Add( CurrentCameraMode );
+		hash.Add( CanEndTurn );
+		hash.Add( ShouldShowActionButtons );
+		hash.Add( IsStatsPanelOpen );
+		hash.Add( GetPropertyStatsHash() );
+		return hash.ToHashCode();
+	}
+
+	private int GetPropertyStatsHash()
+	{
+		var hash = new HashCode();
+
+		if ( GameRef?.PropertyLandingCounts is not null )
+		{
+			foreach ( var entry in GameRef.PropertyLandingCounts.OrderBy( entry => entry.Key ) )
+			{
+				hash.Add( entry.Key );
+				hash.Add( entry.Value );
+			}
+		}
+
+		if ( GameRef?.PropertyRentEarned is not null )
+		{
+			foreach ( var entry in GameRef.PropertyRentEarned.OrderBy( entry => entry.Key ) )
+			{
+				hash.Add( entry.Key );
+				hash.Add( entry.Value );
+			}
+		}
+
+		return hash.ToHashCode();
+	}
+}

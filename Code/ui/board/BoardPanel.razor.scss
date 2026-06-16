@@ -1,0 +1,503 @@
+@import "../styles/GameTheme.scss";
+
+.board-panel-root {
+	width: 100%;
+	height: 100%;
+	position: absolute;
+	left: 0;
+	top: 0;
+	background: $monopoly-board-outline;
+	border: 8px solid $monopoly-board-outline;
+	font-family: $monopoly-font-family;
+	color: $monopoly-ink;
+	pointer-events: none;
+}
+
+.board-panel-root * {
+	pointer-events: none;
+}
+
+.board-center {
+	position: absolute;
+	background: $monopoly-board-center;
+	border: 6px solid $monopoly-ink;
+}
+
+.board-track-bg {
+	position: absolute;
+	z-index: 2;
+}
+
+.board-space {
+	position: absolute;
+	overflow: hidden;
+	z-index: 3;
+}
+
+.space-inner {
+	position: absolute;
+	display: flex;
+	flex-direction: column;
+	overflow: visible;
+	z-index: 1;
+}
+
+.space-color-bar {
+	height: 22px;
+	z-index: 2;
+}
+
+.space-owner-badge {
+	position: absolute;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	z-index: 5;
+	font-weight: 700;
+	white-space: nowrap;
+	overflow: hidden;
+}
+
+.space-owner-marker {
+	border-radius: 50%;
+	flex-shrink: 0;
+	margin-right: 1px;
+}
+
+.space-owner-name {
+	flex: 1;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.side-bottom.standard .space-owner-badge {
+	left: 2px;
+	right: 2px;
+	bottom: 0;
+}
+
+.side-top.standard .space-owner-badge {
+	left: 2px;
+	right: 2px;
+	top: 0;
+	transform: rotate(180deg);
+}
+
+.side-left.standard .space-owner-badge {
+	transform: rotate(90deg);
+	transform-origin: left top;
+	top: 2px;
+	right: 98px;
+}
+
+.side-right.standard .space-owner-badge {
+	transform: rotate(-90deg);
+	transform-origin: right top;
+	left: 98px;
+	top: -4px;
+}
+
+.space-mortgage-stamp {
+	position: absolute;
+	left: -14px;
+	right: -14px;
+	top: 50%;
+	height: 22px;
+	z-index: 4;
+
+	background-color: $monopoly-card-ink-surface-hover;
+	border-top: 2px solid $monopoly-card-ink-soft;
+	border-bottom: 2px solid $monopoly-card-ink-soft;
+	color: $monopoly-card-ink-soft;
+
+	align-items: center;
+	justify-content: center;
+
+	font-size: 12px;
+	font-weight: 900;
+	line-height: 14px;
+	letter-spacing: 0;
+	text-transform: uppercase;
+
+	transform: translateY(-50%) rotate(-13deg);
+}
+
+.side-left.standard .space-mortgage-stamp {
+	left: -22px;
+	right: -22px;
+	transform: translateY(-50%) rotate(77deg);
+}
+
+.side-top.standard .space-mortgage-stamp {
+	transform: translateY(-50%) rotate(167deg);
+}
+
+.side-right.standard .space-mortgage-stamp {
+	left: -22px;
+	right: -22px;
+	transform: translateY(-50%) rotate(-103deg);
+}
+
+.side-top.standard {
+	.space-inner {
+		flex-direction: column-reverse;
+	}
+}
+
+.side-left.standard .space-inner,
+.side-right.standard .space-inner {
+	flex-direction: row;
+}
+
+.side-left.standard .space-color-bar,
+.side-right.standard .space-color-bar {
+	width: 22px;
+	height: 100%;
+}
+
+.side-left.standard .space-inner {
+	flex-direction: row-reverse;
+}
+
+.color-bar-brown {
+	background-color: $property-brown;
+}
+
+.color-bar-light_blue {
+	background-color: $property-light-blue;
+}
+
+.color-bar-pink {
+	background-color: $property-pink;
+}
+
+.color-bar-orange {
+	background-color: $property-orange;
+}
+
+.color-bar-red {
+	background-color: $property-red;
+}
+
+.color-bar-yellow {
+	background-color: $property-yellow;
+}
+
+.color-bar-green {
+	background-color: $property-green;
+}
+
+.color-bar-dark_blue {
+	background-color: $property-dark-blue;
+}
+
+.space-content {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding: 6px;
+	z-index: 3;
+}
+
+.side-left.standard .space-content {
+	transform: rotate(90deg);
+}
+
+.side-top.standard .space-content {
+	transform: rotate(180deg);
+}
+
+.side-right.standard .space-content {
+	transform: rotate(-90deg);
+}
+
+.side-top.standard.type-property .space-content {
+	justify-content: flex-start;
+	transform: rotate(180deg) translateY(15px);
+}
+
+.side-left.standard.type-property .space-content {
+	justify-content: flex-start;
+	transform: rotate(90deg) translateY(-20px);
+	
+}
+
+.side-right.standard.type-property .space-content {
+	justify-content: flex-start;
+	transform: rotate(-90deg) translateY(-20px);
+}
+
+.side-bottom.standard.type-property .space-content {
+	justify-content: flex-start;
+	transform: translateY(15px);
+}
+
+.type-freeparking .space-content {
+	justify-content: flex-start;
+	transform: rotate(135deg) translateY(-12px);
+}
+
+.type-jail .space-content {
+	justify-content: flex-start;
+	transform: rotate(45deg) translateY(-15px);
+}
+
+.type-gotojail .space-content {
+	transform: rotate(225deg) translateY(-15px);
+}
+
+.corner .space-content {
+	position: relative;
+	transform: none;
+	justify-content: center;
+}
+
+.board-space.corner.type-freeparking .space-content {
+	transform: none;
+}
+
+.space-title {
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+	text-transform: uppercase;
+	font-size: 17px;
+	font-weight: 800;
+	line-height: 17px;
+}
+
+.space-title div {
+	width: 100%;
+	text-align: center;
+	justify-content: center;
+}
+
+.space-icon {
+	font-size: 40px;
+	font-weight: 900;
+	line-height: 42px;
+	margin-bottom: 3px;
+	text-align: center;
+	justify-content: center;
+}
+
+.space-icon-image {
+	flex-shrink: 0;
+	line-height: 0;
+	object-fit: contain;
+	background-size: contain;
+	background-repeat: no-repeat;
+	background-position: center;
+}
+
+.space-icon-stack {
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	flex: 1;
+	align-items: center;
+	justify-content: center;
+}
+
+.space-icon-stack .space-icon {
+	margin-bottom: 0;
+}
+
+.space-icon-stack .space-title {
+	width: 100%;
+	z-index: 1;
+	margin-bottom: -8px;
+	transform: translateY(0);
+}
+
+.type-chance .space-icon {
+	font-size: 58px;
+	color: $monopoly-board-icon;
+}
+
+.type-chance .space-icon-image {
+	width: 100px;
+	height: 100px;
+	min-width: 100px;
+	min-height: 150px;
+}
+
+.type-chance .space-icon-stack .space-title {
+	margin-bottom: 20px;
+}
+
+.side-right.type-chance .space-icon-stack .space-title {
+	margin-bottom: 38px;
+}
+
+.side-right.type-communitychest .space-icon-stack .space-title {
+	margin-bottom: 0;
+	transform: translateX(-20px);
+}
+
+.side-left.type-communitychest .space-icon-stack .space-title {
+	margin-bottom: 0;
+	transform: translateX(20px);
+}
+
+.side-bottom.type-communitychest .space-icon-stack .space-title {
+	margin-bottom: 0;
+	transform: translateY(-20px);
+}
+
+.board-chest-art {
+	position: relative;
+	width: 50px;
+	height: 40px;
+	flex-shrink: 0;
+	align-items: center;
+	justify-content: center;
+}
+
+.board-chest-art .monopoly-chest-lid {
+	position: absolute;
+	left: 4px;
+	top: 1px;
+	width: 42px;
+	height: 14px;
+
+	background-color: $property-light-blue;
+	border: 3px solid $monopoly-ink;
+	border-radius: 3px 3px 1px 1px;
+}
+
+.board-chest-art .monopoly-chest-body {
+	position: absolute;
+	left: 0;
+	top: 13px;
+	width: 50px;
+	height: 25px;
+
+	background-color: $property-light-blue;
+	border: 3px solid $monopoly-ink;
+	border-radius: 2px 2px 4px 4px;
+}
+
+.board-chest-art .monopoly-chest-lock {
+	position: absolute;
+	left: 20px;
+	top: 17px;
+	width: 10px;
+	height: 13px;
+
+	background-color: $monopoly-gold;
+	border: 2px solid $monopoly-ink;
+	border-radius: 2px;
+}
+
+.type-communitychest .space-icon {
+	font-size: 32px;
+	color: $monopoly-chest-icon;
+}
+
+.type-tax .space-icon {
+	font-size: 44px;
+}
+
+.type-utility .space-icon {
+	font-size: 28px;
+	color: $monopoly-board-icon;
+}
+
+.corner-icon {
+	font-size: 32px;
+	font-weight: 900;
+	line-height: 34px;
+	text-align: center;
+	justify-content: center;
+	text-transform: uppercase;
+}
+
+.type-go .corner-icon {
+	font-size: 55px;
+	color: $monopoly-go-icon;
+}
+
+.type-jail .corner-icon {
+	font-size: 28px;
+}
+
+.type-freeparking .corner-icon {
+	width: 65px;
+	height: 65px;
+	border-radius: 29px;
+	background-color: $monopoly-free-parking;
+	border: 4px solid $monopoly-ink;
+	align-items: center;
+	justify-content: center;
+}
+
+.board-space.corner.custom-corner.type-freeparking .corner-icon {
+	width: 100%;
+	height: auto;
+	border-radius: 0;
+	background-color: transparent;
+	border: 0;
+}
+
+.type-gotojail .corner-icon {
+	font-size: 42px;
+	color: $monopoly-go-to-jail;
+}
+
+.corner-title {
+	width: 100%;
+	margin-top: 4px;
+	flex-direction: column;
+	align-items: center;
+	font-size: 20px;
+	text-align: center;
+	justify-content: center;
+	text-transform: uppercase;
+	font-weight: 900;
+	line-height: 13px;
+}
+
+.corner-title div {
+	width: 100%;
+	text-align: center;
+	align-items: center;
+	justify-content: center;
+}
+
+.corner-free-parking-bank {
+	transform: rotate(180deg);
+	position: absolute;
+	top: 0px;
+	right: 10px;
+	font-size: 21px;
+	font-weight: 900;
+	line-height: 20px;
+	text-align: center;
+	white-space: nowrap;
+	overflow: visible;
+	color: $monopoly-free-parking-bank;
+	z-index: 4;
+}
+
+.corner-free-parking-bank .label {
+	align-self:auto;
+}
+
+.go-arrow {
+	margin-top: 2px;
+	font-size: 28px;
+	font-weight: 900;
+	color: $monopoly-go-arrow;
+	text-align: center;
+	justify-content: center;
+}
+
+
+

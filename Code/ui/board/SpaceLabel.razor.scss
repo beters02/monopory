@@ -1,0 +1,112 @@
+@import "../styles/GameTheme.scss";
+
+SpaceLabel {
+	width: 100%;
+	height: 100%;
+
+	pointer-events: none;
+
+	.monopoly-space-label {
+		width: 100%;
+		height: 100%;
+
+		background-color: $monopoly-board-glass;
+		border: 8px solid $monopoly-ink;
+
+		display: flex;
+		flex-direction: column;
+
+		font-family: $monopoly-font-family;
+		color: $monopoly-ink;
+	}
+
+	.label-color-bar {
+		height: 18px;
+		background-color: transparent;
+		border-bottom: 4px solid $monopoly-ink;
+	}
+
+	.color-none .label-color-bar {
+		display: none;
+	}
+
+	.color-brown .label-color-bar {
+		background-color: $property-brown;
+	}
+
+	.color-light_blue .label-color-bar {
+		background-color: $property-light-blue;
+	}
+
+	.color-pink .label-color-bar {
+		background-color: $property-pink;
+	}
+
+	.color-orange .label-color-bar {
+		background-color: $property-orange;
+	}
+
+	.color-red .label-color-bar {
+		background-color: $property-red;
+	}
+
+	.color-yellow .label-color-bar {
+		background-color: $property-yellow;
+	}
+
+	.color-green .label-color-bar {
+		background-color: $property-green;
+	}
+
+	.color-dark_blue .label-color-bar {
+		background-color: $property-dark-blue;
+	}
+
+	.label-text {
+		flex: 1;
+		padding: 60px 12px;
+
+		align-items: center;
+		justify-content: flex-start;
+
+		display: flex;
+		flex-direction: column;
+
+		text-align: center;
+		text-transform: uppercase;
+		font-size: 25px;
+		font-weight: 900;
+		line-height: 25px;
+	}
+
+	.label-text div {
+		width: 100%;
+		justify-content: center;
+		text-align: center;
+	}
+
+	// Per-space overrides can target classes like .label-text-space-6.
+
+	//.label-text-space-6 {
+	//	padding-top: 15px;
+	//}
+
+	.label-text-space-8 {
+		line-height: 25px;
+	}
+
+	.label-text-space-9 div {
+		width: 50%;
+		line-height: 25px;
+		
+	}
+
+	.label-text-space-9 div {
+		width: 120%;
+		letter-spacing: -2px;
+		font-size: 50%;
+	}
+}
+
+
+
