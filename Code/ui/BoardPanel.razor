@@ -562,8 +562,11 @@
 		return style;
 	}
 
-	private static string GetCornerTitle( SpaceDef space )
+	private string GetCornerTitle( SpaceDef space )
 	{
+		if ( HasCustomDisplayName( space ) )
+			return space.DisplayName;
+
 		return space.Type switch
 		{
 			SpaceType.Go => "Collect salary as you pass",
@@ -572,6 +575,15 @@
 			SpaceType.GoToJail => "Go to jail",
 			_ => space.DisplayName
 		};
+	}
+
+	private static bool HasCustomDisplayName( SpaceDef space )
+	{
+		if ( space is null )
+			return false;
+
+		var fallbackName = FallbackSpaceDefs.FirstOrDefault( fallback => fallback.Index == space.Index )?.DisplayName ?? "";
+		return !string.Equals( space.DisplayName ?? "", fallbackName, StringComparison.Ordinal );
 	}
 
 	private bool ShouldShowFreeParkingBank( SpaceDef space )

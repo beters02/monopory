@@ -343,6 +343,7 @@ public sealed partial class GameController : Component
 		ResetGameState( true );
 
 		Config = MatchConfigSchema.Deserialize( snapshot.MatchConfigSnapshot );
+		PublishGameConfigSnapshot();
 		StartPrivateConfig();
 		PreferredHostOwnerId = snapshot.PreferredHostOwnerId;
 		PreferredHostDisconnected = false;

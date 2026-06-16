@@ -49,6 +49,7 @@ public sealed partial class GameController : Component, Component.INetworkListen
 
 	[JsonIgnore] public List<PlayerState> Players { get; set; } = new();
 	public MatchConfig Config { get; set; } = new();
+	[Sync] public string GameConfigSnapshot { get; set; } = "";
 	[Property] public GameObject TokenPrefab { get; set; }
 	[Property] public MonopolyTheme Theme { get; set; }
 
@@ -88,6 +89,7 @@ public sealed partial class GameController : Component, Component.INetworkListen
 	[Sync] public NetDictionary<int, string> TokenPhysicsStates { get; set; } = new();
 	[Sync] public NetDictionary<int, string> ChatMessages { get; set; } = new();
 	[Sync] public NetDictionary<int, int> StatsLogDiceFaceCounts { get; set; } = new();
+	private string lastAppliedGameConfigSnapshot = "";
 	[Sync] public NetDictionary<int, int> PropertyLandingCounts { get; set; } = new();
 	[Sync] public NetDictionary<int, int> PropertyRentEarned { get; set; } = new();
 	[Property] public Board Board { get; set; }
@@ -205,6 +207,7 @@ public sealed partial class GameController : Component, Component.INetworkListen
 			if ( bootstrap?.HasConfig == true )
 				Config = bootstrap.Config;
 
+			PublishGameConfigSnapshot();
 			StartPrivateConfig();
 			EnsurePreferredHostOwnerId();
 			EnsurePlayerSlots();
@@ -225,6 +228,7 @@ public sealed partial class GameController : Component, Component.INetworkListen
 
 	protected override void OnUpdate()
 	{
+		ApplyGameConfigSnapshot();
 		RefreshReplicatedPlayerSlots();
 		UpdatePopups();
 		UpdateVisualTokens();
