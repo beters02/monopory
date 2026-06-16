@@ -3,10 +3,12 @@ using System;
 public static class BoardCatalog
 {
 	public const string DefaultBoardId = "default";
+	public const string ExampleBoardId = "example";
 
 	private static readonly List<Func<BoardDefinition>> boardFactories = new()
 	{
-		CreateDefaultBoard
+		CreateDefaultBoard,
+		CreateExampleBoard
 	};
 
 	public static IReadOnlyList<BoardDefinition> GetAll()
@@ -72,5 +74,75 @@ public static class BoardCatalog
 				}
 			}
 		};
+	}
+
+	private static BoardDefinition CreateExampleBoard()
+	{
+		var board = CreateDefaultBoard();
+		board.Id = ExampleBoardId;
+		board.DisplayName = "Example Board";
+
+		SetSpaceName( board.Spaces, 0, "Launch Pad" );
+		SetSpaceName( board.Spaces, 1, "Old Town" );
+		SetSpaceName( board.Spaces, 3, "Canal Street" );
+		SetSpaceName( board.Spaces, 5, "Metro Line" );
+		SetSpaceName( board.Spaces, 10, "Timeout" );
+		SetSpaceName( board.Spaces, 20, "Public Park" );
+		SetSpaceName( board.Spaces, 30, "Go To Timeout" );
+		SetSpaceName( board.Spaces, 39, "Skyline Tower" );
+
+		board.Spaces =
+		[
+			.. board.Spaces,
+			new()
+			{
+				Index = 40,
+				Key = "property_purple_1",
+				DisplayName = "de_nuke", // Harvey Milk Blvd
+				Type = SpaceType.Property,
+				Price = 60,
+				BaseRent = 2,
+				OneHouseRent = 10,
+				TwoHouseRent = 30,
+				ThreeHouseRent = 90,
+				FourHouseRent = 160,
+				HotelRent = 250,
+				ColorGroup = ColorGroup.Pink
+			}
+,
+		];
+
+		board.Theme = new BoardThemeDefinition
+		{
+			BoardEdgeColor = "#20313f",
+			CenterColor = "#f0ead2",
+			SpaceColor = "#fffaf0",
+			BorderColor = "#1d242c",
+			TextColor = "#17202a",
+			ChestIconColor = "#b7791f",
+			GoColor = "#2f855a",
+			FreeParkingColor = "#c05621",
+			GoToJailColor = "#9b2c2c",
+			ColorGroupColors = new()
+			{
+				[ColorGroup.Brown] = "#8d5524",
+				[ColorGroup.LightBlue] = "#63b3ed",
+				[ColorGroup.Pink] = "#d53f8c",
+				[ColorGroup.Orange] = "#ed8936",
+				[ColorGroup.Red] = "#e53e3e",
+				[ColorGroup.Yellow] = "#ecc94b",
+				[ColorGroup.Green] = "#38a169",
+				[ColorGroup.DarkBlue] = "#2b6cb0"
+			}
+		};
+
+		return board;
+	}
+
+	private static void SetSpaceName( List<SpaceDef> spaces, int index, string displayName )
+	{
+		var space = spaces?.FirstOrDefault( space => space.Index == index );
+		if ( space is not null )
+			space.DisplayName = displayName;
 	}
 }

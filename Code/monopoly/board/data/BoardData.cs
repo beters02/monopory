@@ -517,4 +517,5 @@ public static class BoardData
 			BothOwnedMultiplier = defaultUtilityDefs.BothOwnedMultiplier
 		};
 	}
+
 }

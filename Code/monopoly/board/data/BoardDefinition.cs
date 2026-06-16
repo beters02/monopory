@@ -1,7 +1,7 @@
 using System;
 using Sandbox;
 
-public sealed class BoardDefinition
+public sealed partial class BoardDefinition
 {
 	public string Id { get; set; } = "";
 	public string DisplayName { get; set; } = "";
