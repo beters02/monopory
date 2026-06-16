@@ -1,4 +1,5 @@
 @using System
+@using System.Text.RegularExpressions
 @using Sandbox
 @using Sandbox.UI
 @inherits PanelComponent
@@ -25,8 +26,14 @@
 					<div class="space-content" style="@ContentStyle">
 						@if ( IsCorner( space ) )
 						{
-							<div class="corner-icon">@GetCornerIcon( space )</div>
-							<div class="corner-title">@GetCornerTitle( space )</div>
+							var cornerLabel = GetCornerLabel( space );
+							<div class="corner-icon" style="@GetCornerIconStyle( space, cornerLabel.Headline )">@cornerLabel.Headline</div>
+							<div class="corner-title" style="@CornerTitleStyle">
+								@foreach ( var line in GetCornerDescriptorLines( cornerLabel ) )
+								{
+									<div>@line</div>
+								}
+							</div>
 							@if ( space.Type == SpaceType.Go )
 							{
 								<div class="go-arrow" style="@GoArrowStyle">&lt;-</div>
@@ -230,7 +237,8 @@
 	{
 		var side = GetSideClass( space.Index );
 		var corner = IsCorner( space ) ? "corner" : "standard";
-		return $"board-space {side} {corner} type-{space.Type.ToString().ToLowerInvariant()} color-{space.ColorGroupClass} space-{space.Index} key-{space.Key}";
+		var customCorner = IsCorner( space ) && HasCustomDisplayName( space ) ? "custom-corner" : "";
+		return $"board-space {side} {corner} {customCorner} type-{space.Type.ToString().ToLowerInvariant()} color-{space.ColorGroupClass} space-{space.Index} key-{space.Key}";
 	}
 
 	private static string GetSpaceContentClasses( SpaceDef space )
@@ -524,7 +532,25 @@
 		return $"font-size: {fontSize}px; line-height: {fontSize + 2f}px; color: {color};";
 	}
 
-	private static string GetCornerIcon( SpaceDef space )
+	private sealed record CornerLabel( string Headline, string Descriptor, bool IsCustom );
+
+	private CornerLabel GetCornerLabel( SpaceDef space )
+	{
+		if ( HasCustomDisplayName( space ) )
+		{
+			var lines = GetDisplayNameLines( space.DisplayName ).ToList();
+			var headline = lines.FirstOrDefault() ?? space.DisplayName ?? "";
+			var descriptor = lines.Count > 1
+				? string.Join( "\n", lines.Skip( 1 ) )
+				: headline;
+
+			return new CornerLabel( headline, descriptor, true );
+		}
+
+		return new CornerLabel( GetDefaultCornerHeadline( space ), GetDefaultCornerDescriptor( space ), false );
+	}
+
+	private static string GetDefaultCornerHeadline( SpaceDef space )
 	{
 		return space.Type switch
 		{
@@ -536,7 +562,19 @@
 		};
 	}
 
-	private string GetCornerIconStyle( SpaceDef space )
+	private static string GetDefaultCornerDescriptor( SpaceDef space )
+	{
+		return space.Type switch
+		{
+			SpaceType.Go => "Collect salary as you pass",
+			SpaceType.Jail => "Just visiting",
+			SpaceType.FreeParking => "Free parking",
+			SpaceType.GoToJail => "Go to jail",
+			_ => space.DisplayName
+		};
+	}
+
+	private string GetCornerIconStyle( SpaceDef space, string headline )
 	{
 		var fontSize = space.Type switch
 		{
@@ -544,6 +582,9 @@
 			SpaceType.GoToJail => GoToJailIconFontSizePx,
 			_ => CornerIconFontSizePx
 		};
+
+		if ( HasCustomDisplayName( space ) )
+			fontSize = Math.Min( fontSize, GetCustomCornerHeadlineFontSize( headline ) );
 
 		var color = space.Type switch
 		{
@@ -562,19 +603,19 @@
 		return style;
 	}
 
-	private string GetCornerTitle( SpaceDef space )
+	private float GetCustomCornerHeadlineFontSize( string headline )
 	{
-		if ( HasCustomDisplayName( space ) )
-			return space.DisplayName;
+		var length = Regex.Replace( headline ?? "", @"\s+", "" ).Length;
+		if ( length <= 3 )
+			return GoIconFontSizePx;
 
-		return space.Type switch
-		{
-			SpaceType.Go => "Collect salary as you pass",
-			SpaceType.Jail => "Just visiting",
-			SpaceType.FreeParking => "Free parking",
-			SpaceType.GoToJail => "Go to jail",
-			_ => space.DisplayName
-		};
+		if ( length <= 6 )
+			return 42f;
+
+		if ( length <= 10 )
+			return 32f;
+
+		return 24f;
 	}
 
 	private static bool HasCustomDisplayName( SpaceDef space )
@@ -584,6 +625,11 @@
 
 		var fallbackName = FallbackSpaceDefs.FirstOrDefault( fallback => fallback.Index == space.Index )?.DisplayName ?? "";
 		return !string.Equals( space.DisplayName ?? "", fallbackName, StringComparison.Ordinal );
+	}
+
+	private static IEnumerable<string> GetCornerDescriptorLines( CornerLabel label )
+	{
+		return GetDisplayNameLines( label.Descriptor ).SelectMany( WrapLine );
 	}
 
 	private bool ShouldShowFreeParkingBank( SpaceDef space )
@@ -599,9 +645,15 @@
 
 	private static IEnumerable<string> GetSpaceNameLines( SpaceDef space )
 	{
-		return space.DisplayName
+		return GetDisplayNameLines( space.DisplayName ).SelectMany( WrapLine );
+	}
+
+	private static IEnumerable<string> GetDisplayNameLines( string displayName )
+	{
+		return (displayName ?? "")
 			.Split( '\n' )
-			.SelectMany( WrapLine );
+			.Select( line => line.Trim() )
+			.Where( line => !string.IsNullOrWhiteSpace( line ) );
 	}
 
 	private static IEnumerable<string> WrapLine( string line )
