@@ -82,6 +82,9 @@ public static class GameConVars
 				if ( !member.IsStatic )
 					continue;
 
+				if ( member is not PropertyDescription and not FieldDescription )
+					continue;
+
 				var attribute = member.GetCustomAttribute<ConVarAttribute>();
 				if ( attribute is null )
 					continue;

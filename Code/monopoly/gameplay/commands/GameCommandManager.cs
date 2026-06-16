@@ -208,7 +208,6 @@ public sealed class GameCommandManager : Component
 		catch ( Exception exception )
 		{
 			var message = $"{commandName} command threw: {exception.Message}";
-			Log.Error( message );
 			WriteStandaloneConsoleLine( message, "err" );
 		}
 	}
@@ -232,7 +231,6 @@ public sealed class GameCommandManager : Component
 		if ( value.CheatType == GameCommandCheatType.Cheats )
 			if ( !CanUseCheatCommand( caller ) )
 			{
-				Log.Info("cheats failed");
 				LogCommandResult( commandName, CommandResult.FailCheats());
 				return;
 			}
@@ -318,7 +316,6 @@ public sealed class GameCommandManager : Component
 		if ( result is null )
 		{
 			var message = $"{commandName} command failed: no command result.";
-			Log.Warning( message );
 			WriteStandaloneConsoleLine( message, "wrn" );
 			return;
 		}
@@ -326,7 +323,6 @@ public sealed class GameCommandManager : Component
 		if ( !result.Ok )
 		{
 			var message = $"{commandName} command failed: {result.Message}";
-			Log.Warning( message );
 			WriteStandaloneConsoleLine( message, "wrn" );
 			return;
 		}
@@ -335,7 +331,6 @@ public sealed class GameCommandManager : Component
 		{
 			//var message = $"{commandName} command succeeded.";
 			var message = result.Message;
-			Log.Info( message );
 			WriteStandaloneConsoleLine( message, "msg" );
 			return;
 		}
@@ -1060,7 +1055,7 @@ public static class TryTransferSteamLobbyHost
 				return CommandResult.Fail($"Unknown failure - could not find player in GameRef.Players or LobbyRef.Players");
 			
 			var steamId = gamePlayer is not null ? gamePlayer.SteamId : (long)lobbyPlayer.SteamId;
-			Log.Info(steamId);
+
 			bool transferred = MonopolyApp.TryTransferSteamLobbyHost( steamId.ToString(), out string msg );
 			if ( !transferred )
 				return CommandResult.Fail(msg);

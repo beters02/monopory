@@ -278,24 +278,19 @@
 
 		try
 		{
-			Log.Info("wtf");
 			var commandParts = SplitCommandArguments( command );
 			var commandName = commandParts.FirstOrDefault() ?? "";
 			var args = commandParts.Skip( 1 ).ToArray();
-			Log.Info("wtf");
 			if ( TryRunGameConVarCommand( commandName, args ) )
 			{
 				return;
 			}
-			Log.Info("wtf");
 			if ( GameCommandManager.IsCommandSourceOverwrite( commandName ) )
 			{
-				Log.Info("wtf");
 				GameCommandManager.RunCommandFromName( Connection.Local, commandName, args );
 			}
 			else
 			{
-				Log.Info("wtf");
 				ConsoleSystem.Run( command );
 			}
 		}
@@ -309,8 +304,6 @@
 	{
 		if ( !GameConVars.All.TryGetValue( commandName, out var conVar ) )
 			return false;
-
-		Log.Info(conVar.Name);
 
 		if ( args is null || args.Length == 0 )
 		{
@@ -458,16 +451,11 @@
 
 	public static void WriteLine( string message, string kind = "msg" )
 	{
-		if ( MonopolyApp.IsStandalone() && !Application.IsEditor )
-		{
-			LogGameConsoleWithEntryKind( message, kind );
+		LogGameConsoleWithEntryKind( message, kind );
+
+		if ( MonopolyApp.IsStandalone() )
 			return;
-		}
-
-		if ( Application.IsEditor )
-			LogGameConsoleWithEntryKind( message, kind );
-			
-
+		
 		if ( string.IsNullOrWhiteSpace( message ) )
 			return;
 
