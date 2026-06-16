@@ -94,6 +94,7 @@ LobbyMenu {
 	}
 
 	.flow-panel {
+		position: relative;
 		width: 520px;
 		max-width: 86%;
 		padding: $monopoly-panel-padding;
@@ -263,11 +264,14 @@ LobbyMenu {
 
 	.lobby-player-detail.cheats {
 		position: absolute;
+		top: $monopoly-panel-padding;
+		right: $monopoly-panel-padding;
 		font-weight: 900;
 		color: $monopoly-ink;
-		left: 58%;
 		opacity: 1;
-		white-space: pre;
+		line-height: 16px;
+		text-align: right;
+		white-space: nowrap;
 	}
 
 	.lobby-player-detail.cheats .cheats-value.false {

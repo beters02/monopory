@@ -377,10 +377,16 @@ public sealed class GameCommandManager : Component
 		if ( wasFirstRun )
 			return;
 
+
+		Log.Info(SceneSystemService.CurrentLoadedGameScene.Name);
+		if ( SceneSystemService.CurrentLoadedGameScene != GameScene.Game )
+			return;
+
 		GameController.Instance?.SendTableChatMessage(
 			"Server cheats changed",
 			$"sv_cheats is now {(newValue ? "enabled" : "disabled")}."
 		);
+
 		GameController.Instance?.SendGlobalPopupToAll("Server Cheats Changed", $"sv_cheats is now {(newValue ? "enabled" : "disabled")}.");
 	}
 
@@ -438,9 +444,19 @@ public static class SvCheatsCommand
 			if ( !couldParse )
 				return CommandResult.Fail( $"Unable to parse value {value}" );
 
+			Log.Info("ya");
+
+			Log.Info(MonopolyApp.AppId);
+
 			bool newValue = parsed;
 			MonopolyApp.SetCheatsEnabled( newValue );
+
+			Log.Info("ya");
+
 			GameCommandManager.OnSvCheatsChangedStatic( oldValue, newValue );
+
+			Log.Info("ya");
+
 			return CommandResult.Success( $"sv_cheats => {value}" );
 		} );
 	}
@@ -1131,6 +1147,24 @@ public static class Quit
 		{
 			Game.Close();
 			return CommandResult.Success();
+		}, connection );
+	}
+}
+
+public static class GetActiveScene
+{
+	public const string Name = "get_active_scene";
+
+	[HostCheatCmd]
+	[ConCmd( Name )]
+	public static void Execute( Connection connection )
+	{
+		GameCommandManager.RunCommand( Name, () =>
+		{
+			GameScene scene = SceneSystemService.CurrentLoadedGameScene;
+			if ( scene is null )
+				return CommandResult.Fail("Could not get active game scene (scene returned null)");
+			return CommandResult.Success($"Current active scene: {scene.Name}");
 		}, connection );
 	}
 }

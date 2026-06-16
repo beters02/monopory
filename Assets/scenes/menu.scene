@@ -457,6 +457,49 @@
         }
       ],
       "Children": []
+    },
+    {
+      "__guid": "9a14f19a-766a-4176-9995-c2f165cf8caa",
+      "__version": 2,
+      "Flags": 0,
+      "Name": "SceneSystemService",
+      "Position": "48.7789001,-210.76799,98.9650726",
+      "Rotation": "0,0,0,1",
+      "Scale": "1,1,1",
+      "Tags": "",
+      "Enabled": true,
+      "NetworkMode": 1,
+      "NetworkFlags": 0,
+      "NetworkOrphaned": 1,
+      "NetworkTransmit": true,
+      "OwnerTransfer": 1,
+      "Components": [
+        {
+          "__type": "Sandbox.ScenePersistentObject",
+          "__guid": "0bd2df0a-4261-4bde-a3bc-ea771a6a042f",
+          "__enabled": true,
+          "Flags": 0,
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null
+        },
+        {
+          "__type": "SceneSystemService",
+          "__guid": "4f66e45b-eb53-4e1a-b14d-5342805e2d64",
+          "__enabled": true,
+          "Flags": 0,
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null
+        }
+      ],
+      "Children": []
     }
   ],
   "SceneProperties": {

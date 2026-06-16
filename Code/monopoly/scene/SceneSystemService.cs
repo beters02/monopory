@@ -1,4 +1,5 @@
 using System;
+using System.Text.Json.Serialization;
 
 public class GameScene
 {
@@ -29,7 +30,9 @@ public sealed class SceneSystemService : Component, Component.INetworkListener
         GameScene.Game
     ];
 
-    [Sync(SyncFlags.FromHost)] public static GameScene CurrentLoadedGameScene { get; set; } = GameScene.Menu;
+    [JsonIgnore]
+    [Sync(SyncFlags.FromHost)]
+    public static GameScene CurrentLoadedGameScene { get; set; } = GameScene.Menu;
 
     public static event Action<GameScene> SceneLoaded;
 
@@ -40,6 +43,8 @@ public sealed class SceneSystemService : Component, Component.INetworkListener
             CurrentLoadedGameScene = gameScene;
 
         SceneLoaded?.Invoke( gameScene );
+
+        Log.Info($"[SceneSystemService] Successfully loaded GameScene {gameScene.Name}");
     }
 
     public static bool TryGetGameScene( Scene scene, out GameScene gameScene )
