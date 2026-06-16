@@ -23,6 +23,8 @@ public class GameScene
 
 public sealed class SceneSystemService : Component, Component.INetworkListener
 {
+    private static SceneSystemService Instance;
+
     private static readonly GameScene[] KnownScenes =
     [
         GameScene.Menu,
@@ -30,21 +32,53 @@ public sealed class SceneSystemService : Component, Component.INetworkListener
         GameScene.Game
     ];
 
-    [JsonIgnore]
     [Sync(SyncFlags.FromHost)]
-    public static GameScene CurrentLoadedGameScene { get; set; } = GameScene.Menu;
+    private int CurrentLoadedGameSceneId { get; set; } = 0;
 
     public static event Action<GameScene> SceneLoaded;
+
+	protected override void OnAwake()
+	{
+		base.OnAwake();
+
+        Instance = this;
+	}
+
+    public static bool IsGameSceneActiveScene( GameScene gameScene ) =>
+        GetActiveGameScene() == gameScene;
+
+    public static GameScene GetActiveGameScene() =>
+        KnownScenes[Instance.CurrentLoadedGameSceneId];
 
     [Description("Called from SceneFlow when a Scene is loaded.")]
     public static void OnSceneLoaded(GameScene gameScene)
     {
         if ( Networking.IsHost )
-            CurrentLoadedGameScene = gameScene;
-
+        {
+            bool gotId = TryGetGameSceneIndex( gameScene, out int index );
+            if ( gotId )
+                Instance.CurrentLoadedGameSceneId = index;
+            else
+                Log.Warning($"Unable to receive scene index from {gameScene.Name}. CurrentLoadedGameSceneId will not be changed.");
+        }
+        
         SceneLoaded?.Invoke( gameScene );
-
         Log.Info($"[SceneSystemService] Successfully loaded GameScene {gameScene.Name}");
+    }
+
+    private static bool TryGetGameSceneIndex( GameScene scene, out int index )
+    {
+        for( int i = 0; i < KnownScenes.Length; i++ )
+        {
+            if ( KnownScenes[i] == scene )
+            {
+                index = i;
+                return true;
+            }
+        }
+
+        index = -1;
+        return false;
     }
 
     public static bool TryGetGameScene( Scene scene, out GameScene gameScene )

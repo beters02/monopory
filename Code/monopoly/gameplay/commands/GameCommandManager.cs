@@ -187,8 +187,6 @@ public sealed class GameCommandManager : Component
 		if ( !Networking.IsHost )
 			return;
 
-		//HandlePreviouslyExistingCommands();
-
 		if ( firstRun )
 			firstRun = false;
 	}
@@ -234,6 +232,7 @@ public sealed class GameCommandManager : Component
 		if ( value.CheatType == GameCommandCheatType.Cheats )
 			if ( !CanUseCheatCommand( caller ) )
 			{
+				Log.Info("cheats failed");
 				LogCommandResult( commandName, CommandResult.FailCheats());
 				return;
 			}
@@ -342,17 +341,11 @@ public sealed class GameCommandManager : Component
 		}
 
 		var successMessage = $"{commandName}: {result.Message}";
-		Log.Info( successMessage );
 		WriteStandaloneConsoleLine( successMessage, "msg" );
 	}
 
-	private static void WriteStandaloneConsoleLine( string message, string kind )
-	{
-		if ( MonopolyApp.IsStandalone() )
-			return;
-
+	private static void WriteStandaloneConsoleLine( string message, string kind ) =>
 		Sandbox.ui.components.StandaloneConsole.WriteLine( message, kind );
-	}
 
 	/*private void HandlePreviouslyExistingCommands()
 	{
@@ -372,14 +365,10 @@ public sealed class GameCommandManager : Component
 
 	public static void OnSvCheatsChangedStatic( bool oldValue, bool newValue, bool wasFirstRun = false )
 	{
-		//Log.Info( $"sv_cheats changed: {oldValue} -> {newValue}" );
-
 		if ( wasFirstRun )
 			return;
 
-
-		Log.Info(SceneSystemService.CurrentLoadedGameScene.Name);
-		if ( SceneSystemService.CurrentLoadedGameScene != GameScene.Game )
+		if ( !SceneSystemService.IsGameSceneActiveScene(GameScene.Game) )
 			return;
 
 		GameController.Instance?.SendTableChatMessage(
@@ -440,23 +429,12 @@ public static class SvCheatsCommand
 			if ( !GameCommandManager.CanUseHostCommand( connection ) )
 				return CommandResult.FailHost();
 
-			var couldParse = GameCommandManager.TryParseBool( value, out bool parsed );
+			var couldParse = GameCommandManager.TryParseBool( value, out bool newValue );
 			if ( !couldParse )
 				return CommandResult.Fail( $"Unable to parse value {value}" );
 
-			Log.Info("ya");
-
-			Log.Info(MonopolyApp.AppId);
-
-			bool newValue = parsed;
 			MonopolyApp.SetCheatsEnabled( newValue );
-
-			Log.Info("ya");
-
 			GameCommandManager.OnSvCheatsChangedStatic( oldValue, newValue );
-
-			Log.Info("ya");
-
 			return CommandResult.Success( $"sv_cheats => {value}" );
 		} );
 	}
@@ -1161,7 +1139,7 @@ public static class GetActiveScene
 	{
 		GameCommandManager.RunCommand( Name, () =>
 		{
-			GameScene scene = SceneSystemService.CurrentLoadedGameScene;
+			GameScene scene = SceneSystemService.GetActiveGameScene();
 			if ( scene is null )
 				return CommandResult.Fail("Could not get active game scene (scene returned null)");
 			return CommandResult.Success($"Current active scene: {scene.Name}");

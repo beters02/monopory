@@ -176,7 +176,7 @@ public sealed class MusicController : Component
 		if ( SceneSystemService.TryGetGameScene( Scene, out GameScene gameScene ) )
 			return gameScene;
 
-		return SceneSystemService.CurrentLoadedGameScene;
+		return SceneSystemService.GetActiveGameScene();
 	}
 
 	private void ApplySoundtrackScene( GameScene gameScene, bool restartIfChanged )

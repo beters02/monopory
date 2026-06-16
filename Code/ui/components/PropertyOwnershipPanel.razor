@@ -40,6 +40,7 @@
 				Entry="@SelectedPlayerProfile"
 				PopupStyle="@PlayerProfilePopupStyle"
 				OnOpenProfile="@OpenSelectedPlayerProfile"
+				OnChat="@OpenSelectedPlayerProfileChat"
 				OnClose="@ClosePlayerProfilePopup">
 			</SteamProfilePopupCard>
 		}
@@ -264,18 +265,21 @@
 
 		if ( SelectedPlayerProfile is not null && SelectedPlayerProfile.SteamId == player.OwnerId )
 		{
+			GameAssets.Sounds.ClickAndClose.Play();
 			ClosePlayerProfilePopup();
 			return;
 		}
 
+		GameAssets.Sounds.ClickAndOpen.Play();
 		SelectedPlayerProfile = SteamFriendsBridge.GetProfileEntry( player.OwnerId, player.PlayerName );
 		PlayerProfilePopupTop = Math.Max( 86f, Mouse.Position.y * (1 / this.ScaleToScreen) + 12f );
 		Mouse.Visibility = MouseVisibility.Visible;
 		StateHasChanged();
 	}
 
-	private void OpenSelectedPlayerProfile()
+	private void TryOpenSteamFriendsProfile( SteamUserOverlayType overlayType = SteamUserOverlayType.steamid )
 	{
+
 		if ( SelectedPlayerProfile is null )
 			return;
 
@@ -284,6 +288,12 @@
 
 		ClosePlayerProfilePopup();
 	}
+
+	private void OpenSelectedPlayerProfile() =>
+		TryOpenSteamFriendsProfile();
+
+	private void OpenSelectedPlayerProfileChat() =>
+		TryOpenSteamFriendsProfile( SteamUserOverlayType.chat );
 
 	private void ClosePlayerProfilePopup()
 	{

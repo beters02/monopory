@@ -60,6 +60,20 @@
 		public static readonly EntryKind Error = new("err");
 		public static readonly EntryKind Warning = new("wrn");
 		public static readonly EntryKind Message = new("msg");
+		public static readonly EntryKind None = new("");
+
+		public static EntryKind StringToEntryKind( string entryKindStr )
+		{
+			return entryKindStr switch
+			{
+				"msg" => EntryKind.Message,
+				"cmd" => EntryKind.Message,
+				"err" => EntryKind.Error,
+				"wrn" => EntryKind.Warning,
+				_ => EntryKind.None
+			};
+				
+		}
 	}
 
 	private readonly record struct ConsoleEntry( string Message, string Kind, DateTime Time )
@@ -264,21 +278,24 @@
 
 		try
 		{
+			Log.Info("wtf");
 			var commandParts = SplitCommandArguments( command );
 			var commandName = commandParts.FirstOrDefault() ?? "";
 			var args = commandParts.Skip( 1 ).ToArray();
-
+			Log.Info("wtf");
 			if ( TryRunGameConVarCommand( commandName, args ) )
 			{
 				return;
 			}
-
+			Log.Info("wtf");
 			if ( GameCommandManager.IsCommandSourceOverwrite( commandName ) )
 			{
+				Log.Info("wtf");
 				GameCommandManager.RunCommandFromName( Connection.Local, commandName, args );
 			}
 			else
 			{
+				Log.Info("wtf");
 				ConsoleSystem.Run( command );
 			}
 		}
@@ -292,6 +309,8 @@
 	{
 		if ( !GameConVars.All.TryGetValue( commandName, out var conVar ) )
 			return false;
+
+		Log.Info(conVar.Name);
 
 		if ( args is null || args.Length == 0 )
 		{
@@ -439,6 +458,16 @@
 
 	public static void WriteLine( string message, string kind = "msg" )
 	{
+		if ( MonopolyApp.IsStandalone() && !Application.IsEditor )
+		{
+			LogGameConsoleWithEntryKind( message, kind );
+			return;
+		}
+
+		if ( Application.IsEditor )
+			LogGameConsoleWithEntryKind( message, kind );
+			
+
 		if ( string.IsNullOrWhiteSpace( message ) )
 			return;
 
@@ -452,6 +481,19 @@
 
 	public static void WriteLine( string message, EntryKind entryKind) =>
 		WriteLine(message, entryKind.ToString());
+
+	private static void LogGameConsoleWithEntryKind( string message, EntryKind kind ) =>
+		LogGameConsoleWithEntryKind( message, kind.ToString() );
+
+	private static void LogGameConsoleWithEntryKind( string message, string kindStr )
+	{
+		if ( kindStr == EntryKind.Warning.ToString() )
+			Log.Warning( message );
+		else if ( kindStr == EntryKind.Error.ToString() )
+			Log.Error( message );
+		else
+			Log.Info( message );
+	}
 
 	private static string GetLogKind( string level )
 	{

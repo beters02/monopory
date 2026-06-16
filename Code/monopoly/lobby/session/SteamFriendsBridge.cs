@@ -52,6 +52,22 @@ public enum SteamFriendPresenceGroup
 	Offline
 }
 
+/// "steamid" - Opens the overlay web browser to the specified user or groups profile.
+/// "chat" - Opens a chat window to the specified user, or joins the group chat.
+/// "jointrade" - Opens a window to a Steam Trading session that was started with the ISteamEconomy/StartTrade Web API.
+/// "stats" - Opens the overlay web browser to the specified user's stats.
+/// "achievements" - Opens the overlay web browser to the specified user's achievements.
+/// "friendadd" - Opens the overlay in minimal mode prompting the user to add the target user as a friend.
+/// "friendremove" - Opens the overlay in minimal mode prompting the user to remove the target friend.
+/// "friendrequestaccept" - Opens the overlay in minimal mode prompting the user to accept an incoming friend invite.
+/// "friendrequestignore" - Opens the overlay in minimal mode prompting the user to ignore an incoming friend invite.
+public enum SteamUserOverlayType
+{
+	steamid,
+	chat,
+	friendadd
+}
+
 public static class SteamFriendsBridge
 {
 	private const BindingFlags StaticReflectionFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
@@ -159,7 +175,7 @@ public static class SteamFriendsBridge
 		return false;
 	}
 
-	public static bool TryOpenProfile( SteamFriendListEntry friend )
+	public static bool TryOpenProfile( SteamFriendListEntry friend, string overlayType = "steamid" )
 	{
 		if ( friend is null || friend.SteamId == 0 || !MonopolyApp.IsStandalone() )
 		{
@@ -174,7 +190,7 @@ public static class SteamFriendsBridge
 		{
 			var friendObject = GetFriendObject( friend.SteamId );
 			var friendOverlayMethod = friendObject?.GetType().GetMethod( "OpenInOverlay", InstanceReflectionFlags, null, new[] { typeof( string ) }, null );
-			if ( TryInvokeInstanceFriendAction( friendObject, friendOverlayMethod, "steamid" ) )
+			if ( TryInvokeInstanceFriendAction( friendObject, friendOverlayMethod, overlayType ) )
 				return true;
 
 			Log.Info("OpenInOverlay failed");
@@ -183,7 +199,7 @@ public static class SteamFriendsBridge
 			var overlayMethod = steamFriendsType?.GetMethod( "OpenUserOverlay", StaticReflectionFlags );
 
 			if ( overlayMethod is not null )
-				return TryInvokeFriendAction( overlayMethod, friend.SteamId, "steamid" );
+				return TryInvokeFriendAction( overlayMethod, friend.SteamId, overlayType );
 		}
 		catch ( Exception exception )
 		{

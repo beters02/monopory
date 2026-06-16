@@ -53,7 +53,8 @@
 			OnInvite="@InviteSelectedFriend"
 			OnJoin="@JoinSelectedFriend"
 			OnOpenProfile="@OpenSelectedFriendProfile"
-			OnClose="@RequestClosePopup">
+			OnClose="@RequestClosePopup"
+			OnChat="@OpenSelectedFriendProfileChat">
 		</SteamProfilePopupCard>
 	}
 </root>
@@ -114,9 +115,13 @@
 
 		if ( ReferenceEquals( SelectedFriend, friend ) )
 		{
+			GameAssets.Sounds.ClickAndClose.Play();
 			RequestClosePopup();
 			return;
 		}
+
+		if ( SelectedFriend is null )
+			GameAssets.Sounds.ClickAndOpen.Play();
 
 		SelectedFriend = friend;
 		IsPopupClosing = false;
@@ -159,16 +164,22 @@
 		RequestClosePopup();
 	}
 
-	private void OpenSelectedFriendProfile()
+	private void TryOpenSteamFriendsProfile( SteamUserOverlayType overlayType = SteamUserOverlayType.steamid )
 	{
 		if ( SelectedFriend is null )
 			return;
 
-		if ( !SteamFriendsBridge.TryOpenProfile( SelectedFriend ) )
+		if ( !SteamFriendsBridge.TryOpenProfile( SelectedFriend, overlayType.ToString() ) )
 			Log.Warning( $"Could not open Steam profile for {SelectedFriend.Name}." );
 
 		RequestClosePopup();
 	}
+
+	private void OpenSelectedFriendProfile() =>
+		TryOpenSteamFriendsProfile();
+
+	private void OpenSelectedFriendProfileChat() =>
+		TryOpenSteamFriendsProfile( SteamUserOverlayType.chat );
 
 	private void RequestClosePopup()
 	{

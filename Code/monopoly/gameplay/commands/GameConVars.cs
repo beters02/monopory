@@ -130,7 +130,7 @@ public static class ShowHiddenMatchOptionsConVar
 			return;
 
 		Callbacks[id] = callback;
-		Log.Info($"Registered OnChanged event {id}");
+		//Log.Info($"Registered OnChanged event {id}");
 	}
 
 	public static void UnregisterOnChanged( string id )

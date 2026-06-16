@@ -44,6 +44,10 @@
 					<div>Profile</div>
 				</button>
 			}
+			<button class="steam-profile-popup-action" onclick="@HandleOpenChat">
+				<div class="steam-profile-popup-action-icon">C</div>
+				<div>Chat</div>
+			</button>
 			<button class="steam-profile-popup-action" onclick="@HandleClose">
 				<div class="steam-profile-popup-action-icon">x</div>
 				<div>Close</div>
@@ -61,6 +65,7 @@
 	[Parameter] public bool CanJoin { get; set; }
 	[Parameter] public Action OnInvite { get; set; }
 	[Parameter] public Action OnJoin { get; set; }
+	[Parameter] public Action OnChat { get; set; }
 	[Parameter] public Action OnOpenProfile { get; set; }
 	[Parameter] public Action OnClose { get; set; }
 
@@ -73,10 +78,19 @@
 	private bool ShowJoinAction => CanJoin && Entry?.CanJoinLobby == true && OnJoin is not null;
 	private bool CanOpenProfile => Entry is not null && Entry.SteamId != 0 && OnOpenProfile is not null;
 
-	private void HandleInvite() => OnInvite?.Invoke();
-	private void HandleJoin() => OnJoin?.Invoke();
-	private void HandleOpenProfile() => OnOpenProfile?.Invoke();
-	private void HandleClose() => OnClose?.Invoke();
+	private void HandleInvite() => OnButtonClicked(OnInvite);
+	private void HandleJoin() => OnButtonClicked(OnJoin);
+	private void HandleOpenProfile() => OnButtonClicked(OnOpenProfile);
+	private void HandleOpenChat() => OnButtonClicked(OnChat);
+	private void HandleClose() => OnButtonClicked(OnClose, GameAssets.Sounds.ClickAndClose);
+
+	private void OnButtonClicked( Action action, GameSound clickSound = null )
+	{
+		var sound = clickSound ?? GameAssets.Sounds.Click;
+		sound.Play();
+
+		action?.Invoke();
+	}
 
 	private static string GetFriendStatus( SteamFriendListEntry entry )
 	{
