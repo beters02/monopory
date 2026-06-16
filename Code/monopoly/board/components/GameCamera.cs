@@ -32,9 +32,9 @@ public sealed class GameCamera : Component
 	[Property] public float FreeCamBoundsPadding { get; set; } = 48f;
 	[Property] public float DiceFramingPadding { get; set; } = 16f;
 	[Property] public float DiceFramingMinDistance { get; set; } = 140f;
-	[Property] public float TokenModeDistance { get; set; } = 95f;
-	[Property] public float TokenModeHeight { get; set; } = 42f;
-	[Property] public float TokenModePitch { get; set; } = 12f;
+	public float TokenModeDistance { get; set; } = 48f;
+	public float TokenModeHeight { get; set; } = 14f;
+	public float TokenModePitch { get; set; } = 12f;
 	[Property] public float TokenModeMinPitch { get; set; } = -12f;
 	[Property] public float TokenModeMaxPitch { get; set; } = 55f;
 	[Property] public float TokenModeLookSensitivity { get; set; } = 1f;
