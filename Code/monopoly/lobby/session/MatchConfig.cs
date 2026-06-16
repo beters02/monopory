@@ -1,6 +1,14 @@
 using Sandbox;
 using System;
 
+public sealed class MatchSettingsPreset
+	{
+		public string Id { get; set; } = "";
+		public string Name { get; set; } = "";
+		public string Snapshot { get; set; } = "";
+		public bool IsPredefined { get; set; }
+	}
+
 public enum UnownedAffordableLandingMode
 {
 	ForceBuy,

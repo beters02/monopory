@@ -464,15 +464,6 @@
 		};
 	}
 
-	private IReadOnlyList<MatchSettingsPreset> CreatePredefinedBoardConfigPresets()
-	{
-		return new[]
-		{
-			new MatchSettingsPreset { Id = "board_default", Name = "Default Board", Snapshot = BoardSpaceNameConfig.CreateDefaultSnapshot( BoardCatalog.DefaultBoardId ), IsPredefined = true },
-			new MatchSettingsPreset { Id = "board_classic", Name = "Classic Names", Snapshot = BoardSpaceNameConfig.SerializeNames( ClassicBoardSpaceNames ), IsPredefined = true }
-		};
-	}
-
     protected override void OnAwake()
     {
         base.OnAwake();
@@ -572,7 +563,7 @@
 	private bool IsBoardConfigCustomSelected => string.Equals( SelectedBoardConfigPresetId, CustomPresetId, StringComparison.Ordinal );
 	private bool CanEditCurrentConfigPage => CanEditConfig && (IsGameRulesConfigPage ? IsGameRulesCustomSelected : IsBoardConfigCustomSelected);
 	private IReadOnlyList<MatchSettingsPreset> GameRulePresets => CreatePredefinedGameRulePresets().Concat( CustomGameRulePresets ).ToList();
-	private IReadOnlyList<MatchSettingsPreset> BoardConfigPresets => CreatePredefinedBoardConfigPresets().Concat( CustomBoardConfigPresets ).ToList();
+	private IReadOnlyList<MatchSettingsPreset> BoardConfigPresets => BoardSpaceNameConfig.BuildBoardSpaceNamePredefinedPresets().Concat( CustomBoardConfigPresets ).ToList();
 
 	private bool HasUnreadyPlayers
 	{
@@ -1367,7 +1358,7 @@
 
 	private string NormalizeBoardPresetSnapshot( string snapshot )
 	{
-		return BoardSpaceNameConfig.SerializeNames( BoardSpaceNameConfig.DeserializeNames( snapshot, EditableConfig?.BoardId ) );
+		return BoardSpaceNameConfig.SerializeNames( BoardSpaceNameConfig.DeserializeNames( snapshot, EditableConfig?.BoardId ), EditableConfig?.BoardId );
 	}
 
 	private void MarkCustomPreset()
@@ -1624,7 +1615,7 @@
 			return;
 
 		names[index] = value ?? "";
-		EditableConfig.BoardSpaceNamesSnapshot = BoardSpaceNameConfig.SerializeNames( names );
+		EditableConfig.BoardSpaceNamesSnapshot = BoardSpaceNameConfig.SerializeNames( names, EditableConfig.BoardId );
 		configRevision++;
 	}
 
@@ -1778,55 +1769,5 @@
 		return player.IsReady ? "Ready" : "Not Ready";
 	}
 
-	private static readonly string[] ClassicBoardSpaceNames =
-	{
-		"GO",
-		"Mediterranean Avenue",
-		"Community Chest",
-		"Baltic Avenue",
-		"Income Tax",
-		"Reading Railroad",
-		"Oriental Avenue",
-		"Chance",
-		"Vermont Avenue",
-		"Connecticut Avenue",
-		"Jail",
-		"St. Charles Place",
-		"Electric Company",
-		"States Avenue",
-		"Virginia Avenue",
-		"Pennsylvania Railroad",
-		"St. James Place",
-		"Community Chest",
-		"Tennessee Avenue",
-		"New York Avenue",
-		"Free Parking",
-		"Kentucky Avenue",
-		"Chance",
-		"Indiana Avenue",
-		"Illinois Avenue",
-		"B&O Railroad",
-		"Atlantic Avenue",
-		"Ventnor Avenue",
-		"Water Works",
-		"Marvin Gardens",
-		"Go to Jail",
-		"Pacific Avenue",
-		"North Carolina Avenue",
-		"Community Chest",
-		"Pennsylvania Avenue",
-		"Short Line",
-		"Chance",
-		"Park Place",
-		"Luxury Tax",
-		"Boardwalk"
-	};
-
-	private sealed class MatchSettingsPreset
-	{
-		public string Id { get; set; } = "";
-		public string Name { get; set; } = "";
-		public string Snapshot { get; set; } = "";
-		public bool IsPredefined { get; set; }
-	}
+	
 }

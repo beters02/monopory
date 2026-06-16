@@ -8,7 +8,7 @@ public static class BoardCatalog
 	private static readonly List<Func<BoardDefinition>> boardFactories = new()
 	{
 		CreateDefaultBoard,
-		CreateExampleBoard
+		//CreateExampleBoard
 	};
 
 	public static IReadOnlyList<BoardDefinition> GetAll()
