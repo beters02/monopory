@@ -14,45 +14,50 @@ public class BoardMath
 
         float CornerSize = boardPanel.CornerSize;
         float TrackDepth = boardPanel.TrackDepth;
+		var layout = boardPanel.ActiveLayout ?? BoardLayoutDefinition.Classic();
+		var spaceCount = boardPanel.SpaceCount;
+		var cornerOrder = layout.GetCornerOrder( spaceIndex );
 
-		if ( spaceIndex == 0 )
+		if ( cornerOrder == 0 )
 			return (100f - CornerSize, 100f - CornerSize, CornerSize, CornerSize);
 
-		if ( spaceIndex > 0 && spaceIndex < 10 )
+		if ( cornerOrder == 1 )
+			return (0f, 100f - CornerSize, CornerSize, CornerSize);
+
+		if ( cornerOrder == 2 )
+			return (0f, 0f, CornerSize, CornerSize);
+
+		if ( cornerOrder == 3 )
+			return (100f - CornerSize, 0f, CornerSize, CornerSize);
+
+		var sideIndex = layout.GetSideIndex( spaceIndex, spaceCount );
+		var firstIndex = layout.GetFirstRegularIndexForSide( sideIndex, spaceCount );
+		var lastIndex = layout.GetLastRegularIndexForSide( sideIndex, spaceCount );
+
+		if ( sideIndex == 0 )
 		{
-			var offset = GetSideOffsetBefore( 1, 9, spaceIndex, boardPanel );
-			var length = GetNormalizedSpaceLength( 1, 9, spaceIndex, boardPanel );
+			var offset = GetSideOffsetBefore( firstIndex, lastIndex, spaceIndex, boardPanel );
+			var length = GetNormalizedSpaceLength( firstIndex, lastIndex, spaceIndex, boardPanel );
 			return (100f - CornerSize - offset - length, 100f - TrackDepth, length, TrackDepth);
 		}
 
-		if ( spaceIndex == 10 )
-			return (0f, 100f - CornerSize, CornerSize, CornerSize);
-
-		if ( spaceIndex > 10 && spaceIndex < 20 )
+		if ( sideIndex == 1 )
 		{
-			var offset = GetSideOffsetBefore( 11, 19, spaceIndex, boardPanel );
-			var length = GetNormalizedSpaceLength( 11, 19, spaceIndex, boardPanel );
+			var offset = GetSideOffsetBefore( firstIndex, lastIndex, spaceIndex, boardPanel );
+			var length = GetNormalizedSpaceLength( firstIndex, lastIndex, spaceIndex, boardPanel );
 			return (0f, 100f - CornerSize - offset - length, TrackDepth, length);
 		}
 
-		if ( spaceIndex == 20 )
-			return (0f, 0f, CornerSize, CornerSize);
-
-		if ( spaceIndex > 20 && spaceIndex < 30 )
+		if ( sideIndex == 2 )
 		{
-			var offset = GetSideOffsetBefore( 21, 29, spaceIndex, boardPanel );
-			var length = GetNormalizedSpaceLength( 21, 29, spaceIndex, boardPanel );
+			var offset = GetSideOffsetBefore( firstIndex, lastIndex, spaceIndex, boardPanel );
+			var length = GetNormalizedSpaceLength( firstIndex, lastIndex, spaceIndex, boardPanel );
 			return (CornerSize + offset, 0f, length, TrackDepth);
 		}
 
-		if ( spaceIndex == 30 )
-			return (100f - CornerSize, 0f, CornerSize, CornerSize);
-
-		{
-			var offset = GetSideOffsetBefore( 31, 39, spaceIndex, boardPanel );
-			var length = GetNormalizedSpaceLength( 31, 39, spaceIndex, boardPanel );
-			return (100f - TrackDepth, CornerSize + offset, TrackDepth, length);
-		}
+		var sideOffset = GetSideOffsetBefore( firstIndex, lastIndex, spaceIndex, boardPanel );
+		var sideLength = GetNormalizedSpaceLength( firstIndex, lastIndex, spaceIndex, boardPanel );
+		return (100f - TrackDepth, CornerSize + sideOffset, TrackDepth, sideLength);
 	}
 
     private static float GetNormalizedSpaceLength( int firstIndex, int lastIndex, int spaceIndex, BoardPanel boardPanel )

@@ -388,25 +388,24 @@ public sealed class BoardSpace : Component
 
 	private void ApplyLabelTransform( GameObject labelObject )
 	{
-		if ( Def.Index >= 0 && Def.Index < 11 )
+		switch ( Board.GetSpaceQuadrantIncludeCorners( Def.Index ) )
 		{
-			labelObject.LocalPosition = SpaceLayoutSettings.FirstQuadrantLocalPosition;
-			labelObject.LocalRotation = SpaceLayoutSettings.FirstQuadrantLocalRotation;
-		}
-		else if ( Def.Index >= 11 && Def.Index < 20 )
-		{
-			labelObject.LocalPosition = SpaceLayoutSettings.SecondQuadrantLocalPosition;
-			labelObject.LocalRotation = SpaceLayoutSettings.SecondQuadrantLocalRotation;
-		}
-		else if ( Def.Index >= 20 && Def.Index < 30 )
-		{
-			labelObject.LocalPosition = SpaceLayoutSettings.ThirdQuadrantLocalPosition;
-			labelObject.LocalRotation = SpaceLayoutSettings.ThirdQuadrantLocalRotation;
-		}
-		else
-		{
-			labelObject.LocalPosition = SpaceLayoutSettings.FourthQuadrantLocalPosition;
-			labelObject.LocalRotation = SpaceLayoutSettings.FourthQuadrantLocalRotation;
+			case 1:
+				labelObject.LocalPosition = SpaceLayoutSettings.FirstQuadrantLocalPosition;
+				labelObject.LocalRotation = SpaceLayoutSettings.FirstQuadrantLocalRotation;
+				break;
+			case 2:
+				labelObject.LocalPosition = SpaceLayoutSettings.SecondQuadrantLocalPosition;
+				labelObject.LocalRotation = SpaceLayoutSettings.SecondQuadrantLocalRotation;
+				break;
+			case 3:
+				labelObject.LocalPosition = SpaceLayoutSettings.ThirdQuadrantLocalPosition;
+				labelObject.LocalRotation = SpaceLayoutSettings.ThirdQuadrantLocalRotation;
+				break;
+			default:
+				labelObject.LocalPosition = SpaceLayoutSettings.FourthQuadrantLocalPosition;
+				labelObject.LocalRotation = SpaceLayoutSettings.FourthQuadrantLocalRotation;
+				break;
 		}
 	}
 

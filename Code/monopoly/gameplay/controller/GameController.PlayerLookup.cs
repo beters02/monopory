@@ -96,6 +96,10 @@ public sealed partial class GameController : Component
 
 	public static int NormalizeSpaceIndex( int spaceIndex )
 	{
-		return ((spaceIndex % 40) + 40) % 40;
+		var spaceCount = Board.Instance?.SpaceCount ?? BoardCatalog.GetDefaultSpaceCount();
+		if ( spaceCount <= 0 )
+			return 0;
+
+		return ((spaceIndex % spaceCount) + spaceCount) % spaceCount;
 	}
 }

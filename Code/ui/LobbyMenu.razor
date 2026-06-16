@@ -89,9 +89,10 @@
 									}
 								</div>
 							</div>
-							<MatchSettingsBoardConfigurationPage Config="@EditableConfig"
-								CanEdit="@CanEditCurrentConfigPage"
-								OnSetSpaceName="@SetBoardSpaceName"></MatchSettingsBoardConfigurationPage>
+			<MatchSettingsBoardConfigurationPage Config="@EditableConfig"
+				CanEdit="@CanEditCurrentConfigPage"
+				OnSetSpaceName="@SetBoardSpaceName"
+				OnSetBoardId="@SetBoardId"></MatchSettingsBoardConfigurationPage>
 						}
 					</ChildContent>
 					<Footer>
@@ -467,7 +468,7 @@
 	{
 		return new[]
 		{
-			new MatchSettingsPreset { Id = "board_default", Name = "Default Board", Snapshot = BoardSpaceNameConfig.CreateDefaultSnapshot(), IsPredefined = true },
+			new MatchSettingsPreset { Id = "board_default", Name = "Default Board", Snapshot = BoardSpaceNameConfig.CreateDefaultSnapshot( BoardCatalog.DefaultBoardId ), IsPredefined = true },
 			new MatchSettingsPreset { Id = "board_classic", Name = "Classic Names", Snapshot = BoardSpaceNameConfig.SerializeNames( ClassicBoardSpaceNames ), IsPredefined = true }
 		};
 	}
@@ -1360,12 +1361,13 @@
 	{
 		var clone = MatchConfigSchema.Clone( config );
 		clone.BoardSpaceNamesSnapshot = "";
+		clone.BoardId = BoardCatalog.DefaultBoardId;
 		return MatchConfigSchema.Serialize( clone );
 	}
 
-	private static string NormalizeBoardPresetSnapshot( string snapshot )
+	private string NormalizeBoardPresetSnapshot( string snapshot )
 	{
-		return BoardSpaceNameConfig.SerializeNames( BoardSpaceNameConfig.DeserializeNames( snapshot ) );
+		return BoardSpaceNameConfig.SerializeNames( BoardSpaceNameConfig.DeserializeNames( snapshot, EditableConfig?.BoardId ) );
 	}
 
 	private void MarkCustomPreset()
@@ -1496,7 +1498,9 @@
 			return;
 
 		var presetConfig = MatchConfigSchema.Deserialize( preset.Snapshot );
-		foreach ( var option in MatchConfigSchema.Options.Where( option => option.Key != nameof( MatchConfig.BoardSpaceNamesSnapshot ) ) )
+		foreach ( var option in MatchConfigSchema.Options.Where( option =>
+			option.Key != nameof( MatchConfig.BoardSpaceNamesSnapshot ) &&
+			option.Key != nameof( MatchConfig.BoardId ) ) )
 		{
 			MatchConfigSchema.SetOptionValue( option, EditableConfig, MatchConfigSchema.GetOptionValue( option, presetConfig ) );
 		}
@@ -1615,12 +1619,25 @@
 		if ( EditableConfig is null || !CanEditCurrentConfigPage )
 			return;
 
-		var names = BoardSpaceNameConfig.DeserializeNames( EditableConfig.BoardSpaceNamesSnapshot );
+		var names = BoardSpaceNameConfig.DeserializeNames( EditableConfig.BoardSpaceNamesSnapshot, EditableConfig.BoardId );
 		if ( index < 0 || index >= names.Count )
 			return;
 
 		names[index] = value ?? "";
 		EditableConfig.BoardSpaceNamesSnapshot = BoardSpaceNameConfig.SerializeNames( names );
+		configRevision++;
+	}
+
+	private void SetBoardId( string boardId )
+	{
+		if ( EditableConfig is null || !CanEditCurrentConfigPage )
+			return;
+
+		var board = BoardCatalog.GetById( boardId );
+		EditableConfig.BoardId = board.Id;
+		EditableConfig.BoardSpaceNamesSnapshot = BoardSpaceNameConfig.CreateDefaultSnapshot( board.Id );
+		IsBoardConfigExplicitlyCustom = false;
+		SelectedBoardConfigPresetId = "board_default";
 		configRevision++;
 	}
 
@@ -1660,7 +1677,7 @@
 		}
 		else if ( EditableConfig is not null )
 		{
-			EditableConfig.BoardSpaceNamesSnapshot = BoardSpaceNameConfig.CreateDefaultSnapshot();
+			EditableConfig.BoardSpaceNamesSnapshot = BoardSpaceNameConfig.CreateDefaultSnapshot( EditableConfig.BoardId );
 		}
 
 		ConfigIntDrafts.Clear();

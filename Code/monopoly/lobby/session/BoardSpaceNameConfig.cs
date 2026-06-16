@@ -6,7 +6,12 @@ public static class BoardSpaceNameConfig
 {
 	public static string CreateDefaultSnapshot()
 	{
-		return SerializeNames( BoardData.CreateSpaceDefs().Select( space => space.DisplayName ) );
+		return CreateDefaultSnapshot( BoardCatalog.DefaultBoardId );
+	}
+
+	public static string CreateDefaultSnapshot( string boardId )
+	{
+		return SerializeNames( GetBoardSpaces( boardId ).Select( space => space.DisplayName ) );
 	}
 
 	public static string SerializeNames( IEnumerable<string> names )
@@ -19,8 +24,12 @@ public static class BoardSpaceNameConfig
 
 	public static List<string> DeserializeNames( string snapshot )
 	{
-		var defaults = BoardData.CreateSpaceDefs()
-			.OrderBy( space => space.Index )
+		return DeserializeNames( snapshot, BoardCatalog.DefaultBoardId );
+	}
+
+	public static List<string> DeserializeNames( string snapshot, string boardId )
+	{
+		var defaults = GetBoardSpaces( boardId )
 			.Select( space => space.DisplayName ?? "" )
 			.ToList();
 
@@ -47,10 +56,15 @@ public static class BoardSpaceNameConfig
 
 	public static void ApplySnapshot( List<SpaceDef> spaces, string snapshot )
 	{
+		ApplySnapshot( spaces, snapshot, BoardCatalog.DefaultBoardId );
+	}
+
+	public static void ApplySnapshot( List<SpaceDef> spaces, string snapshot, string boardId )
+	{
 		if ( spaces is null || spaces.Count == 0 )
 			return;
 
-		var names = DeserializeNames( snapshot );
+		var names = DeserializeNames( snapshot, boardId );
 		foreach ( var space in spaces )
 		{
 			if ( space is null || space.Index < 0 || space.Index >= names.Count )
@@ -62,5 +76,13 @@ public static class BoardSpaceNameConfig
 
 			space.DisplayName = name;
 		}
+	}
+
+	private static List<SpaceDef> GetBoardSpaces( string boardId )
+	{
+		return BoardCatalog.GetById( boardId )
+			.Spaces
+			.OrderBy( space => space.Index )
+			.ToList();
 	}
 }

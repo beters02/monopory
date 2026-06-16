@@ -617,7 +617,7 @@ public sealed partial class GameController : Component
 				PlayPlayerTokenStepForPlayer( ActiveMovementPlayerIndex, Board.GetSpacePosition(player.SpaceIndex) );
 
 				ActiveMovementRemainingSteps = Math.Max( ActiveMovementRemainingSteps - 1, 0 );
-				if ( player.SpaceIndex == 0 )
+				if ( player.SpaceIndex == (Board?.GoSpaceIndex ?? 0) )
 					ActiveMovementGoPassCount++;
 
 				ActiveMovementLastProgressAt = Time.Now;
@@ -676,7 +676,7 @@ public sealed partial class GameController : Component
 		for ( var i = 0; i < steps; i++ )
 		{
 			spaceIndex = NormalizeSpaceIndex( spaceIndex + 1 );
-			if ( spaceIndex == 0 )
+			if ( spaceIndex == (Board?.GoSpaceIndex ?? 0) )
 				passCount++;
 		}
 
@@ -748,7 +748,7 @@ public sealed partial class GameController : Component
 		if ( player is null )
 			return;
 
-		player.SpaceIndex = 10;
+		player.SpaceIndex = Board?.JailSpaceIndex ?? 10;
 		player.IsInJail = true;
 		player.JailTurnsRemaining = JailTurnCount;
 		player.ConsecutiveDoubles = 0;

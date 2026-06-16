@@ -51,6 +51,9 @@ public sealed class MatchConfigOptionAttribute : Attribute
 
 public sealed class MatchConfig
 {
+	[MatchConfigOption( "Board Configuration", "Board", Description = "Selected board definition id.", Order = -2, IsVisible = false )]
+	public string BoardId { get; set; } = BoardCatalog.DefaultBoardId;
+
 	[MatchConfigOption( "Board Configuration", "Space Names", Description = "Serialized board space name overrides.", Order = -1, IsVisible = false )]
 	public string BoardSpaceNamesSnapshot { get; set; } = "";
 

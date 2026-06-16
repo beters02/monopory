@@ -94,6 +94,7 @@ public static class MatchConfigSchema
 
 		config.MinPlayers = Math.Clamp( config.MinPlayers, minPlayersMin, Math.Min( config.MaxPlayers, maxPlayersMax ) );
 		config.MaxPlayers = Math.Clamp( config.MaxPlayers, Math.Min( Math.Max( config.MinPlayers, connectedPlayerCount ), maxPlayersMax ), maxPlayersMax );
+		config.BoardId = BoardCatalog.GetById( config.BoardId ).Id;
 		return config;
 	}
 

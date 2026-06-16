@@ -117,7 +117,7 @@
 {
 	private const int MaxLineLength = 10;
 	private static readonly IReadOnlyList<SpaceDef> FallbackSpaceDefs =
-		BoardData.CreateSpaceDefs()
+		BoardCatalog.GetDefault().Spaces
 			.OrderBy( space => space.Index )
 			.ToList();
 
@@ -175,6 +175,18 @@
 	private readonly List<GameObject> materialColorLabels = new();
 	private int materialColorLabelsHash;
 	private GameController ActiveGame => GameController.Instance;
+	public BoardLayoutDefinition ActiveLayout => Board.Instance?.Layout ?? BoardCatalog.GetDefault().Layout;
+	private BoardThemeDefinition ActiveTheme => Board.Instance?.BoardTheme ?? BoardCatalog.GetDefault().Theme;
+	public int SpaceCount => SpaceDefs.Count();
+	private string EffectiveBoardEdgeColor => string.IsNullOrWhiteSpace( ActiveTheme?.BoardEdgeColor ) ? BoardEdgeColor : ActiveTheme.BoardEdgeColor;
+	private string EffectiveCenterColor => string.IsNullOrWhiteSpace( ActiveTheme?.CenterColor ) ? CenterColor : ActiveTheme.CenterColor;
+	private string EffectiveSpaceColor => string.IsNullOrWhiteSpace( ActiveTheme?.SpaceColor ) ? SpaceColor : ActiveTheme.SpaceColor;
+	private string EffectiveBorderColor => string.IsNullOrWhiteSpace( ActiveTheme?.BorderColor ) ? BorderColor : ActiveTheme.BorderColor;
+	private string EffectiveTextColor => string.IsNullOrWhiteSpace( ActiveTheme?.TextColor ) ? TextColor : ActiveTheme.TextColor;
+	private string EffectiveChestIconColor => string.IsNullOrWhiteSpace( ActiveTheme?.ChestIconColor ) ? ChestIconColor : ActiveTheme.ChestIconColor;
+	private string EffectiveGoColor => string.IsNullOrWhiteSpace( ActiveTheme?.GoColor ) ? GoColor : ActiveTheme.GoColor;
+	private string EffectiveFreeParkingColor => string.IsNullOrWhiteSpace( ActiveTheme?.FreeParkingColor ) ? FreeParkingColor : ActiveTheme.FreeParkingColor;
+	private string EffectiveGoToJailColor => string.IsNullOrWhiteSpace( ActiveTheme?.GoToJailColor ) ? GoToJailColor : ActiveTheme.GoToJailColor;
 
 	protected override void OnUpdate()
 	{
@@ -187,10 +199,10 @@
 	}
 
 	private string RootStyle =>
-		$"background: {BoardEdgeColor}; border: {OuterBorderThicknessPx}px solid {BoardEdgeColor}; color: {TextColor};";
+		$"background: {EffectiveBoardEdgeColor}; border: {OuterBorderThicknessPx}px solid {EffectiveBoardEdgeColor}; color: {EffectiveTextColor};";
 
 	private string CenterStyle =>
-		$"left: {TrackDepth}%; top: {TrackDepth}%; width: {100f - (TrackDepth * 2f)}%; height: {100f - (TrackDepth * 2f)}%; background: {CenterColor}; border: {CenterBorderThicknessPx}px solid {BorderColor};";
+		$"left: {TrackDepth}%; top: {TrackDepth}%; width: {100f - (TrackDepth * 2f)}%; height: {100f - (TrackDepth * 2f)}%; background: {EffectiveCenterColor}; border: {CenterBorderThicknessPx}px solid {EffectiveBorderColor};";
 
 	private string GetTrackBackgroundStyle( string side )
 	{
@@ -204,11 +216,11 @@
 			_ => ""
 		};
 
-		return $"{style} background: {BorderColor};";
+		return $"{style} background: {EffectiveBorderColor};";
 	}
 
 	private string SpaceInnerStyle =>
-		$"left: {SpaceInnerInsetPx}px; top: {SpaceInnerInsetPx}px; right: {SpaceInnerInsetPx}px; bottom: {SpaceInnerInsetPx}px; background-color: {SpaceColor};";
+		$"left: {SpaceInnerInsetPx}px; top: {SpaceInnerInsetPx}px; right: {SpaceInnerInsetPx}px; bottom: {SpaceInnerInsetPx}px; background-color: {EffectiveSpaceColor};";
 
 	private float SpaceInnerInsetPx => Math.Max( 0f, SpaceBorderThicknessPx * 0.5f );
 
@@ -216,24 +228,24 @@
 		$"padding: {ContentPaddingPx}px;";
 
 	private string SpaceTitleStyle =>
-		$"font-size: {SpaceTextFontSizePx}px; line-height: {SpaceTextLineHeightPx}px; color: {TextColor};";
+		$"font-size: {SpaceTextFontSizePx}px; line-height: {SpaceTextLineHeightPx}px; color: {EffectiveTextColor};";
 
 	private string CornerTitleStyle =>
-		$"font-size: {CornerTitleFontSizePx}px; line-height: {CornerTitleFontSizePx}px; color: {TextColor};";
+		$"font-size: {CornerTitleFontSizePx}px; line-height: {CornerTitleFontSizePx}px; color: {EffectiveTextColor};";
 
 	private string GoArrowStyle =>
-		$"font-size: {GoIconFontSizePx * 0.64f}px; color: {GoColor};";
+		$"font-size: {GoIconFontSizePx * 0.64f}px; color: {EffectiveGoColor};";
 
 	private IEnumerable<SpaceDef> SpaceDefs =>
 		Board.Instance?.SpaceDefs?.Count > 0
 			? Board.Instance.SpaceDefs.OrderBy( space => space.Index )
 			: FallbackSpaceDefs;
 
-	public float CornerSize => Math.Clamp( CornerSizePercent, 5f, 35f );
-	public float TrackDepth => Math.Clamp( TrackDepthPercent, 5f, CornerSize );
+	public float CornerSize => Math.Clamp( ActiveLayout?.CornerSizePercent ?? CornerSizePercent, 5f, 35f );
+	public float TrackDepth => Math.Clamp( ActiveLayout?.TrackDepthPercent ?? TrackDepthPercent, 5f, CornerSize );
 	public float SideRegularLength => Math.Max( 0f, 100f - (CornerSize * 2f) );
 
-	private static string GetSpaceClasses( SpaceDef space )
+	private string GetSpaceClasses( SpaceDef space )
 	{
 		var side = GetSideClass( space.Index );
 		var corner = IsCorner( space ) ? "corner" : "standard";
@@ -241,7 +253,7 @@
 		return $"board-space {side} {corner} {customCorner} type-{space.Type.ToString().ToLowerInvariant()} color-{space.ColorGroupClass} space-{space.Index} key-{space.Key}";
 	}
 
-	private static string GetSpaceContentClasses( SpaceDef space )
+	private string GetSpaceContentClasses( SpaceDef space )
 	{
 		var str = $"space-content";
 		if (IsCorner( space ))
@@ -260,20 +272,26 @@
 	{
 		var thickness = Math.Clamp( ColorBarThicknessPercent, 2f, 80f );
 		var color = GetLabelColor( space.ColorGroup );
-		var border = $"{SpaceBorderThicknessPx}px solid {BorderColor}";
+		var border = $"{SpaceBorderThicknessPx}px solid {EffectiveBorderColor}";
 
 		if ( GetSideClass( space.Index ) is "side-left" or "side-right" )
 		{
 			var sideBorder = GetSideClass( space.Index ) == "side-left" ? "border-left" : "border-right";
-			return $"width: {thickness}%; height: 100%; background-color: {color}; border-color: {BorderColor}; {sideBorder}: {border};";
+			return $"width: {thickness}%; height: 100%; background-color: {color}; border-color: {EffectiveBorderColor}; {sideBorder}: {border};";
 		}
 
 		var edgeBorder = GetSideClass( space.Index ) == "side-top" ? "border-top" : "border-bottom";
-		return $"height: {thickness}%; background-color: {color}; border-color: {BorderColor}; {edgeBorder}: {border};";
+		return $"height: {thickness}%; background-color: {color}; border-color: {EffectiveBorderColor}; {edgeBorder}: {border};";
 	}
 
 	private string GetLabelColor( ColorGroup colorGroup )
 	{
+		if ( ActiveTheme?.ColorGroupColors?.TryGetValue( colorGroup, out var themeColor ) == true &&
+			!string.IsNullOrWhiteSpace( themeColor ) )
+		{
+			return themeColor;
+		}
+
 		return colorGroup switch
 		{
 			ColorGroup.Brown => BrownLabelColor,
@@ -284,7 +302,7 @@
 			ColorGroup.Yellow => YellowLabelColor,
 			ColorGroup.Green => GreenLabelColor,
 			ColorGroup.DarkBlue => DarkBlueLabelColor,
-			_ => SpaceColor
+			_ => EffectiveSpaceColor
 		};
 	}
 
@@ -304,18 +322,15 @@
 		};
 	}
 
-	private static string GetSideClass( int spaceIndex )
+	private string GetSideClass( int spaceIndex )
 	{
-		if ( spaceIndex <= 10 )
-			return "side-bottom";
-
-		if ( spaceIndex <= 20 )
-			return "side-left";
-
-		if ( spaceIndex <= 30 )
-			return "side-top";
-
-		return "side-right";
+		return (ActiveLayout?.GetSideIndex( spaceIndex, SpaceCount ) ?? 0) switch
+		{
+			0 => "side-bottom",
+			1 => "side-left",
+			2 => "side-top",
+			_ => "side-right"
+		};
 	}
 
 	private string GetSpaceStyle( int spaceIndex )
@@ -341,28 +356,34 @@
 
 	public float GetSpaceLengthWeight( int spaceIndex )
 	{
-		if ( SpaceLengthWeights is null ||
+		var weights = ActiveLayout?.SpaceLengthWeights is { Count: > 0 }
+			? ActiveLayout.SpaceLengthWeights
+			: SpaceLengthWeights;
+
+		if ( weights is null ||
 			spaceIndex < 0 ||
-			spaceIndex >= SpaceLengthWeights.Count ||
-			SpaceLengthWeights[spaceIndex] <= 0f )
+			spaceIndex >= weights.Count ||
+			weights[spaceIndex] <= 0f )
 		{
 			return 1f;
 		}
 
-		return SpaceLengthWeights[spaceIndex];
+		return weights[spaceIndex];
 	}
 
 	private static List<float> CreateDefaultSpaceLengthWeights()
 	{
-		return Enumerable.Repeat( 1f, 40 ).ToList();
+		return Enumerable.Repeat( 1f, BoardCatalog.GetDefaultSpaceCount() ).ToList();
 	}
 
-	private static bool IsCorner( SpaceDef space )
+	private bool IsCorner( SpaceDef space )
 	{
-		return space.Type == SpaceType.Go ||
+		return space is not null &&
+			(ActiveLayout?.IsCornerIndex( space.Index ) == true ||
+			space.Type == SpaceType.Go ||
 			space.Type == SpaceType.Jail ||
 			space.Type == SpaceType.FreeParking ||
-			space.Type == SpaceType.GoToJail;
+			space.Type == SpaceType.GoToJail);
 	}
 
 	private static bool HasColorBar( SpaceDef space )
@@ -391,7 +412,7 @@
 	{
 		var fontSize = Math.Max( 6f, OwnerNameFontSizePx );
 		var lineHeight = fontSize + 2f;
-		var style = $"font-size: {fontSize}px; line-height: {lineHeight}px; color: {TextColor};";
+		var style = $"font-size: {fontSize}px; line-height: {lineHeight}px; color: {EffectiveTextColor};";
 
 		var side = GetSideClass( space.Index );
 		if ( side is "side-left" or "side-right" )
@@ -410,7 +431,7 @@
 		var size = Math.Max( 4f, OwnerMarkerSizePx );
 		var borderWidth = Math.Max( 1f, SpaceBorderThicknessPx * 0.55f );
 
-		return $"width: {size}px; height: {size}px; background-color: {ToCssColor( ownerColor )}; border: {borderWidth}px solid {BorderColor};";
+		return $"width: {size}px; height: {size}px; background-color: {ToCssColor( ownerColor )}; border: {borderWidth}px solid {EffectiveBorderColor};";
 	}
 
 	private string GetOwnerName( SpaceDef space )
@@ -528,7 +549,7 @@
 			_ => SpaceIconFontSizePx
 		};
 
-		var color = space.Type == SpaceType.CommunityChest ? ChestIconColor : TextColor;
+		var color = space.Type == SpaceType.CommunityChest ? EffectiveChestIconColor : EffectiveTextColor;
 		return $"font-size: {fontSize}px; line-height: {fontSize + 2f}px; color: {color};";
 	}
 
@@ -588,16 +609,16 @@
 
 		var color = space.Type switch
 		{
-			SpaceType.Go => GoColor,
-			SpaceType.GoToJail => GoToJailColor,
-			_ => TextColor
+			SpaceType.Go => EffectiveGoColor,
+			SpaceType.GoToJail => EffectiveGoToJailColor,
+			_ => EffectiveTextColor
 		};
 
 		var style = $"font-size: {fontSize}px; line-height: {fontSize + 2f}px; color: {color};";
 
 		if ( space.Type == SpaceType.FreeParking )
 		{
-			style += $" width: {FreeParkingIconSizePx}px; height: {FreeParkingIconSizePx}px; border-radius: {FreeParkingIconSizePx * 0.5f}px; background-color: {FreeParkingColor}; border-color: {BorderColor};";
+			style += $" width: {FreeParkingIconSizePx}px; height: {FreeParkingIconSizePx}px; border-radius: {FreeParkingIconSizePx * 0.5f}px; background-color: {EffectiveFreeParkingColor}; border-color: {EffectiveBorderColor};";
 		}
 
 		return style;
@@ -737,11 +758,24 @@
 	private int GetWeightsHash()
 	{
 		var hash = new HashCode();
-		hash.Add( SpaceLengthWeights?.Count ?? 0 );
+		hash.Add( ActiveLayout?.CornerSizePercent ?? CornerSizePercent );
+		hash.Add( ActiveLayout?.TrackDepthPercent ?? TrackDepthPercent );
 
-		if ( SpaceLengthWeights is not null )
+		if ( ActiveLayout?.CornerIndexes is not null )
 		{
-			foreach ( var weight in SpaceLengthWeights )
+			foreach ( var cornerIndex in ActiveLayout.CornerIndexes )
+				hash.Add( cornerIndex );
+		}
+
+		var weights = ActiveLayout?.SpaceLengthWeights is { Count: > 0 }
+			? ActiveLayout.SpaceLengthWeights
+			: SpaceLengthWeights;
+
+		hash.Add( weights?.Count ?? 0 );
+
+		if ( weights is not null )
+		{
+			foreach ( var weight in weights )
 				hash.Add( weight );
 		}
 
@@ -751,23 +785,23 @@
 	private int GetStyleHash()
 	{
 		var hash = new HashCode();
-		hash.Add( BoardEdgeColor );
-		hash.Add( CenterColor );
-		hash.Add( SpaceColor );
-		hash.Add( BorderColor );
-		hash.Add( TextColor );
-		hash.Add( BrownLabelColor );
-		hash.Add( LightBlueLabelColor );
-		hash.Add( PinkLabelColor );
-		hash.Add( OrangeLabelColor );
-		hash.Add( RedLabelColor );
-		hash.Add( YellowLabelColor );
-		hash.Add( GreenLabelColor );
-		hash.Add( DarkBlueLabelColor );
-		hash.Add( ChestIconColor );
-		hash.Add( GoColor );
-		hash.Add( FreeParkingColor );
-		hash.Add( GoToJailColor );
+		hash.Add( EffectiveBoardEdgeColor );
+		hash.Add( EffectiveCenterColor );
+		hash.Add( EffectiveSpaceColor );
+		hash.Add( EffectiveBorderColor );
+		hash.Add( EffectiveTextColor );
+		hash.Add( GetLabelColor( ColorGroup.Brown ) );
+		hash.Add( GetLabelColor( ColorGroup.LightBlue ) );
+		hash.Add( GetLabelColor( ColorGroup.Pink ) );
+		hash.Add( GetLabelColor( ColorGroup.Orange ) );
+		hash.Add( GetLabelColor( ColorGroup.Red ) );
+		hash.Add( GetLabelColor( ColorGroup.Yellow ) );
+		hash.Add( GetLabelColor( ColorGroup.Green ) );
+		hash.Add( GetLabelColor( ColorGroup.DarkBlue ) );
+		hash.Add( EffectiveChestIconColor );
+		hash.Add( EffectiveGoColor );
+		hash.Add( EffectiveFreeParkingColor );
+		hash.Add( EffectiveGoToJailColor );
 		hash.Add( OuterBorderThicknessPx );
 		hash.Add( SpaceBorderThicknessPx );
 		hash.Add( CenterBorderThicknessPx );

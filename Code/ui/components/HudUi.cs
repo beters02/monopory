@@ -62,7 +62,7 @@ public static class HudUi
 
 		var hash = new HashCode();
 
-		for ( var spaceIndex = 0; spaceIndex < 40; spaceIndex++ )
+		foreach ( var spaceIndex in game.Board?.SpaceDefs?.Select( space => space.Index ).OrderBy( index => index ) ?? Enumerable.Range( 0, BoardCatalog.GetDefaultSpaceCount() ) )
 		{
 			hash.Add( spaceIndex );
 			hash.Add( game.GetOwnerIndexForSpace( spaceIndex ) );

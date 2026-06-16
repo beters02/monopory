@@ -1,11 +1,24 @@
 @using Sandbox;
 @using Sandbox.UI;
+@using Sandbox.ui.components.buttons;
 @using System;
 @using System.Linq;
 @inherits Panel
 
 <root class="match-settings-page match-settings-board-configuration-page">
 	<div class="@RootClasses">
+		<div class="options-panel-section-title">Board</div>
+		<OptionsPanelRow Title="Board" Value="@SelectedBoardDisplayName">
+			<ChildContent>
+				<DropdownButton
+					Value="@SelectedBoardId"
+					Items="@BoardIds"
+					ItemFormatter="@((string value) => FormatBoardId( value ))"
+					CanClick="@CanEdit"
+					OnSelected="@((string value) => SetBoardId( value ))" />
+			</ChildContent>
+		</OptionsPanelRow>
+
 		<div class="options-panel-section-title">Space Names</div>
 		<div class="board-space-name-list">
 			@foreach ( var space in BoardConfigSpaces )
@@ -36,8 +49,13 @@
 	[Parameter] public bool CanEdit { get; set; }
 	[Parameter] public string Variant { get; set; } = "";
 	[Parameter] public Action<int, string> OnSetSpaceName { get; set; }
+	[Parameter] public Action<string> OnSetBoardId { get; set; }
 
-	private IReadOnlyList<SpaceDef> BoardConfigSpaces => BoardData.CreateSpaceDefs().OrderBy( space => space.Index ).ToList();
+	private IReadOnlyList<SpaceDef> BoardConfigSpaces => BoardCatalog.GetById( Config?.BoardId ).Spaces.OrderBy( space => space.Index ).ToList();
+	private IReadOnlyList<BoardDefinition> Boards => BoardCatalog.GetAll();
+	private IReadOnlyList<string> BoardIds => Boards.Select( board => board.Id ).ToList();
+	private string SelectedBoardId => BoardCatalog.GetById( Config?.BoardId ).Id;
+	private string SelectedBoardDisplayName => FormatBoardId( SelectedBoardId );
 
 	private string RootClasses => string.IsNullOrWhiteSpace( Variant )
 		? "options-panel-section"
@@ -45,12 +63,22 @@
 
 	private string GetBoardSpaceName( int index )
 	{
-		return BoardSpaceNameConfig.DeserializeNames( Config?.BoardSpaceNamesSnapshot ).ElementAtOrDefault( index ) ?? "";
+		return BoardSpaceNameConfig.DeserializeNames( Config?.BoardSpaceNamesSnapshot, Config?.BoardId ).ElementAtOrDefault( index ) ?? "";
 	}
 
 	private void SetBoardSpaceName( int index, string value )
 	{
 		OnSetSpaceName?.Invoke( index, value );
+	}
+
+	private void SetBoardId( string boardId )
+	{
+		OnSetBoardId?.Invoke( boardId );
+	}
+
+	private string FormatBoardId( string boardId )
+	{
+		return Boards.FirstOrDefault( board => string.Equals( board.Id, boardId, StringComparison.OrdinalIgnoreCase ) )?.DisplayName ?? boardId;
 	}
 
 	private static string GetBoardSpaceTitle( SpaceDef space )
@@ -70,8 +98,14 @@
 	{
 		var hash = new HashCode();
 		hash.Add( Config?.BoardSpaceNamesSnapshot ?? "" );
+		hash.Add( Config?.BoardId ?? "" );
 		hash.Add( CanEdit );
 		hash.Add( Variant ?? "" );
+		foreach ( var board in Boards )
+		{
+			hash.Add( board.Id );
+			hash.Add( board.DisplayName );
+		}
 		return hash.ToHashCode();
 	}
 }

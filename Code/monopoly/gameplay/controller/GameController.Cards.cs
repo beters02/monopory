@@ -385,7 +385,7 @@ public sealed partial class GameController : Component
 			return;
 		}
 
-		ApplyGoMovementPayout( player, goPassCount, targetSpaceIndex == 0 );
+		ApplyGoMovementPayout( player, goPassCount, targetSpaceIndex == (Board?.GoSpaceIndex ?? 0) );
 	}
 
 	private void MovePlayerByCardOffset( PlayerState player, int relativeSpaces, bool collectGo, bool resolveDestination )
@@ -405,34 +405,36 @@ public sealed partial class GameController : Component
 			return;
 		}
 
-		ApplyGoMovementPayout( player, goPassCount, targetSpaceIndex == 0 );
+		ApplyGoMovementPayout( player, goPassCount, targetSpaceIndex == (Board?.GoSpaceIndex ?? 0) );
 	}
 
-	private static int GetGoPassCountForAbsoluteMove( int startSpaceIndex, int targetSpaceIndex, bool collectGo )
+	private int GetGoPassCountForAbsoluteMove( int startSpaceIndex, int targetSpaceIndex, bool collectGo )
 	{
 		if ( !collectGo )
 			return 0;
 
 		startSpaceIndex = NormalizeSpaceIndex( startSpaceIndex );
 		targetSpaceIndex = NormalizeSpaceIndex( targetSpaceIndex );
+		var spaceCount = Math.Max( Board?.SpaceCount ?? BoardCatalog.GetDefaultSpaceCount(), 1 );
 
 		var forwardDistance = targetSpaceIndex >= startSpaceIndex
 			? targetSpaceIndex - startSpaceIndex
-			: 40 - startSpaceIndex + targetSpaceIndex;
+			: spaceCount - startSpaceIndex + targetSpaceIndex;
 
 		if ( forwardDistance <= 0 )
 			return 0;
 
-		return (startSpaceIndex + forwardDistance) / 40;
+		return (startSpaceIndex + forwardDistance) / spaceCount;
 	}
 
-	private static int GetGoPassCountForRelativeMove( int startSpaceIndex, int relativeSpaces, bool collectGo )
+	private int GetGoPassCountForRelativeMove( int startSpaceIndex, int relativeSpaces, bool collectGo )
 	{
 		if ( !collectGo || relativeSpaces <= 0 )
 			return 0;
 
 		startSpaceIndex = NormalizeSpaceIndex( startSpaceIndex );
-		return (startSpaceIndex + relativeSpaces) / 40;
+		var spaceCount = Math.Max( Board?.SpaceCount ?? BoardCatalog.GetDefaultSpaceCount(), 1 );
+		return (startSpaceIndex + relativeSpaces) / spaceCount;
 	}
 
 	private void PayPerImprovementForCard( PlayerState player, int houseAmount, int hotelAmount )
