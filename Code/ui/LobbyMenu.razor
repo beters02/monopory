@@ -439,31 +439,6 @@
 		FileSystem.Data.WriteJson( path, presets ?? new() );
 	}
 
-	private IReadOnlyList<MatchSettingsPreset> CreatePredefinedGameRulePresets()
-	{
-		var defaultConfig = MatchConfigSchema.CreateDefault();
-		var quickConfig = MatchConfigSchema.CreateDefault();
-		quickConfig.StartingMoney = 1000;
-		quickConfig.TurnTimeLimitSeconds = 90;
-		quickConfig.VacationCash = false;
-		quickConfig.DoublesGoesAgain = true;
-		quickConfig.CanSkipUnowned = false;
-
-		var relaxedConfig = MatchConfigSchema.CreateDefault();
-		relaxedConfig.MinPlayers = 1;
-		relaxedConfig.MaxPlayers = 12;
-		relaxedConfig.TurnTimeLimitSeconds = 300;
-		relaxedConfig.CanSkipUnowned = true;
-		relaxedConfig.DoublesGoAgainOutOfJail = true;
-
-		return new[]
-		{
-			new MatchSettingsPreset { Id = "rules_default", Name = "Default Rules", Snapshot = MatchConfigSchema.Serialize( defaultConfig ), IsPredefined = true },
-			new MatchSettingsPreset { Id = "rules_quick", Name = "Quick Game", Snapshot = MatchConfigSchema.Serialize( quickConfig ), IsPredefined = true },
-			new MatchSettingsPreset { Id = "rules_relaxed", Name = "Relaxed Lobby", Snapshot = MatchConfigSchema.Serialize( relaxedConfig ), IsPredefined = true }
-		};
-	}
-
     protected override void OnAwake()
     {
         base.OnAwake();
@@ -562,8 +537,8 @@
 	private bool IsGameRulesCustomSelected => string.Equals( SelectedGameRulePresetId, CustomPresetId, StringComparison.Ordinal );
 	private bool IsBoardConfigCustomSelected => string.Equals( SelectedBoardConfigPresetId, CustomPresetId, StringComparison.Ordinal );
 	private bool CanEditCurrentConfigPage => CanEditConfig && (IsGameRulesConfigPage ? IsGameRulesCustomSelected : IsBoardConfigCustomSelected);
-	private IReadOnlyList<MatchSettingsPreset> GameRulePresets => CreatePredefinedGameRulePresets().Concat( CustomGameRulePresets ).ToList();
-	private IReadOnlyList<MatchSettingsPreset> BoardConfigPresets => BoardSpaceNameConfig.BuildBoardSpaceNamePredefinedPresets().Concat( CustomBoardConfigPresets ).ToList();
+	private IReadOnlyList<MatchSettingsPreset> GameRulePresets => global::GameRulePresets.All.Concat( CustomGameRulePresets ).ToList();
+	private IReadOnlyList<MatchSettingsPreset> BoardConfigPresets => BoardSpaceNames.All.Concat( CustomBoardConfigPresets ).ToList();
 
 	private bool HasUnreadyPlayers
 	{
