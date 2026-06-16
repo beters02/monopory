@@ -153,6 +153,7 @@ public sealed class PlayerToken : Component
 
 	private bool CanUseTokenController()
 	{
+		Log.Info(CanAlwaysControlTokenCameraMode);
 		if ( Board is null || PlayerState is null || PlayerState.IsBankrupt || !IsLocalPlayerToken )
 			return false;
 
