@@ -257,6 +257,27 @@ public sealed class PlayerToken : Component
 		remoteTokenControlActiveUntil = Time.Now + Math.Max( TokenControlRemoteTimeout, 0.05f );
 	}
 
+	public void SnapToAssignedSpace()
+	{
+		if ( Board is null || PlayerState is null )
+			return;
+
+		isGrabbed = false;
+		isThrowing = false;
+		isReplicatedPhysics = false;
+		throwVelocity = Vector3.Zero;
+		tokenControlVelocity = Vector3.Zero;
+		tokenControlGrounded = false;
+		remoteTokenControlVelocity = Vector3.Zero;
+		remoteTokenControlWalking = false;
+		remoteTokenControlActiveUntil = 0f;
+		activeReplicatedPhysicsKey = null;
+
+		GameObject.WorldPosition = GetSpaceTargetPosition();
+		GameObject.LocalRotation = GetRotation( PlayerState.SpaceIndex );
+		ApplyWalkingAnim( false );
+	}
+
 	private bool IsRemoteTokenControlActive()
 	{
 		return remoteTokenControlActiveUntil > Time.Now;

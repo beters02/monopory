@@ -386,7 +386,9 @@ public sealed partial class GameController : Component
 		if ( player is null || Board is null )
 			return;
 
-		var allowedPlayers = Players.Where(loopPlayer => player != loopPlayer ).ToList();
+		var allowedPlayers = Players
+			.Where( loopPlayer => loopPlayer is not null && loopPlayer != player && loopPlayer.IsAssigned && !loopPlayer.IsBankrupt )
+			.ToList();
 		if ( allowedPlayers.Count == 0 )
 			return;
 
@@ -403,27 +405,31 @@ public sealed partial class GameController : Component
 
 	private void SwapPlayerPositions( PlayerState player, PlayerState swapPlayer )
 	{
+		if ( player is null || swapPlayer is null || Board is null )
+			return;
 
-		int newTradingPlayerSpaceIndex = player.SpaceIndex;
-		int newPlayerSpaceIndex = swapPlayer.SpaceIndex;
-		Log.Info(newTradingPlayerSpaceIndex);
+		var playerStartSpaceIndex = player.SpaceIndex;
+		var swapPlayerStartSpaceIndex = swapPlayer.SpaceIndex;
 
 		if ( swapPlayer.IsInJail )
 		{
 			// release player automatically cancels extra turn for current player which is great
-			ReleasePlayerFromJail(swapPlayer);
+			ReleasePlayerFromJail( swapPlayer );
 			SendPlayerToJail( player );
+			MovePlayerToCardDestination( swapPlayer, playerStartSpaceIndex, true, false );
+			return;
 		}
-		else
-			MovePlayerToCardDestination( player, newPlayerSpaceIndex, true, true );
 
-		Log.Info(newTradingPlayerSpaceIndex);
-		MovePlayerToCardDestination( swapPlayer, newTradingPlayerSpaceIndex, true, false );
-	}
+		var playerGoPassCount = GetGoPassCountForAbsoluteMove( playerStartSpaceIndex, swapPlayerStartSpaceIndex, true );
+		var swapPlayerGoPassCount = GetGoPassCountForAbsoluteMove( swapPlayerStartSpaceIndex, playerStartSpaceIndex, true );
 
-	private void SwapPlayerPositionsHost( PlayerState player, PlayerState swapPlayer, bool collectGo, bool resolveDestination )
-	{
-		
+		player.SpaceIndex = NormalizeSpaceIndex( swapPlayerStartSpaceIndex );
+		swapPlayer.SpaceIndex = NormalizeSpaceIndex( playerStartSpaceIndex );
+		SnapPlayerTokenToSpace( player );
+		SnapPlayerTokenToSpace( swapPlayer );
+
+		ApplyGoMovementPayout( swapPlayer, swapPlayerGoPassCount, swapPlayer.SpaceIndex == (Board?.GoSpaceIndex ?? 0) );
+		ResolveLanding( player, playerGoPassCount );
 	}
 	
 	private void MovePlayerToCardDestination( PlayerState player, int targetSpaceIndex, bool collectGo, bool resolveDestination )
@@ -436,6 +442,7 @@ public sealed partial class GameController : Component
 		var goPassCount = GetGoPassCountForAbsoluteMove( startSpaceIndex, targetSpaceIndex, collectGo );
 
 		player.SpaceIndex = targetSpaceIndex;
+		SnapPlayerTokenToSpace( player );
 
 		if ( resolveDestination )
 		{
@@ -456,6 +463,7 @@ public sealed partial class GameController : Component
 		var goPassCount = GetGoPassCountForRelativeMove( startSpaceIndex, relativeSpaces, collectGo );
 
 		player.SpaceIndex = targetSpaceIndex;
+		SnapPlayerTokenToSpace( player );
 
 		if ( resolveDestination )
 		{

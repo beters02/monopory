@@ -752,6 +752,7 @@ public sealed partial class GameController : Component
 		player.IsInJail = true;
 		player.JailTurnsRemaining = JailTurnCount;
 		player.ConsecutiveDoubles = 0;
+		SnapPlayerTokenToSpace( player );
 		CurrentTurnGetsExtraRoll = false;
 		CurrentTurnConsecutiveDoubles = 0;
 		CurrentTurnDoublesPlayerIndex = -1;

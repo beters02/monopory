@@ -10,7 +10,7 @@ public static class CardData
 	{
 		return new()
 		{
-			/*new() { Key = "chance_advance_go", Deck = CardDeck.Chance, Title = "Advance to {space_0}", Description = "Collect ${go_landing_money}.", Action = CardAction.MoveToSpace, TargetSpaceIndex = 0 },
+			new() { Key = "chance_advance_go", Deck = CardDeck.Chance, Title = "Advance to {space_0}", Description = "Collect ${go_landing_money}.", Action = CardAction.MoveToSpace, TargetSpaceIndex = 0 },
 			new() { Key = "chance_advance_illinois", Deck = CardDeck.Chance, Title = "Advance to {space_26}", Description = "Move to {space_26}. Collect ${pass_go_money} if you pass {space_0}.", Action = CardAction.MoveToSpace, TargetSpaceIndex = 26 },
 			new() { Key = "chance_advance_st_charles", Deck = CardDeck.Chance, Title = "Advance to {space_13}", Description = "Move to {space_13}. Collect ${pass_go_money} if you pass {space_0}.", Action = CardAction.MoveToSpace, TargetSpaceIndex = 13 },
 			new() { Key = "chance_advance_boardwalk", Deck = CardDeck.Chance, Title = "Advance to {space_39}", Description = "Move to {space_39}.", Action = CardAction.MoveToSpace, TargetSpaceIndex = 39 },
@@ -25,7 +25,7 @@ public static class CardData
 			new() { Key = "chance_chairman", Deck = CardDeck.Chance, Title = "Elected chairman", Description = "Pay each player $50.", Action = CardAction.PayEachPlayer, Amount = 50 },
 			new() { Key = "chance_building_loan", Deck = CardDeck.Chance, Title = "Building loan matures", Description = "Collect $150.", Action = CardAction.CollectFromBank, Amount = 150 },
 			new() { Key = "chance_get_out_jail", Deck = CardDeck.Chance, Title = "Get Out of {space_10} Free", Description = "Keep this card until you need to leave {space_10}.", Action = CardAction.GetOutOfJailFree },
-			new() { Key = "chance_gamble_coin_flip", Deck = CardDeck.Chance, Title = "Gamble Card", Description = "You're forced to play in a coinflip for a random amount.", Action = CardAction.Gamble, Amount = 150, Weight = 2 },*/
+			new() { Key = "chance_gamble_coin_flip", Deck = CardDeck.Chance, Title = "Gamble Card", Description = "You're forced to play in a coinflip for a random amount.", Action = CardAction.Gamble, Amount = 150, Weight = 2 },
 			new() { Key = "chance_jersey_swap", Deck = CardDeck.Chance, Title = "Jersey Swap", Description = "Switch positions with a random player. If one or both of you pass go, collect ${pass_go_money}. You will be jailed without go money if they are in jail.", Action = CardAction.SwapPlayerPosition }
 		};
 	}

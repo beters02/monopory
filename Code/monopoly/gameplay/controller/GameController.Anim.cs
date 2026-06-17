@@ -6,18 +6,39 @@ public sealed partial class GameController : Component
         token?.SetWalkingAnim( walking );
     }
 
-    private void SetPlayerTokenWalking( PlayerState player, bool walking )
-    {
-        var playerIndex = GetPlayerIndex( player );
-        if ( playerIndex < 0 )
-            return;
+	private void SetPlayerTokenWalking( PlayerState player, bool walking )
+	{
+		var playerIndex = GetPlayerIndex( player );
+		if ( playerIndex < 0 )
+			return;
 
-        SetPlayerTokenWalkingForPlayer( playerIndex, walking );
-    }
+		SetPlayerTokenWalkingForPlayer( playerIndex, walking );
+	}
 
-    [Rpc.Broadcast]
-    private void SetPlayerTokenWalkingForPlayer( int playerIndex, bool walking )
-    {
+	private void SnapPlayerTokenToSpace( PlayerState player )
+	{
+		var playerIndex = GetPlayerIndex( player );
+		if ( playerIndex < 0 )
+			return;
+
+		SnapPlayerTokenToSpaceForPlayer( playerIndex, player.SpaceIndex );
+	}
+
+	[Rpc.Broadcast]
+	private void SnapPlayerTokenToSpaceForPlayer( int playerIndex, int spaceIndex )
+	{
+		var player = Players.ElementAtOrDefault( playerIndex );
+		if ( player is null )
+			return;
+
+		player.SpaceIndex = NormalizeSpaceIndex( spaceIndex );
+		var token = GetPlayerToken( player );
+		token?.SnapToAssignedSpace();
+	}
+
+	[Rpc.Broadcast]
+	private void SetPlayerTokenWalkingForPlayer( int playerIndex, bool walking )
+	{
         var player = Players.ElementAtOrDefault( playerIndex );
         var token = GetPlayerToken( player );
         token?.SetWalkingAnim( walking );
