@@ -22,7 +22,8 @@ public enum CardAction
 	CollectFromEachPlayer,
 	PayEachPlayer,
 	PayPerImprovement,
-	Gamble
+	Gamble,
+	SwapPlayerPosition
 }
 
 public static class TradableCardIds

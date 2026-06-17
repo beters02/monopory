@@ -1000,7 +1000,7 @@ public static class GetHostId
 		GameCommandManager.RunCommand( Name, () =>
 		{
 			if ( !GameCommandManager.TryParseBool( networkingHost, out bool shouldDisplayNetworkingHost ) )
-				StandaloneConsole.WriteLine($"Could not parse bool value {networkingHost}. Continuing with false.", StandaloneConsole.EWarning);
+				StandaloneConsole.WriteLine($"Could not parse bool value {networkingHost}. Continuing with false.", StandaloneConsole.EntryKind.Warning);
 			
 			long id = MonopolyApp.CurrentHostOwnerId;
 			string idString = Networking.IsHost ? id.ToString() : "Only the host can see player's steam ids.";

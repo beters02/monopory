@@ -2,6 +2,12 @@ using System.Threading.Tasks;
 using System;
 using Sandbox;
 using Sandbox.UI;
+using Microsoft.VisualBasic;
+
+public class CardActionResult : GameResultKind
+{
+	protected CardActionResult( string msg ) : base( msg ) {}
+}
 
 public sealed partial class GameController : Component
 {
@@ -344,6 +350,11 @@ public sealed partial class GameController : Component
 			case CardAction.Gamble:
 				_ = PlayGambleCardAsync( player, card );
 				return "Started gamble card";
+
+			case CardAction.SwapPlayerPosition:
+				HandleSwapPlayerPositionsCard( player );
+				return "Swapping player positions";
+				
 		}
 
 		return $"Unhandled card action {card.Action}";
@@ -368,6 +379,53 @@ public sealed partial class GameController : Component
 		return -1;
 	}
 
+
+	// TODO: polish. need to account for other player potentially having skipped turn etc
+	private void HandleSwapPlayerPositionsCard( PlayerState player )
+	{
+		if ( player is null || Board is null )
+			return;
+
+		var allowedPlayers = Players.Where(loopPlayer => player != loopPlayer ).ToList();
+		if ( allowedPlayers.Count == 0 )
+			return;
+
+		var randomInt = Game.Random.Int(allowedPlayers.Count - 1);
+		if ( randomInt < 0 )
+			return;
+		
+		PlayerState tradingPlayer = allowedPlayers[randomInt];
+		if ( tradingPlayer is null || tradingPlayer == player )
+			return;
+
+		SwapPlayerPositions( player, tradingPlayer );
+	}
+
+	private void SwapPlayerPositions( PlayerState player, PlayerState swapPlayer )
+	{
+
+		int newTradingPlayerSpaceIndex = player.SpaceIndex;
+		int newPlayerSpaceIndex = swapPlayer.SpaceIndex;
+		Log.Info(newTradingPlayerSpaceIndex);
+
+		if ( swapPlayer.IsInJail )
+		{
+			// release player automatically cancels extra turn for current player which is great
+			ReleasePlayerFromJail(swapPlayer);
+			SendPlayerToJail( player );
+		}
+		else
+			MovePlayerToCardDestination( player, newPlayerSpaceIndex, true, true );
+
+		Log.Info(newTradingPlayerSpaceIndex);
+		MovePlayerToCardDestination( swapPlayer, newTradingPlayerSpaceIndex, true, false );
+	}
+
+	private void SwapPlayerPositionsHost( PlayerState player, PlayerState swapPlayer, bool collectGo, bool resolveDestination )
+	{
+		
+	}
+	
 	private void MovePlayerToCardDestination( PlayerState player, int targetSpaceIndex, bool collectGo, bool resolveDestination )
 	{
 		if ( player is null || Board is null || targetSpaceIndex < 0 )
