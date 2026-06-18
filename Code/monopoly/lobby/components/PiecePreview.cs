@@ -28,10 +28,13 @@ public sealed class PiecePreview : Component
 	private static PiecePreview instance;
 
 	[Property] public float CameraDistance { get; set; } = 42.37f;
-	[Property] public float CameraHorizontalOffset { get; set; } = -8.92f;
-	[Property] public float CameraVerticalOffset { get; set; } = -3.03f;
+	public float CameraHorizontalOffset { get; set; } = -6.66f;
+	public float CameraVerticalOffset { get; set; } = -4.13f;
 	[Property] public float RotationSpeed { get; set; } = 22f;
 	[Property] public float PreviewScaleMultiplier { get; set; } = 1f;
+
+	public float DiceCameraDistance { get; set; } = 84.55f;
+	public float DiceCameraHorizontalOffset { get; set; } = -14.72f;
 
 	public float DefCameraDistance;
 	public float DefCameraHorizontalOffset;
@@ -41,6 +44,7 @@ public sealed class PiecePreview : Component
 
 	private GameObject visualObject;
 	private string activePieceId = "";
+	private string activeDiceSkinId = "";
 	private bool isVisible;
 
 	protected override void OnStart()
@@ -98,6 +102,23 @@ public sealed class PiecePreview : Component
 		preview.SetPiece( piece, visible );
 	}
 
+	public static void SetActiveDiceSkin( Scene scene, DiceSkinDefinition diceSkin, bool visible )
+	{
+		if ( scene is null )
+			return;
+
+		if ( !visible && diceSkin is null )
+		{
+			if ( instance is not null && instance.IsValid() && instance.Scene == scene )
+				instance.SetDiceSkin( null, false );
+
+			return;
+		}
+
+		var preview = GetOrCreate( scene );
+		preview.SetDiceSkin( diceSkin, visible );
+	}
+
 	private static PiecePreview GetOrCreate( Scene scene )
 	{
 		if ( instance is not null && instance.IsValid() && instance.Scene == scene )
@@ -117,10 +138,12 @@ public sealed class PiecePreview : Component
 		if ( !isVisible )
 		{
 			activePieceId = "";
+			activeDiceSkinId = "";
 			DestroyVisual();
 			return;
 		}
 
+		activeDiceSkinId = "";
 		if ( string.Equals( activePieceId, piece.Id, StringComparison.OrdinalIgnoreCase ) &&
 			visualObject is not null &&
 			visualObject.IsValid() )
@@ -128,6 +151,27 @@ public sealed class PiecePreview : Component
 
 		BuildVisual( piece );
 		ApplyPiecePreviewDefs( piece );
+	}
+
+	private void SetDiceSkin( DiceSkinDefinition diceSkin, bool visible )
+	{
+		isVisible = visible && diceSkin is not null;
+		if ( !isVisible )
+		{
+			activePieceId = "";
+			activeDiceSkinId = "";
+			DestroyVisual();
+			return;
+		}
+
+		activePieceId = "";
+		if ( string.Equals( activeDiceSkinId, diceSkin.Id, StringComparison.OrdinalIgnoreCase ) &&
+			visualObject is not null &&
+			visualObject.IsValid() )
+			return;
+
+		BuildDiceVisual( diceSkin );
+		ApplyDicePreviewDefs();
 	}
 
 	private void BuildVisual( PieceDefinition piece, bool forceNoPrefab = false )
@@ -187,6 +231,75 @@ public sealed class PiecePreview : Component
 		visualObject = prefab.Clone();
 	}
 
+	private void BuildDiceVisual( DiceSkinDefinition diceSkin )
+	{
+		DestroyVisual();
+
+		visualObject = new GameObject( true, $"DicePreviewVisual_{diceSkin.Id}" );
+		visualObject.SetParent( GameObject );
+		visualObject.LocalPosition = Vector3.Zero;
+
+		var prefab = Scene.GetPrefab( "prefabs/dice.prefab" );
+		if ( prefab is null )
+		{
+			Log.Warning( "PiecePreview could not load dice prefab for dice skin preview." );
+			activeDiceSkinId = "";
+			return;
+		}
+
+		var dieA = prefab.Clone();
+		dieA.Name = "DicePreviewDieA";
+		dieA.SetParent( visualObject );
+		dieA.LocalPosition = new Vector3( -5f, 0f, 0f );
+		dieA.LocalRotation = Rotation.From( 18f, -28f, 12f );
+
+		var dieB = prefab.Clone();
+		dieB.Name = "DicePreviewDieB";
+		dieB.SetParent( visualObject );
+		dieB.LocalPosition = new Vector3( 5f, 0f, 0f );
+		dieB.LocalRotation = Rotation.From( -14f, 24f, -18f );
+
+		ApplyDiceSkinToPreview( dieA, diceSkin );
+		ApplyDiceSkinToPreview( dieB, diceSkin );
+		DisableDicePhysics( dieA );
+		DisableDicePhysics( dieB );
+
+		visualObject.LocalScale = 1.2f;
+		activeDiceSkinId = diceSkin.Id;
+		UpdateCameraPlacement();
+	}
+
+	private static void ApplyDiceSkinToPreview( GameObject die, DiceSkinDefinition diceSkin )
+	{
+		Log.Info(die);
+		Log.Info(diceSkin);
+		if ( die is null || diceSkin is null )
+			return;
+
+		foreach ( var child in die.Children )
+		{
+			var decal = child.GetComponent<Decal>();
+			if ( decal is null )
+				continue;
+
+			if ( child.Name.Contains( "Bg", StringComparison.OrdinalIgnoreCase ) )
+				decal.ColorTint = diceSkin.BackgroundColor;
+			else
+				decal.ColorTint = diceSkin.DotColor;
+		}
+	}
+
+	private static void DisableDicePhysics( GameObject die )
+	{
+		var body = die?.GetComponent<Rigidbody>();
+		if ( body is null )
+			return;
+
+		body.MotionEnabled = false;
+		body.Velocity = Vector3.Zero;
+		body.AngularVelocity = Vector3.Zero;
+	}
+
 	private void ApplyPiecePreviewDefs( PieceDefinition piece )
 	{
 		if (PiecePreviewDefs.TryGetValue(piece.Id, out PiecePreviewDef def))
@@ -204,6 +317,19 @@ public sealed class PiecePreview : Component
 			return;	
 		}
 
+		ApplyDefaultPreviewDefs();
+	}
+
+	private void ApplyDicePreviewDefs()
+	{
+		ApplyDefaultPreviewDefs();
+
+		CameraDistance = DiceCameraDistance;
+		CameraHorizontalOffset = DiceCameraHorizontalOffset;
+	}
+
+	private void ApplyDefaultPreviewDefs()
+	{
 		CameraHorizontalOffset = DefCameraHorizontalOffset;
 		CameraDistance = DefCameraDistance;
 		CameraVerticalOffset = DefCameraVerticalOffset;

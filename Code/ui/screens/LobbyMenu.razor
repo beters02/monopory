@@ -232,30 +232,58 @@
 		<OptionsPanel
 			IsOpen="@IsCustomizeMenuOpen"
 			Kicker="Lobby"
-			Title="Customize Piece"
+			Title="@CustomizeMenuTitle"
 			OnClose="@CloseCustomizeMenu"
 			RootVariant="piece-customize-root"
 			ScreenVariant="piece-customize-screen"
 			PanelVariant="piece-customize-panel"
 			TitleVariant="piece-customize-title">
 			<ChildContent>
-						<div class="piece-customize-layout">
-							<div class="piece-preview-panel">
-								<div class="piece-preview-viewport">
-									<div class="piece-preview-hint">Live Preview</div>
-								</div>
-								<div class="piece-preview-details">
-									<div class="piece-preview-title">@PreviewedPiece.Label</div>
-									<div class="piece-preview-copy">@PreviewedPiece.Description</div>
-									<div class="piece-preview-actions">
-										<GameButton Variant="@GetPieceSelectButtonClasses( PreviewedPiece )" OnClick="@(() => SelectPiece( PreviewedPiece.Id ))">
-											@(IsSelectedPiece( PreviewedPiece ) ? "Selected" : "Select Piece")
+				<div class="match-config-tabs customize-tabs">
+					<GameButton Variant="@GetCustomizePageButtonClasses( CustomizePagePieces )" OnClick="@(() => SetCustomizePage( CustomizePagePieces ))">Pieces</GameButton>
+					<GameButton Variant="@GetCustomizePageButtonClasses( CustomizePageDice )" OnClick="@(() => SetCustomizePage( CustomizePageDice ))">Dice</GameButton>
+				</div>
+				<div class="piece-customize-layout">
+					<div class="piece-preview-panel">
+						<div class="piece-preview-viewport">
+							<div class="piece-preview-hint">Live Preview</div>
+						</div>
+						<div class="piece-preview-details">
+							<div class="piece-preview-title">@CustomizePreviewTitle</div>
+							<div class="piece-preview-copy">@CustomizePreviewDescription</div>
+							<div class="piece-preview-actions">
+								@if ( IsDiceCustomizePage )
+								{
+									<GameButton Variant="@GetDiceSkinSelectButtonClasses( PreviewedDiceSkin )" OnClick="@(() => SelectDiceSkin( PreviewedDiceSkin.Id ))">
+										@(IsSelectedDiceSkin( PreviewedDiceSkin ) ? "Selected" : "Select Dice")
+									</GameButton>
+								}
+								else
+								{
+									<GameButton Variant="@GetPieceSelectButtonClasses( PreviewedPiece )" OnClick="@(() => SelectPiece( PreviewedPiece.Id ))">
+										@(IsSelectedPiece( PreviewedPiece ) ? "Selected" : "Select Piece")
+									</GameButton>
+								}
+							</div>
+						</div>
+					</div>
+					<div class="piece-customize-scroll-shell">
+						<div class="piece-customize-grid monopory-scroll-y" @ref="PieceCustomizeScrollPanel">
+							@if ( IsDiceCustomizePage )
+							{
+								@foreach ( var diceSkin in AvailableDiceSkins )
+								{
+									<div class="@GetDiceSkinCardClasses( diceSkin )" onclick="@(() => SetPreviewDiceSkin( diceSkin.Id ))">
+										<div class="piece-customize-card-title">@diceSkin.Label</div>
+										<div class="piece-customize-card-copy">@diceSkin.Description</div>
+										<GameButton Variant="@GetDiceSkinSelectButtonClasses( diceSkin )" OnClick="@(() => SelectDiceSkin( diceSkin.Id ))">
+											@(IsSelectedDiceSkin( diceSkin ) ? "Selected" : "Select")
 										</GameButton>
 									</div>
-								</div>
-							</div>
-						<div class="piece-customize-scroll-shell">
-							<div class="piece-customize-grid monopory-scroll-y" @ref="PieceCustomizeScrollPanel">
+								}
+							}
+							else
+							{
 								@foreach ( var piece in AvailablePieces )
 								{
 									<div class="@GetPieceCardClasses( piece )" onclick="@(() => SetPreviewPiece( piece.Id ))">
@@ -266,13 +294,14 @@
 										</GameButton>
 									</div>
 								}
-							</div>
-							<MonoScrollbar Target="@PieceCustomizeScrollPanel"></MonoScrollbar>
+							}
 						</div>
-						</div>
-						<div class="piece-customize-footer">
-							<GameButton Variant="options-panel-secondary-button" OnClick="@CloseCustomizeMenu">Done</GameButton>
-						</div>
+						<MonoScrollbar Target="@PieceCustomizeScrollPanel"></MonoScrollbar>
+					</div>
+				</div>
+				<div class="piece-customize-footer">
+					<GameButton Variant="options-panel-secondary-button" OnClick="@CloseCustomizeMenu">Done</GameButton>
+				</div>
 			</ChildContent>
 		</OptionsPanel>
 		@if ( !IsCustomizeMenuOpen )
@@ -348,9 +377,13 @@
     private string GameVersion => MonopolyApp.GameVersion;
     private bool CanEditConfig => Lobby?.IsLocalEffectiveHost == true;
     private IReadOnlyList<PieceDefinition> AvailablePieces => PieceCatalog.All;
+    private IReadOnlyList<DiceSkinDefinition> AvailableDiceSkins => DiceSkinCatalog.All;
     private string PreviewPieceId = "";
+    private string PreviewDiceSkinId = "";
 	private string LastRequestedSavedPieceId = "";
+	private string LastRequestedSavedDiceSkinId = "";
     private PieceDefinition PreviewedPiece => PieceCatalog.GetByIdOrDefault( string.IsNullOrWhiteSpace( PreviewPieceId ) ? LocalPlayer?.SelectedPieceId : PreviewPieceId );
+    private DiceSkinDefinition PreviewedDiceSkin => DiceSkinCatalog.GetByIdOrDefault( string.IsNullOrWhiteSpace( PreviewDiceSkinId ) ? LocalPlayer?.SelectedDiceSkinId : PreviewDiceSkinId );
     private MatchConfig EditableConfig;
     private string LoadedConfigSnapshot = "";
     private int configRevision;
@@ -365,6 +398,7 @@
     private IReadOnlyList<OptionsPanelSection> EditableConfigSections;
 	private bool ShowHiddenMatchOptions;
 	private string ActiveConfigPage = MatchConfigPageGameRules;
+	private string ActiveCustomizePage = CustomizePagePieces;
 	private string GameRulePresetNameDraft = "";
 	private string BoardConfigPresetNameDraft = "";
 	private bool IsGameRulesExplicitlyCustom;
@@ -377,6 +411,8 @@
 	private const string ShowHiddenMatchOptionsCallbackId = "toggleShowHiddenOptionsInMenu";
 	private const string MatchConfigPageGameRules = "Game Rules";
 	private const string MatchConfigPageBoardConfiguration = "Board Configuration";
+	private const string CustomizePagePieces = "Pieces";
+	private const string CustomizePageDice = "Dice";
 	private const string CustomPresetId = "custom";
 	private const string GameRulePresetFileName = "match_settings/game_rule_presets.json";
 	private const string BoardConfigPresetFileName = "match_settings/board_config_presets.json";
@@ -468,6 +504,7 @@
 			EnsureEditableConfigCurrent();
 
 		ApplySavedLocalPieceSelection();
+		ApplySavedLocalDiceSkinSelection();
 		UpdatePiecePreview();
 	}
 
@@ -488,6 +525,25 @@
 			Lobby.TrySetSelectedPiece( LocalPlayer.OwnerId, savedPieceId );
 		else
 			Lobby.RequestSetSelectedPiece( savedPieceId );
+	}
+
+	private void ApplySavedLocalDiceSkinSelection()
+	{
+		if ( Lobby is null || LocalPlayer is null )
+			return;
+
+		var savedDiceSkinId = AppSettings.GetSelectedDiceSkinId();
+		if ( string.IsNullOrWhiteSpace( savedDiceSkinId ) || string.Equals( savedDiceSkinId, LocalPlayer.SelectedDiceSkinId, StringComparison.OrdinalIgnoreCase ) )
+			return;
+
+		if ( string.Equals( LastRequestedSavedDiceSkinId, savedDiceSkinId, StringComparison.OrdinalIgnoreCase ) )
+			return;
+
+		LastRequestedSavedDiceSkinId = savedDiceSkinId;
+		if ( Networking.IsHost )
+			Lobby.TrySetSelectedDiceSkin( LocalPlayer.OwnerId, savedDiceSkinId );
+		else
+			Lobby.RequestSetSelectedDiceSkin( savedDiceSkinId );
 	}
 
 	private string LobbyStatusText
@@ -525,6 +581,9 @@
 	private string ConfigMenuCopy => CanEditConfig
 		? $"Changes to {ActiveConfigPage.ToLower()} stay local to the host until you press Save."
 		: $"Viewing current {ActiveConfigPage.ToLower()} settings. Only the host can change or save configuration.";
+	private string CustomizeMenuTitle => IsDiceCustomizePage ? "Customize Dice" : "Customize Piece";
+	private string CustomizePreviewTitle => IsDiceCustomizePage ? PreviewedDiceSkin.Label : PreviewedPiece.Label;
+	private string CustomizePreviewDescription => IsDiceCustomizePage ? PreviewedDiceSkin.Description : PreviewedPiece.Description;
 	private string LobbyScreenClasses => IsCustomizeMenuOpen ? "flow-screen lobby-screen customizing-piece" : "flow-screen lobby-screen";
 	private string StartBlockedMessage => Lobby?.OnlyHostStartsGame == true && Lobby?.IsLocalEffectiveHost != true
 		? "Only the host can start this game."
@@ -535,6 +594,7 @@
 		CanEditConfig &&
 		(ConfigIntDrafts.Count > 0 || !string.Equals( MatchConfigSchema.Serialize( EditableConfig ), LoadedConfigSnapshot, StringComparison.Ordinal ));
 	private bool IsGameRulesConfigPage => string.Equals( ActiveConfigPage, MatchConfigPageGameRules, StringComparison.Ordinal );
+	private bool IsDiceCustomizePage => string.Equals( ActiveCustomizePage, CustomizePageDice, StringComparison.Ordinal );
 	private bool IsGameRulesCustomSelected => string.Equals( SelectedGameRulePresetId, CustomPresetId, StringComparison.Ordinal );
 	private bool IsBoardConfigCustomSelected => string.Equals( SelectedBoardConfigPresetId, CustomPresetId, StringComparison.Ordinal );
 	private bool CanEditCurrentConfigPage => CanEditConfig && (IsGameRulesConfigPage ? IsGameRulesCustomSelected : IsBoardConfigCustomSelected);
@@ -574,6 +634,7 @@
 		hash.Add( configRevision );
 		hash.Add( saveRevision );
 		hash.Add( ActiveConfigPage );
+		hash.Add( ActiveCustomizePage );
 		hash.Add( GameRulePresetNameDraft );
 		hash.Add( BoardConfigPresetNameDraft );
 		hash.Add( IsGameRulesExplicitlyCustom );
@@ -581,6 +642,7 @@
 		hash.Add( SelectedGameRulePresetId );
 		hash.Add( SelectedBoardConfigPresetId );
 		hash.Add( PreviewPieceId ?? "" );
+		hash.Add( PreviewDiceSkinId ?? "" );
 		hash.Add( SelectedSaveId ?? "" );
 		hash.Add( IsManualSaveTab );
 		hash.Add( AppSettings.SettingsAvailable );
@@ -601,6 +663,7 @@
 			hash.Add( player.IsHost );
 			hash.Add( player.AbandonEndsAt );
 			hash.Add( player.SelectedPieceId ?? "" );
+			hash.Add( player.SelectedDiceSkinId ?? "" );
 		}
 
 		foreach ( var save in SaveSummaries )
@@ -748,7 +811,9 @@
 
 	private void CustomizePiece()
 	{
+		ActiveCustomizePage = CustomizePagePieces;
 		PreviewPieceId = LocalPlayer?.SelectedPieceId ?? PieceCatalog.DefaultPieceId;
+		PreviewDiceSkinId = LocalPlayer?.SelectedDiceSkinId ?? DiceSkinCatalog.DefaultDiceSkinId;
 		IsCustomizeMenuOpen = true;
 		IsConfigMenuOpen = false;
 		IsOptionsMenuOpen = false;
@@ -760,6 +825,22 @@
 	{
 		IsCustomizeMenuOpen = false;
 		PiecePreview.SetActivePiece( Scene, null, false );
+	}
+
+	private void SetCustomizePage( string page )
+	{
+		if ( string.Equals( ActiveCustomizePage, page, StringComparison.Ordinal ) )
+			return;
+
+		ActiveCustomizePage = page;
+		UpdatePiecePreview();
+	}
+
+	private string GetCustomizePageButtonClasses( string page )
+	{
+		return string.Equals( ActiveCustomizePage, page, StringComparison.Ordinal )
+			? "options-panel-primary-button match-config-tab-button"
+			: "options-panel-secondary-button match-config-tab-button";
 	}
 
 	private bool IsSelectedPiece( PieceDefinition piece )
@@ -795,6 +876,39 @@
 		return IsSelectedPiece( piece ) ? "options-panel-primary-button" : "options-panel-secondary-button";
 	}
 
+	private bool IsSelectedDiceSkin( DiceSkinDefinition diceSkin )
+	{
+		if ( diceSkin is null )
+			return false;
+
+		var selectedDiceSkinId = LocalPlayer?.SelectedDiceSkinId ?? DiceSkinCatalog.DefaultDiceSkinId;
+		return string.Equals( selectedDiceSkinId, diceSkin.Id, StringComparison.OrdinalIgnoreCase );
+	}
+
+	private bool IsPreviewedDiceSkin( DiceSkinDefinition diceSkin )
+	{
+		if ( diceSkin is null )
+			return false;
+
+		return string.Equals( PreviewedDiceSkin?.Id, diceSkin.Id, StringComparison.OrdinalIgnoreCase );
+	}
+
+	private string GetDiceSkinCardClasses( DiceSkinDefinition diceSkin )
+	{
+		var classes = "piece-customize-card";
+		if ( IsSelectedDiceSkin( diceSkin ) )
+			classes += " selected";
+		if ( IsPreviewedDiceSkin( diceSkin ) )
+			classes += " previewed";
+
+		return classes;
+	}
+
+	private string GetDiceSkinSelectButtonClasses( DiceSkinDefinition diceSkin )
+	{
+		return IsSelectedDiceSkin( diceSkin ) ? "options-panel-primary-button" : "options-panel-secondary-button";
+	}
+
 	private void SelectPiece( string pieceId )
 	{
 		if ( Lobby is null || LocalPlayer is null )
@@ -810,15 +924,45 @@
 			Lobby.RequestSetSelectedPiece( pieceId );
 	}
 
+	private void SelectDiceSkin( string diceSkinId )
+	{
+		if ( Lobby is null || LocalPlayer is null )
+			return;
+
+		SetPreviewDiceSkin( diceSkinId );
+		AppSettings.TrySetSelectedDiceSkinId( diceSkinId );
+		LastRequestedSavedDiceSkinId = AppSettings.GetSelectedDiceSkinId();
+
+		if ( Networking.IsHost )
+			Lobby.TrySetSelectedDiceSkin( LocalPlayer.OwnerId, diceSkinId );
+		else
+			Lobby.RequestSetSelectedDiceSkin( diceSkinId );
+	}
+
 	private void SetPreviewPiece( string pieceId )
 	{
 		PreviewPieceId = PieceCatalog.GetByIdOrDefault( pieceId ).Id;
 		UpdatePiecePreview();
 	}
 
+	private void SetPreviewDiceSkin( string diceSkinId )
+	{
+		PreviewDiceSkinId = DiceSkinCatalog.GetByIdOrDefault( diceSkinId ).Id;
+		UpdatePiecePreview();
+	}
+
 	private void UpdatePiecePreview()
 	{
-		PiecePreview.SetActivePiece( Scene, IsCustomizeMenuOpen ? PreviewedPiece : null, IsCustomizeMenuOpen );
+		if ( !IsCustomizeMenuOpen )
+		{
+			PiecePreview.SetActivePiece( Scene, null, false );
+			return;
+		}
+
+		if ( IsDiceCustomizePage )
+			PiecePreview.SetActiveDiceSkin( Scene, PreviewedDiceSkin, true );
+		else
+			PiecePreview.SetActivePiece( Scene, PreviewedPiece, true );
 	}
 
 	private void OpenOptionsMenu()

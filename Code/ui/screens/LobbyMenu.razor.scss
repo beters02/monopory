@@ -39,6 +39,20 @@
 	flex-shrink: 0;
 }
 
+.customize-tabs {
+	padding: 10px;
+	margin-bottom: 0;
+	background-color: $monopoly-panel-strong;
+	border: 3px solid $monopoly-panel-line;
+	border-radius: $monopoly-radius-panel;
+	box-shadow: $monopoly-panel-shadow-strong;
+	pointer-events: none;
+}
+
+.customize-tabs .monopoly-button {
+	pointer-events: all;
+}
+
 .options-panel .monopoly-button.match-config-tab-button {
 	flex: 1 1 0;
 	min-width: 0;

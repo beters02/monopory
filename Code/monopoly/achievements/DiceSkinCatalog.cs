@@ -34,8 +34,8 @@ public static class DiceSkinCatalog
 			Id = "midnight",
 			Label = "Midnight Dice",
 			Description = "Unlocked by rolling snake eyes.",
-			BackgroundColor = ColorUtils.FromHex("#5A1B64"),
-			DotColor = ColorUtils.FromHex("#4C7999")
+			BackgroundColor = ColorUtils.FromHex("#2E1A47"),
+			DotColor = ColorUtils.FromHex("#00E5FF ")
 		}
 	};
 
