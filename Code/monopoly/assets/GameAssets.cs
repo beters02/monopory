@@ -20,6 +20,17 @@ public static partial class GameAssets
 		MouseIcons.Preload();
 	}
 
+	[ConCmd( "gameassets_reload" )]
+	public static void ReloadAll( Connection connection = null )
+	{
+		uiAssetsPrewarmed = false;
+
+		foreach ( (var type, GameAssetCategoryAttribute attribute) in TypeLibrary.GetTypesWithAttribute<GameAssetCategoryAttribute>() )
+			ReloadAssets( type );
+
+		Log.Info( "GameAssets reloaded." );
+	}
+
 	private static void PreloadAssets( TypeDescription type )
 	{
 		if ( type is null )
@@ -36,6 +47,33 @@ public static partial class GameAssets
 			return;
 
 		var assetType = Game.TypeLibrary.GetType( field.FieldType );
+		var preloadMethod = assetType?.GetMethod( "Preload" );
+		preloadMethod?.Invoke( asset );
+	}
+
+	private static void ReloadAssets( TypeDescription type )
+	{
+		if ( type is null )
+			return;
+
+		foreach ( var field in type.Fields )
+			ReloadAsset( field );
+	}
+
+	private static void ReloadAsset( FieldDescription field )
+	{
+		var asset = field.GetValue( null );
+		if ( asset is null )
+			return;
+
+		var assetType = Game.TypeLibrary.GetType( field.FieldType );
+		var reloadMethod = assetType?.GetMethod( "Reload" );
+		if ( reloadMethod is not null )
+		{
+			reloadMethod.Invoke( asset );
+			return;
+		}
+
 		var preloadMethod = assetType?.GetMethod( "Preload" );
 		preloadMethod?.Invoke( asset );
 	}
@@ -59,6 +97,7 @@ public static partial class GameAssets
 		public static readonly GameMaterial Hotel = new ( "materials/pieces/hotel.vmat" );
 		public static readonly GameMaterial Piece = new ( "materials/pieces/piece.vmat" );
 		public static readonly GameMaterial BankruptedPiece = new ( "materials/pieces/piece_bankrupt.vmat" );
+		public static readonly GameMaterial Shiny = new ( "materials/dice/dice_shiny.vmat" );
 	}
 
 	[GameAssetCategory]

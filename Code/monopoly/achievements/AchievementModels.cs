@@ -117,6 +117,7 @@ public sealed class CosmeticDefinition
 	public string Label { get; init; } = "";
 	public string Description { get; init; } = "";
 	public string AssetPath { get; init; } = "";
+	public string BodyMaterialPath { get; init; } = "";
 	public ParticleGradient BackgroundColor { get; init; } = Color.White;
 	public ParticleGradient DotColor { get; init; } = Color.Black;
 	public string RequiredAchievementId { get; init; } = "";

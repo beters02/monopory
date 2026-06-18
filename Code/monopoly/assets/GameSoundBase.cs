@@ -37,6 +37,12 @@ public abstract class GameSoundBase<TSelf> where TSelf : GameSoundBase<TSelf>
 		return true;
 	}
 
+	public bool Reload()
+	{
+		SoundEvent = null;
+		return Preload();
+	}
+
 	public bool Play()
 	{
 		return Play(null);

@@ -271,10 +271,14 @@ public sealed class PiecePreview : Component
 
 	private static void ApplyDiceSkinToPreview( GameObject die, DiceSkinDefinition diceSkin )
 	{
-		Log.Info(die);
-		Log.Info(diceSkin);
 		if ( die is null || diceSkin is null )
 			return;
+
+		var renderer = die.GetComponent<ModelRenderer>();
+		if ( renderer is not null )
+			renderer.MaterialOverride = string.IsNullOrWhiteSpace( diceSkin.BodyMaterialPath )
+				? null
+				: Material.Load( diceSkin.BodyMaterialPath );
 
 		foreach ( var child in die.Children )
 		{

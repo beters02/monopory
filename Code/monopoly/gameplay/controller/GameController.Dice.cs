@@ -26,6 +26,12 @@ public sealed partial class GameController : Component
 		if ( die?.GameObject is null || diceSkin is null )
 			return;
 
+		var renderer = die.GameObject.GetComponent<ModelRenderer>();
+		if ( renderer is not null )
+			renderer.MaterialOverride = string.IsNullOrWhiteSpace( diceSkin.BodyMaterialPath )
+				? null
+				: Material.Load( diceSkin.BodyMaterialPath );
+
 		foreach ( var child in die.GameObject.Children )
 		{
 			var decal = child.GetComponent<Decal>();

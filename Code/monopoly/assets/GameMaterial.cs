@@ -31,6 +31,12 @@ public sealed class GameMaterial
 		return Material is not null;
 	}
 
+	public bool Reload()
+	{
+		loadedMaterial = null;
+		return Preload();
+	}
+
 	public override string ToString() => Path;
 
 	public static implicit operator GameMaterial( string path ) => new( path );

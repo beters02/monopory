@@ -6,6 +6,7 @@ public sealed class DiceSkinDefinition
 	public string Label { get; init; } = "";
 	public string Description { get; init; } = "";
 	public string RequiredAchievementId { get; init; } = "";
+	public string BodyMaterialPath { get; init; } = "";
 	public ParticleGradient BackgroundColor { get; init; } = Color.White;
 	public ParticleGradient DotColor { get; init; } = Color.Black;
 }
@@ -14,8 +15,8 @@ public static class DiceSkinCatalog
 {
 	public const string DefaultDiceSkinId = "classic";
 
-	private static readonly IReadOnlyList<DiceSkinDefinition> definitions = new List<DiceSkinDefinition>
-	{
+	private static readonly IReadOnlyList<DiceSkinDefinition> definitions =
+	[
 		new()
 		{
 			Id = DefaultDiceSkinId,
@@ -27,6 +28,7 @@ public static class DiceSkinCatalog
 			Id = "gold",
 			Label = "Gold Dice",
 			Description = "Unlocked by collecting properties.",
+			BodyMaterialPath = GameAssets.Materials.Shiny.Path,
 			BackgroundColor = MonopolyTheme.MonopolyGoldColor
 		},
 		new()
@@ -37,7 +39,7 @@ public static class DiceSkinCatalog
 			BackgroundColor = ColorUtils.FromHex("#2E1A47"),
 			DotColor = ColorUtils.FromHex("#00E5FF ")
 		}
-	};
+	];
 
 	public static IReadOnlyList<DiceSkinDefinition> All => definitions;
 

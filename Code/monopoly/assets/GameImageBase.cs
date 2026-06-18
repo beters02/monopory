@@ -28,5 +28,11 @@ public abstract class GameImageBase<TSelf> where TSelf : GameImageBase<TSelf>
 
 	public bool Preload() => Texture is not null;
 
+	public bool Reload()
+	{
+		loadedTexture = null;
+		return Preload();
+	}
+
 	public override string ToString() => Path;
 }
