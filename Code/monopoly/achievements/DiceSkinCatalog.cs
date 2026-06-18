@@ -6,7 +6,8 @@ public sealed class DiceSkinDefinition
 	public string Label { get; init; } = "";
 	public string Description { get; init; } = "";
 	public string RequiredAchievementId { get; init; } = "";
-	public string FaceTextureDirectory { get; init; } = "textures/dice/new";
+	public ParticleGradient BackgroundColor { get; init; } = Color.White;
+	public ParticleGradient DotColor { get; init; } = Color.Black;
 }
 
 public static class DiceSkinCatalog
@@ -20,23 +21,21 @@ public static class DiceSkinCatalog
 			Id = DefaultDiceSkinId,
 			Label = "Classic Dice",
 			Description = "The default Rent Rush dice.",
-			FaceTextureDirectory = "textures/dice/new"
 		},
 		new()
 		{
 			Id = "gold",
 			Label = "Gold Dice",
 			Description = "Unlocked by collecting properties.",
-			RequiredAchievementId = AchievementIds.PropertyCollector,
-			FaceTextureDirectory = "textures/dice/new"
+			BackgroundColor = MonopolyTheme.MonopolyGoldColor
 		},
 		new()
 		{
 			Id = "midnight",
 			Label = "Midnight Dice",
 			Description = "Unlocked by rolling snake eyes.",
-			RequiredAchievementId = AchievementIds.SnakeEyes,
-			FaceTextureDirectory = "textures/dice/new"
+			BackgroundColor = ColorUtils.FromHex("#5A1B64"),
+			DotColor = ColorUtils.FromHex("#4C7999")
 		}
 	};
 

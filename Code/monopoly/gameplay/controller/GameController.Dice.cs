@@ -4,6 +4,43 @@ using Sandbox;
 
 public sealed partial class GameController : Component
 {
+	private void ApplyLocalDiceSkin()
+	{
+		if ( LocalPlayer is null )
+			return;
+
+		var diceSkin = DiceSkinCatalog.GetByIdOrDefault( LocalPlayer.SelectedDiceSkinId );
+		if ( string.Equals( lastAppliedLocalDiceSkinId, diceSkin.Id, StringComparison.OrdinalIgnoreCase ) )
+			return;
+
+		if ( !TryGetPhysicalDice( out var dieA, out var dieB ) )
+			return;
+
+		ApplyDiceSkin( dieA, diceSkin );
+		ApplyDiceSkin( dieB, diceSkin );
+		lastAppliedLocalDiceSkinId = diceSkin.Id;
+	}
+
+	private static void ApplyDiceSkin( DiceComponent die, DiceSkinDefinition diceSkin )
+	{
+		if ( die?.GameObject is null || diceSkin is null )
+			return;
+
+		foreach ( var child in die.GameObject.Children )
+		{
+			var decal = child.GetComponent<Decal>();
+			if ( decal is null )
+				continue;
+
+			if ( child.Name.Contains( "Bg", StringComparison.OrdinalIgnoreCase ) )
+				decal.ColorTint = diceSkin.BackgroundColor;
+			else if (
+				child.Name.Contains( "Dot", StringComparison.OrdinalIgnoreCase ) ||
+				child.Name.Contains( "Pip", StringComparison.OrdinalIgnoreCase ) ||
+				child.Name.Contains( "Fg", StringComparison.OrdinalIgnoreCase ) )
+				decal.ColorTint = diceSkin.DotColor;
+		}
+	}
 
 	public bool TryGetPhysicalDice( out DiceComponent dieA, out DiceComponent dieB )
 	{

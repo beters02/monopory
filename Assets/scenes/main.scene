@@ -4727,6 +4727,37 @@
           "Children": []
         }
       ]
+    },
+    {
+      "__guid": "14d1f7cf-777c-430b-ac94-b9ad5dd5f9cf",
+      "__version": 2,
+      "Flags": 0,
+      "Name": "ChangeDiceTest",
+      "Position": "-111.745331,-360.217834,17.2794495",
+      "Rotation": "0,0,0,1",
+      "Scale": "1,1,1",
+      "Tags": "",
+      "Enabled": true,
+      "NetworkMode": 2,
+      "NetworkFlags": 0,
+      "NetworkOrphaned": 0,
+      "NetworkTransmit": true,
+      "OwnerTransfer": 1,
+      "Components": [
+        {
+          "__type": "ChangeDiceColorTest",
+          "__guid": "1085909e-8f86-4667-a065-742f74d4f7d5",
+          "__enabled": true,
+          "Flags": 0,
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null
+        }
+      ],
+      "Children": []
     }
   ],
   "SceneProperties": {
@@ -4754,6 +4785,11 @@
       "Sandbox.SelectionSetsSystem": {
         "Data": {
           "SelectionSets": []
+        }
+      },
+      "Sandbox.Clutter.ClutterGridSystem": {
+        "Storage": {
+          "$blob": "c9ca2505-9153-48b1-939b-13a2061f3463"
         }
       }
     }

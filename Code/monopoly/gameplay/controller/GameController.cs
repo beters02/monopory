@@ -170,6 +170,7 @@ public sealed partial class GameController : Component, Component.INetworkListen
 	private bool isRecoveringPendingRoll;
 	private float lastRecoveryAttemptAt;
 	private ResolvedActionOutcome resolvedActionOutcome = ResolvedActionOutcome.StayInTurnEnded;
+	private string lastAppliedLocalDiceSkinId = "";
 
 	public static GameController Instance => instance;
 	public IReadOnlyList<GamePopup> Popups => popups;
@@ -232,6 +233,7 @@ public sealed partial class GameController : Component, Component.INetworkListen
 		RefreshReplicatedPlayerSlots();
 		UpdatePopups();
 		UpdateVisualTokens();
+		ApplyLocalDiceSkin();
 		RecoverPendingPurchaseSelection();
 		UpdateServerLoadingWatchdog();
 
