@@ -246,7 +246,10 @@ public sealed partial class GameController : Component
 		}
 		else
 		{
+			var rollIndex = NextDiceRollIndex;
 			(LastDieA, LastDieB) = RollVerifiedDice( CurrentPlayerIndex, true, false, "Jail roll" );
+			(LastDieA, LastDieB) = await RollPhysicalDiceAsync(
+				throwStrength, LastDieA, LastDieB, rollIndex );
 			total = LastDieA + LastDieB;
 			rolledDoubles = LastDieA == LastDieB;
 		}
@@ -342,7 +345,10 @@ public sealed partial class GameController : Component
 		}
 		else
 		{
+			var rollIndex = NextDiceRollIndex;
 			(LastDieA, LastDieB) = RollVerifiedDice( CurrentPlayerIndex, false, false, "Normal roll" );
+			(LastDieA, LastDieB) = await RollPhysicalDiceAsync(
+				throwStrength, LastDieA, LastDieB, rollIndex );
 			total = LastDieA + LastDieB;
 			rolledDoubles = LastDieA == LastDieB;
 		}

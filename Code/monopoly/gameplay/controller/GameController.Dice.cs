@@ -77,30 +77,35 @@ public sealed partial class GameController : Component
 		return UsePhysicalDice && dieA is not null && dieB is not null;
 	}
 
-	private async Task<(int DieA, int DieB)> RollPhysicalDiceAsync( float throwStrength )
+	private async Task<(int DieA, int DieB)> RollPhysicalDiceAsync(
+		float throwStrength,
+		int expectedDieA,
+		int expectedDieB,
+		int rollIndex )
 	{
 		if ( !TryGetPhysicalDice( out var dieA, out var dieB ) )
-			return (Game.Random.Int( 1, 6 ), Game.Random.Int( 1, 6 ));
+			return (expectedDieA, expectedDieB);
 
+		var random = CreateDicePhysicsRandom( rollIndex );
 		var strength = Math.Clamp( throwStrength, 0f, 1f );
 		var dropSpeed = DiceMinDropSpeed.LerpTo( DiceMaxDropSpeed, strength );
 		var horizontalSpeed = DiceMinHorizontalSpeed.LerpTo( DiceMaxHorizontalSpeed, strength );
 		var spin = DiceMinSpinSpeed.LerpTo( DiceMaxSpinSpeed, strength );
 		var center = GetDiceThrowCenter();
-		var side = GetDiceThrowSideAxis();
+		var side = GetDiceThrowSideAxis( random );
 		var forward = Vector3.Cross( Vector3.Up, side ).Normal;
 
 		var originA = center + Vector3.Up * DiceThrowHeight - side * DiceSpawnSpacing * 0.5f;
 		var originB = center + Vector3.Up * DiceThrowHeight + side * DiceSpawnSpacing * 0.5f;
 		var velocityA = Vector3.Down * dropSpeed + forward * horizontalSpeed + side * (horizontalSpeed * 0.25f);
 		var velocityB = Vector3.Down * (dropSpeed * 0.94f) + forward * (horizontalSpeed * 0.85f) - side * (horizontalSpeed * 0.2f);
-		var rotationA = GetRandomDiceRotation();
-		var rotationB = GetRandomDiceRotation();
+		var rotationA = GetRandomDiceRotation( random );
+		var rotationB = GetRandomDiceRotation( random );
 		if ( rotationA == rotationB )
-			rotationB = GetRandomDiceRotation();
+			rotationB = GetRandomDiceRotation( random );
 
-		var spinA = new Vector3( Game.Random.Float( -1f, 1f ), Game.Random.Float( -1f, 1f ), Game.Random.Float( -1f, 1f ) ).Normal * spin;
-		var spinB = new Vector3( Game.Random.Float( -1f, 1f ), Game.Random.Float( -1f, 1f ), Game.Random.Float( -1f, 1f ) ).Normal * spin;
+		var spinA = GetRandomDiceSpin( random ) * spin;
+		var spinB = GetRandomDiceSpin( random ) * spin;
 
 		IsResolvingPhysicalDice = true;
 		PhysicalDiceStartedAt = Time.Now;
@@ -109,9 +114,9 @@ public sealed partial class GameController : Component
 		{
 			SetHudIsVisibleAll(false);
 			ThrowPhysicalDice( originA, originB, rotationA, rotationB, velocityA, velocityB, spinA, spinB );
-			var task = await WaitForPhysicalDiceResultAsync();
+			await WaitForPhysicalDiceResultAsync();
 			SetHudIsVisibleAll(true);
-			return task;
+			return (expectedDieA, expectedDieB);
 		}
 		finally
 		{
@@ -121,12 +126,32 @@ public sealed partial class GameController : Component
 		}
 	}
 
-	private static Rotation GetRandomDiceRotation()
+	private System.Random CreateDicePhysicsRandom( int rollIndex )
+	{
+		var seedBytes = System.Security.Cryptography.SHA256.HashData(
+			System.Text.Encoding.UTF8.GetBytes( $"{privateDiceSeed}:{rollIndex}:physics" ) );
+		return new System.Random( BitConverter.ToInt32( seedBytes, 0 ) );
+	}
+
+	private static float NextDiceRandomFloat( System.Random random, float min, float max )
+	{
+		return min + (float)random.NextDouble() * (max - min);
+	}
+
+	private static Rotation GetRandomDiceRotation( System.Random random )
 	{
 		return Rotation.From(
-			Game.Random.Float( 0f, 360f ),
-			Game.Random.Float( 0f, 360f ),
-			Game.Random.Float( 0f, 360f ) );
+			NextDiceRandomFloat( random, 0f, 360f ),
+			NextDiceRandomFloat( random, 0f, 360f ),
+			NextDiceRandomFloat( random, 0f, 360f ) );
+	}
+
+	private static Vector3 GetRandomDiceSpin( System.Random random )
+	{
+		return new Vector3(
+			NextDiceRandomFloat( random, -1f, 1f ),
+			NextDiceRandomFloat( random, -1f, 1f ),
+			NextDiceRandomFloat( random, -1f, 1f ) ).Normal;
 	}
 
 	private async Task<(int DieA, int DieB)> WaitForPhysicalDiceResultAsync()
@@ -167,9 +192,9 @@ public sealed partial class GameController : Component
 		return Board?.GameObject?.WorldPosition ?? Vector3.Zero;
 	}
 
-	private static Vector3 GetDiceThrowSideAxis()
+	private static Vector3 GetDiceThrowSideAxis( System.Random random )
 	{
-		var yaw = Game.Random.Float( 0f, MathF.PI * 2f );
+		var yaw = NextDiceRandomFloat( random, 0f, MathF.PI * 2f );
 		return new Vector3( MathF.Cos( yaw ), MathF.Sin( yaw ), 0f ).Normal;
 	}
 
