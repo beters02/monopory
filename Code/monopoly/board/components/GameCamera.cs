@@ -15,14 +15,13 @@ public sealed class GameCamera : Component
 	public static GameCamera Instance => instance;
 
 	[Property] public GameObject Target { get; set; }
-
 	[Property] public float Distance { get; set; } = 900f;
 	[Property] public float FreecamModeStartDistance = 400f;
 	[Property] public float DefaultModeDistance { get; set; } = 200f;
 	[Property] public float Pitch { get; set; } = 60f;
 	[Property] public float DefaultModePitch { get; set; } = 75f;
 	[Property] public float DefaultModeDicePitch { get; set; } = 75f;
-	[Property] public float Fov { get; set; } = 35f;
+	[Property] public float Fov { get; set; } = 60f;
 	[Property] public float FollowLerpSpeed { get; set; } = 3f;
 	[Property] public float RotationLerpSpeed { get; set; } = 2.5f;
 	[Property] public float FreeCamMoveSpeed { get; set; } = 120f;
@@ -38,6 +37,7 @@ public sealed class GameCamera : Component
 	[Property] public float TokenModeMinPitch { get; set; } = -12f;
 	[Property] public float TokenModeMaxPitch { get; set; } = 55f;
 	[Property] public float TokenModeLookSensitivity { get; set; } = 1f;
+	[Property] public bool AutoExpsureEnabled { get; set; } = false;
 
 	public BoardCameraMode Mode { get; private set; } = BoardCameraMode.Default;
 	public bool IsTokenModeRequested => requestedMode == BoardCameraMode.Token;
@@ -51,17 +51,12 @@ public sealed class GameCamera : Component
 	private float tokenCameraPitch;
 	private bool didHideMouse;
 
+	private CameraComponent cameraComponent;
+
 	protected override void OnStart()
 	{
 		instance = this;
-
-		CameraComponent camera = Components.Get<CameraComponent>();
-
-		if ( camera != null )
-		{
-			camera.FieldOfView = Fov;
-		}
-
+		cameraComponent = GetComponentInChildren<CameraComponent>();
 		freeCamDistance = Distance;
 	}
 
@@ -87,6 +82,9 @@ public sealed class GameCamera : Component
 		}
 
 		UpdateStandardCamera( Mode );
+
+		cameraComponent?.AutoExposure.Enabled = AutoExpsureEnabled;
+		cameraComponent?.FieldOfView = Fov;
 	}
 
 	public void SetMode( BoardCameraMode mode )

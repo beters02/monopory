@@ -15,13 +15,17 @@ public sealed class PiecePreview : Component
 
 	private Dictionary<string, PiecePreviewDef> PiecePreviewDefs = new()
 	{
+		["detective_man"] = new()
+		{
+			CameraVerticalOffset = -5f
+		},
 		["cowboy_man"] = new()
 		{
 			CameraLocalTransformPosition = new Vector3(298.80899f,-320.370758f,9.90066051f),
 			CameraLocalTransformRotation = new Rotation(-0.0504027419f, 0.331814408f, 0.146045834f, 0.930607021f),
 			CameraDistance = 51.81f,
-			CameraHorizontalOffset = -9.89f,
-			CameraVerticalOffset = -3.59f
+			CameraHorizontalOffset = -7.3f,
+			CameraVerticalOffset = -3.4f
 		}
 	};
 
@@ -33,7 +37,7 @@ public sealed class PiecePreview : Component
 	[Property] public float RotationSpeed { get; set; } = 22f;
 	[Property] public float PreviewScaleMultiplier { get; set; } = 1f;
 
-	public float DiceCameraDistance { get; set; } = 84.55f;
+	public float DiceCameraDistance { get; set; } = 99.21f;
 	public float DiceCameraHorizontalOffset { get; set; } = -14.72f;
 
 	public float DefCameraDistance;

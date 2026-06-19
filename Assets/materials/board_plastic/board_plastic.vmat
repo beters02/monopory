@@ -34,7 +34,7 @@ Layer0
 	g_vDetailTexCoordOffset "[0.000 0.000]"
 	g_vDetailTexCoordScale "[1.000 1.000]"
 	TextureDetail "materials/default/default_detail.tga"
-	TextureDetailMask "materials/default/default_detailmask.tga"
+	TextureDetailMask "materials/board_plastic/Plastic015A_2K-JPG_Displacement.jpg"
 	TextureNormalDetail "materials/default/default_normal.tga"
 
 	//---- Fade ----

@@ -10,6 +10,9 @@
 | Shell/bash | `ctx_shell(command)` | `ctx_shell("cargo test")` |
 | Edit (when Read unavailable) | `ctx_edit(path, old, new)` | `ctx_edit("f.rs", "old", "new")` |
 
+## Tool Bypass
+If you cannot read an image file that is sent in the current request, you may bypass lean-ctx to read the image. Return back to tool mapping after retrieval.
+
 ## ctx_read Mode Selection
 | Goal | Mode | When |
 |------|------|------|

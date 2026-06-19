@@ -3827,6 +3827,7 @@
           "__guid": "f0aaa3af-837d-44a2-8b6b-a4200b2db168",
           "__enabled": true,
           "Flags": 0,
+          "AutoExpsureEnabled": false,
           "DefaultModeDicePitch": 75,
           "DefaultModeDistance": 150,
           "DefaultModePitch": 41,
@@ -3834,7 +3835,7 @@
           "DiceFramingPadding": 16,
           "Distance": 350,
           "FollowLerpSpeed": 3,
-          "Fov": 35,
+          "Fov": 60,
           "FreeCamBoundsPadding": 48,
           "FreeCamMaxDistance": 1200,
           "FreeCamMinDistance": 100,
@@ -4649,6 +4650,28 @@
               "Static": true,
               "Surface": "surfaces/board.surface",
               "SurfaceVelocity": "0,0,0"
+            },
+            {
+              "__type": "Sandbox.Clutter.ClutterComponent",
+              "__guid": "f660965c-0bab-419a-91d9-f82e5cdc5318",
+              "__enabled": true,
+              "Flags": 0,
+              "Bounds": {
+                "Mins": "-512,-512,-512",
+                "Maxs": "512,512,512"
+              },
+              "Clutter": null,
+              "Mode": "Volume",
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null,
+              "Seed": 0,
+              "Storage": {
+                "$blob": "535610b5-1a61-4684-8d96-8775b2748d87"
+              }
             }
           ],
           "Children": []

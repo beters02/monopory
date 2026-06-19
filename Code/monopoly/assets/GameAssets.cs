@@ -87,7 +87,7 @@ public static partial class GameAssets
 	[GameAssetCategory]
 	public static class Icons
 	{
-		public static readonly GameIcon CameraWhiteFixedSvg = new ( "textures/icons/camera_white_fixed.svg" );
+		public static readonly GameIcon CameraWhiteFixedSvg = new ( "textures/icons/a_white_camera.svg" );
 	}
 
 	[GameAssetCategory]
