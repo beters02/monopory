@@ -20,7 +20,6 @@ public sealed class GameCamera : Component
 	[Property] public float DefaultModeDistance { get; set; } = 200f;
 	[Property] public float Pitch { get; set; } = 60f;
 	[Property] public float DefaultModePitch { get; set; } = 75f;
-	[Property] public float DefaultModeDicePitch { get; set; } = 75f;
 	[Property] public float Fov { get; set; } = 60f;
 	[Property] public float FollowLerpSpeed { get; set; } = 3f;
 	[Property] public float RotationLerpSpeed { get; set; } = 2.5f;
@@ -29,8 +28,6 @@ public sealed class GameCamera : Component
 	[Property] public float FreeCamMinDistance { get; set; } = 75f;
 	[Property] public float FreeCamMaxDistance { get; set; } = 1200f;
 	[Property] public float FreeCamBoundsPadding { get; set; } = 48f;
-	[Property] public float DiceFramingPadding { get; set; } = 16f;
-	[Property] public float DiceFramingMinDistance { get; set; } = 140f;
 	public float TokenModeDistance { get; set; } = 48f;
 	public float TokenModeHeight { get; set; } = 14f;
 	public float TokenModePitch { get; set; } = 12f;
@@ -38,6 +35,13 @@ public sealed class GameCamera : Component
 	[Property] public float TokenModeMaxPitch { get; set; } = 55f;
 	[Property] public float TokenModeLookSensitivity { get; set; } = 1f;
 	[Property] public bool AutoExpsureEnabled { get; set; } = false;
+
+	public float DiceFramingPadding { get; set; } = 30f;
+	public float DiceFramingMinDistance { get; set; } = 200f;
+	public float DefaultModeDicePitch { get; set; } = 75f;
+	[Property] public float DiceFollowLerpSpeed = 4f;
+	[Property] public float DiceRotationLerpSpeed = 3.5f;
+
 
 	public BoardCameraMode Mode { get; private set; } = BoardCameraMode.Default;
 	public bool IsTokenModeRequested => requestedMode == BoardCameraMode.Token;
@@ -58,6 +62,7 @@ public sealed class GameCamera : Component
 		instance = this;
 		cameraComponent = GetComponentInChildren<CameraComponent>();
 		freeCamDistance = Distance;
+		cameraComponent?.FieldOfView = Fov;
 	}
 
 	protected override void OnDestroy()
@@ -158,7 +163,7 @@ public sealed class GameCamera : Component
 			);
 		}
 
-		ApplyView( freeCamFocus, freeCamDistance, 0f, Pitch, true );
+		ApplyView( freeCamFocus, freeCamDistance, 0f, Pitch, FollowLerpSpeed, RotationLerpSpeed, true );
 	}
 
 	private Vector3 GetFreeCamMoveInput()
@@ -221,6 +226,8 @@ public sealed class GameCamera : Component
 			: 0f;
 		var distance = effectiveMode == BoardCameraMode.Default ? DefaultModeDistance : Distance;
 		float pitch = effectiveMode == BoardCameraMode.Default ? DefaultModePitch : Pitch;
+		var followLerpSpeed = FollowLerpSpeed;
+		var rotLerpSpeed = RotationLerpSpeed;
 
 		if ( effectiveMode == BoardCameraMode.Default )
 		{
@@ -230,10 +237,12 @@ public sealed class GameCamera : Component
 			{
 				distance = GetDiceFramingDistance( center, yaw, dieA.GameObject.WorldPosition, dieB.GameObject.WorldPosition );
 				pitch = DefaultModeDicePitch;
+				followLerpSpeed = DiceFollowLerpSpeed;
+				rotLerpSpeed = DiceRotationLerpSpeed;
 			}
 		}
 
-		ApplyView( center, distance, yaw, pitch, true );
+		ApplyView( center, distance, yaw, pitch, followLerpSpeed, rotLerpSpeed, true );
 	}
 
 	private void CaptureTokenMouse()
@@ -406,17 +415,17 @@ public sealed class GameCamera : Component
 		return Math.Max( Math.Max( DefaultModeDistance, DiceFramingMinDistance ), requiredDistance );
 	}
 
-	private void ApplyView( Vector3 center, float distance, float yaw, float pitch, bool smooth )
+	private void ApplyView( Vector3 center, float distance, float yaw, float pitch, float followLerpSpeed, float rotLerpSpeed, bool smooth )
 	{
 		var rotation = Rotation.From( pitch, yaw, 0f );
 		var offset = -rotation.Forward * distance;
 		var targetPosition = center + offset;
 
 		GameObject.WorldPosition = smooth
-			? GameObject.WorldPosition.LerpTo( targetPosition, Time.Delta * FollowLerpSpeed )
+			? GameObject.WorldPosition.LerpTo( targetPosition, Time.Delta * followLerpSpeed )
 			: targetPosition;
 		GameObject.WorldRotation = smooth
-			? GameObject.WorldRotation.LerpTo( rotation, Time.Delta * RotationLerpSpeed )
+			? GameObject.WorldRotation.LerpTo( rotation, Time.Delta * rotLerpSpeed )
 			: rotation;
 	}
 }
