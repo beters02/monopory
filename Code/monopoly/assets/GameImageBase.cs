@@ -8,7 +8,7 @@ public abstract class GameImageBase<TSelf> where TSelf : GameImageBase<TSelf>
 		Path = path ?? "";
 	}
 
-	public string Path { get; }
+	public string Path { get; init; }
 
 	private Texture loadedTexture;
 

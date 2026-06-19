@@ -8,7 +8,7 @@ public sealed class GameMaterial
         Path = path ?? "";
     }
 
-	public string Path { get; }
+	public string Path { get; init; }
 
     private Material loadedMaterial;
 

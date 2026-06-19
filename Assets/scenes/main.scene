@@ -4758,6 +4758,49 @@
         }
       ],
       "Children": []
+    },
+    {
+      "__guid": "7033f6e0-6ddc-40c8-8bb7-cafcffa6cf52",
+      "__version": 2,
+      "Flags": 0,
+      "Name": "Object",
+      "Position": "-183.036011,-276.432831,90.5083923",
+      "Rotation": "0,0,0,1",
+      "Scale": "1,1,1",
+      "Tags": "",
+      "Enabled": true,
+      "NetworkMode": 2,
+      "NetworkFlags": 0,
+      "NetworkOrphaned": 0,
+      "NetworkTransmit": true,
+      "OwnerTransfer": 1,
+      "Components": [
+        {
+          "__type": "Sandbox.IndirectLightVolume",
+          "__guid": "0874fd47-b2ec-433c-b370-ebafd462dc79",
+          "__enabled": true,
+          "Flags": 0,
+          "Bounds": {
+            "Mins": "-256,-256,-256",
+            "Maxs": "256,256,256"
+          },
+          "Contrast": 1,
+          "DistanceTexture": "scenes/main_scene_data/ddgi/object_distance_0874fd47-b2ec-433c-b370-ebafd462dc79.vtex",
+          "InsideGeometry": "Relocate",
+          "IrradianceTexture": "scenes/main_scene_data/ddgi/object_irradiance_0874fd47-b2ec-433c-b370-ebafd462dc79.vtex",
+          "NormalBias": 5,
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null,
+          "ProbeDensity": 15,
+          "RelocationTexture": "scenes/main_scene_data/ddgi/object_relocation_0874fd47-b2ec-433c-b370-ebafd462dc79.vtex",
+          "RenderExcludeTags": ""
+        }
+      ],
+      "Children": []
     }
   ],
   "SceneProperties": {
@@ -4782,14 +4825,14 @@
       "CustomBounds": false
     },
     "GameObjectSystems": {
-      "Sandbox.SelectionSetsSystem": {
-        "Data": {
-          "SelectionSets": []
-        }
-      },
       "Sandbox.Clutter.ClutterGridSystem": {
         "Storage": {
           "$blob": "c9ca2505-9153-48b1-939b-13a2061f3463"
+        }
+      },
+      "Sandbox.SelectionSetsSystem": {
+        "Data": {
+          "SelectionSets": []
         }
       }
     }

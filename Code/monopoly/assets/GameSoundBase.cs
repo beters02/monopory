@@ -16,7 +16,7 @@ public abstract class GameSoundBase<TSelf> where TSelf : GameSoundBase<TSelf>
 		SoundType = GetSoundType( path );
 	}
 
-	public string Path { get; }
+	public string Path { get; init; }
 
 	public bool IsAssigned => !string.IsNullOrWhiteSpace( Path );
 

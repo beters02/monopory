@@ -10,7 +10,8 @@ public sealed partial class GameController : Component
 			return;
 
 		var diceSkin = DiceSkinCatalog.GetByIdOrDefault( LocalPlayer.SelectedDiceSkinId );
-		if ( string.Equals( lastAppliedLocalDiceSkinId, diceSkin.Id, StringComparison.OrdinalIgnoreCase ) )
+		var diceSkinSignature = GetDiceSkinSignature( diceSkin );
+		if ( string.Equals( lastAppliedLocalDiceSkinId, diceSkinSignature, StringComparison.Ordinal ) )
 			return;
 
 		if ( !TryGetPhysicalDice( out var dieA, out var dieB ) )
@@ -18,7 +19,15 @@ public sealed partial class GameController : Component
 
 		ApplyDiceSkin( dieA, diceSkin );
 		ApplyDiceSkin( dieB, diceSkin );
-		lastAppliedLocalDiceSkinId = diceSkin.Id;
+		lastAppliedLocalDiceSkinId = diceSkinSignature;
+	}
+
+	private static string GetDiceSkinSignature( DiceSkinDefinition diceSkin )
+	{
+		if ( diceSkin is null )
+			return "";
+
+		return $"{diceSkin.Id}|{diceSkin.BodyMaterialPath}|{diceSkin.BackgroundColor}|{diceSkin.DotColor}";
 	}
 
 	private static void ApplyDiceSkin( DiceComponent die, DiceSkinDefinition diceSkin )

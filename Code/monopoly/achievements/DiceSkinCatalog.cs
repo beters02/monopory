@@ -13,9 +13,11 @@ public sealed class DiceSkinDefinition
 
 public static class DiceSkinCatalog
 {
-	public const string DefaultDiceSkinId = "classic";
 
-	private static readonly IReadOnlyList<DiceSkinDefinition> definitions =
+	public const string DefaultDiceSkinId = "classic";
+	public static IReadOnlyList<DiceSkinDefinition> cache;
+
+	private static IReadOnlyList<DiceSkinDefinition> BuildDefinitions() =>
 	[
 		new()
 		{
@@ -26,7 +28,7 @@ public static class DiceSkinCatalog
 		new()
 		{
 			Id = "gold",
-			Label = "Gold Dice",
+			Label = "Gold NINJA Dice",
 			Description = "Unlocked by collecting properties.",
 			BodyMaterialPath = GameAssets.Materials.Shiny.Path,
 			BackgroundColor = MonopolyTheme.MonopolyGoldColor
@@ -41,15 +43,26 @@ public static class DiceSkinCatalog
 		}
 	];
 
-	public static IReadOnlyList<DiceSkinDefinition> All => definitions;
+	private static IReadOnlyList<DiceSkinDefinition> BuildDefinitionsCache()
+	{
+		return cache ?? BuildDefinitions();
+	}
+
+	public static IReadOnlyList<DiceSkinDefinition> All => BuildDefinitionsCache();
+
+	public static void ReloadAll()
+	{
+		cache = null;
+	}
 
 	public static DiceSkinDefinition GetByIdOrDefault( string id )
 	{
+		var all = All;
 		if ( string.IsNullOrWhiteSpace( id ) )
-			return definitions[0];
+			return all[0];
 
 		var normalized = id.Trim();
-		return definitions.FirstOrDefault( definition => string.Equals( definition.Id, normalized, StringComparison.OrdinalIgnoreCase ) ) ?? definitions[0];
+		return all.FirstOrDefault( definition => string.Equals( definition.Id, normalized, StringComparison.OrdinalIgnoreCase ) ) ?? all[0];
 	}
 
 	public static bool IsValidDiceSkinId( string id )
@@ -58,6 +71,6 @@ public static class DiceSkinCatalog
 			return false;
 
 		var normalized = id.Trim();
-		return definitions.Any( definition => string.Equals( definition.Id, normalized, StringComparison.OrdinalIgnoreCase ) );
+		return All.Any( definition => string.Equals( definition.Id, normalized, StringComparison.OrdinalIgnoreCase ) );
 	}
 }
