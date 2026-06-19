@@ -4285,7 +4285,7 @@
           "ShadowCascadeSplitRatio": 0.855,
           "ShadowHardness": 0,
           "Shadows": true,
-          "SkyColor": "0,0,0,0",
+          "SkyColor": "0.55,0.62,0.72,0.35",
           "Visualizer": {}
         }
       ],
