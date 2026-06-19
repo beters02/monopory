@@ -49,5 +49,10 @@ and `ctx_callgraph(action="callers")` to confirm blast radius.
 - **End:** `ctx_session(action="decision", content="what was done + next steps")`
 - **On [CHECKPOINT]:** `ctx_session(action="task", value="current status")`
 
+### SYSTEM GUARDRAILS (CRITICAL)
+1. NEVER run raw search utilities (`rg`, `grep`, `find`) inside `ctx_shell`. You must exclusively use `ctx_search` or `ctx_read` for traversing codebase files.
+2. If searching inside compiled binaries (.dll, .exe, .so, .bin), you are forbidden from utilizing flags that force text formatting (e.g., `rg -a`). You must read offsets programmatically or use targeted binary dump commands.
+3. Always pipe unexpected or potentially large terminal outputs to `head -n 50`.
+
 NEVER use native Read/Grep/Shell when ctx_* equivalents are available.
 <!-- /lean-ctx -->

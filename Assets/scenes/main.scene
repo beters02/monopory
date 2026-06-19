@@ -3828,11 +3828,10 @@
           "__enabled": true,
           "Flags": 0,
           "AutoExpsureEnabled": false,
-          "DefaultModeDicePitch": 75,
           "DefaultModeDistance": 150,
           "DefaultModePitch": 41,
-          "DiceFramingMinDistance": 140,
-          "DiceFramingPadding": 16,
+          "DiceFollowLerpSpeed": 4,
+          "DiceRotationLerpSpeed": 3.5,
           "Distance": 350,
           "FollowLerpSpeed": 3,
           "Fov": 60,
@@ -4315,6 +4314,22 @@
             },
             "Property": "Rotation",
             "Value": "9.16657063E-06,1.38464038E-05,0.0214193836,0.999770641"
+          },
+          {
+            "Target": {
+              "Type": "GameObject",
+              "IdValue": "9d5bd72c-8fab-4abb-8fd8-d65029bec6f4"
+            },
+            "Property": "NetworkMode",
+            "Value": 1
+          },
+          {
+            "Target": {
+              "Type": "GameObject",
+              "IdValue": "9d5bd72c-8fab-4abb-8fd8-d65029bec6f4"
+            },
+            "Property": "NetworkOrphaned",
+            "Value": 1
           }
         ],
         "MovedObjects": []
@@ -4382,6 +4397,22 @@
             },
             "Property": "Rotation",
             "Value": "9.16686258E-06,1.38442301E-05,0.0214194283,0.999770641"
+          },
+          {
+            "Target": {
+              "Type": "GameObject",
+              "IdValue": "9d5bd72c-8fab-4abb-8fd8-d65029bec6f4"
+            },
+            "Property": "NetworkMode",
+            "Value": 1
+          },
+          {
+            "Target": {
+              "Type": "GameObject",
+              "IdValue": "9d5bd72c-8fab-4abb-8fd8-d65029bec6f4"
+            },
+            "Property": "NetworkOrphaned",
+            "Value": 1
           }
         ],
         "MovedObjects": []
@@ -4848,14 +4879,14 @@
       "CustomBounds": false
     },
     "GameObjectSystems": {
-      "Sandbox.Clutter.ClutterGridSystem": {
-        "Storage": {
-          "$blob": "c9ca2505-9153-48b1-939b-13a2061f3463"
-        }
-      },
       "Sandbox.SelectionSetsSystem": {
         "Data": {
           "SelectionSets": []
+        }
+      },
+      "Sandbox.Clutter.ClutterGridSystem": {
+        "Storage": {
+          "$blob": "c9ca2505-9153-48b1-939b-13a2061f3463"
         }
       }
     }
