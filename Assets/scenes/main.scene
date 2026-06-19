@@ -4320,7 +4320,7 @@
               "Type": "GameObject",
               "IdValue": "9d5bd72c-8fab-4abb-8fd8-d65029bec6f4"
             },
-            "Property": "NetworkMode",
+            "Property": "NetworkOrphaned",
             "Value": 1
           },
           {
@@ -4328,8 +4328,8 @@
               "Type": "GameObject",
               "IdValue": "9d5bd72c-8fab-4abb-8fd8-d65029bec6f4"
             },
-            "Property": "NetworkOrphaned",
-            "Value": 1
+            "Property": "OwnerTransfer",
+            "Value": 0
           }
         ],
         "MovedObjects": []
@@ -4403,7 +4403,7 @@
               "Type": "GameObject",
               "IdValue": "9d5bd72c-8fab-4abb-8fd8-d65029bec6f4"
             },
-            "Property": "NetworkMode",
+            "Property": "NetworkOrphaned",
             "Value": 1
           },
           {
@@ -4411,8 +4411,8 @@
               "Type": "GameObject",
               "IdValue": "9d5bd72c-8fab-4abb-8fd8-d65029bec6f4"
             },
-            "Property": "NetworkOrphaned",
-            "Value": 1
+            "Property": "OwnerTransfer",
+            "Value": 0
           }
         ],
         "MovedObjects": []

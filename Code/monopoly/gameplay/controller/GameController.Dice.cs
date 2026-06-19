@@ -127,6 +127,7 @@ public sealed partial class GameController : Component
 		{
 			SetHudIsVisibleAll(false);
 			ThrowPhysicalDice( originA, originB, rotationA, rotationB, velocityA, velocityB, spinA, spinB );
+			PredictPhysicalDice( originA, originB, rotationA, rotationB, velocityA, velocityB, spinA, spinB );
 			var result = await WaitForPhysicalDiceResultAsync();
 			SetHudIsVisibleAll(true);
 			return result;
@@ -209,6 +210,24 @@ public sealed partial class GameController : Component
 	{
 		var yaw = NextDiceRandomFloat( random, 0f, MathF.PI * 2f );
 		return new Vector3( MathF.Cos( yaw ), MathF.Sin( yaw ), 0f ).Normal;
+	}
+
+	[Rpc.Broadcast]
+	private void PredictPhysicalDice(
+		Vector3 originA,
+		Vector3 originB,
+		Rotation rotationA,
+		Rotation rotationB,
+		Vector3 velocityA,
+		Vector3 velocityB,
+		Vector3 spinA,
+		Vector3 spinB )
+	{
+		if ( Networking.IsHost || !TryGetPhysicalDice( out var dieA, out var dieB ) )
+			return;
+
+		dieA.Throw( originA, rotationA, velocityA, spinA );
+		dieB.Throw( originB, rotationB, velocityB, spinB );
 	}
 
 	private void ThrowPhysicalDice(

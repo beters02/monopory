@@ -142,7 +142,13 @@ public sealed partial class GameController : Component
 
 	private static string CreateSeed()
 	{
-		return Convert.ToHexString( RandomNumberGenerator.GetBytes( IntegritySeedBytes ) ).ToLowerInvariant();
+		var bytes = new byte[IntegritySeedBytes];
+		for ( var i = 0; i < bytes.Length; i++ )
+		{
+			bytes[i] = (byte)Game.Random.Int( 0, byte.MaxValue );
+		}
+
+		return Convert.ToHexString( bytes ).ToLowerInvariant();
 	}
 
 	private static string ComputeSha256Hex( string value )

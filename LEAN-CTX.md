@@ -53,6 +53,8 @@ and `ctx_callgraph(action="callers")` to confirm blast radius.
 1. NEVER run raw search utilities (`rg`, `grep`, `find`) inside `ctx_shell`. You must exclusively use `ctx_search` or `ctx_read` for traversing codebase files.
 2. If searching inside compiled binaries (.dll, .exe, .so, .bin), you are forbidden from utilizing flags that force text formatting (e.g., `rg -a`). You must read offsets programmatically or use targeted binary dump commands.
 3. Always pipe unexpected or potentially large terminal outputs to `head -n 50`.
+4. NEVER use native Read/Grep/Shell when ctx_* equivalents are available.
 
-NEVER use native Read/Grep/Shell when ctx_* equivalents are available.
+## S&box
+Use the S&box mcp server for unknown solutions for S&box related requests
 <!-- /lean-ctx -->
