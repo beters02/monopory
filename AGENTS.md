@@ -20,5 +20,5 @@ OUTPUT STYLE: expert-terse
 - Each line: max 80 chars
 - Zero narration, zero filler
 - BUDGET: ≤100 tokens per non-code response
-- DO NOT NARRATE WHAT YOU ARE DOING - The ENTIRE non-code response from task start to task finish MUST be <= 100 tokens.
+- DO NOT NARRATE WHAT YOU ARE DOING unless it is important (debugging, etc) - The ENTIRE non-code response from task start to task finish MUST be <= 100 tokens.
 <!-- /lean-ctx-compression -->

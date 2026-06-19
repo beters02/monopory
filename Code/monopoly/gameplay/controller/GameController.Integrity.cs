@@ -79,16 +79,14 @@ public sealed partial class GameController : Component
 		SendTableChatMessage( "Admin", entry.Message );
 	}
 
-	public (int DieA, int DieB) RollVerifiedDice( int playerIndex, bool isJailAttempt, bool isForced, string context )
+	private (int DieA, int DieB) GetSeededDice( int rollIndex )
 	{
 		if ( string.IsNullOrWhiteSpace( privateDiceSeed ) )
 			InitializeMatchIntegrity();
 
-		var rollIndex = NextDiceRollIndex;
-		var dieA = GetVerifiedDie( privateDiceSeed, rollIndex, 0 );
-		var dieB = GetVerifiedDie( privateDiceSeed, rollIndex, 1 );
-		RecordDiceResult( playerIndex, dieA, dieB, isJailAttempt, isForced, context );
-		return (dieA, dieB);
+		return (
+			GetVerifiedDie( privateDiceSeed, rollIndex, 0 ),
+			GetVerifiedDie( privateDiceSeed, rollIndex, 1 ) );
 	}
 
 	public void RecordDiceResult( int playerIndex, int dieA, int dieB, bool isJailAttempt, bool isForced, string context )
@@ -128,8 +126,8 @@ public sealed partial class GameController : Component
 			if ( entry.RollIndex != stored.Key )
 				return false;
 
-			if ( entry.DieA != GetVerifiedDie( seed, entry.RollIndex, 0 ) ||
-				entry.DieB != GetVerifiedDie( seed, entry.RollIndex, 1 ) )
+			if ( entry.DieA is < 1 or > 6 || entry.DieB is < 1 or > 6 ||
+				entry.Total != entry.DieA + entry.DieB )
 				return false;
 		}
 

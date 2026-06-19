@@ -59,13 +59,13 @@ public sealed partial class GameController : Component
 
 	public bool TryGetPhysicalDice( out DiceComponent dieA, out DiceComponent dieB )
 	{
-		dieA = DieA;
-		dieB = DieB;
+		dieA = IsGameplayDie( DieA ) ? DieA : null;
+		dieB = IsGameplayDie( DieB ) ? DieB : null;
 
 		if ( (dieA is null || dieB is null) && Scene is not null )
 		{
 			var dice = Scene.GetAllComponents<DiceComponent>()
-				.Where( die => die is not null )
+				.Where( IsGameplayDie )
 				.OrderBy( die => die.GameObject.Name )
 				.ToList();
 
@@ -77,14 +77,27 @@ public sealed partial class GameController : Component
 		return UsePhysicalDice && dieA is not null && dieB is not null;
 	}
 
+	private static bool IsGameplayDie( DiceComponent die )
+	{
+		if ( die?.GameObject is null || !die.IsValid() )
+			return false;
+
+		for ( var current = die.GameObject; current is not null; current = current.Parent )
+		{
+			if ( current.Name.Contains( "DicePreview", StringComparison.OrdinalIgnoreCase ) ||
+				current.Name.Contains( "PiecePreview", StringComparison.OrdinalIgnoreCase ) )
+				return false;
+		}
+
+		return true;
+	}
+
 	private async Task<(int DieA, int DieB)> RollPhysicalDiceAsync(
 		float throwStrength,
-		int expectedDieA,
-		int expectedDieB,
 		int rollIndex )
 	{
 		if ( !TryGetPhysicalDice( out var dieA, out var dieB ) )
-			return (expectedDieA, expectedDieB);
+			return GetSeededDice( rollIndex );
 
 		var random = CreateDicePhysicsRandom( rollIndex );
 		var strength = Math.Clamp( throwStrength, 0f, 1f );
@@ -114,9 +127,9 @@ public sealed partial class GameController : Component
 		{
 			SetHudIsVisibleAll(false);
 			ThrowPhysicalDice( originA, originB, rotationA, rotationB, velocityA, velocityB, spinA, spinB );
-			await WaitForPhysicalDiceResultAsync();
+			var result = await WaitForPhysicalDiceResultAsync();
 			SetHudIsVisibleAll(true);
-			return (expectedDieA, expectedDieB);
+			return result;
 		}
 		finally
 		{
@@ -198,7 +211,6 @@ public sealed partial class GameController : Component
 		return new Vector3( MathF.Cos( yaw ), MathF.Sin( yaw ), 0f ).Normal;
 	}
 
-	[Rpc.Broadcast]
 	private void ThrowPhysicalDice(
 		Vector3 originA,
 		Vector3 originB,

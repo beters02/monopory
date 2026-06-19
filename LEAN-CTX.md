@@ -36,9 +36,9 @@ If you cannot read an image file that is sent in the current request, you may by
 - `ctx_compress` — when context grows large (at phase boundaries)
 - `ctx_knowledge(action="wakeup")` — at session start to surface prior findings
 
-## Compression Bypass (only when compressed output hides needed detail)
+## Compression Bypass (ONLY when compressed output hides needed detail)
 `ctx_read(path, "lines:N-M")` → `ctx_read(path, "full")` → `ctx_shell(cmd, raw=true)`
-Return to compressed defaults after one expanded retrieval.
+Return to compressed defaults after one expanded retrieval. ALWAYS try to use compressed shell, even when its code output. Only bypass if that is the only way to expose the needed detail.
 
 ## Risk Gate (before high-impact edits)
 Before editing exported symbols, auth, DB schemas, or 3+ files: run `ctx_impact(action="analyze")`
