@@ -250,6 +250,18 @@ public sealed partial class GameController : Component
 			TradeEditors = CaptureIntStringDictionary( TradeEditors ),
 			ChatMessages = CaptureIntStringDictionary( ChatMessages ),
 			StatsLogDiceFaceCounts = CaptureIntIntDictionary( StatsLogDiceFaceCounts ),
+			CheatsEnabledEver = CheatsEnabledEver,
+			AdminCommandUsedEver = AdminCommandUsedEver,
+			MatchConfigChangedAfterStart = MatchConfigChangedAfterStart,
+			DiceCommitmentHash = DiceCommitmentHash,
+			RevealedSeed = RevealedSeed,
+			PrivateDiceSeed = CapturePrivateDiceSeed(),
+			NextDiceRollIndex = NextDiceRollIndex,
+			NextAdminHistoryId = NextAdminHistoryId,
+			NextMoveHistoryTurnNumber = NextMoveHistoryTurnNumber,
+			DiceHistory = CaptureIntStringDictionary( DiceHistory ),
+			AdminHistory = CaptureIntStringDictionary( AdminHistory ),
+			MoveHistory = CaptureIntStringDictionary( MoveHistory ),
 			PropertyLandingCounts = CaptureIntIntDictionary( PropertyLandingCounts ),
 			PropertyRentEarned = CaptureIntIntDictionary( PropertyRentEarned ),
 			PendingPurchaseSpaceIndex = PendingPurchaseSpaceIndex,
@@ -416,6 +428,18 @@ public sealed partial class GameController : Component
 		ApplyIntStringDictionary( TradeEditors, snapshot.TradeEditors );
 		ApplyIntStringDictionary( ChatMessages, snapshot.ChatMessages );
 		ApplyIntIntDictionary( StatsLogDiceFaceCounts, snapshot.StatsLogDiceFaceCounts );
+		CheatsEnabledEver = snapshot.CheatsEnabledEver;
+		AdminCommandUsedEver = snapshot.AdminCommandUsedEver;
+		MatchConfigChangedAfterStart = snapshot.MatchConfigChangedAfterStart;
+		DiceCommitmentHash = snapshot.DiceCommitmentHash ?? "";
+		RevealedSeed = snapshot.RevealedSeed ?? "";
+		NextDiceRollIndex = Math.Max( snapshot.NextDiceRollIndex, 0 );
+		NextAdminHistoryId = Math.Max( snapshot.NextAdminHistoryId, 1 );
+		NextMoveHistoryTurnNumber = Math.Max( snapshot.NextMoveHistoryTurnNumber, 1 );
+		ApplyIntStringDictionary( DiceHistory, snapshot.DiceHistory );
+		ApplyIntStringDictionary( AdminHistory, snapshot.AdminHistory );
+		ApplyIntStringDictionary( MoveHistory, snapshot.MoveHistory );
+		RestoreMatchIntegritySeed( snapshot.PrivateDiceSeed );
 		ApplyIntIntDictionary( PropertyLandingCounts, snapshot.PropertyLandingCounts );
 		ApplyIntIntDictionary( PropertyRentEarned, snapshot.PropertyRentEarned );
 		ApplyCardDrawPile( chanceDrawPile, Board?.ChanceCards, snapshot.ChanceDrawPileCardKeys );

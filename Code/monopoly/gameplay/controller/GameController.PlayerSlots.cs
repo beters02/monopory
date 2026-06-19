@@ -278,6 +278,18 @@ public sealed partial class GameController : Component
 		TradeEditors.Clear();
 		TokenPhysicsStates.Clear();
 		StatsLogDiceFaceCounts.Clear();
+		DiceHistory.Clear();
+		AdminHistory.Clear();
+		MoveHistory.Clear();
+		CheatsEnabledEver = false;
+		AdminCommandUsedEver = false;
+		MatchConfigChangedAfterStart = false;
+		DiceCommitmentHash = "";
+		RevealedSeed = "";
+		NextDiceRollIndex = 0;
+		NextAdminHistoryId = 1;
+		NextMoveHistoryTurnNumber = 1;
+		RestoreMatchIntegritySeed( "" );
 
 		foreach ( var player in Players )
 		{

@@ -14,132 +14,126 @@
 
 				<div class="property-stats-header">
 					<div class="property-stats-heading">
-						<div class="property-stats-kicker">Board Analytics</div>
-						<div class="property-stats-title">Property Stats</div>
+						<div class="property-stats-kicker">@GetKickerText()</div>
+						<div class="property-stats-title">@GetTitleText()</div>
 					</div>
 					<div class="property-stats-subtitle">@GetMatchSummary()</div>
 				</div>
 
-				<div class="property-stats-summary-grid">
-					<div class="property-stats-summary-card">
-						<div class="property-stats-summary-label">Property Landings</div>
-						<div class="property-stats-summary-value">@TotalLandings</div>
-					</div>
-					<div class="property-stats-summary-card">
-						<div class="property-stats-summary-label">Rent Earned</div>
-						<div class="property-stats-summary-value">$@TotalRentEarned</div>
-					</div>
-					<div class="property-stats-summary-card">
-						<div class="property-stats-summary-label">Biggest Loser</div>
-						<div class="property-stats-summary-value small">@GetBiggestLoserName()</div>
-					</div>
-					<div class="property-stats-summary-card">
-						<div class="property-stats-summary-label">Top Earner</div>
-						<div class="property-stats-summary-value small">@GetTopRentName()</div>
-					</div>
+				<div class="match-integrity-tabs">
+					@foreach ( var tab in Tabs )
+					{
+						<GameButton Variant="@GetTabButtonClass( tab.Id )" OnClick="@(() => SetActiveTab( tab.Id ))">@tab.Label</GameButton>
+					}
 				</div>
 
-				<div class="property-stats-content">
-					<div class="property-stats-column">
-						<div class="property-stats-section">
-							<div class="property-stats-section-title">Most Landed Properties</div>
-							@foreach ( var row in TopLandingRows )
-							{
-								<div class="property-stats-rank-row">
-									<div class="@GetColorSwatchClasses( row.Space )"></div>
-									<div class="property-stats-rank-main">
-										<div class="property-stats-rank-name">@row.Name</div>
-										<div class="property-stats-rank-meta">@GetOwnerText( row.SpaceIndex )</div>
-									</div>
-									<div class="property-stats-rank-value">@row.Landings</div>
-								</div>
-							}
-							@if ( TopLandingRows.Count == 0 )
-							{
-								<div class="property-stats-empty">No property landings recorded yet.</div>
-							}
-						</div>
-
-						<div class="property-stats-section">
-							<div class="property-stats-section-title">Rent Leaders</div>
-							@foreach ( var row in TopRentRows )
-							{
-								<div class="property-stats-rank-row">
-									<div class="@GetColorSwatchClasses( row.Space )"></div>
-									<div class="property-stats-rank-main">
-										<div class="property-stats-rank-name">@row.Name</div>
-										<div class="property-stats-rank-meta">@GetOwnerText( row.SpaceIndex )</div>
-									</div>
-									<div class="property-stats-rank-value">$@row.RentEarned</div>
-								</div>
-							}
-							@if ( TopRentRows.Count == 0 )
-							{
-								<div class="property-stats-empty">No rent has been collected yet.</div>
-							}
-						</div>
+				@if ( ActiveTab == PropertyTab )
+				{
+					<div class="property-stats-summary-grid">
+						<div class="property-stats-summary-card"><div class="property-stats-summary-label">Property Landings</div><div class="property-stats-summary-value">@TotalLandings</div></div>
+						<div class="property-stats-summary-card"><div class="property-stats-summary-label">Rent Earned</div><div class="property-stats-summary-value">$@TotalRentEarned</div></div>
+						<div class="property-stats-summary-card"><div class="property-stats-summary-label">Biggest Loser</div><div class="property-stats-summary-value small">@GetBiggestLoserName()</div></div>
+						<div class="property-stats-summary-card"><div class="property-stats-summary-label">Top Earner</div><div class="property-stats-summary-value small">@GetTopRentName()</div></div>
 					</div>
 
-					<div class="property-stats-column wide">
-						<div class="property-stats-section player-totals">
-							<div class="property-stats-section-title">Player Totals</div>
-							<div class="property-stats-player-shell">
-								<div class="property-stats-player-list monopory-scroll-y" @ref="PlayerListPanel">
-									@foreach ( var row in PlayerRows )
-									{
-										<div class="@GetPlayerRowClasses( row )">
-											<div class="property-stats-player-name">@row.Name</div>
-											<div class="property-stats-player-pill">$@row.Money</div>
-											<div class="property-stats-player-metric">
-												<span>@row.PropertyCount</span>
-												<label>Props</label>
-											</div>
-											<div class="property-stats-player-metric">
-												<span>@row.Landings</span>
-												<label>Visits</label>
-											</div>
-											<div class="property-stats-player-metric">
-												<span>$@row.RentEarned</span>
-												<label>Rent</label>
-											</div>
-										</div>
-									}
-								</div>
-								<MonoScrollbar Target="@PlayerListPanel" Variant="property-stats-scrollbar"></MonoScrollbar>
-							</div>
-						</div>
-
-						<div class="property-stats-section fill">
-							<div class="property-stats-section-title">Property Detail</div>
-							<div class="property-stats-table-header">
-								<div class="property-stats-table-property">Property</div>
-								<div class="property-stats-table-owner">Owner</div>
-								<div class="property-stats-table-small">Visits</div>
-								<div class="property-stats-table-money">Rent</div>
-							</div>
-							<div class="property-stats-table-shell">
-								<div class="property-stats-table monopory-scroll-y" @ref="PropertyTablePanel">
-								@foreach ( var row in PropertyRows )
+					<div class="property-stats-content">
+						<div class="property-stats-column">
+							<div class="property-stats-section">
+								<div class="property-stats-section-title">Most Landed Properties</div>
+								@foreach ( var row in TopLandingRows )
 								{
-									<div class="property-stats-table-row" onclick="@(() => SelectProperty( row.SpaceIndex ))">
-										<div class="property-stats-property-cell">
-											<div class="@GetColorSwatchClasses( row.Space )"></div>
-											<div>
-												<div class="property-stats-property-name">@row.Name</div>
-												<div class="property-stats-property-meta">@GetPropertyStatusText( row )</div>
-											</div>
-										</div>
-										<div class="property-stats-table-owner">@GetOwnerName( row.SpaceIndex )</div>
-										<div class="property-stats-table-small">@row.Landings</div>
-										<div class="property-stats-table-money">$@row.RentEarned</div>
-									</div>
+									<div class="property-stats-rank-row"><div class="@GetColorSwatchClasses( row.Space )"></div><div class="property-stats-rank-main"><div class="property-stats-rank-name">@row.Name</div><div class="property-stats-rank-meta">@GetOwnerText( row.SpaceIndex )</div></div><div class="property-stats-rank-value">@row.Landings</div></div>
 								}
+								@if ( TopLandingRows.Count == 0 ) { <div class="property-stats-empty">No property landings recorded yet.</div> }
+							</div>
+							<div class="property-stats-section">
+								<div class="property-stats-section-title">Rent Leaders</div>
+								@foreach ( var row in TopRentRows )
+								{
+									<div class="property-stats-rank-row"><div class="@GetColorSwatchClasses( row.Space )"></div><div class="property-stats-rank-main"><div class="property-stats-rank-name">@row.Name</div><div class="property-stats-rank-meta">@GetOwnerText( row.SpaceIndex )</div></div><div class="property-stats-rank-value">$@row.RentEarned</div></div>
+								}
+								@if ( TopRentRows.Count == 0 ) { <div class="property-stats-empty">No rent has been collected yet.</div> }
+							</div>
+						</div>
+
+						<div class="property-stats-column wide">
+							<div class="property-stats-section player-totals">
+								<div class="property-stats-section-title">Player Totals</div>
+								<div class="property-stats-player-shell">
+									<div class="property-stats-player-list monopory-scroll-y" @ref="PlayerListPanel">
+										@foreach ( var row in PlayerRows )
+										{
+											<div class="@GetPlayerRowClasses( row )">
+												<div class="property-stats-player-name">@row.Name</div>
+												<div class="property-stats-player-pill">$@row.Money</div>
+												<div class="property-stats-player-metric"><span>@row.PropertyCount</span><label>Props</label></div>
+												<div class="property-stats-player-metric"><span>@row.Landings</span><label>Visits</label></div>
+												<div class="property-stats-player-metric"><span>$@row.RentEarned</span><label>Rent</label></div>
+											</div>
+										}
+									</div>
+									<MonoScrollbar Target="@PlayerListPanel" Variant="property-stats-scrollbar"></MonoScrollbar>
 								</div>
-								<MonoScrollbar Target="@PropertyTablePanel" Variant="property-stats-scrollbar"></MonoScrollbar>
+							</div>
+
+							<div class="property-stats-section fill">
+								<div class="property-stats-section-title">Property Detail</div>
+								<div class="property-stats-table-header"><div class="property-stats-table-property">Property</div><div class="property-stats-table-owner">Owner</div><div class="property-stats-table-small">Visits</div><div class="property-stats-table-money">Rent</div></div>
+								<div class="property-stats-table-shell">
+									<div class="property-stats-table monopory-scroll-y" @ref="PropertyTablePanel">
+										@foreach ( var row in PropertyRows )
+										{
+											<div class="property-stats-table-row" onclick="@(() => SelectProperty( row.SpaceIndex ))">
+												<div class="property-stats-property-cell"><div class="@GetColorSwatchClasses( row.Space )"></div><div><div class="property-stats-property-name">@row.Name</div><div class="property-stats-property-meta">@GetPropertyStatusText( row )</div></div></div>
+												<div class="property-stats-table-owner">@GetOwnerName( row.SpaceIndex )</div><div class="property-stats-table-small">@row.Landings</div><div class="property-stats-table-money">$@row.RentEarned</div>
+											</div>
+										}
+									</div>
+									<MonoScrollbar Target="@PropertyTablePanel" Variant="property-stats-scrollbar"></MonoScrollbar>
+								</div>
 							</div>
 						</div>
 					</div>
-				</div>
+				}
+				else if ( ActiveTab == DiceTab )
+				{
+					<div class="integrity-list monopory-scroll-y">
+						@foreach ( var row in DiceRows ) { <div class="integrity-row"><div class="integrity-row-title">#@row.RollIndex @row.PlayerName</div><div class="integrity-row-meta">Turn @row.TurnNumber - @row.DieA + @row.DieB = @row.Total - @row.Context</div></div> }
+						@if ( DiceRows.Count == 0 ) { <div class="property-stats-empty">No dice rolls recorded yet.</div> }
+					</div>
+				}
+				else if ( ActiveTab == MoveTab )
+				{
+					<div class="integrity-list monopory-scroll-y">
+						@foreach ( var turn in MoveRows )
+						{
+							<div class="move-history-card">
+								<div class="integrity-row-title">Turn @turn.TurnNumber - @turn.PlayerName</div>
+								<div class="integrity-row-meta">@GetSnapshotSummary( turn.StartPlayers, "Start" )</div>
+								@foreach ( var ev in turn.Events ) { <div class="integrity-row nested"><div class="integrity-row-title">@ev.Title</div><div class="integrity-row-meta">@ev.Message</div></div> }
+								@foreach ( var delta in turn.MoneyDeltas ) { <div class="integrity-row money"><div class="integrity-row-title">@delta.PlayerName @(delta.Delta >= 0 ? "+" : "")@delta.Delta</div><div class="integrity-row-meta">$@delta.BeforeMoney to $@delta.AfterMoney - @delta.Reason</div></div> }
+								<div class="integrity-row-meta">@GetSnapshotSummary( turn.EndPlayers, turn.IsFinalized ? "End" : "Current" )</div>
+							</div>
+						}
+						@if ( MoveRows.Count == 0 ) { <div class="property-stats-empty">No move history recorded yet.</div> }
+					</div>
+				}
+				else if ( ActiveTab == AdminTab )
+				{
+					<div class="integrity-list monopory-scroll-y">
+						@foreach ( var row in AdminRows ) { <div class="integrity-row warning"><div class="integrity-row-title">@row.Command</div><div class="integrity-row-meta">Turn @row.TurnNumber - @row.Message</div></div> }
+						@if ( AdminRows.Count == 0 ) { <div class="property-stats-empty">No admin actions recorded.</div> }
+					</div>
+				}
+				else
+				{
+					<div class="integrity-list monopory-scroll-y">
+						<div class="integrity-badge @GetIntegrityBadgeClass()">@GetIntegrityBadgeText()</div>
+						<div class="integrity-row"><div class="integrity-row-title">Commitment Hash</div><div class="integrity-row-meta hash">@GetHashText()</div></div>
+						<div class="integrity-row"><div class="integrity-row-title">Revealed Seed</div><div class="integrity-row-meta hash">@GetSeedText()</div></div>
+						@foreach ( var reason in GetIntegrityReasons() ) { <div class="integrity-row warning"><div class="integrity-row-title">Integrity Notice</div><div class="integrity-row-meta">@reason</div></div> }
+					</div>
+				}
 			</div>
 		</div>
 	}
@@ -149,203 +143,87 @@
 {
 	[Parameter] public GameController GameRef { get; set; }
 	[Parameter] public bool IsOpen { get; set; }
+	[Parameter] public string InitialTab { get; set; } = PropertyTab;
 	[Parameter] public Action OnClose { get; set; }
 
+	private const string PropertyTab = "property";
+	private const string DiceTab = "dice";
+	private const string MoveTab = "move";
+	private const string AdminTab = "admin";
+	private const string IntegrityTab = "integrity";
+	private string ActiveTab = PropertyTab;
+	private string lastInitialTab = "";
 	private Panel PropertyTablePanel = null!;
 	private Panel PlayerListPanel = null!;
-
+	private readonly record struct StatsTab( string Id, string Label );
 	private readonly record struct PropertyStatsRow( int SpaceIndex, SpaceDef Space, string Name, int Landings, int RentEarned );
 	private readonly record struct PlayerStatsRow( int PlayerIndex, string Name, int Money, int NetLoss, int PropertyCount, int Landings, int RentEarned, bool IsBankrupt, bool IsLocalPlayer );
-
+	private List<StatsTab> Tabs { get; } = new() { new( PropertyTab, "Property Stats" ), new( DiceTab, "Dice History" ), new( MoveTab, "Move History" ), new( AdminTab, "Admin History" ), new( IntegrityTab, "Match Integrity" ) };
 	private int TotalLandings => PropertyRows.Sum( row => row.Landings );
 	private int TotalRentEarned => PropertyRows.Sum( row => row.RentEarned );
-
 	private List<PropertyStatsRow> PropertyRows => BuildPropertyRows();
 	private List<PropertyStatsRow> TopLandingRows => PropertyRows.Where( row => row.Landings > 0 ).OrderByDescending( row => row.Landings ).ThenByDescending( row => row.RentEarned ).Take( 5 ).ToList();
 	private List<PropertyStatsRow> TopRentRows => PropertyRows.Where( row => row.RentEarned > 0 ).OrderByDescending( row => row.RentEarned ).ThenByDescending( row => row.Landings ).Take( 5 ).ToList();
 	private List<PlayerStatsRow> PlayerRows => BuildPlayerRows();
+	private List<DiceHistoryEntry> DiceRows => GameRef?.DiceHistory?.OrderBy( entry => entry.Key ).Select( entry => MatchIntegrityJson.Deserialize<DiceHistoryEntry>( entry.Value ) ).ToList() ?? new();
+	private List<AdminHistoryEntry> AdminRows => GameRef?.AdminHistory?.OrderBy( entry => entry.Key ).Select( entry => MatchIntegrityJson.Deserialize<AdminHistoryEntry>( entry.Value ) ).ToList() ?? new();
+	private List<MoveHistoryTurn> MoveRows => GameRef?.MoveHistory?.OrderByDescending( entry => entry.Key ).Select( entry => MatchIntegrityJson.Deserialize<MoveHistoryTurn>( entry.Value ) ).ToList() ?? new();
+
+	protected override void OnParametersSet()
+	{
+		if ( string.Equals( lastInitialTab, InitialTab, StringComparison.Ordinal ) )
+			return;
+
+		lastInitialTab = InitialTab;
+		if ( Tabs.Any( tab => string.Equals( tab.Id, InitialTab, StringComparison.Ordinal ) ) )
+			ActiveTab = InitialTab;
+	}
 
 	private void Close() => OnClose?.Invoke();
 	private void SelectProperty( int spaceIndex ) => GameRef?.SelectSpace( spaceIndex );
-
-	private string GetMatchSummary()
+	private void SetActiveTab( string tab ) { ActiveTab = tab; StateHasChanged(); }
+	private string GetTabButtonClass( string tab ) => ActiveTab == tab ? "integrity-tab selected" : "integrity-tab";
+	private string GetKickerText() => ActiveTab == IntegrityTab ? "Verified Match" : "Board Analytics";
+	private string GetTitleText() => Tabs.FirstOrDefault( tab => tab.Id == ActiveTab ).Label ?? "Property Stats";
+	private string GetMatchSummary() => $"{GameRef?.Players?.Count( player => player is not null && player.IsAssigned ) ?? 0} players - {GameRef?.PropertyOwners?.Count ?? 0} owned properties";
+	private string GetIntegrityBadgeClass() => GameRef?.IsVerifiedMatch == true ? "verified" : "unverified";
+	private string GetIntegrityBadgeText() => GameRef?.IsVerifiedMatch == true ? "Verified Match" : "Unverified Match";
+	private string GetHashText() => string.IsNullOrWhiteSpace( GameRef?.DiceCommitmentHash ) ? "Not committed" : GameRef.DiceCommitmentHash;
+	private string GetSeedText() => string.IsNullOrWhiteSpace( GameRef?.RevealedSeed ) ? "Hidden until match end" : GameRef.RevealedSeed;
+	private IEnumerable<string> GetIntegrityReasons()
 	{
-		var playerCount = GameRef?.Players?.Count( player => player is not null && player.IsAssigned ) ?? 0;
-		var ownedCount = GameRef?.PropertyOwners?.Count ?? 0;
-		return $"{playerCount} players · {ownedCount} owned properties";
+		if ( GameRef?.CheatsEnabledEver == true ) yield return "sv_cheats was enabled during this match.";
+		if ( GameRef?.AdminCommandUsedEver == true ) yield return "An admin or power command was used during this match.";
+		if ( GameRef?.MatchConfigChangedAfterStart == true ) yield return "Match configuration changed after start.";
+		if ( GameRef?.DoesDiceHistoryVerify() != true ) yield return "Dice history cannot currently be verified against the commitment.";
 	}
+	private string GetSnapshotSummary( IReadOnlyList<MoveHistoryPlayerSnapshot> snapshots, string label ) => snapshots is null || snapshots.Count == 0 ? $"{label}: no snapshot" : $"{label}: {string.Join( ", ", snapshots.Select( player => $"{player.PlayerName} ${player.Money}" ) )}";
 
-	private string GetTopLandingName()
-	{
-		var row = TopLandingRows.FirstOrDefault();
-		return row.SpaceIndex <= 0 && row.Landings <= 0 ? "None yet" : row.Name;
-	}
-
-	private string GetTopRentName()
-	{
-		var row = TopRentRows.FirstOrDefault();
-		return row.SpaceIndex <= 0 && row.RentEarned <= 0 ? "None yet" : row.Name;
-	}
-
-	private string GetBiggestLoserName()
-	{
-		var row = PlayerRows.Where( row => row.NetLoss > 0 ).OrderByDescending( row => row.NetLoss ).FirstOrDefault();
-		return row.PlayerIndex < 0 || row.NetLoss <= 0 ? "None yet" : row.Name;
-	}
-
-	private List<PropertyStatsRow> BuildPropertyRows()
-	{
-		if ( GameRef?.Board?.SpaceDefs is null )
-			return new();
-
-		return GameRef.Board.SpaceDefs
-			.Where( def => def is not null && IsPurchasableSpace( def ) )
-			.Select( def => new PropertyStatsRow(
-				def.Index,
-				def,
-				def.DisplayName ?? $"Space {def.Index}",
-				GetTotalLandingsForSpace( def.Index ),
-				GetTotalRentEarnedForSpace( def.Index )
-			) )
-			.OrderByDescending( row => row.Landings > 0 || row.RentEarned > 0 )
-			.ThenByDescending( row => row.RentEarned )
-			.ThenByDescending( row => row.Landings )
-			.ThenBy( row => row.SpaceIndex )
-			.ToList();
-	}
-
-	private List<PlayerStatsRow> BuildPlayerRows()
-	{
-		if ( GameRef?.Players is null )
-			return new();
-
-		return GameRef.Players
-			.Select( ( player, index ) => new { player, index } )
-			.Where( entry => entry.player is not null && entry.player.IsAssigned )
-			.Select( entry => new PlayerStatsRow(
-				entry.index,
-				entry.player.PlayerName ?? $"Player {entry.index + 1}",
-				entry.player.Money,
-				Math.Max( GetStartingMoney() - entry.player.Money, 0 ),
-				GameRef.GetOwnedPropertyIndexes( entry.index ).Count,
-				GetTotalLandingsForPlayer( entry.index ),
-				GetTotalRentEarnedForPlayer( entry.index ),
-				entry.player.IsBankrupt,
-				entry.index == GameRef.LocalPlayerIndex
-			) )
-			.OrderByDescending( row => row.RentEarned )
-			.ThenByDescending( row => row.PropertyCount )
-			.ThenByDescending( row => row.Money )
-			.ToList();
-	}
-
+	private string GetTopRentName() { var row = TopRentRows.FirstOrDefault(); return row.SpaceIndex <= 0 && row.RentEarned <= 0 ? "None yet" : row.Name; }
+	private string GetBiggestLoserName() { var row = PlayerRows.Where( row => row.NetLoss > 0 ).OrderByDescending( row => row.NetLoss ).FirstOrDefault(); return row.PlayerIndex < 0 || row.NetLoss <= 0 ? "None yet" : row.Name; }
+	private List<PropertyStatsRow> BuildPropertyRows() => GameRef?.Board?.SpaceDefs?.Where( def => def is not null && IsPurchasableSpace( def ) ).Select( def => new PropertyStatsRow( def.Index, def, def.DisplayName ?? $"Space {def.Index}", GetTotalLandingsForSpace( def.Index ), GetTotalRentEarnedForSpace( def.Index ) ) ).OrderByDescending( row => row.Landings > 0 || row.RentEarned > 0 ).ThenByDescending( row => row.RentEarned ).ThenByDescending( row => row.Landings ).ThenBy( row => row.SpaceIndex ).ToList() ?? new();
+	private List<PlayerStatsRow> BuildPlayerRows() => GameRef?.Players?.Select( ( player, index ) => new { player, index } ).Where( entry => entry.player is not null && entry.player.IsAssigned ).Select( entry => new PlayerStatsRow( entry.index, entry.player.PlayerName ?? $"Player {entry.index + 1}", entry.player.Money, Math.Max( GetStartingMoney() - entry.player.Money, 0 ), GameRef.GetOwnedPropertyIndexes( entry.index ).Count, GetTotalLandingsForPlayer( entry.index ), GetTotalRentEarnedForPlayer( entry.index ), entry.player.IsBankrupt, entry.index == GameRef.LocalPlayerIndex ) ).OrderByDescending( row => row.RentEarned ).ThenByDescending( row => row.PropertyCount ).ThenByDescending( row => row.Money ).ToList() ?? new();
 	private int GetTotalLandingsForSpace( int spaceIndex ) => SumPropertyStatForSpace( GameRef.PropertyLandingCounts, spaceIndex );
 	private int GetTotalRentEarnedForSpace( int spaceIndex ) => SumPropertyStatForSpace( GameRef.PropertyRentEarned, spaceIndex );
 	private int GetTotalLandingsForPlayer( int playerIndex ) => SumPropertyStatForPlayer( GameRef.PropertyLandingCounts, playerIndex );
 	private int GetTotalRentEarnedForPlayer( int playerIndex ) => SumPropertyStatForPlayer( GameRef.PropertyRentEarned, playerIndex );
 	private int GetStartingMoney() => Math.Max( GameRef?.Config?.StartingMoney ?? 1500, 0 );
-
-	private static int SumPropertyStatForSpace( NetDictionary<int, int> stats, int spaceIndex )
-	{
-		return stats?.Where( entry => GetStatSpaceIndex( entry.Key ) == spaceIndex ).Sum( entry => Math.Max( entry.Value, 0 ) ) ?? 0;
-	}
-
-	private static int SumPropertyStatForPlayer( NetDictionary<int, int> stats, int playerIndex )
-	{
-		return stats?.Where( entry => GetStatPlayerIndex( entry.Key ) == playerIndex ).Sum( entry => Math.Max( entry.Value, 0 ) ) ?? 0;
-	}
-
+	private static int SumPropertyStatForSpace( NetDictionary<int, int> stats, int spaceIndex ) => stats?.Where( entry => GetStatSpaceIndex( entry.Key ) == spaceIndex ).Sum( entry => Math.Max( entry.Value, 0 ) ) ?? 0;
+	private static int SumPropertyStatForPlayer( NetDictionary<int, int> stats, int playerIndex ) => stats?.Where( entry => GetStatPlayerIndex( entry.Key ) == playerIndex ).Sum( entry => Math.Max( entry.Value, 0 ) ) ?? 0;
 	private static int GetStatPlayerIndex( int key ) => key / 1000;
 	private static int GetStatSpaceIndex( int key ) => key % 1000;
-
-	private static bool IsPurchasableSpace( SpaceDef def )
-	{
-		return def is not null && def.Price > 0 && (def.Type == SpaceType.Property || def.Type == SpaceType.Railroad || def.Type == SpaceType.Utility);
-	}
-
-	private string GetOwnerName( int spaceIndex )
-	{
-		var ownerIndex = GameRef?.GetOwnerIndexForSpace( spaceIndex ) ?? -1;
-		if ( ownerIndex < 0 )
-			return "Bank";
-
-		return GameRef?.Players?.ElementAtOrDefault( ownerIndex )?.PlayerName ?? $"Player {ownerIndex + 1}";
-	}
-
-	private string GetOwnerText( int spaceIndex )
-	{
-		var ownerName = GetOwnerName( spaceIndex );
-		return ownerName == "Bank" ? "Unowned" : $"Owned by {ownerName}";
-	}
-
-	private string GetPropertyStatusText( PropertyStatsRow row )
-	{
-		if ( GameRef?.IsMortgaged( row.SpaceIndex ) == true )
-			return "Mortgaged";
-
-		var improvements = GameRef?.GetImprovementCount( row.SpaceIndex ) ?? 0;
-		if ( improvements == 5 )
-			return "Hotel";
-
-		if ( improvements > 0 )
-			return $"{improvements} house{(improvements == 1 ? "" : "s")}";
-
-		return row.Space.Type.ToString();
-	}
-
-	private string GetColorSwatchClasses( SpaceDef def )
-	{
-		return $"property-stats-color-swatch color-{HudUi.GetPropertyColorClass( def )}";
-	}
-
-	private string GetPlayerRowClasses( PlayerStatsRow row )
-	{
-		var classes = "property-stats-player-row";
-		if ( row.IsLocalPlayer )
-			classes += " local-player";
-		if ( row.IsBankrupt )
-			classes += " bankrupt";
-		return classes;
-	}
-
+	private static bool IsPurchasableSpace( SpaceDef def ) => def is not null && def.Price > 0 && (def.Type == SpaceType.Property || def.Type == SpaceType.Railroad || def.Type == SpaceType.Utility);
+	private string GetOwnerName( int spaceIndex ) { var ownerIndex = GameRef?.GetOwnerIndexForSpace( spaceIndex ) ?? -1; return ownerIndex < 0 ? "Bank" : GameRef?.Players?.ElementAtOrDefault( ownerIndex )?.PlayerName ?? $"Player {ownerIndex + 1}"; }
+	private string GetOwnerText( int spaceIndex ) { var ownerName = GetOwnerName( spaceIndex ); return ownerName == "Bank" ? "Unowned" : $"Owned by {ownerName}"; }
+	private string GetPropertyStatusText( PropertyStatsRow row ) { if ( GameRef?.IsMortgaged( row.SpaceIndex ) == true ) return "Mortgaged"; var improvements = GameRef?.GetImprovementCount( row.SpaceIndex ) ?? 0; if ( improvements == 5 ) return "Hotel"; if ( improvements > 0 ) return $"{improvements} house{(improvements == 1 ? "" : "s")}"; return row.Space.Type.ToString(); }
+	private string GetColorSwatchClasses( SpaceDef def ) => $"property-stats-color-swatch color-{HudUi.GetPropertyColorClass( def )}";
+	private string GetPlayerRowClasses( PlayerStatsRow row ) { var classes = "property-stats-player-row"; if ( row.IsLocalPlayer ) classes += " local-player"; if ( row.IsBankrupt ) classes += " bankrupt"; return classes; }
 	protected override int BuildHash()
 	{
-		var hash = new HashCode();
-		hash.Add( IsOpen );
-		hash.Add( GameRef?.LocalPlayerIndex ?? -1 );
-		hash.Add( GameRef?.PropertyOwners?.Count ?? 0 );
-		hash.Add( GameRef?.PropertyImprovements?.Count ?? 0 );
-		hash.Add( GameRef?.MortgagedProperties?.Count ?? 0 );
-
-		if ( GameRef?.Players is not null )
-		{
-			foreach ( var entry in GameRef.Players.Select( ( player, index ) => new { player, index } ).Where( entry => entry.player is not null && entry.player.IsAssigned ) )
-			{
-				hash.Add( entry.index );
-				hash.Add( entry.player.PlayerName );
-				hash.Add( entry.player.Money );
-				hash.Add( entry.player.IsBankrupt );
-			}
-		}
-
-		if ( GameRef?.PropertyLandingCounts is not null )
-		{
-			foreach ( var entry in GameRef.PropertyLandingCounts.OrderBy( entry => entry.Key ) )
-			{
-				hash.Add( entry.Key );
-				hash.Add( entry.Value );
-			}
-		}
-
-		if ( GameRef?.PropertyRentEarned is not null )
-		{
-			foreach ( var entry in GameRef.PropertyRentEarned.OrderBy( entry => entry.Key ) )
-			{
-				hash.Add( entry.Key );
-				hash.Add( entry.Value );
-			}
-		}
-
+		var hash = new HashCode(); hash.Add( IsOpen ); hash.Add( ActiveTab ); hash.Add( GameRef?.IsVerifiedMatch ?? false ); hash.Add( GameRef?.DiceHistory?.Count ?? 0 ); hash.Add( GameRef?.AdminHistory?.Count ?? 0 ); hash.Add( GameRef?.MoveHistory?.Count ?? 0 ); hash.Add( GameRef?.RevealedSeed ?? "" ); hash.Add( GameRef?.PropertyOwners?.Count ?? 0 );
+		if ( GameRef?.Players is not null ) foreach ( var entry in GameRef.Players.Select( ( player, index ) => new { player, index } ).Where( entry => entry.player is not null && entry.player.IsAssigned ) ) { hash.Add( entry.index ); hash.Add( entry.player.PlayerName ); hash.Add( entry.player.Money ); hash.Add( entry.player.IsBankrupt ); }
+		if ( GameRef?.PropertyLandingCounts is not null ) foreach ( var entry in GameRef.PropertyLandingCounts.OrderBy( entry => entry.Key ) ) { hash.Add( entry.Key ); hash.Add( entry.Value ); }
+		if ( GameRef?.PropertyRentEarned is not null ) foreach ( var entry in GameRef.PropertyRentEarned.OrderBy( entry => entry.Key ) ) { hash.Add( entry.Key ); hash.Add( entry.Value ); }
 		return hash.ToHashCode();
 	}
 }

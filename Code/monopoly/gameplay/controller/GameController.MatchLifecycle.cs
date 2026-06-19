@@ -39,6 +39,7 @@ public sealed partial class GameController : Component
 			currentManualSaveId = "";
 			hasLoadedRestorePoint = false;
 			ResetGameState( false );
+			InitializeMatchIntegrity();
 			StartingPlayerCount = activePlayers.Count;
 
 			foreach ( var player in Players )
@@ -62,6 +63,7 @@ public sealed partial class GameController : Component
 			GameStartedAt = Time.Now;
 			MatchState = MatchLifecycleState.InGame;
 			BeginTurnForCurrentPlayer();
+			BeginMoveHistoryTurn();
 			StartTurnTimer();
 
 			ReportMatchStartedAchievements();
@@ -196,6 +198,8 @@ public sealed partial class GameController : Component
 		CurrentTurnDoublesPlayerIndex = -1;
 		Phase = GamePhase.TurnEnded;
 		WinnerPlayerIndex = winnerIndex;
+		FinalizeMoveHistoryTurn();
+		RevealMatchSeed();
 		MatchState = MatchLifecycleState.GameOver;
 		if ( Networking.IsHost && Connection.All.Count <= 1 )
 			NetworkSession.ClearRejoinWindow();
@@ -239,6 +243,8 @@ public sealed partial class GameController : Component
 		CurrentTurnDoublesPlayerIndex = -1;
 
 		Phase = GamePhase.TurnEnded;
+		FinalizeMoveHistoryTurn();
+		RevealMatchSeed();
 		MatchState = MatchLifecycleState.GameOver;
 		if ( Networking.IsHost && Connection.All.Count <= 1 )
 			NetworkSession.ClearRejoinWindow();

@@ -235,6 +235,8 @@ public sealed partial class GameController : Component
 		ClearPendingForcedPayment();
 		PendingPurchaseSpaceIndex = -1;
 		Phase = GamePhase.TurnEnded;
+		FinalizeMoveHistoryTurn();
+		RevealMatchSeed();
 		MatchState = MatchLifecycleState.GameOver;
 		if ( Networking.IsHost && Connection.All.Count <= 1 )
 			NetworkSession.ClearRejoinWindow();

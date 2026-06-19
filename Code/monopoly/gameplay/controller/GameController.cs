@@ -89,6 +89,17 @@ public sealed partial class GameController : Component, Component.INetworkListen
 	[Sync] public NetDictionary<int, string> TokenPhysicsStates { get; set; } = new();
 	[Sync] public NetDictionary<int, string> ChatMessages { get; set; } = new();
 	[Sync] public NetDictionary<int, int> StatsLogDiceFaceCounts { get; set; } = new();
+	[Sync] public bool CheatsEnabledEver { get; set; }
+	[Sync] public bool AdminCommandUsedEver { get; set; }
+	[Sync] public bool MatchConfigChangedAfterStart { get; set; }
+	[Sync] public string DiceCommitmentHash { get; set; } = "";
+	[Sync] public string RevealedSeed { get; set; } = "";
+	[Sync] public int NextDiceRollIndex { get; set; }
+	[Sync] public int NextAdminHistoryId { get; set; } = 1;
+	[Sync] public int NextMoveHistoryTurnNumber { get; set; } = 1;
+	[Sync] public NetDictionary<int, string> DiceHistory { get; set; } = new();
+	[Sync] public NetDictionary<int, string> AdminHistory { get; set; } = new();
+	[Sync] public NetDictionary<int, string> MoveHistory { get; set; } = new();
 	private string lastAppliedGameConfigSnapshot = "";
 	[Sync] public NetDictionary<int, int> PropertyLandingCounts { get; set; } = new();
 	[Sync] public NetDictionary<int, int> PropertyRentEarned { get; set; } = new();

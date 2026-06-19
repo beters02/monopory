@@ -84,7 +84,7 @@ public sealed class GameCamera : Component
 		UpdateStandardCamera( Mode );
 
 		cameraComponent?.AutoExposure.Enabled = AutoExpsureEnabled;
-		cameraComponent?.FieldOfView = Fov;
+		//cameraComponent?.FieldOfView = Fov;
 	}
 
 	public void SetMode( BoardCameraMode mode )

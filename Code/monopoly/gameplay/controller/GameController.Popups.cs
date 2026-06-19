@@ -144,6 +144,7 @@ public sealed partial class GameController : Component
 		if ( !Networking.IsHost )
 			return;
 
+		RecordMoveHistoryEvent( "Table", title, message );
 		SendSystemChatMessage( FormatNotificationForChat( title, message ) );
 	}
 

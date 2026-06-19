@@ -140,6 +140,8 @@ public sealed partial class GameController : Component
 		var executionKind = amount >= 0 || specifiedDice.HasValue
 			? RollExecutionKind.ForcedAmount
 			: RollExecutionKind.Physical;
+		if ( executionKind == RollExecutionKind.ForcedAmount )
+			RecordAdminCommand( null, specifiedDice.HasValue ? "roll_two_dice" : "roll_dice", CurrentPlayer.PlayerName );
 		await RollCurrentPlayerAsync( amount, false, executionKind, throwStrength, specifiedDice );
 	}
 
@@ -217,6 +219,9 @@ public sealed partial class GameController : Component
 			return;
 		}
 
+		if ( amount >= 0 || specifiedDice.HasValue )
+			RecordAdminCommand( null, specifiedDice.HasValue ? "roll_two_dice" : "roll_dice", CurrentPlayer.PlayerName );
+
 		BeginResolvedAction();
 		BeginPendingRoll( CurrentPlayerIndex, RollExecutionKind.JailRelease, ShouldSuppressDoublesExtraTurnForJailRelease(), true );
 
@@ -227,18 +232,21 @@ public sealed partial class GameController : Component
 		{
 			LastDieA = specifiedDice.Value.DieA;
 			LastDieB = specifiedDice.Value.DieB;
+			RecordDiceResult( CurrentPlayerIndex, LastDieA, LastDieB, true, true, "Forced jail roll" );
 			total = LastDieA + LastDieB;
 			rolledDoubles = LastDieA == LastDieB;
 		}
 		else if ( amount != -1 )
 		{
-			total = amount;
-			LastDieA = 0;
-			LastDieB = 0;
+			LastDieA = Math.Clamp( amount - 1, 1, 6 );
+			LastDieB = Math.Clamp( amount - LastDieA, 1, 6 );
+			RecordDiceResult( CurrentPlayerIndex, LastDieA, LastDieB, true, true, "Forced jail roll" );
+			total = LastDieA + LastDieB;
+			rolledDoubles = LastDieA == LastDieB;
 		}
 		else
 		{
-			(LastDieA, LastDieB) = await RollPhysicalDiceAsync( throwStrength );
+			(LastDieA, LastDieB) = RollVerifiedDice( CurrentPlayerIndex, true, false, "Jail roll" );
 			total = LastDieA + LastDieB;
 			rolledDoubles = LastDieA == LastDieB;
 		}
@@ -320,18 +328,21 @@ public sealed partial class GameController : Component
 		{
 			LastDieA = specifiedDice.Value.DieA;
 			LastDieB = specifiedDice.Value.DieB;
+			RecordDiceResult( CurrentPlayerIndex, LastDieA, LastDieB, false, true, "Forced roll" );
 			total = LastDieA + LastDieB;
 			rolledDoubles = LastDieA == LastDieB;
 		}
 		else if ( amount != -1 )
 		{
-			total = amount;
-			LastDieA = 0;
-			LastDieB = 0;
+			LastDieA = Math.Clamp( amount - 1, 1, 6 );
+			LastDieB = Math.Clamp( amount - LastDieA, 1, 6 );
+			RecordDiceResult( CurrentPlayerIndex, LastDieA, LastDieB, false, true, "Forced roll" );
+			total = LastDieA + LastDieB;
+			rolledDoubles = LastDieA == LastDieB;
 		}
 		else
 		{
-			(LastDieA, LastDieB) = await RollPhysicalDiceAsync( throwStrength );
+			(LastDieA, LastDieB) = RollVerifiedDice( CurrentPlayerIndex, false, false, "Normal roll" );
 			total = LastDieA + LastDieB;
 			rolledDoubles = LastDieA == LastDieB;
 		}
@@ -843,6 +854,8 @@ public sealed partial class GameController : Component
 
 	private void CompleteTurn()
 	{
+		FinalizeMoveHistoryTurn();
+
 		if ( CurrentTurnGetsExtraRoll )
 		{
 			CurrentTurnGetsExtraRoll = false;
@@ -950,6 +963,7 @@ public sealed partial class GameController : Component
 			if ( player.IsAssigned && !player.IsBankrupt )
 			{
 				BeginTurnForCurrentPlayer();
+				BeginMoveHistoryTurn();
 				Phase = GamePhase.WaitingToRoll;
 				StartTurnTimer();
 				TryAutosaveStablePoint( "Turn advanced" );
@@ -965,6 +979,7 @@ public sealed partial class GameController : Component
 			if ( Players[CurrentPlayerIndex].IsAssigned && !Players[CurrentPlayerIndex].IsBankrupt )
 			{
 				BeginTurnForCurrentPlayer();
+				BeginMoveHistoryTurn();
 				Phase = GamePhase.WaitingToRoll;
 				StartTurnTimer();
 				TryAutosaveStablePoint( "Turn advanced" );

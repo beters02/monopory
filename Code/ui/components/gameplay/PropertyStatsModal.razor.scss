@@ -428,3 +428,72 @@
 .property-stats-color-swatch.color-railroad { background-color: $monopoly-ink-hover; }
 .property-stats-color-swatch.color-utility { background-color: $property-utility; }
 .property-stats-color-swatch.color-none { background-color: $property-none; }
+.match-integrity-tabs {
+	flex-direction: row;
+	gap: 6px;
+	flex-shrink: 0;
+}
+.integrity-tab {
+	flex: 1;
+	min-width: 0;
+	font-size: 10px;
+}
+.integrity-tab.selected {
+	background-color: $monopoly-gold;
+}
+.integrity-list {
+	flex: 1;
+	min-height: 0;
+	padding-right: 18px;
+	overflow-y: scroll;
+	overflow-x: hidden;
+	flex-direction: column;
+	gap: 8px;
+}
+.integrity-row,
+.move-history-card {
+	flex-shrink: 0;
+	padding: 10px;
+	background-color: $monopoly-board-surface-strong;
+	border: 2px solid $monopoly-board-surface-line;
+	border-radius: $monopoly-radius-control;
+	flex-direction: column;
+	gap: 4px;
+}
+.integrity-row.nested,
+.integrity-row.money {
+	margin-top: 4px;
+	padding: 7px;
+}
+.integrity-row.warning {
+	border-color: $monopoly-danger;
+}
+.integrity-row-title {
+	font-size: 13px;
+	font-weight: 900;
+}
+.integrity-row-meta {
+	font-size: 11px;
+	font-weight: 800;
+	opacity: 0.74;
+	text-overflow: ellipsis;
+	overflow: hidden;
+}
+.integrity-row-meta.hash {
+	font-size: 9px;
+}
+.integrity-badge {
+	flex-shrink: 0;
+	padding: 12px;
+	border-radius: $monopoly-radius-control;
+	font-size: 20px;
+	font-weight: 900;
+	justify-content: center;
+	text-transform: uppercase;
+}
+.integrity-badge.verified {
+	background-color: $monopoly-success;
+}
+.integrity-badge.unverified {
+	background-color: $monopoly-danger;
+}

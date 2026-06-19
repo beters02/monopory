@@ -37,6 +37,7 @@
 			<HudPanelSubtitle>Game</HudPanelSubtitle>
 
 			<GameButton Variant="stats-log-button" OnClick="@ShowStatsLog">Stats</GameButton>
+			<GameButton Variant="stats-log-button" OnClick="@ShowIntegrityLog">Integrity</GameButton>
 
 			@if ( GameRef.MatchState == MatchLifecycleState.InGame )
 			{
@@ -142,7 +143,7 @@
 			</ChildContent>
 		</Sandbox.ui.components.HudPanel.HudPanel>		
 	}
-	<PropertyStatsModal GameRef="@GameRef" IsOpen="@IsStatsPanelOpen" OnClose="@CloseStatsPanel"></PropertyStatsModal>
+	<PropertyStatsModal GameRef="@GameRef" IsOpen="@IsStatsPanelOpen" InitialTab="@StatsPanelInitialTab" OnClose="@CloseStatsPanel"></PropertyStatsModal>
 </root>
 
 @code
@@ -157,6 +158,7 @@
 	private GameButton StatusEndTurnButton = null!;
 	private GameButton KeyboardRollButton;
 	private bool IsStatsPanelOpen;
+	private string StatsPanelInitialTab = "property";
 
     private PlayerState CurrentPlayer => GameRef?.CurrentPlayer;
     private PlayerState LocalPlayer => GameRef?.LocalPlayer;
@@ -487,6 +489,17 @@
 		if ( GameRef is null )
 			return;
 
+		StatsPanelInitialTab = "property";
+		IsStatsPanelOpen = true;
+		StateHasChanged();
+	}
+
+	private void ShowIntegrityLog()
+	{
+		if ( GameRef is null )
+			return;
+
+		StatsPanelInitialTab = "integrity";
 		IsStatsPanelOpen = true;
 		StateHasChanged();
 	}
@@ -544,6 +557,7 @@
 		hash.Add( CanEndTurn );
 		hash.Add( ShouldShowActionButtons );
 		hash.Add( IsStatsPanelOpen );
+		hash.Add( StatsPanelInitialTab );
 		hash.Add( GetPropertyStatsHash() );
 		return hash.ToHashCode();
 	}

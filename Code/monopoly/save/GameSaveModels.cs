@@ -58,6 +58,18 @@ public sealed class GameSaveSnapshot
 	public List<GameSaveIntStringEntry> TradeEditors { get; set; } = new();
 	public List<GameSaveIntStringEntry> ChatMessages { get; set; } = new();
 	public List<GameSaveIntIntEntry> StatsLogDiceFaceCounts { get; set; } = new();
+	public bool CheatsEnabledEver { get; set; }
+	public bool AdminCommandUsedEver { get; set; }
+	public bool MatchConfigChangedAfterStart { get; set; }
+	public string DiceCommitmentHash { get; set; } = "";
+	public string RevealedSeed { get; set; } = "";
+	public string PrivateDiceSeed { get; set; } = "";
+	public int NextDiceRollIndex { get; set; }
+	public int NextAdminHistoryId { get; set; } = 1;
+	public int NextMoveHistoryTurnNumber { get; set; } = 1;
+	public List<GameSaveIntStringEntry> DiceHistory { get; set; } = new();
+	public List<GameSaveIntStringEntry> AdminHistory { get; set; } = new();
+	public List<GameSaveIntStringEntry> MoveHistory { get; set; } = new();
 	public List<GameSaveIntIntEntry> PropertyLandingCounts { get; set; } = new();
 	public List<GameSaveIntIntEntry> PropertyRentEarned { get; set; } = new();
 	public int PendingPurchaseSpaceIndex { get; set; } = -1;

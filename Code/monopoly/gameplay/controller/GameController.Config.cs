@@ -8,7 +8,13 @@ public sealed partial class GameController : Component
 			return;
 
 		Config = MatchConfigSchema.Normalize( Config, Players?.Count ?? 0 );
+		var previousSnapshot = GameConfigSnapshot;
 		GameConfigSnapshot = MatchConfigSchema.Serialize( Config );
+		if ( HasStarted && !string.IsNullOrWhiteSpace( previousSnapshot ) && !string.Equals( previousSnapshot, GameConfigSnapshot, StringComparison.Ordinal ) )
+		{
+			MatchConfigChangedAfterStart = true;
+			RecordMoveHistoryEvent( "Integrity", "Config changed", "Match configuration changed after start." );
+		}
 		lastAppliedGameConfigSnapshot = GameConfigSnapshot;
 	}
 
