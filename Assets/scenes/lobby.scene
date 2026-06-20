@@ -303,8 +303,6 @@
           "__enabled": true,
           "Flags": 0,
           "CameraDistance": 42.37,
-          "CameraHorizontalOffset": -8.92,
-          "CameraVerticalOffset": -3.03,
           "OnComponentDestroy": null,
           "OnComponentDisabled": null,
           "OnComponentEnabled": null,

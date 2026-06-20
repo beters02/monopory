@@ -31,7 +31,8 @@
 
 					<div class="@GetTradeRowClasses( trade )">
 						<div class="trade-row-main" onclick="@(() => OpenTradeViewer( trade.Id ))">
-							<div class="trade-party">
+							<div class="trade-row-parties">
+								<div class="trade-party">
 								<div class="@GetTradeEditingClasses( trade.Id, trade.SenderPlayerIndex )" title="@GetTradeEditingTitle( trade.Id, trade.SenderPlayerIndex )">E</div>
 								<div class="@GetTradeViewingClasses( trade.Id, trade.SenderPlayerIndex )" title="@GetTradeViewingTitle( trade.Id, trade.SenderPlayerIndex )">
 									<div class="trade-eye-outline">
@@ -56,8 +57,10 @@
 										<div class="trade-eye-slash"></div>
 									}
 								</div>
-								<div class="trade-party-name">@receiver</div>
+									<div class="trade-party-name">@receiver</div>
+								</div>
 							</div>
+							<div class="trade-row-summary">@GetTradeSummary( trade )</div>
 						</div>
 
 						@if ( isReceiver )
@@ -560,6 +563,23 @@
 		return IsEditingTrade( tradeId, playerIndex )
 			? $"{GetPlayerName( playerIndex )} is editing this trade"
 			: $"{GetPlayerName( playerIndex )} is not editing this trade";
+	}
+
+	private string GetTradeSummary( TradeRequest trade )
+	{
+		var senderAssets = GetTradeSideSummary( trade.SenderMoney, trade.SenderPropertyIndexes, trade.SenderCardIds );
+		var receiverAssets = GetTradeSideSummary( trade.ReceiverMoney, trade.ReceiverPropertyIndexes, trade.ReceiverCardIds );
+		return $"{senderAssets} ⇄ {receiverAssets}";
+	}
+
+	private string GetTradeSideSummary( int money, IEnumerable<int> propertyIndexes, IEnumerable<string> cardIds )
+	{
+		var assets = new List<string>();
+		if ( money > 0 )
+			assets.Add( "$" + money.ToString( "N0" ) );
+		assets.AddRange( propertyIndexes.Select( GetPropertyName ) );
+		assets.AddRange( cardIds.Select( cardId => GameRef?.GetTradableCardName( cardId ) ?? "Jail Free Card" ) );
+		return assets.Count == 0 ? "Nothing" : string.Join( " + ", assets );
 	}
 
 	private string GetPlayerName( int playerIndex )

@@ -22,7 +22,7 @@ Layer0
 	TextureAmbientOcclusion "materials/default/default_ao.tga"
 
 	//---- Color ----
-	g_flModelTintAmount "0.653"
+	g_flModelTintAmount "0.463"
 	g_vColorTint "[1.000000 1.000000 1.000000 0.392157]"
 	TextureColor "[1.000000 1.000000 1.000000 0.003922]"
 
@@ -60,5 +60,5 @@ Layer0
 
 	//---- Translucent ----
 	g_flOpacityScale "0.619"
-	TextureTranslucency "[0.123000 0.123000 0.123000 0.000000]"
+	TextureTranslucency "[0.114000 0.114000 0.114000 0.000000]"
 }
