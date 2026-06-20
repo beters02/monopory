@@ -59,6 +59,10 @@ public static class BoardCatalog
 			RailroadData = BoardData.CreateRailroadDefs(),
 			UtilityData = BoardData.CreateUtilityDefs(),
 			Layout = BoardLayoutDefinition.Classic( spaces.Count ),
+			Surface = new BoardSurfaceDefinition
+			{
+				Finish = BoardSurfaceFinish.GlossyVarnish
+			},
 			Theme = new BoardThemeDefinition
 			{
 				ColorGroupColors = new()

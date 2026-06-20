@@ -12,6 +12,7 @@ public sealed partial class BoardDefinition
 	public UtilityDef UtilityData { get; set; } = new();
 	public BoardLayoutDefinition Layout { get; set; } = new();
 	public BoardThemeDefinition Theme { get; set; } = new();
+	public BoardSurfaceDefinition Surface { get; set; }
 
 	public int SpaceCount => Spaces?.Count ?? 0;
 	public int GoSpaceIndex => Layout?.GoSpaceIndex ?? 0;
@@ -29,7 +30,8 @@ public sealed partial class BoardDefinition
 			RailroadData = CloneRailroad( RailroadData ),
 			UtilityData = CloneUtility( UtilityData ),
 			Layout = Layout?.Clone() ?? new(),
-			Theme = Theme?.Clone() ?? new()
+			Theme = Theme?.Clone() ?? new(),
+			Surface = Surface?.Clone()
 		};
 	}
 
@@ -106,6 +108,26 @@ public sealed partial class BoardDefinition
 				OneOwnedMultiplier = source.OneOwnedMultiplier,
 				BothOwnedMultiplier = source.BothOwnedMultiplier
 			};
+	}
+}
+
+public enum BoardSurfaceFinish
+{
+	MatteCardboard,
+	SatinLaminate,
+	GlossyVarnish
+}
+
+public sealed class BoardSurfaceDefinition
+{
+	public BoardSurfaceFinish Finish { get; set; } = BoardSurfaceFinish.SatinLaminate;
+
+	public BoardSurfaceDefinition Clone()
+	{
+		return new BoardSurfaceDefinition
+		{
+			Finish = Finish
+		};
 	}
 }
 

@@ -462,6 +462,12 @@
                   "component_type": "BoardSpace"
                 }
               ],
+              "SurfaceRenderer": {
+                "_type": "component",
+                "component_id": "d573e85d-373a-45a7-9404-001e09f63055",
+                "go": "3eda120d-fe1f-4d7c-9e4f-19d675c27a5d",
+                "component_type": "ModelRenderer"
+              },
               "UseProceduralBoardPanel": true,
               "UseWorldPanelLabels": true
             }
@@ -3023,7 +3029,7 @@
               "OnTriggerExit": null,
               "RollingResistance": null,
               "Scale": "50,50,73.5299988",
-              "Static": false,
+              "Static": true,
               "Surface": "surfaces/board.surface",
               "SurfaceVelocity": "0,0,0"
             }
@@ -4982,6 +4988,11 @@
       "Sandbox.SelectionSetsSystem": {
         "Data": {
           "SelectionSets": []
+        }
+      },
+      "Sandbox.Clutter.ClutterGridSystem": {
+        "Storage": {
+          "$blob": "6516437d-f143-43ab-91e3-16eab14872b6"
         }
       }
     }
