@@ -84,6 +84,7 @@ public sealed partial class GameController : Component, Component.INetworkListen
 	[Sync] public NetDictionary<int, int> PropertyImprovements { get; set; } = new();
 	[Sync] public NetDictionary<int, bool> MortgagedProperties { get; set; } = new();
 	[Sync] public NetDictionary<int, string> PendingTrades { get; set; } = new();
+	[Sync] public NetDictionary<int, string> TradeHistory { get; set; } = new();
 	[Sync] public NetDictionary<int, string> TradeViewers { get; set; } = new();
 	[Sync] public NetDictionary<int, string> TradeEditors { get; set; } = new();
 	[Sync] public NetDictionary<int, string> TokenPhysicsStates { get; set; } = new();
@@ -115,6 +116,7 @@ public sealed partial class GameController : Component, Component.INetworkListen
 	[Sync] public int AuctionHighBidderIndex { get; set; } = -1;
 	[Sync] public float AuctionEndsAt { get; set; }
 	[Sync] public int NextTradeId { get; set; } = 1;
+	[Sync] public int NextTradeHistoryId { get; set; } = 1;
 	[Sync] public int NextChatMessageId { get; set; } = 1;
 	[Sync] public int FreeParkingBank { get; set; }
 	[Sync] public bool CurrentTurnGetsExtraRoll { get; set; }

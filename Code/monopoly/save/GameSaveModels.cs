@@ -54,6 +54,7 @@ public sealed class GameSaveSnapshot
 	public List<GameSaveIntIntEntry> PropertyImprovements { get; set; } = new();
 	public List<GameSaveIntBoolEntry> MortgagedProperties { get; set; } = new();
 	public List<GameSaveIntStringEntry> PendingTrades { get; set; } = new();
+	public List<GameSaveIntStringEntry> TradeHistory { get; set; } = new();
 	public List<GameSaveIntStringEntry> TradeViewers { get; set; } = new();
 	public List<GameSaveIntStringEntry> TradeEditors { get; set; } = new();
 	public List<GameSaveIntStringEntry> ChatMessages { get; set; } = new();
@@ -78,6 +79,7 @@ public sealed class GameSaveSnapshot
 	public int AuctionHighBidderIndex { get; set; } = -1;
 	public float AuctionRemainingSeconds { get; set; }
 	public int NextTradeId { get; set; } = 1;
+	public int NextTradeHistoryId { get; set; } = 1;
 	public int NextChatMessageId { get; set; } = 1;
 	public int FreeParkingBank { get; set; }
 	public bool CurrentTurnGetsExtraRoll { get; set; }

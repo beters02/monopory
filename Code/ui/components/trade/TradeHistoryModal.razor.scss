@@ -1,0 +1,43 @@
+@import "../../styles/GameTheme.scss";
+@import "TradeViewerModal.razor.scss";
+
+.trade-history-modal {
+	width: 520px;
+	min-height: 260px;
+}
+
+.trade-history-list {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.trade-history-row {
+	display: flex;
+	justify-content: space-between;
+	padding: 10px;
+	background-color: $monopoly-board-surface;
+	border-radius: $monopoly-radius-control;
+}
+
+.trade-history-parties,
+.trade-history-outcome {
+	font-weight: 900;
+}
+
+.trade-history-outcome {
+	text-transform: uppercase;
+}
+
+.trade-history-outcome.accepted {
+	color: $monopoly-success;
+}
+
+.trade-history-outcome.denied {
+	color: $monopoly-danger;
+}
+
+.trade-history-empty {
+	justify-content: center;
+	color: $monopoly-ink;
+}

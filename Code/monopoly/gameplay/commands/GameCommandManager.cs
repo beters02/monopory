@@ -695,6 +695,7 @@ public static class RollDiceCommand
 {
 	public const string Name = "roll_dice";
 
+	[CheatCmd]
 	[ConCmd( Name )]
 	public static void Execute( Connection connection, int amount = -1, string playerName = "self", params string[] playerNameTail )
 	{
@@ -725,6 +726,32 @@ public static class RollDiceCommand
 				game.RequestRollDice( amount );
 
 			return CommandResult.Success();
+		}, connection );
+	}
+}
+
+public static class BankruptPlayerCommand
+{
+	public const string Name = "bankrupt_player";
+
+	[CheatCmd]
+	[ConCmd( Name )]
+	public static void Execute( Connection connection, string playerName = "self", params string[] playerNameTail )
+	{
+		GameCommandManager.RunCommand( Name, () =>
+		{
+			var game = GameController.Instance;
+			if ( game is null )
+				return CommandResult.Fail( "No active game." );
+
+			var resolvedPlayerName = GameCommandManager.JoinPlayerName( playerName, playerNameTail );
+			var player = game.ResolvePlayerReference( resolvedPlayerName, connection );
+			if ( player is null )
+				return CommandResult.Fail( $"Could not find player \"{resolvedPlayerName}\"." );
+
+			return game.TryBankruptPlayerForCheat( player, out var message )
+				? CommandResult.Success( message )
+				: CommandResult.Fail( message );
 		}, connection );
 	}
 }

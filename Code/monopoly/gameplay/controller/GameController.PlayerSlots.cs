@@ -251,6 +251,7 @@ public sealed partial class GameController : Component
 		PendingPurchaseSpaceIndex = -1;
 		ClearAuction();
 		NextTradeId = 1;
+		NextTradeHistoryId = 1;
 		ResetVacationCashBankToMinimum();
 		CurrentTurnGetsExtraRoll = false;
 		CurrentTurnConsecutiveDoubles = 0;
@@ -274,6 +275,7 @@ public sealed partial class GameController : Component
 		PropertyImprovements.Clear();
 		MortgagedProperties.Clear();
 		PendingTrades.Clear();
+		TradeHistory.Clear();
 		TradeViewers.Clear();
 		TradeEditors.Clear();
 		TokenPhysicsStates.Clear();

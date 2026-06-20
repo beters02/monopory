@@ -7,6 +7,26 @@ using Sandbox.Network;
 public sealed partial class GameController : Component
 {
 
+	public bool TryBankruptPlayerForCheat( PlayerState player, out string message )
+	{
+		var playerIndex = GetPlayerIndex( player );
+		if ( playerIndex < 0 || player is null || !player.IsAssigned )
+		{
+			message = "Player is not active.";
+			return false;
+		}
+
+		if ( player.IsBankrupt )
+		{
+			message = $"{player.PlayerName} is already bankrupt.";
+			return false;
+		}
+
+		BankruptPlayer( playerIndex, null, true );
+		message = $"Bankrupted {player.PlayerName}.";
+		return true;
+	}
+
 	public int GetPlayerLiquidAssetTotal( int playerIndex )
 	{
 		if ( playerIndex < 0 )

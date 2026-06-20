@@ -286,6 +286,7 @@ public sealed partial class GameController : Component
 			if ( Config?.ForceJailFineAfterFailedDoubles != true )
 			{
 				Log.Info( $"{CurrentPlayer.PlayerName} stayed in Jail after their third failed doubles attempt." );
+				SendGlobalPopupToAll( "Turn skipped", $"{CurrentPlayer.PlayerName} stays in Jail and skips their turn.", PopupKind.Warning, true, 4f );
 				ClearPendingRollState();
 				AdvanceTurnImmediately();
 				return;
@@ -315,6 +316,7 @@ public sealed partial class GameController : Component
 		}
 
 		ClearPendingRollState();
+		SendGlobalPopupToAll( "Turn skipped", $"{CurrentPlayer.PlayerName} stays in Jail and skips their turn.", PopupKind.Warning, true, 4f );
 		AdvanceTurnImmediately();
 	}
 
@@ -961,6 +963,7 @@ public sealed partial class GameController : Component
 			{
 				player.SkipsNextTurn = false;
 				Log.Info( $"{player.PlayerName} skipped their turn." );
+				SendGlobalPopupToAll( "Turn skipped", $"{player.PlayerName} skips this turn after collecting Free Parking.", PopupKind.Warning, true, 4f );
 				continue;
 			}
 

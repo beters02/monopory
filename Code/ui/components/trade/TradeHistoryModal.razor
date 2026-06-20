@@ -1,0 +1,67 @@
+@namespace Sandbox.ui.components
+@using Sandbox;
+@using Sandbox.UI;
+@using Sandbox.ui.components.buttons
+@using System;
+@inherits Panel
+
+<root>
+	@if ( IsOpen )
+	{
+		<div class="trade-modal-backdrop">
+			<div class="trade-modal trade-history-modal">
+				<CloseButton Variant="trade-modal-close" OnClick="@Close"></CloseButton>
+				<div class="trade-modal-title">Trade History</div>
+				@if ( Entries.Count == 0 )
+				{
+					<div class="trade-history-empty">No completed trades</div>
+				}
+				else
+				{
+					<div class="trade-history-list">
+						@foreach ( var entry in Entries )
+						{
+							<div class="trade-history-row">
+								<div class="trade-history-parties">@GetPlayerName( entry.Trade.SenderPlayerIndex ) → @GetPlayerName( entry.Trade.ReceiverPlayerIndex )</div>
+								<div class="@GetOutcomeClasses( entry.Outcome )">@entry.Outcome</div>
+							</div>
+						}
+					</div>
+				}
+			</div>
+		</div>
+	}
+</root>
+
+@code
+{
+	[Parameter] public GameController GameRef { get; set; }
+	[Parameter] public bool IsOpen { get; set; }
+	[Parameter] public Action OnClose { get; set; }
+
+	private List<TradeHistoryEntry> Entries =>
+		GameRef?.GetTradeHistory()
+			.Where( entry => entry.Trade.InvolvesPlayer( GameRef.LocalPlayerIndex ) )
+			.OrderByDescending( entry => entry.Id )
+			.ToList() ?? new();
+
+	private void Close() => OnClose?.Invoke();
+
+	private string GetPlayerName( int playerIndex ) =>
+		GameRef?.Players?.ElementAtOrDefault( playerIndex )?.PlayerName ?? $"Player {playerIndex + 1}";
+
+	private static string GetOutcomeClasses( string outcome ) =>
+		outcome == TradeHistoryEntry.Accepted
+			? "trade-history-outcome accepted"
+			: "trade-history-outcome denied";
+
+	protected override int BuildHash()
+	{
+		var hash = new HashCode();
+		hash.Add( IsOpen );
+		hash.Add( GameRef?.LocalPlayerIndex ?? -1 );
+		foreach ( var entry in Entries )
+			hash.Add( entry.Serialize() );
+		return hash.ToHashCode();
+	}
+}

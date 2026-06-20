@@ -171,6 +171,12 @@
 				return;
 		}
 
+		if ( NetworkSession.IsEditorSoftLeftLobby && !Networking.IsActive )
+		{
+			NetworkSession.ForceDisconnectToMenu( Scene );
+			return;
+		}
+
 		if ( NetworkSession.IsEditorSoftLeftLobby )
 		{
 			IsMenuBlockingHud = false;

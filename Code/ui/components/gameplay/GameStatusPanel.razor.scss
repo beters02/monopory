@@ -50,6 +50,14 @@
 	overflow: visible;
 }
 
+.monopoly-button.action-buttons .monopoly-button-content,
+.monopoly-button.status-roll-button .monopoly-button-content {
+	width: 100%;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+}
+
 .monopoly-button.action-buttons .monopoly-button-input-action-icon {
 	right: 14px;
 	width: 24px;

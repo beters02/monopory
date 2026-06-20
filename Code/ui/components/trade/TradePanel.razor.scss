@@ -3,6 +3,22 @@
 @import "../buttons/CloseButton.razor.scss";
 
 
+.trade-header-actions {
+	display: flex;
+	gap: 6px;
+}
+
+.trade-history-button {
+	height: $monopoly-control-height-small;
+	min-height: $monopoly-control-height-small;
+	padding: 0 10px;
+	align-items: center;
+	justify-content: center;
+	background-color: $monopoly-surface;
+	border-radius: $monopoly-radius-control;
+	text-transform: uppercase;
+}
+
 .trade-create-button {
 	width: 116px;
 	height: $monopoly-control-height-small;

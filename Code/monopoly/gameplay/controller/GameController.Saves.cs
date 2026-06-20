@@ -246,6 +246,7 @@ public sealed partial class GameController : Component
 			PropertyImprovements = CaptureIntIntDictionary( PropertyImprovements ),
 			MortgagedProperties = CaptureIntBoolDictionary( MortgagedProperties ),
 			PendingTrades = CaptureIntStringDictionary( PendingTrades ),
+			TradeHistory = CaptureIntStringDictionary( TradeHistory ),
 			TradeViewers = CaptureIntStringDictionary( TradeViewers ),
 			TradeEditors = CaptureIntStringDictionary( TradeEditors ),
 			ChatMessages = CaptureIntStringDictionary( ChatMessages ),
@@ -270,6 +271,7 @@ public sealed partial class GameController : Component
 			AuctionHighBidderIndex = AuctionHighBidderIndex,
 			AuctionRemainingSeconds = AuctionEndsAt <= 0f ? 0f : Math.Max( 0f, AuctionEndsAt - now ),
 			NextTradeId = NextTradeId,
+			NextTradeHistoryId = NextTradeHistoryId,
 			NextChatMessageId = NextChatMessageId,
 			FreeParkingBank = FreeParkingBank,
 			CurrentTurnGetsExtraRoll = CurrentTurnGetsExtraRoll,
@@ -381,6 +383,7 @@ public sealed partial class GameController : Component
 		AuctionHighBidderIndex = snapshot.AuctionHighBidderIndex;
 		AuctionEndsAt = snapshot.AuctionRemainingSeconds <= 0f ? 0f : now + snapshot.AuctionRemainingSeconds;
 		NextTradeId = Math.Max( snapshot.NextTradeId, 1 );
+		NextTradeHistoryId = Math.Max( snapshot.NextTradeHistoryId, 1 );
 		NextChatMessageId = Math.Max( snapshot.NextChatMessageId, 1 );
 		FreeParkingBank = snapshot.FreeParkingBank;
 		EnsureVacationCashMinimum();
@@ -424,6 +427,7 @@ public sealed partial class GameController : Component
 		ApplyIntIntDictionary( PropertyImprovements, snapshot.PropertyImprovements );
 		ApplyIntBoolDictionary( MortgagedProperties, snapshot.MortgagedProperties );
 		ApplyIntStringDictionary( PendingTrades, snapshot.PendingTrades );
+		ApplyIntStringDictionary( TradeHistory, snapshot.TradeHistory );
 		ApplyIntStringDictionary( TradeViewers, snapshot.TradeViewers );
 		ApplyIntStringDictionary( TradeEditors, snapshot.TradeEditors );
 		ApplyIntStringDictionary( ChatMessages, snapshot.ChatMessages );

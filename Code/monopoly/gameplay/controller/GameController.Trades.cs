@@ -143,6 +143,7 @@ public sealed partial class GameController : Component
 		TrySettlePendingForcedPaymentForPlayer( trade.ReceiverPlayerIndex );
 
 		PendingTrades.Remove( tradeId );
+		RecordTradeHistory( trade, TradeHistoryEntry.Accepted );
 		TradeViewers.Remove( tradeId );
 		TradeEditors.Remove( tradeId );
 		RemoveInvalidTrades();
@@ -168,7 +169,10 @@ public sealed partial class GameController : Component
 			return;
 
 		if ( !suppressNotification )
+		{
 			ShowTradeDeniedNotification( trade, callerIndex );
+			RecordTradeHistory( trade, TradeHistoryEntry.Denied );
+		}
 		PendingTrades.Remove( tradeId );
 		TradeViewers.Remove( tradeId );
 		TradeEditors.Remove( tradeId );
@@ -229,6 +233,29 @@ public sealed partial class GameController : Component
 			TradeEditors.Remove( tradeId );
 		else
 			TradeEditors[tradeId] = string.Join( ",", editors.OrderBy( index => index ) );
+	}
+
+	private void RecordTradeHistory( TradeRequest trade, string outcome )
+	{
+		if ( trade is null )
+			return;
+
+		var entry = new TradeHistoryEntry
+		{
+			Id = NextTradeHistoryId++,
+			Outcome = outcome,
+			Trade = trade
+		};
+		TradeHistory[entry.Id] = entry.Serialize();
+	}
+
+	public List<TradeHistoryEntry> GetTradeHistory()
+	{
+		return TradeHistory
+			.Select( pair => TradeHistoryEntry.TryDeserialize( pair.Key, pair.Value, out var entry ) ? entry : null )
+			.Where( entry => entry is not null )
+			.OrderBy( entry => entry.Id )
+			.ToList();
 	}
 
 	public List<TradeRequest> GetTrades()
