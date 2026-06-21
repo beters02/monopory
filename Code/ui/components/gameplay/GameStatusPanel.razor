@@ -38,6 +38,14 @@
 
 			<GameButton Variant="stats-log-button" OnClick="@ShowStatsLog">Stats</GameButton>
 			<GameButton Variant="stats-log-button" OnClick="@ShowIntegrityLog">Integrity</GameButton>
+			@if ( GameRef.Config?.GambleGamesEnabledNonCard == true )
+			{
+				<GameButton Variant="stats-log-button gamble-hub-button"
+					CanClick="@CanOpenGambleHub"
+					BlockedPopupTitle="Gamble unavailable"
+					BlockedPopupMessage="@GambleHubBlockedMessage"
+					OnClick="@OpenGambleHub">Gamble</GameButton>
+			}
 
 			@if ( GameRef.MatchState == MatchLifecycleState.InGame )
 			{
@@ -169,7 +177,13 @@
     private const float RollHoldMaxSeconds = 1.25f;
     private bool gamePanelEnabled = false;
 	private bool ShouldShowActionButtons => MonopolyApp.IsGameStatusPanelActionButtonsEnabled;
+	private bool CanOpenGambleHub => GameRef?.CanLocalPlayerStartNonCardGamble == true;
+	private string GambleHubBlockedMessage => GameRef?.CurrentPlayerIndex == GameRef?.LocalPlayerIndex
+		? "Gamble games are available when it is not your turn."
+		: "Finish or wait for your current gamble game before opening the hub.";
 	private bool didRefreshAfterRefs;
+
+	private void OpenGambleHub() => GambleScreen.Instance?.OpenGambleHub();
 
 	private InputAction GetInputAction(string name, string defaultKeyCode)
 	{

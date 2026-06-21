@@ -46,6 +46,7 @@ public sealed class GameCamera : Component
 	public BoardCameraMode Mode { get; private set; } = BoardCameraMode.Default;
 	public bool IsTokenModeRequested => requestedMode == BoardCameraMode.Token;
 	public bool IsTokenCameraActive => Mode == BoardCameraMode.Token;
+	public bool IsGameplayMovementLocked { get; private set; }
 
 	private Vector3 freeCamFocus;
 	private float freeCamDistance;
@@ -73,6 +74,9 @@ public sealed class GameCamera : Component
 	protected override void OnUpdate()
 	{
 		UpdateRequestedModeAvailability();
+
+		if ( TryUpdateGambleCamera() )
+			return;
 
 		if ( Mode == BoardCameraMode.FreeCam )
 		{
@@ -134,6 +138,28 @@ public sealed class GameCamera : Component
 		var token = GetLocalPlayerToken();
 		var desiredMode = token is not null ? BoardCameraMode.Token : BoardCameraMode.Default;
 		ApplyMode( desiredMode );
+	}
+
+	private bool TryUpdateGambleCamera()
+	{
+		if ( GameController.Instance?.TryGetLocalGambleCameraTarget( out var station ) != true )
+		{
+			IsGameplayMovementLocked = false;
+			return false;
+		}
+
+		IsGameplayMovementLocked = true;
+		ReleaseTokenMouse();
+		ApplyView(
+			station.FocusPosition,
+			station.CameraDistance,
+			0f,
+			station.CameraPitch,
+			FollowLerpSpeed,
+			RotationLerpSpeed,
+			true
+		);
+		return true;
 	}
 
 	private void UpdateFreeCam()

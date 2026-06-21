@@ -283,6 +283,8 @@ public sealed partial class GameController : Component
 		DiceHistory.Clear();
 		AdminHistory.Clear();
 		MoveHistory.Clear();
+		GambleSessions.Clear();
+		NextGambleSessionId = 1;
 		CheatsEnabledEver = false;
 		AdminCommandUsedEver = false;
 		MatchConfigChangedAfterStart = false;

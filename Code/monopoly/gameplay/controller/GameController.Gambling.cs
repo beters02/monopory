@@ -59,7 +59,7 @@ public sealed partial class GameController : Component
 			return;
 		}
 
-		var won = Game.Random.Int( 0, 1 ) == 1;
+		var won = GetActiveCardGambleSession()?.Won ?? (Game.Random.Int( 0, 1 ) == 1);
 		if ( won )
 		{
 			player.Money += betAmount;
@@ -99,6 +99,7 @@ public sealed partial class GameController : Component
 		ActiveGambleResultSide = "";
 		ActiveGambleResultMessage = "";
 		ActiveGambleEndsAt = Time.Now + GambleRevealDelaySeconds + GambleResultHoldSeconds;
+		BeginCardGambleSession( playerIndex, ActiveGambleTitle, ActiveGambleDescription, betAmount );
 	}
 
 	private bool IsSameActiveGamble( int playerIndex, GambleType gambleType )
@@ -114,6 +115,7 @@ public sealed partial class GameController : Component
 		ActiveGambleWon = won;
 		ActiveGambleResultSide = resultSide ?? "";
 		ActiveGambleResultMessage = resultMessage ?? "";
+		ResolveActiveCardGambleSession( ActiveGambleResultMessage );
 	}
 
 	private async Task ClearGambleScreenAfterHoldAsync()
@@ -125,6 +127,7 @@ public sealed partial class GameController : Component
 	private void ClearGambleScreen()
 	{
 		SetHudIsVisibleAll(true);
+		ClearActiveCardGambleSession();
 		ActiveGamblePlayerIndex = -1;
 		ActiveGambleType = 0;
 		ActiveGambleTitle = "";

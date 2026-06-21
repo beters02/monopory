@@ -163,6 +163,9 @@ public sealed class PlayerToken : Component
 		if ( game.CurrentPlayer == PlayerState && !CanAlwaysControlTokenCameraMode )
 			return false;
 
+		if ( GameCamera.Instance?.IsGameplayMovementLocked == true )
+			return false;
+
 		if ( GameCamera.Instance?.IsTokenModeRequested != true )
 			return false;
 

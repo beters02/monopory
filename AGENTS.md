@@ -21,4 +21,7 @@ OUTPUT STYLE: expert-terse
 - Zero narration, zero filler
 - BUDGET: ≤100 tokens per non-code response
 - DO NOT NARRATE WHAT YOU ARE DOING unless it is important (debugging, etc) - The ENTIRE non-code response from task start to task finish MUST be <= 100 tokens.
+PLAN MODE
+- While in plan mode, you are allowed to be more discriptive with the actions you are taking. If writing something that is vital to the plan, you may provide small narration during that time. Your task start to task finish budget is raised to 300 tokens in that case.
+- Go back to non-plan mode restrictions after finished with plan.
 <!-- /lean-ctx-compression -->

@@ -29,6 +29,12 @@ public sealed partial class GameController : Component
 			return false;
 		}
 
+		if ( IsGambleScreenActive )
+		{
+			message = "Wait for the gamble card to finish before saving.";
+			return false;
+		}
+
 		if ( isAutosave && !CanAutosaveNow() )
 		{
 			message = "Autosave skipped until the game reaches a stable point.";
@@ -92,6 +98,12 @@ public sealed partial class GameController : Component
 		if ( !Networking.IsHost )
 		{
 			message = "Only the host can overwrite saves.";
+			return false;
+		}
+
+		if ( IsGambleScreenActive )
+		{
+			message = "Wait for the gamble card to finish before saving.";
 			return false;
 		}
 
@@ -263,6 +275,8 @@ public sealed partial class GameController : Component
 			DiceHistory = CaptureIntStringDictionary( DiceHistory ),
 			AdminHistory = CaptureIntStringDictionary( AdminHistory ),
 			MoveHistory = CaptureIntStringDictionary( MoveHistory ),
+			GambleSessions = CaptureIntStringDictionary( GambleSessions ),
+			NextGambleSessionId = NextGambleSessionId,
 			PropertyLandingCounts = CaptureIntIntDictionary( PropertyLandingCounts ),
 			PropertyRentEarned = CaptureIntIntDictionary( PropertyRentEarned ),
 			PendingPurchaseSpaceIndex = PendingPurchaseSpaceIndex,
@@ -443,6 +457,8 @@ public sealed partial class GameController : Component
 		ApplyIntStringDictionary( DiceHistory, snapshot.DiceHistory );
 		ApplyIntStringDictionary( AdminHistory, snapshot.AdminHistory );
 		ApplyIntStringDictionary( MoveHistory, snapshot.MoveHistory );
+		ApplyIntStringDictionary( GambleSessions, snapshot.GambleSessions );
+		NextGambleSessionId = Math.Max( snapshot.NextGambleSessionId, 1 );
 		RestoreMatchIntegritySeed( snapshot.PrivateDiceSeed );
 		ApplyIntIntDictionary( PropertyLandingCounts, snapshot.PropertyLandingCounts );
 		ApplyIntIntDictionary( PropertyRentEarned, snapshot.PropertyRentEarned );

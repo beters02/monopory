@@ -101,6 +101,8 @@ public sealed partial class GameController : Component, Component.INetworkListen
 	[Sync] public NetDictionary<int, string> DiceHistory { get; set; } = new();
 	[Sync] public NetDictionary<int, string> AdminHistory { get; set; } = new();
 	[Sync] public NetDictionary<int, string> MoveHistory { get; set; } = new();
+	[Sync] public NetDictionary<int, string> GambleSessions { get; set; } = new();
+	[Sync] public int NextGambleSessionId { get; set; } = 1;
 	private string lastAppliedGameConfigSnapshot = "";
 	[Sync] public NetDictionary<int, int> PropertyLandingCounts { get; set; } = new();
 	[Sync] public NetDictionary<int, int> PropertyRentEarned { get; set; } = new();
@@ -208,6 +210,8 @@ public sealed partial class GameController : Component, Component.INetworkListen
 		if ( Theme is null )
 			Theme = Components.GetOrCreate<MonopolyTheme>();
 
+		EnsureGambleStations();
+
 		if ( !Networking.IsHost )
 		{
 			LoadingState.HideAfterSceneReady();
@@ -249,11 +253,13 @@ public sealed partial class GameController : Component, Component.INetworkListen
 		ApplyLocalDiceSkin();
 		RecoverPendingPurchaseSelection();
 		UpdateServerLoadingWatchdog();
+		EnsureGambleSessionStations();
 
 		if ( !Networking.IsHost )
 			return;
 
 		SyncLobbyConnections();
+		UpdateGambleSessions();
 
 		if ( MatchState == MatchLifecycleState.Lobby )
 			TryStartBootstrappedGame();

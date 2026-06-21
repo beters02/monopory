@@ -107,6 +107,14 @@ public sealed class MatchConfig
 	[MatchConfigOption( "Economy", "Player Bankrupted Player Mode", Description = "What happens to properties when one player bankrupts another.", Order = 24 )]
 	public PlayerBankruptedPlayerMode PlayerBankruptedPlayerMode { get; set; } = PlayerBankruptedPlayerMode.GivePropertiesToBankrupter;
 
+	[MatchConfigOption( "Economy", "Gamble Games Enabled Non-Card", Description = "Users can play gamble games during the game when it is not their turn.", Order = 25 )]
+	public bool GambleGamesEnabledNonCard { get; set; } = true;
+
+	[MatchConfigOption( "Economy", "Can Gamble Monopoly Money", Description = "Can gamble your in-game money in non-card gamble games.", Order = 26 )]
+	public bool CanGambleMonopolyMoney { get; set; } = true;
+	[MatchConfigOption( "Economy", "Can Turn Player Gamble", Description = "Can the current turn player play non-card gamble games.", Order = 27, IsVisible = false )]
+	public bool CanTurnPlayerGambleNonCard { get; set; } = false;
+
 	[MatchConfigOption( "Turn Rules", "Doubles Goes Again", Description = "Lets players take another turn after rolling doubles.", Order = 30 )]
 	public bool DoublesGoesAgain { get; set; } = true;
 

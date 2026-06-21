@@ -1,28 +1,75 @@
 @namespace Sandbox.ui.components
 @using Sandbox;
 @using Sandbox.UI;
+@using Sandbox.ui.components.buttons;
+
 @using System;
 @inherits Panel
 
 <root>
-	@if ( IsActive )
+	@if ( GambleHubOpen && ActiveSession is null )
 	{
-		<div class="@GambleScreenClasses">
-			<div class="@GambleCardClasses">
-				<div class="gamble-kicker">Gamble Card</div>
-				<div class="gamble-title">@Title</div>
-				<div class="gamble-player">@PlayerName</div>
-				<div class="gamble-description">@Description</div>
+		<div class="@MenuClasses">
+			<div class="gamble-menu-card gamble-hub-card">
+				@if ( SelectedGame is null )
+				{
+					<div class="gamble-kicker">Gamble Hub</div>
+					<div class="gamble-title">Choose a Game</div>
+					<div class="gamble-description">Pick any available side game.</div>
+					<div class="gamble-game-list">
+						<div class="gamble-game-entry">
+							<div class="gamble-game-copy">
+								<div class="gamble-game-title">Coin Flip</div>
+								<div class="gamble-game-description">Choose heads or tails and watch the 3D coin decide.</div>
+								<div class="@AvailabilityClass">@AvailabilityText</div>
+							</div>
+							<GameButton Variant="gamble-game-play-button"
+								CanClick="@HasAvailableStation"
+								BlockedPopupTitle="Stations busy"
+								BlockedPopupMessage="Every coinflip station is currently in use."
+								OnClick="@SelectCoinFlip">Play</GameButton>
+						</div>
+					</div>
+					<GameButton Variant="gamble-cancel-button" OnClick="@CloseGambleHub">Close</GameButton>
+				}
+				else
+				{
+					<div class="gamble-kicker">Gamble Hub</div>
+					<div class="gamble-title">3D Coin Flip</div>
+					<div class="gamble-description">Choose a side, then flip at an available station.</div>
+					<div class="gamble-side-row">
+						<GameButton Variant="@GetSideClass( CoinFlipSide.Heads )" OnClick="@ChooseHeads">Heads</GameButton>
+						<GameButton Variant="@GetSideClass( CoinFlipSide.Tails )" OnClick="@ChooseTails">Tails</GameButton>
+					</div>
+					@if ( UsesMoney )
+					{
+						<div class="gamble-wager-label">Wager ($1–$@AvailableCash)</div>
+						<TextEntry class="gamble-wager-input" Text="@WagerDraft" Placeholder="Wager" OnTextEdited="@SetWagerDraft" />
+					}
+					else
+					{
+						<div class="gamble-free-play">Free-play mode</div>
+					}
+					<div class="gamble-actions">
+						<GameButton Variant="gamble-cancel-button" OnClick="@BackToGambleHub">Back</GameButton>
+						<GameButton Variant="gamble-play-button" CanClick="@CanSubmit"
+							BlockedPopupTitle="Invalid wager"
+							BlockedPopupMessage="Enter a whole-dollar wager you can afford."
+							OnClick="@StartCoinFlip">Flip Coin</GameButton>
+					</div>
+				}
+			</div>
+		</div>
+	}
 
-				<div class="@CoinClasses">
-					<div class="coin-face coin-win">WIN</div>
-					<div class="coin-face coin-lose">LOSE</div>
-				</div>
-
+	@if ( ActiveSession is not null )
+	{
+		<div class="@SessionClasses">
+			<div class="gamble-session-card">
+				<div class="gamble-kicker">@(ActiveSession.IsCardGame ? "Gamble Card" : "Side Game")</div>
+				<div class="gamble-title">@ActiveSession.Title</div>
+				<div class="gamble-description">@ActiveSession.Description</div>
 				<div class="gamble-result">@StatusText</div>
-				<div class="gamble-progress-track">
-					<div class="gamble-progress-fill" style="@ProgressStyle"></div>
-				</div>
 			</div>
 		</div>
 	}
@@ -30,77 +77,125 @@
 
 @code
 {
+	public static GambleScreen Instance { get; private set; }
+
 	[Parameter] public GameController GameRef { get; set; }
 	[Parameter] public bool IsMenuOpen { get; set; }
 
-	private bool IsActive =>
-		GameRef?.IsGambleScreenActive == true;
+	private bool GambleHubOpen;
+	private GambleType? SelectedGame;
+	private int PreferredStationId = -1;
+	private CoinFlipSide ChosenSide = CoinFlipSide.Heads;
+	private string WagerDraft = "1";
 
-	private string Title =>
-		string.IsNullOrWhiteSpace( GameRef?.ActiveGambleTitle )
-			? "Coin Flip"
-			: GameRef.ActiveGambleTitle;
+	private GambleSession ActiveSession => GameRef?.GetLocalGambleSession();
+	private bool HasAvailableStation => ResolveStationId() >= 0;
+	private bool UsesMoney => GameRef?.Config?.CanGambleMonopolyMoney == true;
+	private int AvailableCash => Math.Max( GameRef?.Players?.ElementAtOrDefault( GameRef.LocalPlayerIndex )?.Money ?? 0, 0 );
+	private bool CanSubmit => HasAvailableStation && (!UsesMoney || TryGetWager( out _ ));
+	private string AvailabilityText => HasAvailableStation ? "Available" : "All stations busy";
+	private string AvailabilityClass => HasAvailableStation ? "gamble-game-availability available" : "gamble-game-availability busy";
 
-	private string PlayerName =>
-		GameRef?.Players?.ElementAtOrDefault( GameRef.ActiveGamblePlayerIndex )?.PlayerName ?? "Player";
 
-	private string Description =>
-		string.IsNullOrWhiteSpace( GameRef?.ActiveGambleDescription )
-			? "The coin is in the air."
-			: GameRef.ActiveGambleDescription;
+	private string MenuClasses => IsMenuOpen ? "gamble-screen-backdrop hidden-by-menu" : "gamble-screen-backdrop";
+	private string SessionClasses => IsMenuOpen ? "gamble-session-overlay hidden-by-menu" : "gamble-session-overlay";
+	private string StatusText => ActiveSession?.IsResolved == true
+		? ActiveSession.ResultMessage
+		: $"Flipping in {Math.Max( 0, (int)MathF.Ceiling( (ActiveSession?.RevealAt ?? 0f) - Time.Now ) )}...";
 
-	private bool IsResolved =>
-		GameRef?.ActiveGambleResolved == true;
-
-	private float RevealProgress
+	protected override void OnAfterTreeRender( bool firstTime )
 	{
-		get
-		{
-			if ( GameRef is null || GameRef.ActiveGambleStartedAt <= 0f || GameRef.ActiveGambleRevealAt <= GameRef.ActiveGambleStartedAt )
-				return 0f;
-
-			return Math.Clamp( (Time.Now - GameRef.ActiveGambleStartedAt) / (GameRef.ActiveGambleRevealAt - GameRef.ActiveGambleStartedAt), 0f, 1f );
-		}
+		base.OnAfterTreeRender( firstTime );
+		Instance = this;
 	}
 
-	private string StatusText =>
-		IsResolved
-			? GameRef.ActiveGambleResultMessage
-			: $"Flipping in {Math.Max( 0, (int)MathF.Ceiling( (GameRef?.ActiveGambleRevealAt ?? 0f) - Time.Now ) )}...";
-
-	private string ProgressStyle =>
-		$"width: {RevealProgress * 100f:0}%;";
-
-	private string GambleCardClasses =>
-		IsResolved
-			? GameRef?.ActiveGambleWon == true ? "gamble-card resolved won" : "gamble-card resolved lost"
-			: "gamble-card";
-
-	private string GambleScreenClasses =>
-		IsMenuOpen ? "gamble-screen-backdrop hidden-by-menu" : "gamble-screen-backdrop";
-
-	private string CoinClasses
+	public void OpenGambleMenuFromWorld( int stationId )
 	{
-		get 
-		{
-			return IsResolved
-				? GameRef?.ActiveGambleWon == true ? "gamble-coin result-win" : "gamble-coin result-lose"
-				: "gamble-coin flipping";
-		}
+		if ( GameRef?.CanLocalPlayerStartNonCardGamble != true || !GameRef.IsGambleStationAvailable( stationId ) )
+			return;
+
+		PreferredStationId = stationId;
+		SelectedGame = GambleType.CoinFlip;
+		GambleHubOpen = true;
 	}
-		
+
+	public void OpenGambleHub()
+	{
+		if ( GameRef?.CanLocalPlayerStartNonCardGamble != true )
+			return;
+
+		SelectedGame = null;
+		PreferredStationId = -1;
+		GambleHubOpen = true;
+	}
+
+	private void SelectCoinFlip()
+	{
+		PreferredStationId = GameRef?.GetFirstAvailableGambleStationId() ?? -1;
+		if ( PreferredStationId >= 0 )
+			SelectedGame = GambleType.CoinFlip;
+	}
+
+	private void BackToGambleHub()
+	{
+		SelectedGame = null;
+		PreferredStationId = -1;
+	}
+
+	private void CloseGambleHub()
+	{
+		GambleHubOpen = false;
+		SelectedGame = null;
+		PreferredStationId = -1;
+	}
+
+	private void ChooseHeads() => ChosenSide = CoinFlipSide.Heads;
+	private void ChooseTails() => ChosenSide = CoinFlipSide.Tails;
+	private string GetSideClass( CoinFlipSide side ) => ChosenSide == side ? "gamble-side-button selected" : "gamble-side-button";
+	private void SetWagerDraft( string value ) => WagerDraft = value ?? "";
+
+	private int ResolveStationId()
+	{
+		if ( PreferredStationId >= 0 && GameRef?.IsGambleStationAvailable( PreferredStationId ) == true )
+			return PreferredStationId;
+		return GameRef?.GetFirstAvailableGambleStationId() ?? -1;
+	}
+
+	private bool TryGetWager( out int wager )
+	{
+		return int.TryParse( WagerDraft, out wager ) && wager >= 1 && wager <= AvailableCash;
+	}
+
+	private void StartCoinFlip()
+	{
+		var stationId = ResolveStationId();
+		if ( stationId < 0 )
+			return;
+
+		var wager = 0;
+		if ( UsesMoney && !TryGetWager( out wager ) )
+			return;
+
+		GameRef?.RequestStartNonCardCoinFlip( stationId, (int)ChosenSide, wager );
+		CloseGambleHub();
+	}
 
 	protected override int BuildHash()
 	{
-		return HashCode.Combine(
-			GameRef?.ActiveGambleId ?? 0,
-			GameRef?.ActiveGamblePlayerIndex ?? -1,
-			GameRef?.ActiveGambleBetAmount ?? 0,
-			GameRef?.ActiveGambleResolved ?? false,
-			GameRef?.ActiveGambleWon ?? false,
-			GameRef?.ActiveGambleResultMessage ?? "",
-			IsMenuOpen,
-			MathF.Round( Time.Now * 20f )
-		);
+		var hash = new HashCode();
+		hash.Add( GambleHubOpen );
+		hash.Add( SelectedGame );
+		hash.Add( PreferredStationId );
+		hash.Add( ChosenSide );
+		hash.Add( WagerDraft );
+		hash.Add( IsMenuOpen );
+		hash.Add( GameRef?.CurrentPlayerIndex ?? -1 );
+		hash.Add( GameRef?.LocalPlayerIndex ?? -1 );
+		hash.Add( GameRef?.Config?.GambleGamesEnabledNonCard ?? false );
+		hash.Add( GameRef?.Config?.CanGambleMonopolyMoney ?? false );
+		foreach ( var value in GameRef?.GambleSessions?.Values ?? Array.Empty<string>() )
+			hash.Add( value );
+		hash.Add( MathF.Round( Time.Now * 10f ) );
+		return hash.ToHashCode();
 	}
 }

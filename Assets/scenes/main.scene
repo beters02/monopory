@@ -4955,6 +4955,171 @@
         }
       ],
       "Children": []
+    },
+    {
+      "__guid": "acb5b2bb-5bf1-40af-a32f-dfe9f4ad2161",
+      "__version": 2,
+      "Flags": 0,
+      "Name": "GambleStations",
+      "Position": "-87.4457321,-3.57044029,119.096001",
+      "Rotation": "0,0,0,1",
+      "Scale": "1,1.0294354,1",
+      "Tags": "",
+      "Enabled": true,
+      "NetworkMode": 2,
+      "NetworkFlags": 0,
+      "NetworkOrphaned": 0,
+      "NetworkTransmit": true,
+      "OwnerTransfer": 1,
+      "Components": [
+        {
+          "__type": "GambleStation",
+          "__guid": "83c97446-a997-49c8-ab2a-e39258d82a1f",
+          "__enabled": true,
+          "Flags": 0,
+          "CameraDistance": 95,
+          "CameraFocus": null,
+          "CameraPitch": 24,
+          "InteractionRange": 70,
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null,
+          "Presentation": "ThreeDimensional",
+          "StationId": 0
+        }
+      ],
+      "Children": [
+        {
+          "__guid": "935d11d7-5365-4ac6-98d1-c7fdc7b2e104",
+          "__version": 2,
+          "Flags": 0,
+          "Name": "Floor",
+          "Position": "0,0,1.83782196",
+          "Rotation": "0,0,0,1",
+          "Scale": "3.038378,2.76639891,1",
+          "Tags": "",
+          "Enabled": true,
+          "NetworkMode": 2,
+          "NetworkFlags": 0,
+          "NetworkOrphaned": 0,
+          "NetworkTransmit": true,
+          "OwnerTransfer": 1,
+          "Components": [
+            {
+              "__type": "Sandbox.ModelRenderer",
+              "__guid": "9b0ff1b5-d863-4a7d-b4d2-6bf42e1407de",
+              "__enabled": false,
+              "Flags": 0,
+              "BodyGroups": 18446744073709551615,
+              "CreateAttachments": false,
+              "LodOverride": null,
+              "MaterialGroup": null,
+              "MaterialOverride": null,
+              "Materials": null,
+              "Model": "models/dev/plane.vmdl",
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null,
+              "RenderOptions": {
+                "GameLayer": true,
+                "OverlayLayer": false,
+                "BloomLayer": false,
+                "AfterUILayer": false
+              },
+              "RenderType": "On",
+              "Tint": "1,1,1,1"
+            }
+          ],
+          "Children": []
+        },
+        {
+          "__guid": "2887e873-6423-49ef-8bf2-9d3470ab767e",
+          "__version": 2,
+          "Flags": 0,
+          "Name": "Stations",
+          "Position": "0,0,0",
+          "Rotation": "0,0,0,1",
+          "Scale": "1,1,1",
+          "Tags": "",
+          "Enabled": true,
+          "NetworkMode": 2,
+          "NetworkFlags": 0,
+          "NetworkOrphaned": 0,
+          "NetworkTransmit": true,
+          "OwnerTransfer": 1,
+          "Components": [],
+          "Children": [
+            {
+              "__guid": "ac50e086-7459-4f35-8e66-a6c4be0fe8d4",
+              "__version": 2,
+              "Flags": 0,
+              "Name": "Station1",
+              "Position": "35.2354965,-29.8889637,0",
+              "Rotation": "0,0,0,1",
+              "Scale": "1,1,1",
+              "Tags": "",
+              "Enabled": true,
+              "NetworkMode": 2,
+              "NetworkFlags": 0,
+              "NetworkOrphaned": 0,
+              "NetworkTransmit": true,
+              "OwnerTransfer": 1,
+              "Components": [],
+              "Children": [
+                {
+                  "__guid": "a5c841ee-e595-4360-8686-826b3cf47093",
+                  "__version": 2,
+                  "__Prefab": "prefabs/airport.prefab",
+                  "__PrefabInstancePatch": {
+                    "AddedObjects": [],
+                    "RemovedObjects": [],
+                    "PropertyOverrides": [
+                      {
+                        "Target": {
+                          "Type": "GameObject",
+                          "IdValue": "eaa82287-ae2c-4b64-9366-afb11d90febb"
+                        },
+                        "Property": "Position",
+                        "Value": "0,11.8442192,12.7731857"
+                      },
+                      {
+                        "Target": {
+                          "Type": "GameObject",
+                          "IdValue": "eaa82287-ae2c-4b64-9366-afb11d90febb"
+                        },
+                        "Property": "Rotation",
+                        "Value": "0,-0,-0.707106769,0.707106769"
+                      },
+                      {
+                        "Target": {
+                          "Type": "GameObject",
+                          "IdValue": "eaa82287-ae2c-4b64-9366-afb11d90febb"
+                        },
+                        "Property": "Scale",
+                        "Value": "0.100000001,0.100000001,0.100000001"
+                      }
+                    ],
+                    "MovedObjects": []
+                  },
+                  "__PrefabIdToInstanceId": {
+                    "eaa82287-ae2c-4b64-9366-afb11d90febb": "a5c841ee-e595-4360-8686-826b3cf47093",
+                    "81770783-554d-4fe3-9487-a74aa928ab80": "89f19fa6-4c6c-41cb-b918-d0539b92a5f0",
+                    "95f0a78a-2644-4830-ae52-875110b6ac7f": "c7deb764-be98-4b7b-8475-1be09ed78c32",
+                    "052d20bd-ae50-4143-bbb7-087b02fbca3a": "a184d273-0b13-4755-b911-9940076b47d9",
+                    "798cd0d3-0b46-410e-8d6b-f3ccc44d9878": "b9419f0a-8c4d-4d49-8773-c74550092ea0"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
     }
   ],
   "SceneProperties": {
