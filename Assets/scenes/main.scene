@@ -5060,6 +5060,7 @@
                   "CameraDistance": 120,
                   "CameraFocus": null,
                   "CameraPitch": 90,
+                  "CoinFaceXRotation": 90,
                   "CoinLocalOffset": "0,11.8442192,0",
                   "CoinRestHeight": 18,
                   "InteractionRange": 70,

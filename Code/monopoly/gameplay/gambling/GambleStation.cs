@@ -10,8 +10,7 @@ public sealed class GambleStation : Component
 	[Property] public float CameraPitch { get; set; } = 90f;
 	[Property] public float CoinRestHeight { get; set; } = 18f;
 	[Property] public Vector3 CoinLocalOffset { get; set; } = Vector3.Zero;
-	[Property] public float CoinFacePitch { get; set; } = 90f;
-	[Property] public float CoinFacingYaw { get; set; } = -90f;
+	[Property] public float CoinFaceXRotation { get; set; } = 90f;
 	[Property] public float InteractionRange { get; set; } = 70f;
 
 	public bool IsRuntimeSessionStation { get; set; }
@@ -74,9 +73,9 @@ public sealed class GambleStation : Component
 		if ( coinVisual is null )
 			return;
 
-		// The mesh is only 0.25 units thick on local X, so local X is its face
-		// normal. This fixed transform points that normal at the overhead camera.
-		coinVisual.LocalRotation = Rotation.From( CoinFacePitch, CoinFacingYaw, 0f );
+		// Editor X rotation is the mesh correction that lays the face flat.
+		// Keep it isolated from the animated pivot to avoid Euler cross-talk.
+		coinVisual.LocalRotation = Rotation.FromAxis( Vector3.Forward, CoinFaceXRotation );
 	}
 
 	private void UpdateCoin( GambleSession session )
@@ -110,7 +109,17 @@ public sealed class GambleStation : Component
 		var resultTurn = session.OutcomeSide == CoinFlipSide.Heads ? 0f : 180f;
 
 		coinPivot.LocalPosition = CoinLocalOffset + Vector3.Up * (CoinRestHeight + height);
-		coinPivot.LocalRotation = Rotation.From( turns + resultTurn * progress, 0f, 0f );
+
+		var flipDegrees = turns + resultTurn * progress;
+		if ( progress >= 1f )
+		{
+			flipDegrees = resultTurn;
+			ApplyCoinFaceOrientation();
+		}
+
+		// Flip around local Y, perpendicular to the visual's fixed face normal.
+		// Landing uses the exact same axis at 0°/180°, so it cannot change planes.
+		coinPivot.LocalRotation = Rotation.FromAxis( Vector3.Left, flipDegrees );
 	}
 
 	private bool CanLocalPlayerInteract()
