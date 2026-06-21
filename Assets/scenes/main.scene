@@ -4983,6 +4983,11 @@
         "Data": {
           "SelectionSets": []
         }
+      },
+      "Sandbox.Clutter.ClutterGridSystem": {
+        "Storage": {
+          "$blob": "6516437d-f143-43ab-91e3-16eab14872b6"
+        }
       }
     }
   },
