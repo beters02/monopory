@@ -3023,7 +3023,7 @@
               "OnTriggerExit": null,
               "RollingResistance": null,
               "Scale": "50,50,73.5299988",
-              "Static": false,
+              "Static": true,
               "Surface": "surfaces/board.surface",
               "SurfaceVelocity": "0,0,0"
             }

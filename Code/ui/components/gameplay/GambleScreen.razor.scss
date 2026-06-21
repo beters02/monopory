@@ -4,10 +4,11 @@
 	position: absolute;
 	inset: 0;
 	z-index: 130;
+	padding: 32px;
 	align-items: center;
 	justify-content: center;
-	background-color: $monopoly-modal-backdrop;
-	backdrop-filter: blur(6px);
+	background-color: rgba(7, 13, 20, 0.76);
+	backdrop-filter: blur(8px);
 	pointer-events: all;
 	transition: opacity 0.16s ease;
 }
@@ -31,39 +32,56 @@
 	gap: 14px;
 }
 
-.gamble-hub-card {
-	width: 620px;
+.gamble-menu-card.gamble-hub-card {
+	width: 560px;
+	max-width: 90%;
+	padding: 26px;
+	gap: 16px;
+	background-color: rgba(18, 31, 41, 0.98);
+	border-width: 2px;
 }
 
-.gamble-game-list,
-.gamble-game-copy {
+.gamble-game-list {
+	width: 100%;
 	flex-direction: column;
-	gap: 10px;
+	gap: 12px;
+}
+
+.gamble-game-copy {
+	width: 100%;
+	min-width: 0;
+	flex-direction: column;
+	gap: 6px;
+	flex-shrink: 0;
 }
 
 .gamble-game-entry {
+	width: 100%;
 	padding: 18px;
-	gap: 18px;
-	align-items: center;
-	background-color: $monopoly-surface-medium;
-	border: 2px solid $monopoly-property-border;
+	flex-direction: column;
+	gap: 14px;
+	align-items: stretch;
+	background-color: rgba(241, 247, 243, 0.08);
+	border: 1px solid rgba(241, 247, 243, 0.18);
 	border-radius: $monopoly-radius-control;
 }
 
-.gamble-game-copy {
-	flex: 1;
-}
-
 .gamble-game-title {
+	width: 100%;
 	color: $monopoly-text;
 	font-size: 24px;
 	font-weight: 900;
+	line-height: 28px;
+	white-space: nowrap;
 }
 
 .gamble-game-description {
+	width: 100%;
 	color: $monopoly-text-muted;
-	font-size: 16px;
+	font-size: 15px;
 	font-weight: 700;
+	line-height: 20px;
+	white-space: normal;
 }
 
 .gamble-game-availability {
@@ -80,9 +98,11 @@
 	color: $monopoly-danger;
 }
 
-.gamble-game-play-button {
-	min-width: 110px;
-	padding: 12px 20px;
+.monopoly-button.gamble-game-play-button {
+	width: 100%;
+	min-height: 44px;
+	margin: 0;
+	padding: 0 20px;
 	background-color: $monopoly-gold;
 	color: $monopoly-ink;
 	border-radius: $monopoly-radius-control;

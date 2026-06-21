@@ -115,7 +115,7 @@ public sealed partial class GameController
 			message = "Gamble games are only available during an active match.";
 		else if ( player is null || playerIndex < 0 || player.IsBankrupt )
 			message = "No eligible player was found.";
-		else if ( playerIndex == CurrentPlayerIndex )
+		else if ( playerIndex == CurrentPlayerIndex && Config?.CanTurnPlayerGambleNonCard != true )
 			message = "Finish your turn before playing a side game.";
 		else if ( GetGambleSessions().Any( session => session.PlayerIndex == playerIndex ) )
 			message = "You already have an active gamble game.";
