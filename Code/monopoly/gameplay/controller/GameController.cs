@@ -101,7 +101,9 @@ public sealed partial class GameController : Component, Component.INetworkListen
 	[Sync] public NetDictionary<int, string> DiceHistory { get; set; } = new();
 	[Sync] public NetDictionary<int, string> AdminHistory { get; set; } = new();
 	[Sync] public NetDictionary<int, string> MoveHistory { get; set; } = new();
+	[Sync] public NetDictionary<int, string> GambleHistory { get; set; } = new();
 	[Sync] public NetDictionary<int, string> GambleSessions { get; set; } = new();
+	[Sync] public int NextGambleHistoryId { get; set; } = 1;
 	[Sync] public int NextGambleSessionId { get; set; } = 1;
 	private string lastAppliedGameConfigSnapshot = "";
 	[Sync] public NetDictionary<int, int> PropertyLandingCounts { get; set; } = new();

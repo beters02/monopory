@@ -29,6 +29,8 @@ public sealed partial class GameController : Component
 		DiceHistory.Clear();
 		AdminHistory.Clear();
 		MoveHistory.Clear();
+		GambleHistory.Clear();
+		NextGambleHistoryId = 1;
 		activeMoveHistoryTurnNumber = 0;
 		activeMoveHistoryMoneySignature = "";
 	}
@@ -269,5 +271,38 @@ public sealed partial class GameController : Component
 	{
 		return string.Join( "|", Players
 			.Select( ( player, index ) => player is null || !player.IsAssigned ? "" : $"{index}:{player.Money}" ) );
+	}
+
+	public void RecordGambleHistory( GambleSession session )
+	{
+		if ( session is null || session.IsCardGame || !session.IsResolved )
+			return;
+
+		var player = Players.ElementAtOrDefault( session.PlayerIndex );
+		var afterMoney = player?.Money ?? 0;
+		var beforeMoney = session.Wager > 0
+			? session.Won ? afterMoney - session.Wager : afterMoney + session.Wager
+			: afterMoney;
+		var entry = new GambleHistoryEntry
+		{
+			Id = NextGambleHistoryId++,
+			SessionId = session.Id,
+			TurnNumber = Math.Max( activeMoveHistoryTurnNumber, 0 ),
+			StationId = session.StationId,
+			PlayerIndex = session.PlayerIndex,
+			PlayerName = player?.PlayerName ?? $"Player {session.PlayerIndex + 1}",
+			GameType = session.GameType.ToString(),
+			ChosenSide = session.ChosenSide.ToString(),
+			OutcomeSide = session.OutcomeSide.ToString(),
+			Wager = session.Wager,
+			BeforeMoney = beforeMoney,
+			AfterMoney = afterMoney,
+			Won = session.Won,
+			Title = session.Title ?? "",
+			Description = session.Description ?? "",
+			ResultMessage = session.ResultMessage ?? ""
+		};
+
+		GambleHistory[entry.Id] = MatchIntegrityJson.Serialize( entry );
 	}
 }

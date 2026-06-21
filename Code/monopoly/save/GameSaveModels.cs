@@ -71,7 +71,9 @@ public sealed class GameSaveSnapshot
 	public List<GameSaveIntStringEntry> DiceHistory { get; set; } = new();
 	public List<GameSaveIntStringEntry> AdminHistory { get; set; } = new();
 	public List<GameSaveIntStringEntry> MoveHistory { get; set; } = new();
+	public List<GameSaveIntStringEntry> GambleHistory { get; set; } = new();
 	public List<GameSaveIntStringEntry> GambleSessions { get; set; } = new();
+	public int NextGambleHistoryId { get; set; } = 1;
 	public int NextGambleSessionId { get; set; } = 1;
 	public List<GameSaveIntIntEntry> PropertyLandingCounts { get; set; } = new();
 	public List<GameSaveIntIntEntry> PropertyRentEarned { get; set; } = new();

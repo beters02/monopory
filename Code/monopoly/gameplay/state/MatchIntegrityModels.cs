@@ -69,6 +69,26 @@ public sealed class MoveHistoryTurn
 	public List<MoveHistoryMoneyDelta> MoneyDeltas { get; set; } = new();
 }
 
+public sealed class GambleHistoryEntry
+{
+	public int Id { get; set; }
+	public int SessionId { get; set; }
+	public int TurnNumber { get; set; }
+	public int StationId { get; set; }
+	public int PlayerIndex { get; set; }
+	public string PlayerName { get; set; } = "";
+	public string GameType { get; set; } = "";
+	public string ChosenSide { get; set; } = "";
+	public string OutcomeSide { get; set; } = "";
+	public int Wager { get; set; }
+	public int BeforeMoney { get; set; }
+	public int AfterMoney { get; set; }
+	public bool Won { get; set; }
+	public string Title { get; set; } = "";
+	public string Description { get; set; } = "";
+	public string ResultMessage { get; set; } = "";
+}
+
 public static class MatchIntegrityJson
 {
 	private static readonly JsonSerializerOptions Options = new()

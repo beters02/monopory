@@ -221,6 +221,9 @@ public sealed partial class GameController
 		if ( current is null || (expectedSessionId >= 0 && current.Id != expectedSessionId) )
 			return;
 
+		if ( !current.IsCardGame && current.IsResolved )
+			RecordGambleHistory( current );
+
 		GambleSessions.Remove( stationId );
 	}
 

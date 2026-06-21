@@ -275,7 +275,9 @@ public sealed partial class GameController : Component
 			DiceHistory = CaptureIntStringDictionary( DiceHistory ),
 			AdminHistory = CaptureIntStringDictionary( AdminHistory ),
 			MoveHistory = CaptureIntStringDictionary( MoveHistory ),
+			GambleHistory = CaptureIntStringDictionary( GambleHistory ),
 			GambleSessions = CaptureIntStringDictionary( GambleSessions ),
+			NextGambleHistoryId = NextGambleHistoryId,
 			NextGambleSessionId = NextGambleSessionId,
 			PropertyLandingCounts = CaptureIntIntDictionary( PropertyLandingCounts ),
 			PropertyRentEarned = CaptureIntIntDictionary( PropertyRentEarned ),
@@ -457,7 +459,9 @@ public sealed partial class GameController : Component
 		ApplyIntStringDictionary( DiceHistory, snapshot.DiceHistory );
 		ApplyIntStringDictionary( AdminHistory, snapshot.AdminHistory );
 		ApplyIntStringDictionary( MoveHistory, snapshot.MoveHistory );
+		ApplyIntStringDictionary( GambleHistory, snapshot.GambleHistory );
 		ApplyIntStringDictionary( GambleSessions, snapshot.GambleSessions );
+		NextGambleHistoryId = Math.Max( snapshot.NextGambleHistoryId, 1 );
 		NextGambleSessionId = Math.Max( snapshot.NextGambleSessionId, 1 );
 		RestoreMatchIntegritySeed( snapshot.PrivateDiceSeed );
 		ApplyIntIntDictionary( PropertyLandingCounts, snapshot.PropertyLandingCounts );
