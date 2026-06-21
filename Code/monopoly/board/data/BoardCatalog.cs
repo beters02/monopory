@@ -4,10 +4,12 @@ public static class BoardCatalog
 {
 	public const string DefaultBoardId = "default";
 	public const string ExampleBoardId = "example";
+	public const string NamedBoardId = "named";
 
 	private static readonly List<Func<BoardDefinition>> boardFactories = new()
 	{
 		CreateDefaultBoard,
+		CreateNamedBoard,
 		//CreateExampleBoard
 	};
 
@@ -135,6 +137,56 @@ public static class BoardCatalog
 				[ColorGroup.DarkBlue] = "#2b6cb0"
 			}
 		};
+
+		return board;
+	}
+
+	private static BoardDefinition CreateNamedBoard()
+	{
+		var board = CreateDefaultBoard();
+		board.Id = NamedBoardId;
+		board.DisplayName = "Named Board";
+
+		SetSpaceName( board.Spaces, 0, "Landing" );
+		SetSpaceName( board.Spaces, 1, "Studio Apartment" );
+		SetSpaceName( board.Spaces, 2, "Community Chest" );
+		SetSpaceName( board.Spaces, 3, "Laundry Lofts" );
+		SetSpaceName( board.Spaces, 4, "Plug Tax" );
+		SetSpaceName( board.Spaces, 5, "Transit Hub" );
+		SetSpaceName( board.Spaces, 6, "College Commons" );
+		SetSpaceName( board.Spaces, 7, "Chance" );
+		SetSpaceName( board.Spaces, 8, "de_Miraq" );
+		SetSpaceName( board.Spaces, 9, "de_Nuke" );
+		SetSpaceName( board.Spaces, 10, "Visiting Eviction Court" );
+		SetSpaceName( board.Spaces, 11, "Downtown District" );
+		SetSpaceName( board.Spaces, 12, "Power Grid" );
+		SetSpaceName( board.Spaces, 13, "Market Square" );
+		SetSpaceName( board.Spaces, 14, "Canals District" );
+		SetSpaceName( board.Spaces, 15, "Metro Line" );
+		SetSpaceName( board.Spaces, 16, "Riverside Villas" );
+		SetSpaceName( board.Spaces, 17, "Community Chest" );
+		SetSpaceName( board.Spaces, 18, "Harbor 17" );
+		SetSpaceName( board.Spaces, 19, "Skyline Towers" );
+		SetSpaceName( board.Spaces, 20, "Free Parking" );
+		SetSpaceName( board.Spaces, 21, "Black Mesa Business Park" );
+		SetSpaceName( board.Spaces, 22, "Chance" );
+		SetSpaceName( board.Spaces, 23, "Lambda Square" );
+		SetSpaceName( board.Spaces, 24, "Ravenholm Heights" );
+		SetSpaceName( board.Spaces, 25, "Express Line" );
+		SetSpaceName( board.Spaces, 26, "Kleiner Commons" );
+		SetSpaceName( board.Spaces, 27, "White Forest Estates" );
+		SetSpaceName( board.Spaces, 28, "Internet Provider" );
+		SetSpaceName( board.Spaces, 29, "Vertigo Towers" );
+		SetSpaceName( board.Spaces, 30, "Evicted!" );
+		SetSpaceName( board.Spaces, 31, "Construct Court" );
+		SetSpaceName( board.Spaces, 32, "City 17 Condos" );
+		SetSpaceName( board.Spaces, 33, "Community Chest" );
+		SetSpaceName( board.Spaces, 34, "Nova Prospekt Villas" );
+		SetSpaceName( board.Spaces, 35, "Rapid Transit" );
+		SetSpaceName( board.Spaces, 36, "Chance" );
+		SetSpaceName( board.Spaces, 37, "Facepunch Plaza" );
+		SetSpaceName( board.Spaces, 38, "HOA Fine" );
+		SetSpaceName( board.Spaces, 39, "Billionaire Boulevard" );
 
 		return board;
 	}
