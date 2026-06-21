@@ -4971,26 +4971,7 @@
       "NetworkOrphaned": 0,
       "NetworkTransmit": true,
       "OwnerTransfer": 1,
-      "Components": [
-        {
-          "__type": "GambleStation",
-          "__guid": "83c97446-a997-49c8-ab2a-e39258d82a1f",
-          "__enabled": true,
-          "Flags": 0,
-          "CameraDistance": 95,
-          "CameraFocus": null,
-          "CameraPitch": 24,
-          "InteractionRange": 70,
-          "OnComponentDestroy": null,
-          "OnComponentDisabled": null,
-          "OnComponentEnabled": null,
-          "OnComponentFixedUpdate": null,
-          "OnComponentStart": null,
-          "OnComponentUpdate": null,
-          "Presentation": "ThreeDimensional",
-          "StationId": 0
-        }
-      ],
+      "Components": [],
       "Children": [
         {
           "__guid": "935d11d7-5365-4ac6-98d1-c7fdc7b2e104",
@@ -5070,7 +5051,28 @@
               "NetworkOrphaned": 0,
               "NetworkTransmit": true,
               "OwnerTransfer": 1,
-              "Components": [],
+              "Components": [
+                {
+                  "__type": "GambleStation",
+                  "__guid": "83c97446-a997-49c8-ab2a-e39258d82a1f",
+                  "__enabled": true,
+                  "Flags": 0,
+                  "CameraDistance": 120,
+                  "CameraFocus": null,
+                  "CameraPitch": 90,
+                  "CoinLocalOffset": "0,11.8442192,0",
+                  "CoinRestHeight": 18,
+                  "InteractionRange": 70,
+                  "OnComponentDestroy": null,
+                  "OnComponentDisabled": null,
+                  "OnComponentEnabled": null,
+                  "OnComponentFixedUpdate": null,
+                  "OnComponentStart": null,
+                  "OnComponentUpdate": null,
+                  "Presentation": "ThreeDimensional",
+                  "StationId": 0
+                }
+              ],
               "Children": [
                 {
                   "__guid": "a5c841ee-e595-4360-8686-826b3cf47093",

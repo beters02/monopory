@@ -6,15 +6,17 @@ public sealed class GambleStation : Component
 	[Property] public int StationId { get; set; }
 	[Property] public GamblePresentationMode Presentation { get; set; } = GamblePresentationMode.ThreeDimensional;
 	[Property] public GameObject CameraFocus { get; set; }
-	[Property] public float CameraDistance { get; set; } = 95f;
-	[Property] public float CameraPitch { get; set; } = 24f;
+	[Property] public float CameraDistance { get; set; } = 120f;
+	[Property] public float CameraPitch { get; set; } = 90f;
+	[Property] public float CoinRestHeight { get; set; } = 18f;
+	[Property] public Vector3 CoinLocalOffset { get; set; } = Vector3.Zero;
 	[Property] public float InteractionRange { get; set; } = 70f;
 	public bool IsRuntimeSessionStation { get; set; }
 
 	private GameObject coin;
 	private int visibleSessionId = -1;
 
-	public Vector3 FocusPosition => CameraFocus?.WorldPosition ?? GameObject.WorldPosition;
+	public Vector3 FocusPosition => CameraFocus?.WorldPosition ?? GameObject.WorldPosition + CoinLocalOffset + Vector3.Up * CoinRestHeight;
 
 	protected override void OnStart()
 	{
@@ -47,7 +49,7 @@ public sealed class GambleStation : Component
 		coin = prefab.Clone();
 		coin.Name = $"GambleCoin_{StationId}";
 		coin.SetParent( GameObject );
-		coin.LocalPosition = Vector3.Zero;
+		coin.LocalPosition = CoinLocalOffset + Vector3.Up * CoinRestHeight;
 		coin.Enabled = false;
 
 		var body = coin.GetComponentInChildren<Rigidbody>();
@@ -74,7 +76,7 @@ public sealed class GambleStation : Component
 		if ( visibleSessionId != session.Id )
 		{
 			visibleSessionId = session.Id;
-			coin.LocalPosition = Vector3.Zero;
+			coin.LocalPosition = CoinLocalOffset + Vector3.Up * CoinRestHeight;
 			coin.LocalRotation = Rotation.Identity;
 		}
 
@@ -83,7 +85,7 @@ public sealed class GambleStation : Component
 		var height = MathF.Sin( progress * MathF.PI ) * 34f;
 		var turns = progress * 1440f;
 		var finalPitch = session.OutcomeSide == CoinFlipSide.Heads ? 0f : 180f;
-		coin.LocalPosition = Vector3.Up * height;
+		coin.LocalPosition = CoinLocalOffset + Vector3.Up * (CoinRestHeight + height);
 		coin.LocalRotation = Rotation.From( turns + finalPitch * progress, turns * 0.25f, 0f );
 	}
 
