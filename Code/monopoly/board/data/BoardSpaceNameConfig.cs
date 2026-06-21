@@ -6,12 +6,12 @@ public static class BoardSpaceNameConfig
 {
 	public static string CreateDefaultSnapshot()
 	{
-		return CreateDefaultSnapshot( BoardCatalog.DefaultBoardId );
+		return BoardCatalog.GetNamePresetById( BoardNamePresets.DefaultPresetId )?.Snapshot ?? "";
 	}
 
 	public static string CreateDefaultSnapshot( string boardId )
 	{
-		return SerializeModifiers( new() );
+		return CreateDefaultSnapshot();
 	}
 
 	public static string SerializeNames( IEnumerable<string> names )
