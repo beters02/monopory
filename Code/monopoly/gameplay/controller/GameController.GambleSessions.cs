@@ -13,12 +13,19 @@ public sealed partial class GameController
 		get
 		{
 			var player = Players.ElementAtOrDefault( LocalPlayerIndex );
+
+			if ( Config is null )
+				return false;
+
+			if ( LocalPlayerIndex == CurrentPlayerIndex )
+				if ( (bool) !Config?.CanTurnPlayerGambleNonCard )
+					return false;
+
 			return Config?.GambleGamesEnabledNonCard == true &&
 				MatchState == MatchLifecycleState.InGame &&
 				player is not null &&
 				player.IsAssigned &&
 				!player.IsBankrupt &&
-				LocalPlayerIndex != CurrentPlayerIndex &&
 				!GetGambleSessions().Any( session => session.PlayerIndex == LocalPlayerIndex );
 		}
 	}
