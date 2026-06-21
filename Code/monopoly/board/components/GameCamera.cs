@@ -37,7 +37,7 @@ public sealed class GameCamera : Component
 	[Property] public bool AutoExpsureEnabled { get; set; } = false;
 
 	public float DiceFramingPadding { get; set; } = 30f;
-	public float DiceFramingMinDistance { get; set; } = 200f;
+	public float DiceFramingMinDistance { get; set; } = 250f;
 	public float DefaultModeDicePitch { get; set; } = 75f;
 	[Property] public float DiceFollowLerpSpeed = 4f;
 	[Property] public float DiceRotationLerpSpeed = 3.5f;
