@@ -150,16 +150,35 @@ public sealed class GameCamera : Component
 
 		IsGameplayMovementLocked = true;
 		ReleaseTokenMouse();
-		ApplyView(
-			station.FocusPosition,
-			station.CameraDistance,
-			0f,
-			station.CameraPitch,
-			FollowLerpSpeed,
-			RotationLerpSpeed,
-			true
-		);
+		ApplyGambleView( station );
 		return true;
+	}
+
+	private void ApplyGambleView( GambleStation station )
+	{
+		var pitch = MathX.Clamp( station.CameraPitch, -89.9f, 89.9f ).DegreeToRadian();
+		var yaw = station.CameraYaw.DegreeToRadian();
+		var horizontal = MathF.Cos( pitch );
+		var viewDirection = new Vector3(
+			horizontal * MathF.Cos( yaw ),
+			horizontal * MathF.Sin( yaw ),
+			-MathF.Sin( pitch )
+		).Normal;
+
+		var targetPosition = station.FocusPosition - viewDirection * station.CameraDistance;
+		var upReference = Math.Abs( Vector3.Dot( viewDirection, Vector3.Up ) ) > 0.98f
+			? Vector3.Forward
+			: Vector3.Up;
+		var targetRotation = Rotation.LookAt( viewDirection, upReference );
+
+		GameObject.WorldPosition = GameObject.WorldPosition.LerpTo(
+			targetPosition,
+			Time.Delta * FollowLerpSpeed
+		);
+		GameObject.WorldRotation = GameObject.WorldRotation.LerpTo(
+			targetRotation,
+			Time.Delta * RotationLerpSpeed
+		);
 	}
 
 	private void UpdateFreeCam()

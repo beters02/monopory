@@ -7,9 +7,10 @@ public sealed class GambleStation : Component
 	[Property] public GamblePresentationMode Presentation { get; set; } = GamblePresentationMode.ThreeDimensional;
 	[Property] public GameObject CameraFocus { get; set; }
 	[Property] public float CameraDistance { get; set; } = 120f;
-	[Property] public float CameraPitch { get; set; } = 90f;
+	[Property] public float CameraPitch { get; set; } = 45f;
+	[Property] public float CameraYaw { get; set; }
 	[Property] public float CoinRestHeight { get; set; } = 18f;
-	[Property] public Vector3 CoinLocalOffset { get; set; } = Vector3.Zero;
+	[Property] public Vector3 CoinLocalOffset { get; set; } = new(-12f, 11.8000002f, 0);
 	[Property] public float CoinFaceXRotation { get; set; } = 90f;
 	[Property] public float InteractionRange { get; set; } = 70f;
 
@@ -106,7 +107,8 @@ public sealed class GambleStation : Component
 		var progress = Math.Clamp( (Time.Now - session.StartedAt) / duration, 0f, 1f );
 		var height = MathF.Sin( progress * MathF.PI ) * 34f;
 		var turns = progress * 1440f;
-		var resultTurn = session.OutcomeSide == CoinFlipSide.Heads ? 0f : 180f;
+		// The prefab's base-facing artwork is Tails, so Heads is the turned-over pose.
+		var resultTurn = session.OutcomeSide == CoinFlipSide.Heads ? 180f : 0f;
 
 		coinPivot.LocalPosition = CoinLocalOffset + Vector3.Up * (CoinRestHeight + height);
 
