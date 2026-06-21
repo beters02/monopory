@@ -8,7 +8,9 @@ public static partial class AppSettingsSchema
 	[
 		"RollDice",
 		"EndTurn",
-        "FinishMove"
+		"FinishMove",
+		"BuyProperty",
+		"AuctionProperty"
 	];
 
     private static List<InputAction> GetEditableKeybinds()

@@ -77,11 +77,14 @@
 				<div @key="@GetActionPanelRenderKey( selection )" class="@GetBuyActionPanelClasses( selection )">
 					<div class="space-buttons">
 						<GameButton
+							@ref="BuyPropertyButton"
+							Variant="space-keybind-button"
 							CanClick="@selection.CanAffordBuy"
 							OnClick="@BuyProperty"
 							BlockedPopupTitle="Cannot buy property"
-							BlockedPopupMessage="@selection.CannotAffordBuyMessage">Buy</GameButton>
-						<GameButton OnClick="@AuctionProperty">Auction</GameButton>
+							BlockedPopupMessage="@selection.CannotAffordBuyMessage"
+							KeyboardInputAction="@GetBuyPropertyInputAction()">Buy</GameButton>
+						<GameButton @ref="AuctionPropertyButton" Variant="space-keybind-button" OnClick="@AuctionProperty" KeyboardInputAction="@GetAuctionPropertyInputAction()">Auction</GameButton>
 						@if ( selection.CanSkipBuyDecision )
 						{
 							<GameButton OnClick="@SkipProperty">Skip</GameButton>
@@ -129,6 +132,8 @@
 	private const float OutroDuration = 0.13f;
 	private RenderedSelectedSpace renderedSelection;
 	private bool IsColorSetMenuOpen;
+	private GameButton BuyPropertyButton;
+	private GameButton AuctionPropertyButton;
 
 	private RenderedSelectedSpace RenderedSelection
 	{
@@ -146,6 +151,46 @@
 		IsSelectedCardSpace
 			? GameRef?.LocalSelectedDrawnCardText ?? ""
 			: "";
+
+	public override void Tick()
+	{
+		base.Tick();
+		UpdatePropertyActionKeybinds();
+	}
+
+	private void UpdatePropertyActionKeybinds()
+	{
+		if ( !CanBuySelectedSpace )
+			return;
+
+		if ( Input.Pressed( "BuyProperty" ) )
+			BuyPropertyButton?.TriggerInputAction();
+
+		if ( Input.Pressed( "AuctionProperty" ) )
+			AuctionPropertyButton?.TriggerInputAction();
+	}
+
+	private InputAction GetInputAction( string name, string defaultKeyCode )
+	{
+		var action = Input.GetActions().FirstOrDefault( candidate => string.Equals( candidate.Name, name, StringComparison.Ordinal ) );
+		if ( action is null )
+		{
+			Log.Warning( $"Could not find {name} action. Setting to default {defaultKeyCode}" );
+			return new( name, defaultKeyCode );
+		}
+
+		return action;
+	}
+
+	private InputAction GetBuyPropertyInputAction()
+	{
+		return GetInputAction( "BuyProperty", "B" );
+	}
+
+	private InputAction GetAuctionPropertyInputAction()
+	{
+		return GetInputAction( "AuctionProperty", "A" );
+	}
 
 	private void SyncRenderedSelection()
 	{

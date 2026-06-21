@@ -354,5 +354,45 @@
 	background-color: $monopoly-blocked-action-hover;
 }
 
+.selected-space-actions .space-buttons .monopoly-button.space-keybind-button.has-input-action-icon {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: center;
+	gap: 4px;
+	height: $monopoly-control-height-small;
+	min-height: $monopoly-control-height-small;
+	padding: 0 6px 0 8px;
+	line-height: 1;
+}
+
+.selected-space-actions .space-buttons .monopoly-button.space-keybind-button.has-input-action-icon .monopoly-button-content {
+	flex: 1;
+	min-width: 0;
+	height: 100%;
+	order: 1;
+	padding: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	align-self: stretch;
+	line-height: $monopoly-control-height-small;
+	text-align: center;
+	overflow: visible;
+}
+
+.selected-space-actions .space-buttons .monopoly-button.space-keybind-button .monopoly-button-input-action-icon {
+	position: static;
+	right: auto;
+	top: auto;
+	flex: 0 0 22px;
+	order: 2;
+	width: 22px;
+	height: 22px;
+	margin: 0;
+	transform: none;
+	align-self: center;
+}
+
 
 
