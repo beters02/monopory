@@ -10,13 +10,19 @@ public sealed class GambleStation : Component
 	[Property] public float CameraPitch { get; set; } = 90f;
 	[Property] public float CoinRestHeight { get; set; } = 18f;
 	[Property] public Vector3 CoinLocalOffset { get; set; } = Vector3.Zero;
+	[Property] public float CoinFacePitch { get; set; } = 90f;
+	[Property] public float CoinFacingYaw { get; set; } = -90f;
 	[Property] public float InteractionRange { get; set; } = 70f;
+
 	public bool IsRuntimeSessionStation { get; set; }
 
-	private GameObject coin;
+	private GameObject coinPivot;
+	private GameObject coinVisual;
 	private int visibleSessionId = -1;
 
-	public Vector3 FocusPosition => CameraFocus?.WorldPosition ?? GameObject.WorldPosition + CoinLocalOffset + Vector3.Up * CoinRestHeight;
+	public Vector3 FocusPosition =>
+		CameraFocus?.WorldPosition ??
+		GameObject.WorldPosition + CoinLocalOffset + Vector3.Up * CoinRestHeight;
 
 	protected override void OnStart()
 	{
@@ -36,7 +42,7 @@ public sealed class GambleStation : Component
 
 	private void EnsureCoin()
 	{
-		if ( coin is not null && coin.IsValid() )
+		if ( coinPivot is not null && coinPivot.IsValid() )
 			return;
 
 		var prefab = Scene.GetPrefab( "prefabs/gamble_coin.prefab" );
@@ -46,15 +52,31 @@ public sealed class GambleStation : Component
 			return;
 		}
 
-		coin = prefab.Clone();
-		coin.Name = $"GambleCoin_{StationId}";
-		coin.SetParent( GameObject );
-		coin.LocalPosition = CoinLocalOffset + Vector3.Up * CoinRestHeight;
-		coin.Enabled = false;
+		coinPivot = new GameObject( true, $"GambleCoinPivot_{StationId}" );
+		coinPivot.SetParent( GameObject );
+		coinPivot.LocalPosition = CoinLocalOffset + Vector3.Up * CoinRestHeight;
+		coinPivot.LocalRotation = Rotation.Identity;
 
-		var body = coin.GetComponentInChildren<Rigidbody>();
+		coinVisual = prefab.Clone();
+		coinVisual.Name = $"GambleCoin_{StationId}";
+		coinVisual.SetParent( coinPivot );
+		coinVisual.LocalPosition = Vector3.Zero;
+		ApplyCoinFaceOrientation();
+		coinPivot.Enabled = false;
+
+		var body = coinVisual.GetComponentInChildren<Rigidbody>();
 		if ( body is not null )
 			body.MotionEnabled = false;
+	}
+
+	private void ApplyCoinFaceOrientation()
+	{
+		if ( coinVisual is null )
+			return;
+
+		// The mesh is only 0.25 units thick on local X, so local X is its face
+		// normal. This fixed transform points that normal at the overhead camera.
+		coinVisual.LocalRotation = Rotation.From( CoinFacePitch, CoinFacingYaw, 0f );
 	}
 
 	private void UpdateCoin( GambleSession session )
@@ -63,10 +85,10 @@ public sealed class GambleStation : Component
 			return;
 
 		EnsureCoin();
-		if ( coin is null )
+		if ( coinPivot is null || coinVisual is null )
 			return;
 
-		coin.Enabled = session is not null;
+		coinPivot.Enabled = session is not null;
 		if ( session is null )
 		{
 			visibleSessionId = -1;
@@ -76,17 +98,19 @@ public sealed class GambleStation : Component
 		if ( visibleSessionId != session.Id )
 		{
 			visibleSessionId = session.Id;
-			coin.LocalPosition = CoinLocalOffset + Vector3.Up * CoinRestHeight;
-			coin.LocalRotation = Rotation.Identity;
+			coinPivot.LocalPosition = CoinLocalOffset + Vector3.Up * CoinRestHeight;
+			coinPivot.LocalRotation = Rotation.Identity;
+			ApplyCoinFaceOrientation();
 		}
 
 		var duration = Math.Max( session.RevealAt - session.StartedAt, 0.01f );
 		var progress = Math.Clamp( (Time.Now - session.StartedAt) / duration, 0f, 1f );
 		var height = MathF.Sin( progress * MathF.PI ) * 34f;
 		var turns = progress * 1440f;
-		var finalPitch = session.OutcomeSide == CoinFlipSide.Heads ? 0f : 180f;
-		coin.LocalPosition = CoinLocalOffset + Vector3.Up * (CoinRestHeight + height);
-		coin.LocalRotation = Rotation.From( turns + finalPitch * progress, turns * 0.25f, 0f );
+		var resultTurn = session.OutcomeSide == CoinFlipSide.Heads ? 0f : 180f;
+
+		coinPivot.LocalPosition = CoinLocalOffset + Vector3.Up * (CoinRestHeight + height);
+		coinPivot.LocalRotation = Rotation.From( turns + resultTurn * progress, 0f, 0f );
 	}
 
 	private bool CanLocalPlayerInteract()
