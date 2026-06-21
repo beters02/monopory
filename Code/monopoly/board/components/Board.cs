@@ -41,6 +41,7 @@ public sealed class Board : Component
 	[Property] public float ImprovementPrefabSpacing { get; set; } = 3.52f;
 	[Property] public WorldPanel BoardWorldPanel {get; set;}
 	[Property] public ModelRenderer SurfaceRenderer { get; set; }
+	[Property] public bool ShowLightingDebugSwatch { get; set; } = false;
 
 	public List<CardDef> ChanceCards { get; private set; } = new();
 	public List<CardDef> CommunityChestCards { get; private set; } = new();
@@ -84,9 +85,9 @@ public sealed class Board : Component
 		GameRef = Scene.GetAllComponents<GameController>().FirstOrDefault();
 
 		LoadBoardDefinitions();
-		ApplySurfaceMaterial();
 		LoadCardDefinitions();
 		RefreshProceduralBoardPanel();
+		InitializeSurfaceRendering();
 		InitSpaces();
 	}
 
@@ -266,26 +267,24 @@ public sealed class Board : Component
 		UtilityData = ActiveDefinition.UtilityData;
 	}
 
-	private void ApplySurfaceMaterial()
+	private void InitializeSurfaceRendering()
 	{
 		if ( SurfaceRenderer is null )
 		{
-			Log.Warning( "Board surface renderer is not assigned; surface finish was not applied." );
+			Log.Warning( "Board surface renderer is not assigned; lit board rendering is disabled." );
 			return;
 		}
 
 		var finish = ActiveDefinition?.Surface?.Finish ?? BoardSurfaceFinish.SatinLaminate;
-		if ( !Enum.IsDefined( finish ) )
-			finish = BoardSurfaceFinish.SatinLaminate;
-
-		var materialPath = finish switch
-		{
-			BoardSurfaceFinish.MatteCardboard => "materials/board_plastic/board_surface_matte.vmat",
-			BoardSurfaceFinish.GlossyVarnish => "materials/board_plastic/board_surface_glossy.vmat",
-			_ => "materials/board_plastic/board_surface_satin.vmat"
-		};
-
-		SurfaceRenderer.MaterialOverride = Material.Load( materialPath );
+		var compositor = Components.GetOrCreate<BoardSurfaceCompositor>();
+		compositor.Initialize(
+			BoardWorldPanel,
+			ProceduralBoardPanel,
+			SurfaceRenderer,
+			finish,
+			GetBoardWorldSize(),
+			ShowLightingDebugSwatch
+		);
 	}
 
 	private void EnsureBoardSpaceNameConfigApplied( bool force = false )

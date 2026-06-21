@@ -1,0 +1,58 @@
+{
+  "Images": null,
+  "Sequences": [
+    {
+      "Source": "textures/dice/new/dice-six-faces-three.png",
+      "IsLooping": true,
+      "FlipBook": false,
+      "Columns": 0,
+      "Rows": 0,
+      "Frames": 64
+    },
+    {
+      "Source": "textures/dice/new/dice-six-faces-five.png",
+      "IsLooping": false,
+      "FlipBook": false,
+      "Columns": 0,
+      "Rows": 0,
+      "Frames": 64
+    },
+    {
+      "Source": "textures/dice/new/dice-six-faces-two.png",
+      "IsLooping": false,
+      "FlipBook": false,
+      "Columns": 0,
+      "Rows": 0,
+      "Frames": 64
+    },
+    {
+      "Source": "textures/dice/new/dice-six-faces-five.png",
+      "IsLooping": false,
+      "FlipBook": false,
+      "Columns": 0,
+      "Rows": 0,
+      "Frames": 64
+    },
+    {
+      "Source": "textures/dice/new/dice-six-faces-four.png",
+      "IsLooping": false,
+      "FlipBook": false,
+      "Columns": 0,
+      "Rows": 0,
+      "Frames": 64
+    },
+    {
+      "Source": "textures/dice/new/dice-six-faces-one.png",
+      "IsLooping": false,
+      "FlipBook": false,
+      "Columns": 0,
+      "Rows": 0,
+      "Frames": 64
+    }
+  ],
+  "InputColorSpace": "Linear",
+  "OutputFormat": "DXT5",
+  "OutputColorSpace": "Linear",
+  "OutputMipAlgorithm": "Box",
+  "OutputTypeString": "2D"
+}

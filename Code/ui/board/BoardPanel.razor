@@ -705,6 +705,8 @@
 			yield return currentLine;
 	}
 
+	public int RenderRevision => BuildHash();
+
 	protected override int BuildHash()
 	{
 		var board = Board.Instance;

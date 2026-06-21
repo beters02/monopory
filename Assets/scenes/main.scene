@@ -220,6 +220,7 @@
               "ProceduralReferencePanelSize": 2000,
               "ProceduralRegularSpaceLength": 8,
               "ProceduralSpaceZOffset": 0,
+              "ShowLightingDebugSwatch": false,
               "Spaces": [
                 {
                   "_type": "component",
@@ -4363,7 +4364,7 @@
       "Flags": 0,
       "Name": "Sun",
       "Position": "118.740616,-148.659592,448.470398",
-      "Rotation": "0.177848011,-0.703682184,-0.169280663,-0.666742504",
+      "Rotation": "0.0220522229,-0.0892589167,-0.244539469,-0.9652704",
       "Scale": "1,1,1",
       "Tags": "light_directional,light",
       "Enabled": true,
@@ -4471,7 +4472,11 @@
         "e0beee2a-c46b-4321-a953-a573e7c4153a": "965fc091-1716-4eef-bee8-defd50b27a12",
         "3fc079e0-70f5-4ad7-9af2-6b1e7d0df2a2": "91665df7-135a-430b-8aa3-df37cfb346bb",
         "59cd2d39-5498-4e08-8835-47063489072e": "1e617513-c394-491f-a1bc-9cffb76c8006",
-        "3546f99c-c48c-40f1-b6b7-146037f3a169": "e88f1088-fbf9-4549-b9ab-5ec02cb1bb4f"
+        "3546f99c-c48c-40f1-b6b7-146037f3a169": "e88f1088-fbf9-4549-b9ab-5ec02cb1bb4f",
+        "8dde2538-2dd9-47d8-b684-f29b41c83c61": "e1310ad8-8241-452d-8c27-bd3c4c386904",
+        "fee84117-bd9b-4ece-93f1-74538dd2b8ee": "abba7e7c-b20f-42f9-af28-3b27b42613ed",
+        "f01ec6d3-d14b-46ed-ad9b-9fa1a1c2e389": "5a37675f-9662-4ba2-b79d-496d9d56905f",
+        "d2c42841-fbb2-476b-aba5-8fb7cb3fc49a": "7607bebd-1ff7-478c-8c72-55fb400584f9"
       }
     },
     {
@@ -4554,7 +4559,11 @@
         "e0beee2a-c46b-4321-a953-a573e7c4153a": "fd3eafd0-6229-4607-9677-e38df5d99f31",
         "3fc079e0-70f5-4ad7-9af2-6b1e7d0df2a2": "89bcd407-8d88-4975-aeb7-caef58148f5f",
         "59cd2d39-5498-4e08-8835-47063489072e": "522a6d72-faa1-453f-9b57-57bfd7601832",
-        "3546f99c-c48c-40f1-b6b7-146037f3a169": "9be4c9d3-ed5c-4db8-ac26-3bd5ff0cbd54"
+        "3546f99c-c48c-40f1-b6b7-146037f3a169": "9be4c9d3-ed5c-4db8-ac26-3bd5ff0cbd54",
+        "8dde2538-2dd9-47d8-b684-f29b41c83c61": "ee4a0f6f-eeb9-48d2-af26-dd9c67d550d1",
+        "fee84117-bd9b-4ece-93f1-74538dd2b8ee": "17bc9dfc-e0e2-44f5-9443-69624d81a1c2",
+        "f01ec6d3-d14b-46ed-ad9b-9fa1a1c2e389": "6be165b2-f5c7-4cef-8e3c-e8a04d37d699",
+        "d2c42841-fbb2-476b-aba5-8fb7cb3fc49a": "f8347144-3198-443d-84c6-d0fa59a61cdb"
       }
     },
     {
@@ -4958,6 +4967,58 @@
           "ProbeDensity": 15,
           "RelocationTexture": "scenes/main_scene_data/ddgi/object_relocation_0874fd47-b2ec-433c-b370-ebafd462dc79.vtex",
           "RenderExcludeTags": ""
+        }
+      ],
+      "Children": []
+    },
+    {
+      "__guid": "8aa008bb-e15d-4f12-b5eb-0fcd8c7b9f59",
+      "__version": 2,
+      "Flags": 0,
+      "Name": "Object",
+      "Position": "-134.019485,-245.640121,85.2147446",
+      "Rotation": "0,0,0,1",
+      "Scale": "1,1,1",
+      "Tags": "",
+      "Enabled": true,
+      "NetworkMode": 2,
+      "NetworkFlags": 0,
+      "NetworkOrphaned": 0,
+      "NetworkTransmit": true,
+      "OwnerTransfer": 1,
+      "Components": [
+        {
+          "__type": "Sandbox.EnvmapProbe",
+          "__guid": "5ab7b062-204d-4b48-82d1-b3ca5e14d00b",
+          "__enabled": true,
+          "Flags": 0,
+          "__version": 1,
+          "BakedTexture": "scenes/main_scene_data/envmap/bake_5ab7b062-204d-4b48-82d1-b3ca5e14d00b.vtex",
+          "Bounds": {
+            "Mins": "100,100,100",
+            "Maxs": "-100,-100,-100"
+          },
+          "DelayBetweenUpdates": 0.1,
+          "Feathering": 8,
+          "FrameInterval": 5,
+          "MaxDistance": 512,
+          "Mode": "Realtime",
+          "MultiBounce": false,
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null,
+          "Priority": 0,
+          "Projection": "Box",
+          "RenderExcludeTags": "",
+          "Resolution": "Small",
+          "Texture": null,
+          "TintColor": "1,1,1,1",
+          "UpdateStrategy": "OnEnabled",
+          "ZFar": 4096,
+          "ZNear": 16
         }
       ],
       "Children": []
