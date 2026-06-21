@@ -103,6 +103,40 @@ public static class BoardSpaceNameConfig
 		}
 	}
 
+	public static string RemapSnapshot( string snapshot, string fromBoardId, string toBoardId )
+	{
+		if ( string.Equals( fromBoardId, toBoardId, StringComparison.OrdinalIgnoreCase ) )
+			return snapshot ?? "";
+
+		var fromSpaces = GetBoardSpaces( fromBoardId );
+		var toSpaces = GetBoardSpaces( toBoardId );
+		var resolvedNames = DeserializeNames( snapshot, fromBoardId );
+		var customNamesByKey = new Dictionary<string, string>( StringComparer.OrdinalIgnoreCase );
+
+		foreach ( var space in fromSpaces )
+		{
+			if ( space is null || string.IsNullOrWhiteSpace( space.Key ) )
+				continue;
+
+			if ( space.Index < 0 || space.Index >= resolvedNames.Count )
+				continue;
+
+			var resolvedName = resolvedNames[space.Index] ?? "";
+			if ( string.Equals( resolvedName, space.DisplayName ?? "", StringComparison.Ordinal ) )
+				continue;
+
+			customNamesByKey[space.Key] = resolvedName;
+		}
+
+		var remappedNames = toSpaces
+			.Select( space => customNamesByKey.TryGetValue( space.Key ?? "", out var customName )
+				? customName
+				: space.DisplayName ?? "" )
+			.ToList();
+
+		return SerializeNames( remappedNames, toBoardId );
+	}
+
 	private static List<SpaceDef> GetBoardSpaces( string boardId )
 	{
 		return BoardCatalog.GetById( boardId )

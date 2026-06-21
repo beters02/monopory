@@ -66,7 +66,7 @@
 							<div class="match-config-presets">
 								<div class="match-config-preset-header">
 									<div class="options-panel-section-title">Board Presets</div>
-									<div class="options-panel-row-value">Apply predefined board names or save your current board name draft.</div>
+									<div class="options-panel-row-value">Apply a name theme or save your current name customizations.</div>
 								</div>
 								<div class="match-config-preset-actions">
 									<GameButton Variant="@GetCustomBoardConfigPresetButtonClasses()" OnClick="@MarkCustomPreset">Custom</GameButton>
@@ -599,7 +599,7 @@
 	private bool IsBoardConfigCustomSelected => string.Equals( SelectedBoardConfigPresetId, CustomPresetId, StringComparison.Ordinal );
 	private bool CanEditCurrentConfigPage => CanEditConfig && (IsGameRulesConfigPage ? IsGameRulesCustomSelected : IsBoardConfigCustomSelected);
 	private IReadOnlyList<MatchSettingsPreset> GameRulePresets => global::GameRulePresets.All.Concat( CustomGameRulePresets ).ToList();
-	private IReadOnlyList<MatchSettingsPreset> BoardConfigPresets => BoardSpaceNames.All.Concat( CustomBoardConfigPresets ).ToList();
+	private IReadOnlyList<MatchSettingsPreset> BoardConfigPresets => BoardCatalog.GetNamePresets().Concat( CustomBoardConfigPresets ).ToList();
 
 	private bool HasUnreadyPlayers
 	{
@@ -1745,10 +1745,13 @@
 			return;
 
 		var board = BoardCatalog.GetById( boardId );
+		var previousBoardId = EditableConfig.BoardId;
 		EditableConfig.BoardId = board.Id;
-		EditableConfig.BoardSpaceNamesSnapshot = BoardSpaceNameConfig.CreateDefaultSnapshot( board.Id );
-		IsBoardConfigExplicitlyCustom = false;
-		SelectedBoardConfigPresetId = "board_default";
+		EditableConfig.BoardSpaceNamesSnapshot = BoardSpaceNameConfig.RemapSnapshot(
+			EditableConfig.BoardSpaceNamesSnapshot,
+			previousBoardId,
+			board.Id );
+		SelectMatchingPresetsFromEditableConfig();
 		configRevision++;
 	}
 

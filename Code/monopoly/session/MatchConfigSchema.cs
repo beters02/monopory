@@ -94,6 +94,17 @@ public static class MatchConfigSchema
 
 		config.MinPlayers = Math.Clamp( config.MinPlayers, minPlayersMin, Math.Min( config.MaxPlayers, maxPlayersMax ) );
 		config.MaxPlayers = Math.Clamp( config.MaxPlayers, Math.Min( Math.Max( config.MinPlayers, connectedPlayerCount ), maxPlayersMax ), maxPlayersMax );
+
+		if ( string.Equals( config.BoardId, BoardCatalog.LegacyNamedBoardId, StringComparison.OrdinalIgnoreCase ) )
+		{
+			config.BoardId = BoardCatalog.DefaultBoardId;
+			if ( string.IsNullOrWhiteSpace( config.BoardSpaceNamesSnapshot ) )
+			{
+				var rentRushPreset = BoardCatalog.GetNamePresetById( BoardNamePresets.RentRushPresetId );
+				config.BoardSpaceNamesSnapshot = rentRushPreset?.Snapshot ?? "";
+			}
+		}
+
 		config.BoardId = BoardCatalog.GetById( config.BoardId ).Id;
 		return config;
 	}

@@ -9,11 +9,6 @@ public static class MatchSettingsPresetCatalog
 		return BuildPresets<MatchConfigPresetAttribute>();
 	}
 
-	public static IReadOnlyList<MatchSettingsPreset> BuildBoardSpaceNamePresets()
-	{
-		return BuildPresets<BoardSpaceNamePresetAttribute>();
-	}
-
 	private static IReadOnlyList<MatchSettingsPreset> BuildPresets<TAttribute>() where TAttribute : MatchSettingsPresetAttribute
 	{
 		return TypeLibrary.GetTypesWithAttribute<TAttribute>()
@@ -79,110 +74,6 @@ public static class GameRulePresets
 	}
 }
 
-public static class BoardSpaceNames
-{
-	private static IReadOnlyList<MatchSettingsPreset> all;
-
-	public static IReadOnlyList<MatchSettingsPreset> All => all ??= MatchSettingsPresetCatalog.BuildBoardSpaceNamePresets();
-
-	[BoardSpaceNamePreset( "board_default", "Default Board", 0 )]
-	public static class DefaultBoard {}
-
-	[BoardSpaceNamePreset( "board_classic", "Classic Names", 10 )]
-	public static class ClassicBoard
-	{
-		[BoardSpaceNameModifier( "property_brown_0" )]
-		public static readonly string MediterraneanAvenue = "Mediterranean Avenue";
-
-		[BoardSpaceNameModifier( "property_brown_1" )]
-		public static readonly string BalticAvenue = "Baltic Avenue";
-
-		[BoardSpaceNameModifier( "tax_income" )]
-		public static readonly string IncomeTax = "Income Tax";
-
-		[BoardSpaceNameModifier( "railroad_0" )]
-		public static readonly string ReadingRailroad = "Reading Railroad";
-
-		[BoardSpaceNameModifier( "property_light_blue_0" )]
-		public static readonly string OrientalAvenue = "Oriental Avenue";
-
-		[BoardSpaceNameModifier( "property_light_blue_1" )]
-		public static readonly string VermontAvenue = "Vermont Avenue";
-
-		[BoardSpaceNameModifier( "property_light_blue_2" )]
-		public static readonly string ConnecticutAvenue = "Connecticut Avenue";
-
-		[BoardSpaceNameModifier( "property_pink_0" )]
-		public static readonly string StCharlesPlace = "St. Charles Place";
-
-		[BoardSpaceNameModifier( "utility_0" )]
-		public static readonly string ElectricCompany = "Electric Company";
-
-		[BoardSpaceNameModifier( "property_pink_1" )]
-		public static readonly string StatesAvenue = "States Avenue";
-
-		[BoardSpaceNameModifier( "property_pink_2" )]
-		public static readonly string VirginiaAvenue = "Virginia Avenue";
-
-		[BoardSpaceNameModifier( "railroad_1" )]
-		public static readonly string PennsylvaniaRailroad = "Pennsylvania Railroad";
-
-		[BoardSpaceNameModifier( "property_orange_0" )]
-		public static readonly string StJamesPlace = "St. James Place";
-
-		[BoardSpaceNameModifier( "property_orange_1" )]
-		public static readonly string TennesseeAvenue = "Tennessee Avenue";
-
-		[BoardSpaceNameModifier( "property_orange_2" )]
-		public static readonly string NewYorkAvenue = "New York Avenue";
-
-		[BoardSpaceNameModifier( "property_red_0" )]
-		public static readonly string KentuckyAvenue = "Kentucky Avenue";
-
-		[BoardSpaceNameModifier( "property_red_1" )]
-		public static readonly string IndianaAvenue = "Indiana Avenue";
-
-		[BoardSpaceNameModifier( "property_red_2" )]
-		public static readonly string IllinoisAvenue = "Illinois Avenue";
-
-		[BoardSpaceNameModifier( "railroad_2" )]
-		public static readonly string BOrailroad = "B&O Railroad";
-
-		[BoardSpaceNameModifier( "property_yellow_0" )]
-		public static readonly string AtlanticAvenue = "Atlantic Avenue";
-
-		[BoardSpaceNameModifier( "property_yellow_1" )]
-		public static readonly string VentnorAvenue = "Ventnor Avenue";
-
-		[BoardSpaceNameModifier( "utility_1" )]
-		public static readonly string WaterWorks = "Water Works";
-
-		[BoardSpaceNameModifier( "property_yellow_2" )]
-		public static readonly string MarvinGardens = "Marvin Gardens";
-
-		[BoardSpaceNameModifier( "property_green_0" )]
-		public static readonly string PacificAvenue = "Pacific Avenue";
-
-		[BoardSpaceNameModifier( "property_green_1" )]
-		public static readonly string NorthCarolinaAvenue = "North Carolina Avenue";
-
-		[BoardSpaceNameModifier( "property_green_2" )]
-		public static readonly string PennsylvaniaAvenue = "Pennsylvania Avenue";
-
-		[BoardSpaceNameModifier( "railroad_3" )]
-		public static readonly string ShortLine = "Short Line";
-
-		[BoardSpaceNameModifier( "property_dark_blue_0" )]
-		public static readonly string ParkPlace = "Park Place";
-
-		[BoardSpaceNameModifier( "tax_luxury" )]
-		public static readonly string LuxuryTax = "Luxury Tax";
-
-		[BoardSpaceNameModifier( "property_dark_blue_1" )]
-		public static readonly string Boardwalk = "Boardwalk";
-	}
-}
-
 [AttributeUsage( AttributeTargets.Class )]
 public abstract class MatchSettingsPresetAttribute : Attribute
 {
@@ -237,25 +128,6 @@ public sealed class MatchConfigPresetAttribute : MatchSettingsPresetAttribute
 	}
 }
 
-public sealed class BoardSpaceNamePresetAttribute : MatchSettingsPresetAttribute
-{
-	public BoardSpaceNamePresetAttribute( string id, string name, int order = 0 ) : base( id, name, order )
-	{
-	}
-
-	protected override string CreateSnapshot( TypeDescription type )
-	{
-		var modifiers = new BoardSpaceNameModifiersObject();
-		foreach ( var field in GetModifierFields<BoardSpaceNameModifierAttribute>( type ) )
-		{
-			var attribute = field.GetCustomAttribute<BoardSpaceNameModifierAttribute>();
-			modifiers.Add( attribute.Build( field ) );
-		}
-
-		return BoardSpaceNameConfig.SerializeModifiers( modifiers );
-	}
-}
-
 [AttributeUsage( AttributeTargets.Field )]
 public sealed class MatchConfigModifierAttribute : Attribute
 {
@@ -269,22 +141,6 @@ public sealed class MatchConfigModifierAttribute : Attribute
 	public MatchConfigModifier Build( FieldDescription field )
 	{
 		return new( Id, field.GetValue( null ) );
-	}
-}
-
-[AttributeUsage( AttributeTargets.Field )]
-public sealed class BoardSpaceNameModifierAttribute : Attribute
-{
-	public string Id { get; }
-
-	public BoardSpaceNameModifierAttribute( string id )
-	{
-		Id = id;
-	}
-
-	public BoardSpaceNameModifier Build( FieldDescription field )
-	{
-		return new( Id, field.GetValue( null )?.ToString() ?? "" );
 	}
 }
 

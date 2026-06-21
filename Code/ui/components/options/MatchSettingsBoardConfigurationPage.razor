@@ -8,8 +8,8 @@
 
 <root class="match-settings-page match-settings-board-configuration-page">
 	<div class="@RootClasses">
-		<div class="options-panel-section-title">Board</div>
-		<OptionsPanelRow Title="Board" Value="@SelectedBoardDisplayName">
+		<div class="options-panel-section-title">Board Layout</div>
+		<OptionsPanelRow Title="Board Layout" Value="@SelectedBoardDisplayName">
 			<ChildContent>
 				<DropdownButton
 					Value="@SelectedBoardId"
@@ -53,7 +53,7 @@
 	[Parameter] public Action<string> OnSetBoardId { get; set; }
 
 	private IReadOnlyList<SpaceDef> BoardConfigSpaces => BoardCatalog.GetById( Config?.BoardId ).Spaces.OrderBy( space => space.Index ).ToList();
-	private IReadOnlyList<BoardDefinition> Boards => BoardCatalog.GetAll();
+	private IReadOnlyList<BoardDefinition> Boards => BoardCatalog.GetLayoutBoards();
 	private IReadOnlyList<string> BoardIds => Boards.Select( board => board.Id ).ToList();
 	private string SelectedBoardId => BoardCatalog.GetById( Config?.BoardId ).Id;
 	private string SelectedBoardDisplayName => FormatBoardId( SelectedBoardId );
