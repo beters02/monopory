@@ -25,27 +25,51 @@ public static class BoardVisualLayout
 		return layout.GetSideIndex( spaceIndex, board.SpaceCount );
 	}
 
-	public static Rotation GetLabelRotation( int sideIndex )
+	public static Rotation GetLabelRotationForQuadrant( int quadrant )
 	{
-		// Match legacy BoardSpace quadrant rotations; left/right already correct.
-		return sideIndex switch
+		return quadrant switch
 		{
-			0 => SpaceLayoutSettings.FirstQuadrantLocalRotation,
-			1 => SpaceLayoutSettings.SecondQuadrantLocalRotation,
-			2 => SpaceLayoutSettings.ThirdQuadrantLocalRotation,
+			1 => SpaceLayoutSettings.FirstQuadrantLocalRotation,
+			2 => SpaceLayoutSettings.SecondQuadrantLocalRotation,
+			3 => SpaceLayoutSettings.ThirdQuadrantLocalRotation,
 			_ => SpaceLayoutSettings.FourthQuadrantLocalRotation
 		};
 	}
 
-	public static Vector3 GetLabelLineTileOffset( int sideIndex, float lineOffset )
+	public static Rotation GetLabelRotation( int sideIndex )
 	{
-		// Line stack stays in the tile plane (Z=0). Never offset depth.
-		return sideIndex switch
+		return GetLabelRotationForQuadrant( sideIndex + 1 );
+	}
+
+	public static Vector3 GetLabelLineTileOffset( Rotation labelRotation, int quadrant, float lineOffset )
+	{
+		if ( MathF.Abs( lineOffset ) < 0.0001f )
+			return Vector3.Zero;
+
+		// TextRenderer advances lines along local +Y; map into tile XY only.
+		var stack = labelRotation * Vector3.Up * lineOffset;
+		stack.z = 0f;
+
+		if ( stack.Length < 0.01f )
 		{
-			0 => new Vector3( 0f, lineOffset, 0f ),
+			stack = labelRotation * Vector3.Right * lineOffset;
+			stack.z = 0f;
+		}
+
+		if ( stack.Length < 0.01f )
+			return GetQuadrantFallbackStackOffset( quadrant, lineOffset );
+
+		return stack.Normal * lineOffset;
+	}
+
+	private static Vector3 GetQuadrantFallbackStackOffset( int quadrant, float lineOffset )
+	{
+		return quadrant switch
+		{
 			1 => new Vector3( lineOffset, 0f, 0f ),
-			2 => new Vector3( 0f, -lineOffset, 0f ),
-			_ => new Vector3( -lineOffset, 0f, 0f )
+			2 => new Vector3( 0f, lineOffset, 0f ),
+			3 => new Vector3( 0f, -lineOffset, 0f ),
+			_ => new Vector3( 0f, lineOffset, 0f )
 		};
 	}
 

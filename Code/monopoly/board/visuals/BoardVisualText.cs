@@ -38,7 +38,7 @@ public static class BoardVisualText
 		var scale = ComputeLabelScale( lines, fontSize, longEdge, narrowEdge );
 		var lineSpacing = lines.Count <= 1
 			? scale * fontSize * CharWidthFactor * 1.32f
-			: narrowEdge * 0.84f / lines.Count;
+			: MathF.Max( narrowEdge * 0.84f / lines.Count, scale * fontSize * CharWidthFactor * 1.35f );
 
 		return new SpaceLabelLayout
 		{

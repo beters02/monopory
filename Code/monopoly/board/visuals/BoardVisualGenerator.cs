@@ -239,8 +239,9 @@ public sealed class BoardVisualGenerator : Component
 		if ( labelLayout.Lines is null || labelLayout.Lines.Count == 0 )
 			return;
 
+		var quadrant = Board.GetSpaceQuadrantIncludeCorners( def.Index );
 		var anchor = BoardVisualLayout.GetLabelPosition( layout.SideIndex, layout.VisualSize, surfaceZ + LabelHeight );
-		var rotation = BoardVisualLayout.GetLabelRotation( layout.SideIndex );
+		var rotation = BoardVisualLayout.GetLabelRotationForQuadrant( quadrant );
 		var startOffset = -(labelLayout.Lines.Count - 1) * labelLayout.LineSpacing * 0.5f;
 
 		for ( var i = 0; i < labelLayout.Lines.Count; i++ )
@@ -249,7 +250,8 @@ public sealed class BoardVisualGenerator : Component
 			lineObject.SetParent( parent );
 
 			var stackOffset = BoardVisualLayout.GetLabelLineTileOffset(
-				layout.SideIndex,
+				rotation,
+				quadrant,
 				startOffset + i * labelLayout.LineSpacing
 			);
 			lineObject.LocalPosition = anchor + stackOffset;
