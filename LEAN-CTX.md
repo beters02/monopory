@@ -16,7 +16,6 @@ If you cannot read an image file that is sent in the current request, you may by
 ## ctx_read Mode Selection
 | Goal | Mode | When |
 |------|------|------|
-| Edit this file (large) | `signatures` `lines:N-M` | Attempt to use signatures + lines when editing a large file. If not enough context, move to full.
 | Edit this file | `full` | Before any edit ( ONLY IF NOT PROVIDED ENOUGH CONTEXT VIA SIGNATURES + LINES COMBINATION ) |
 | Understand API | `signatures` | Context-only, won't edit |
 | Re-read after edit | `diff` | Post-edit verification |

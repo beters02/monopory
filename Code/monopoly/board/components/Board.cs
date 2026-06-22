@@ -24,6 +24,9 @@ public sealed class Board : Component
 	[Property] public Vector3 HitboxSize { get; set; } = new Vector3( 96f, 96f, 12f );
 	[Property] public bool UseWorldPanelLabels { get; set; } = false;
 	[Property, Change(nameof(OnUseProceduralBoardPanelChanged))] public bool UseProceduralBoardPanel { get; set; } = false;
+	[Property, Change(nameof(OnUseGeneratedMeshBoardChanged))] public bool UseGeneratedMeshBoard { get; set; } = false;
+	[Property] public BoardVisualGenerator VisualGenerator { get; set; }
+	[Property] public BoardInteractionController InteractionController { get; set; }
 	[Property] public Sandbox.ui.BoardPanel ProceduralBoardPanel { get; set; }
 	[Property] public float ProceduralBoardHalfSize { get; set; } = 43f;
 	[Property] public float ProceduralCornerSize { get; set; } = 13f;
@@ -47,15 +50,16 @@ public sealed class Board : Component
 	public int GoSpaceIndex => Layout?.GoSpaceIndex ?? 0;
 	public int JailSpaceIndex => Layout?.JailSpaceIndex ?? 10;
 	
-	public static bool UseProceduralBoardPanelStatic => Instance.UseProceduralBoardPanel;
+	public static bool UseProceduralBoardPanelStatic => Instance?.UseProceduralBoardPanel ?? false;
+	public static bool UseGeneratedMeshBoardStatic => Instance?.UseGeneratedMeshBoard ?? false;
 
 	[Property, Change("OnDebugEnabledChanged")] public bool DebugEnabled {get; set;} = false;
 	private void OnDebugEnabledChanged(bool _, bool newValue) => logger.SetEnabled(newValue);
 
 	private float lastProcBoardWorldScale;
 	private float lastProcRefPanelSize;
-	private string lastCursorType;
-	private Vector2? lastPointerHoverPosition;
+	internal string LastCursorType;
+	internal Vector2? LastPointerHoverPosition;
 	private string appliedBoardSpaceNamesSnapshot = "";
 
 	// Component
@@ -92,13 +96,20 @@ public sealed class Board : Component
 	{
 		EnsureBoardSpaceNameConfigApplied();
 		DrawAllHitboxesDebug();
-		UpdateSpaceHoverCursor();
-		UpdateLocalSpaceSelection();
+		if ( !UseGeneratedMeshBoard )
+		{
+			UpdateSpaceHoverCursor();
+			UpdateLocalSpaceSelection();
+		}
+
 		UpdateSpaceImprovements();
 
 		if (lastProcBoardWorldScale != ProceduralBoardWorldScale || lastProcRefPanelSize != ProceduralReferencePanelSize)
 		{
-			UpdateSpacesPosAndSize();
+			if ( UseGeneratedMeshBoard )
+				EnsureGeneratedBoardBuilt();
+			else
+				UpdateSpacesPosAndSize();
 		}
 	}
 
@@ -107,12 +118,14 @@ public sealed class Board : Component
 		RefreshProceduralBoardPanel();
 	}
 
-	private void RefreshProceduralBoardPanel()
+	public void RefreshProceduralBoardPanelReferences()
 	{
 		ProceduralBoardPanel ??= Scene.GetAllComponents<Sandbox.ui.BoardPanel>().FirstOrDefault();
 		BoardWorldPanel ??= Scene.GetAllComponents<WorldPanel>().FirstOrDefault();
 		ProceduralBoardPanel?.StateHasChanged();
 	}
+
+	private void RefreshProceduralBoardPanel() => RefreshProceduralBoardPanelReferences();
 
 	private Vector3 GetProceduralSpacePosition( Rect spaceRect )
 	{
@@ -124,7 +137,7 @@ public sealed class Board : Component
 		return BoardMath.RectPercentToColliderSize( rect, GetBoardWorldSize() );
 	}
 
-	private float GetBoardWorldSize()
+	public float GetBoardWorldSize()
 	{
 		var baseBoardSize = ProceduralBoardHalfSize * 2f;
 
@@ -134,6 +147,57 @@ public sealed class Board : Component
 		}
 
 		return baseBoardSize * ProceduralBoardWorldScale;
+	}
+
+	internal void SetGeneratedSpaces( List<BoardSpace> spaces )
+	{
+		Spaces = spaces;
+		DisableLegacySceneSpaces();
+	}
+
+	private void OnUseGeneratedMeshBoardChanged( bool _, bool enabled )
+	{
+		SetLegacyBoardUiVisible( !enabled );
+		if ( enabled )
+			EnsureGeneratedBoardBuilt();
+	}
+
+	private void EnsureGeneratedBoardBuilt()
+	{
+		RefreshProceduralBoardPanelReferences();
+		VisualGenerator ??= GameObject.GetComponent<BoardVisualGenerator>() ?? GameObject.Components.Create<BoardVisualGenerator>();
+		InteractionController ??= GameObject.GetComponent<BoardInteractionController>() ?? GameObject.Components.Create<BoardInteractionController>();
+		VisualGenerator.Board = this;
+		InteractionController.Board = this;
+		InteractionController.VisualGenerator = VisualGenerator;
+		VisualGenerator.Rebuild();
+	}
+
+	private void SetLegacyBoardUiVisible( bool visible )
+	{
+		if ( BoardWorldPanel is not null && BoardWorldPanel.IsValid() )
+			BoardWorldPanel.Enabled = visible;
+
+		if ( ProceduralBoardPanel?.GameObject is not null && ProceduralBoardPanel.GameObject.IsValid() )
+			ProceduralBoardPanel.GameObject.Enabled = visible;
+	}
+
+	private void DisableLegacySceneSpaces()
+	{
+		foreach ( var child in GameObject.Children )
+		{
+			if ( child is null || !child.IsValid() )
+				continue;
+
+			if ( child.Name is "BoardVisualRoot" )
+				continue;
+
+			var boardSpace = child.GetComponent<BoardSpace>();
+			if ( boardSpace is null || Spaces.Contains( boardSpace ) )
+				continue;
+
+			child.Enabled = false;
+		}
 	}
 
 	private void UpdateSpacesPosAndSize()
@@ -155,9 +219,14 @@ public sealed class Board : Component
 	// Spaces & Defs initializing
 	private void InitSpaces()
 	{
-
-		if (UseProceduralBoardPanel)
+		if ( UseGeneratedMeshBoard )
 		{
+			SetLegacyBoardUiVisible( false );
+			EnsureGeneratedBoardBuilt();
+		}
+		else if ( UseProceduralBoardPanel )
+		{
+			SetLegacyBoardUiVisible( true );
 			Spaces = new();
 			foreach ( var def in SpaceDefs.OrderBy( space => space.Index ) )
 			{
@@ -188,7 +257,7 @@ public sealed class Board : Component
 				continue;
 			}
 
-			if (!UseProceduralBoardPanel)
+			if ( !UseProceduralBoardPanel && !UseGeneratedMeshBoard )
 			{
 				ApplySpaceModifications(space);
 				TryCreateLabel(space);
@@ -616,9 +685,9 @@ public sealed class Board : Component
 		// Some click frames briefly miss ray hits even when hovering the same space.
 		// Preserve prior pointer state near the last confirmed pointer-hover location.
 		if ( desiredCursor is null &&
-			lastPointerHoverPosition.HasValue &&
-			(Mouse.Position - lastPointerHoverPosition.Value).Length <= PointerLatchRadius &&
-			string.Equals( lastCursorType, "pointer", StringComparison.Ordinal ) )
+			LastPointerHoverPosition.HasValue &&
+			(Mouse.Position - LastPointerHoverPosition.Value).Length <= PointerLatchRadius &&
+			string.Equals( LastCursorType, "pointer", StringComparison.Ordinal ) )
 		{
 			desiredCursor = "pointer";
 		}
@@ -626,9 +695,9 @@ public sealed class Board : Component
 		Mouse.CursorType = desiredCursor;
 
 		if ( string.Equals( desiredCursor, "pointer", StringComparison.Ordinal ) && isHoveringSpace )
-			lastPointerHoverPosition = Mouse.Position;
+			LastPointerHoverPosition = Mouse.Position;
 		
-		lastCursorType = desiredCursor;
+		LastCursorType = desiredCursor;
 	}
 
 	private bool IsHoveringSelectableSpace( SceneTraceResult? traceResult )

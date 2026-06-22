@@ -462,7 +462,8 @@
                   "component_type": "BoardSpace"
                 }
               ],
-              "UseProceduralBoardPanel": true,
+              "UseGeneratedMeshBoard": true,
+              "UseProceduralBoardPanel": false,
               "UseWorldPanelLabels": true
             }
           ],
