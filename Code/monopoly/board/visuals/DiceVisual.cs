@@ -19,8 +19,8 @@ public sealed class DiceVisual : Component
 	/// <summary>models/dev/plane is 100 units wide; 0.5 => 50 unit face.</summary>
 	private const float FacePlaneScale = 0.5f;
 
-	private const float PipSurfaceOffset = 0.45f;
-	private const float BackgroundExtraOffset = 0.55f;
+	private const float BackgroundSurfaceOffset = 0.38f;
+	private const float PipInFrontOffset = 0.16f;
 
 	private static readonly FaceDefinition[] FaceDefinitions =
 	{
@@ -132,9 +132,9 @@ public sealed class DiceVisual : Component
 	private void CreateFaceLayer( FaceDefinition definition, bool isBackground )
 	{
 		var normal = definition.OutwardNormal.Normal;
-		var surfaceDistance = CubeHalfExtent + (isBackground ? PipSurfaceOffset + BackgroundExtraOffset : PipSurfaceOffset);
+		var surfaceDistance = CubeHalfExtent + BackgroundSurfaceOffset + (isBackground ? 0f : PipInFrontOffset);
 
-		var layerObject = new GameObject( true, $"Face_{definition.PipValue}{(isBackground ? "_Bg" : "")}" );
+		var layerObject = new GameObject( true, $"Face_{definition.PipValue}{(isBackground ? "_Bg" : "_Pips")}" );
 		layerObject.SetParent( facesRoot );
 		layerObject.LocalPosition = normal * surfaceDistance;
 		layerObject.LocalRotation = GetFaceRotation( normal );
@@ -175,7 +175,6 @@ public sealed class DiceVisual : Component
 			if ( layer.Renderer is null || !layer.Renderer.IsValid() )
 				continue;
 
-			var tint = layer.IsBackground ? backgroundColor : dotColor;
 			var material = GameAssets.DiceFaces.GetMaterial( layer.PipValue, layer.IsBackground );
 			if ( material is null )
 			{
@@ -184,8 +183,17 @@ public sealed class DiceVisual : Component
 			}
 
 			layer.Renderer.MaterialOverride = material;
-			layer.Renderer.Tint = ToColor( tint );
+			layer.Renderer.Tint = layer.IsBackground
+				? ToColor( backgroundColor )
+				: GetPipTintColor();
 		}
+	}
+
+	private Color GetPipTintColor()
+	{
+		var dot = ToColor( dotColor );
+		var isDefaultBlack = dot.r + dot.g + dot.b < 0.05f;
+		return isDefaultBlack ? Color.White : dot;
 	}
 
 	public static bool TryApplySkin( GameObject dieObject, DiceSkinDefinition diceSkin )

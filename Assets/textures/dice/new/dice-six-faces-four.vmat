@@ -1,11 +1,19 @@
-
 Layer0
 {
 	shader "shaders/complex.shader_c"
 
+	F_TRANSLUCENT 1
+	F_ALPHA_TEST 1
+	F_DO_NOT_CAST_SHADOWS 1
+
+	g_flModelTintAmount "1.000"
+	g_vColorTint "[1.000000 1.000000 1.000000 0.000000]"
+	g_flAlphaTestReference "0.150"
+	g_flAntiAliasedEdgeStrength "0.500"
+
 	TextureColor "textures/dice/new/dice-six-faces-four.png"
+	TextureTranslucency "textures/dice/new/dice-six-faces-four.png"
 	TextureAmbientOcclusion "materials/default/default_ao.tga"
 	TextureNormal "materials/default/default_normal.tga"
 	TextureRoughness "materials/default/default_rough.tga"
-
 }

@@ -1,11 +1,17 @@
-
 Layer0
 {
 	shader "shaders/complex.shader_c"
+
+	F_DIFFUSE_WRAP 1
+	F_DO_NOT_CAST_SHADOWS 1
+
+	g_flModelTintAmount "1.000"
+	g_vColorTint "[1.000000 1.000000 1.000000 0.000000]"
+	g_flDiffuseWrap "1.000"
+	g_flAmbientOcclusionDirectDiffuse "1.000"
 
 	TextureColor "textures/dice/new/dice-six-faces-five-bg.png"
 	TextureAmbientOcclusion "materials/default/default_ao.tga"
 	TextureNormal "materials/default/default_normal.tga"
 	TextureRoughness "materials/default/default_rough.tga"
-
 }

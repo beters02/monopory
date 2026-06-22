@@ -6,6 +6,10 @@
         "LEAN_CTX_DATA_DIR": "C:\\Users\\Bryce\\.lean-ctx",
         "LEAN_CTX_PROJECT_ROOT": "${workspaceFolder}"
       }
+    },
+    "sdocs": {
+      "type": "http",
+      "url": "https://sdocs.suiram.dev/api/v1/mcp"
     }
   }
 }

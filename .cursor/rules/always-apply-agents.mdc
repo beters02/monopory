@@ -3,4 +3,4 @@ description: "Always force load project rules"
 globs: "*"
 alwaysApply: true
 ---
-Before making any edits, always read the instructions in [AGENTS.md](mdc:AGENTS.md).
+Always read the instructions in the project root: [AGENTS.md].
