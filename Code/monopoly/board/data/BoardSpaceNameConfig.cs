@@ -14,6 +14,13 @@ public static class BoardSpaceNameConfig
 		return CreateDefaultSnapshot();
 	}
 
+	public static bool IsPreset( string snapshot, string presetId )
+	{
+		var preset = BoardCatalog.GetNamePresetById( presetId );
+		return preset is not null &&
+			string.Equals( snapshot ?? "", preset.Snapshot ?? "", StringComparison.Ordinal );
+	}
+
 	public static string SerializeNames( IEnumerable<string> names )
 	{
 		if ( names is null )

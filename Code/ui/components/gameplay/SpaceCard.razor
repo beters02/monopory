@@ -23,7 +23,11 @@
 			else if ( IsDrawnCardSpace )
 			{
 				<div class="@CardSpaceArtClasses">
-					@if ( GetSpaceCardIconType() == SpaceCardIconType.Image )
+					@if ( Space.Type == SpaceType.Chance && !UsesGrandCasinoChanceImage )
+					{
+						@RenderChanceArt()
+					}
+					else if ( GetSpaceCardIconType() == SpaceCardIconType.Image )
 					{
 						<img class="monopoly-card-space-image-icon" src="@GetSpaceCardIconImagePath()" />
 					}
@@ -210,6 +214,16 @@
 			"<div class=\"monopoly-chest-lock\"></div>" +
 			"</div>" );
 	};
+
+	private RenderFragment RenderChanceArt() => builder =>
+	{
+		builder.AddMarkupContent( 0, "<div class=\"monopoly-chance-mark\">?</div>" );
+	};
+
+	private bool UsesGrandCasinoChanceImage =>
+		BoardSpaceNameConfig.IsPreset(
+			GameController.Instance?.Config?.BoardSpaceNamesSnapshot,
+			BoardNamePresets.GrandCasinoPresetId );
 
 	private string GetSpaceCardIconImagePath()
 	{

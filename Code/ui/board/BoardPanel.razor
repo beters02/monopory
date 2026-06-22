@@ -56,6 +56,10 @@
 									{
 										@RenderChestArt()
 									}
+									else if ( space.Type == SpaceType.Chance && !UsesGrandCasinoChanceImage )
+									{
+										@RenderChanceArt()
+									}
 									else if ( GetIconType(space) == IconType.Text )
 									{
 										<div class="space-icon" style="@GetSpaceIconStyle( space )">@GetSpaceIconText( space )</div>
@@ -73,6 +77,10 @@
 									@if ( space.Type == SpaceType.CommunityChest )
 									{
 										@RenderChestArt()
+									}
+									else if ( space.Type == SpaceType.Chance && !UsesGrandCasinoChanceImage )
+									{
+										@RenderChanceArt()
 									}
 									else if ( GetIconType(space) == IconType.Text )
 									{
@@ -497,6 +505,16 @@
 			"<div class=\"monopoly-chest-lock\"></div>" +
 			"</div>" );
 	};
+
+	private RenderFragment RenderChanceArt() => builder =>
+	{
+		builder.AddMarkupContent( 0, "<div class=\"monopoly-chance-mark board-chance-mark\">?</div>" );
+	};
+
+	private bool UsesGrandCasinoChanceImage =>
+		BoardSpaceNameConfig.IsPreset(
+			ActiveGame?.Config?.BoardSpaceNamesSnapshot,
+			BoardNamePresets.GrandCasinoPresetId );
 
 	private enum IconType
 	{

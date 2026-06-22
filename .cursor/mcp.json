@@ -1,11 +1,3 @@
 {
-  "mcpServers": {
-    "lean-ctx": {
-      "command": "C:/Users/Bryce/.cargo/bin/lean-ctx.exe",
-      "env": {
-        "LEAN_CTX_DATA_DIR": "C:\\Users\\Bryce\\.lean-ctx",
-        "LEAN_CTX_PROJECT_ROOT": "${workspaceFolder}"
-      }
-    }
-  }
+  "mcpServers": {}
 }

@@ -328,6 +328,19 @@
 	min-height: 150px;
 }
 
+.board-chance-mark {
+	width: 50px;
+	height: 64px;
+	flex-shrink: 0;
+	align-items: center;
+	justify-content: center;
+	color: $property-orange;
+	font-size: 58px;
+	font-weight: 900;
+	line-height: 58px;
+	text-shadow: 2px 2px 0 $monopoly-ink;
+}
+
 .type-chance .space-icon-stack .space-title {
 	margin-bottom: 20px;
 }
