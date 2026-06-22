@@ -12,4 +12,4 @@ These are **workspace-only** instructions for the monopory project. Ignore globa
 
 ## lean-ctx
 Prefer lean-ctx MCP tools over native equivalents for token savings.
-Full rules: @LEAN-CTX.md and `.cursor/rules/lean-ctx.mdc`.
+Full rules: `.cursor/rules/lean-ctx.mdc`.

@@ -20,8 +20,8 @@ public sealed class BoardVisualGenerator : Component
 	[Property] public float TileBevelInset { get; set; } = 0.12f;
 	[Property] public float AccentDepth { get; set; } = 2.4f;
 	[Property] public float AccentHeight { get; set; } = 0.28f;
-	[Property] public float LabelHeight { get; set; } = 1.35f;
-	[Property] public float DetailIconHeight { get; set; } = 0.95f;
+	[Property] public float LabelHeight { get; set; } = 0.08f;
+	[Property] public float DetailIconHeight { get; set; } = 0.12f;
 	[Property] public bool CreateLabels { get; set; } = true;
 	[Property] public bool CreateDetailIcons { get; set; } = true;
 	[Property] public float HoverLift { get; set; } = 0.15f;
@@ -114,14 +114,11 @@ public sealed class BoardVisualGenerator : Component
 			if ( CreateLabels )
 				CreateSpaceLabel( spaceObject, def, layout, surfaceZ );
 
-			var ownershipCenter = BoardVisualLayout.GetOwnershipMarkerCenter( layout.SideIndex, layout.VisualSize, surfaceZ );
-			spaceVisual.OwnershipVisual = CreateStateOverlay(
+			spaceVisual.OwnershipVisual = CreateOwnershipTab(
 				spaceObject,
-				"OwnershipVisual",
-				new Vector3( layout.VisualSize.x * 0.18f, layout.VisualSize.y * 0.18f, 0.22f ),
-				ownershipCenter.z,
-				Color.White,
-				ownershipCenter
+				layout.SideIndex,
+				layout.VisualSize,
+				surfaceZ
 			);
 
 			spaceVisual.HoverVisual = CreateStateOverlay(
@@ -238,26 +235,28 @@ public sealed class BoardVisualGenerator : Component
 
 	private void CreateSpaceLabel( GameObject parent, SpaceDef def, BoardSpaceLayout layout, float surfaceZ )
 	{
-		var labelText = BoardVisualText.GetSpaceLabel( def );
+		var labelText = BoardVisualText.GetSpaceLabel( def, layout );
 		if ( string.IsNullOrWhiteSpace( labelText ) )
 			return;
 
+		var lineCount = BoardVisualText.CountLabelLines( labelText );
+
 		var labelObject = CreateGeneratedObject( $"Label_{def.Index:00}" );
 		labelObject.SetParent( parent );
-		labelObject.LocalPosition = new Vector3( 0f, 0f, surfaceZ + LabelHeight );
+		labelObject.LocalPosition = BoardVisualLayout.GetLabelPosition( layout.SideIndex, layout.VisualSize, surfaceZ + LabelHeight );
 		labelObject.LocalRotation = BoardVisualLayout.GetLabelRotation( layout.SideIndex );
 
 		var label = labelObject.Components.Create<TextRenderer>();
 		label.Text = labelText;
-		label.FontSize = layout.IsCorner ? 52 : 34;
+		label.FontSize = layout.IsCorner ? 72 : 56;
 		label.FontWeight = 800;
 		label.Color = new Color( 0.08f, 0.07f, 0.06f );
-		label.Scale = layout.IsCorner ? 0.042f : 0.032f;
+		label.Scale = BoardVisualText.GetLabelScale( layout, lineCount );
 
 		var scope = label.TextScope;
 		scope.Shadow.Enabled = true;
-		scope.Shadow.Color = new Color( 1f, 1f, 1f, 0.55f );
-		scope.Shadow.Offset = new Vector2( 1.5f, 1.5f );
+		scope.Shadow.Color = new Color( 1f, 1f, 1f, 0.65f );
+		scope.Shadow.Offset = new Vector2( 2f, 2f );
 		label.TextScope = scope;
 	}
 
@@ -269,17 +268,33 @@ public sealed class BoardVisualGenerator : Component
 
 		var iconObject = CreateGeneratedObject( $"Detail_{def.Index:00}" );
 		iconObject.SetParent( parent );
-		iconObject.LocalPosition = new Vector3( 0f, 0f, surfaceZ + DetailIconHeight );
+		iconObject.LocalPosition = BoardVisualLayout.GetLabelPosition( layout.SideIndex, layout.VisualSize, surfaceZ + DetailIconHeight );
 		iconObject.LocalRotation = BoardVisualLayout.GetLabelRotation( layout.SideIndex );
 
 		var label = iconObject.Components.Create<TextRenderer>();
 		label.Text = iconText;
-		label.FontSize = def.Type == SpaceType.CommunityChest ? 28 : 40;
+		label.FontSize = def.Type == SpaceType.CommunityChest ? 44 : 56;
 		label.FontWeight = 900;
 		label.Color = def.Type == SpaceType.CommunityChest
 			? new Color( 0.12f, 0.45f, 0.62f )
 			: new Color( 0.12f, 0.10f, 0.08f );
-		label.Scale = layout.IsCorner ? 0.038f : 0.034f;
+		label.Scale = layout.IsCorner ? 0.07f : 0.062f;
+	}
+
+	private GameObject CreateOwnershipTab( GameObject parent, int sideIndex, Vector3 tileSize, float surfaceZ )
+	{
+		BoardVisualLayout.GetOwnershipTabLayout( sideIndex, tileSize, surfaceZ, out var size, out var center );
+
+		var tab = CreateBoxMesh(
+			parent,
+			"OwnershipVisual",
+			center,
+			size,
+			SpaceMaterial,
+			new Color( 0.85f, 0.85f, 0.85f, 0.95f )
+		);
+		tab.Enabled = false;
+		return tab;
 	}
 
 	private GameObject CreateGeneratedObject( string name )

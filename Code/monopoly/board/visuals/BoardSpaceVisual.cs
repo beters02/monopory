@@ -44,11 +44,13 @@ public sealed class BoardSpaceVisual : Component
 		if ( !show )
 			return;
 
-		foreach ( var renderer in OwnershipVisual.GetComponentsInChildren<ModelRenderer>() )
-			renderer.Tint = ownerColor;
+		var tint = ownerColor.Saturate( 1.15f );
 
 		foreach ( var mesh in OwnershipVisual.GetComponentsInChildren<MeshComponent>() )
-			mesh.Color = ownerColor;
+			mesh.Color = tint;
+
+		foreach ( var renderer in OwnershipVisual.GetComponentsInChildren<ModelRenderer>() )
+			renderer.Tint = tint;
 	}
 
 	public void ClearState()
