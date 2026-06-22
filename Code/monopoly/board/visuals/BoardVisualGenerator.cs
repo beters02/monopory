@@ -17,6 +17,8 @@ public sealed class BoardVisualGenerator : Component
 	[Property] public float BoardThickness { get; set; } = 1.2f;
 	[Property] public float SpaceThickness { get; set; } = 0.9f;
 	[Property] public float SpaceGap { get; set; } = 0.35f;
+	[Property] public float AccentDepth { get; set; } = 2.4f;
+	[Property] public float AccentHeight { get; set; } = 0.28f;
 	[Property] public float HoverLift { get; set; } = 0.15f;
 
 	private readonly List<GameObject> generatedObjects = new();
@@ -89,21 +91,25 @@ public sealed class BoardVisualGenerator : Component
 
 			var boardSpace = spaceObject.Components.Create<BoardSpace>();
 			boardSpace.Index = def.Index;
-			boardSpace.SetHitboxOverride( layout.ColliderSize );
+			boardSpace.SetHitboxOverride( layout.ColliderSize, layout.ColliderCenter );
 
 			var spaceVisual = spaceObject.Components.Create<BoardSpaceVisual>();
 			spaceVisual.SpaceIndex = def.Index;
 			spaceVisual.SpaceKey = def.Key ?? "";
 			spaceVisuals[def.Index] = spaceVisual;
 
+			var tileCenterZ = BoardThickness + SpaceThickness * 0.5f;
 			CreateBoxMesh(
 				spaceObject,
 				"TileMesh",
-				new Vector3( 0f, 0f, BoardThickness + SpaceThickness * 0.5f ),
+				new Vector3( 0f, 0f, tileCenterZ ),
 				layout.VisualSize,
 				SpaceMaterial,
 				GetSpaceColor( def )
 			);
+
+			if ( def.Type == SpaceType.Property && def.ColorGroup != ColorGroup.None )
+				CreatePropertyAccent( spaceObject, def, layout.VisualSize, tileCenterZ );
 
 			spaceVisual.HoverVisual = CreateStateOverlay(
 				spaceObject,
@@ -206,6 +212,49 @@ public sealed class BoardVisualGenerator : Component
 		return go;
 	}
 
+	private void CreatePropertyAccent( GameObject parent, SpaceDef def, Vector3 tileSize, float tileCenterZ )
+	{
+		var layout = Board.Layout ?? BoardLayoutDefinition.Classic();
+		var sideIndex = layout.GetSideIndex( def.Index, Board.SpaceCount );
+
+		var accentSize = tileSize;
+		var accentCenter = new Vector3( 0f, 0f, tileCenterZ + tileSize.z * 0.5f + AccentHeight * 0.5f );
+
+		// Inner edge faces board center: bottom +X, left +Y, top -X, right -Y.
+		switch ( sideIndex )
+		{
+			case 0:
+				accentSize.x = AccentDepth;
+				accentSize.z = AccentHeight;
+				accentCenter.x = (tileSize.x - AccentDepth) * 0.5f;
+				break;
+			case 1:
+				accentSize.y = AccentDepth;
+				accentSize.z = AccentHeight;
+				accentCenter.y = (tileSize.y - AccentDepth) * 0.5f;
+				break;
+			case 2:
+				accentSize.x = AccentDepth;
+				accentSize.z = AccentHeight;
+				accentCenter.x = (AccentDepth - tileSize.x) * 0.5f;
+				break;
+			default:
+				accentSize.y = AccentDepth;
+				accentSize.z = AccentHeight;
+				accentCenter.y = (AccentDepth - tileSize.y) * 0.5f;
+				break;
+		}
+
+		CreateBoxMesh(
+			parent,
+			$"Accent_{def.Index:00}_{def.ColorGroup}",
+			accentCenter,
+			accentSize,
+			SpaceMaterial,
+			GetColorGroupColor( def.ColorGroup )
+		);
+	}
+
 	private static Color GetSpaceColor( SpaceDef def )
 	{
 		return def.Type switch
@@ -215,7 +264,6 @@ public sealed class BoardVisualGenerator : Component
 			SpaceType.Tax => new Color( 0.92f, 0.92f, 0.86f ),
 			SpaceType.Railroad => new Color( 0.82f, 0.84f, 0.82f ),
 			SpaceType.Utility => new Color( 0.81f, 0.88f, 0.72f ),
-			SpaceType.Property when def.ColorGroup != ColorGroup.None => GetColorGroupColor( def.ColorGroup ).WithAlpha( 0.35f ),
 			_ => new Color( 0.92f, 0.88f, 0.78f )
 		};
 	}

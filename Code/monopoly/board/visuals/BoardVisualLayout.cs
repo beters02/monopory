@@ -12,6 +12,7 @@ public readonly struct BoardSpaceLayout
 	public Rotation Rotation { get; init; }
 	public Vector3 VisualSize { get; init; }
 	public Vector3 ColliderSize { get; init; }
+	public Vector3 ColliderCenter { get; init; }
 	public bool IsCorner { get; init; }
 }
 
@@ -36,14 +37,19 @@ public static class BoardVisualLayout
 		);
 
 		var position = BoardMath.RectPercentToLocal( rect, worldSize, board.ProceduralSpaceZOffset );
-		var meshOffsetZ = boardThickness + spaceThickness * 0.5f;
+		var tileCenterZ = boardThickness + spaceThickness * 0.5f;
 
 		return new BoardSpaceLayout
 		{
 			Position = position,
 			Rotation = Rotation.Identity,
 			VisualSize = visualSize,
-			ColliderSize = colliderSize,
+			ColliderSize = new Vector3(
+				colliderSize.x,
+				colliderSize.y,
+				boardThickness + spaceThickness + 4f
+			),
+			ColliderCenter = new Vector3( 0f, 0f, tileCenterZ ),
 			IsCorner = layout.IsCornerIndex( index )
 		};
 	}
