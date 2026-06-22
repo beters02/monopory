@@ -1,8 +1,9 @@
 using System.Collections.Generic;
 using Sandbox;
+using System;
 
 /// <summary>
-/// Pushes game state into generated board visuals (ownership, selection, can-buy).
+/// Pushes game state into generated board visuals (ownership, selection, can-buy, landed pulse).
 /// </summary>
 [Title( "Board Visual State Controller" )]
 [Category( "Monopoly" )]
@@ -11,10 +12,14 @@ public sealed class BoardVisualStateController : Component
 	[Property] public Board Board { get; set; }
 	[Property] public BoardVisualGenerator VisualGenerator { get; set; }
 	[Property] public BoardInteractionController InteractionController { get; set; }
+	[Property] public float LandedPulseDuration { get; set; } = 1.45f;
+	[Property] public float LandedPulseMaxScale { get; set; } = 1.18f;
 
 	private GameController gameRef;
 	private MonopolyTheme theme;
 	private int? lastSelectedSpaceIndex;
+	private int? landedPulseSpaceIndex;
+	private float landedPulseStartTime;
 
 	protected override void OnStart()
 	{
@@ -30,6 +35,19 @@ public sealed class BoardVisualStateController : Component
 			return;
 
 		RefreshFromGameState();
+		UpdateLandedPulse();
+	}
+
+	public void NotifyPlayerLanded( PlayerState player )
+	{
+		if ( player is null || Board is null || !Board.UseGeneratedMeshBoard )
+			return;
+
+		landedPulseSpaceIndex = player.SpaceIndex;
+		landedPulseStartTime = Time.Now;
+
+		if ( VisualGenerator?.TryGetSpaceVisual( player.SpaceIndex, out var visual ) == true )
+			visual.SetLandedPulse( 1f, 0.85f );
 	}
 
 	public void RefreshFromGameState()
@@ -93,6 +111,29 @@ public sealed class BoardVisualStateController : Component
 	{
 		if ( VisualGenerator?.TryGetSpaceVisual( spaceIndex, out var visual ) == true )
 			visual.SetCanBuy( canBuy );
+	}
+
+	private void UpdateLandedPulse()
+	{
+		if ( !landedPulseSpaceIndex.HasValue || VisualGenerator is null )
+			return;
+
+		var elapsed = Time.Now - landedPulseStartTime;
+		if ( elapsed >= LandedPulseDuration )
+		{
+			if ( VisualGenerator.TryGetSpaceVisual( landedPulseSpaceIndex.Value, out var visual ) )
+				visual.SetLandedPulse( 1f, 0f );
+
+			landedPulseSpaceIndex = null;
+			return;
+		}
+
+		var t = elapsed / MathF.Max( 0.01f, LandedPulseDuration );
+		var scale = 1f + t * (LandedPulseMaxScale - 1f);
+		var alpha = (1f - t) * 0.85f;
+
+		if ( VisualGenerator.TryGetSpaceVisual( landedPulseSpaceIndex.Value, out var pulsingVisual ) )
+			pulsingVisual.SetLandedPulse( scale, alpha );
 	}
 
 	private void EnsureRefs()

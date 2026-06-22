@@ -1,0 +1,20 @@
+Layer0
+{
+	shader "shaders/complex.shader"
+
+	F_SPECULAR 1
+
+	g_flModelTintAmount "1.000"
+	g_vColorTint "[1.000000 1.000000 1.000000 0.000000]"
+	TextureColor "[0.960000 0.940000 0.900000 1.000000]"
+
+	g_flMetalness "0.000"
+	g_flRoughnessScaleFactor "0.820"
+	TextureRoughness "materials/default/default_rough.tga"
+	TextureNormal "materials/default/default_normal.tga"
+	TextureAmbientOcclusion "materials/default/default_ao.tga"
+	g_flAmbientOcclusionDirectDiffuse "0.350"
+
+	g_bFogEnabled "0"
+	g_flFadeExponent "1.000"
+}

@@ -97,7 +97,7 @@ public static partial class GameAssets
 		public static readonly GameMaterial Hotel = new ( "materials/pieces/hotel.vmat" );
 		public static readonly GameMaterial Piece = new ( "materials/pieces/piece.vmat" );
 		public static readonly GameMaterial BankruptedPiece = new ( "materials/pieces/piece_bankrupt.vmat" );
-		public static readonly GameMaterial Shiny = new ( "materials/dice/dice_shiny.vmat" );
+		public static readonly GameMaterial Shiny = new ( "materials/dice/dice_body_opaque.vmat" );
 	}
 
 	[GameAssetCategory]

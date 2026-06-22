@@ -44,6 +44,7 @@ public sealed partial class GameController : Component
 
 			Log.Info( $"{player.PlayerName} landed on {spaceDef.DisplayName}" );
 			RecordPropertyLandingForStats( player, spaceDef );
+			Board.VisualStateController?.NotifyPlayerLanded( player );
 
 			//if (spaceDef.Type != SpaceType.Go && spaceDef.Type )
 			ShowCardForPlayerWhoLanded(player);

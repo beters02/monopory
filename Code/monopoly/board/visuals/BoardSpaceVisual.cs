@@ -1,4 +1,5 @@
 using Sandbox;
+using System;
 
 /// <summary>
 /// Per-space visual state for the generated mesh board.
@@ -14,6 +15,7 @@ public sealed class BoardSpaceVisual : Component
 	[Property] public GameObject SelectedVisual { get; set; }
 	[Property] public GameObject OwnershipVisual { get; set; }
 	[Property] public GameObject CanBuyVisual { get; set; }
+	[Property] public GameObject LandedVisual { get; set; }
 
 	public void SetHovered( bool hovered )
 	{
@@ -31,6 +33,26 @@ public sealed class BoardSpaceVisual : Component
 	{
 		if ( CanBuyVisual is not null && CanBuyVisual.IsValid() )
 			CanBuyVisual.Enabled = canBuy;
+	}
+
+	public void SetLandedPulse( float scaleMultiplier, float alpha )
+	{
+		if ( LandedVisual is null || !LandedVisual.IsValid() )
+			return;
+
+		LandedVisual.Enabled = alpha > 0.02f;
+		if ( !LandedVisual.Enabled )
+			return;
+
+		var pulseScale = MathF.Max( 0.5f, scaleMultiplier );
+		LandedVisual.LocalScale = new Vector3( pulseScale, pulseScale, 1f );
+
+		var pulseColor = new Color( 0.55f, 0.85f, 1f, alpha );
+		foreach ( var mesh in LandedVisual.GetComponentsInChildren<MeshComponent>() )
+			mesh.Color = pulseColor;
+
+		foreach ( var renderer in LandedVisual.GetComponentsInChildren<ModelRenderer>() )
+			renderer.Tint = pulseColor;
 	}
 
 	public void SetOwner( int? ownerSlotIndex, Color ownerColor )
@@ -58,6 +80,7 @@ public sealed class BoardSpaceVisual : Component
 		SetHovered( false );
 		SetSelected( false );
 		SetCanBuy( false );
+		SetLandedPulse( 1f, 0f );
 		SetOwner( null, Color.White );
 	}
 }

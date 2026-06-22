@@ -14,6 +14,11 @@ public sealed class BoardVisualGenerator : Component
 	[Property] public Material BoardMaterial { get; set; }
 	[Property] public Material SpaceMaterial { get; set; }
 	[Property] public Material HoverMaterial { get; set; }
+	[Property] public Material SelectionMaterial { get; set; }
+	[Property] public Material CanBuyMaterial { get; set; }
+	[Property] public Material LandedPulseMaterial { get; set; }
+	[Property] public float HoverBorderThickness { get; set; } = 0.22f;
+	[Property] public float SelectedBorderThickness { get; set; } = 0.34f;
 	[Property] public float BoardThickness { get; set; } = 2.8f;
 	[Property] public float SpaceThickness { get; set; } = 1.1f;
 	[Property] public float SpaceGap { get; set; } = 0.35f;
@@ -59,9 +64,12 @@ public sealed class BoardVisualGenerator : Component
 
 		ClearGeneratedObjects();
 
-		BoardMaterial ??= Material.Load( "materials/dev/simple/simple_tile.vmat" );
-		SpaceMaterial ??= BoardMaterial;
-		HoverMaterial ??= SpaceMaterial;
+		BoardMaterial ??= Material.Load( "materials/board/board_base.vmat" );
+		SpaceMaterial ??= Material.Load( "materials/board/board_tile.vmat" );
+		HoverMaterial ??= Material.Load( "materials/board/board_hover.vmat" );
+		SelectionMaterial ??= Material.Load( "materials/board/board_selected.vmat" );
+		CanBuyMaterial ??= Material.Load( "materials/board/board_can_buy.vmat" );
+		LandedPulseMaterial ??= Material.Load( "materials/board/board_landed_pulse.vmat" );
 
 		visualRoot = CreateGeneratedObject( "BoardVisualRoot" );
 		visualRoot.SetParent( GameObject );
@@ -124,28 +132,44 @@ public sealed class BoardVisualGenerator : Component
 				surfaceZ
 			);
 
-			spaceVisual.HoverVisual = CreateStateOverlay(
+			var overlayZ = BoardThickness + SpaceThickness + HoverLift;
+			spaceVisual.HoverVisual = CreateBorderOverlay(
 				spaceObject,
 				"HoverVisual",
 				layout.VisualSize,
-				BoardThickness + SpaceThickness + HoverLift,
-				new Color( 1f, 1f, 1f, 0.22f )
+				overlayZ,
+				HoverBorderThickness,
+				HoverMaterial,
+				new Color( 0.85f, 0.95f, 1f, 0.5f )
 			);
 
-			spaceVisual.SelectedVisual = CreateStateOverlay(
+			spaceVisual.SelectedVisual = CreateBorderOverlay(
 				spaceObject,
 				"SelectedVisual",
 				layout.VisualSize,
-				BoardThickness + SpaceThickness + HoverLift * 1.5f,
-				new Color( 1f, 0.85f, 0.2f, 0.35f )
+				overlayZ + 0.04f,
+				SelectedBorderThickness,
+				SelectionMaterial,
+				new Color( 1f, 0.82f, 0.18f, 0.72f )
 			);
 
 			spaceVisual.CanBuyVisual = CreateStateOverlay(
 				spaceObject,
 				"CanBuyVisual",
-				new Vector3( layout.VisualSize.x * 0.35f, layout.VisualSize.y * 0.35f, 0.2f ),
-				BoardThickness + SpaceThickness + HoverLift * 2f,
-				new Color( 0.2f, 0.95f, 0.35f, 0.55f )
+				new Vector3( layout.VisualSize.x * 0.28f, layout.VisualSize.y * 0.28f, 0.16f ),
+				BoardThickness + SpaceThickness + HoverLift * 1.8f,
+				new Color( 0.25f, 0.95f, 0.4f, 0.75f ),
+				CanBuyMaterial
+			);
+
+			spaceVisual.LandedVisual = CreateBorderOverlay(
+				spaceObject,
+				"LandedVisual",
+				layout.VisualSize,
+				overlayZ - 0.02f,
+				HoverBorderThickness * 0.85f,
+				LandedPulseMaterial,
+				new Color( 0.55f, 0.85f, 1f, 0.7f )
 			);
 
 			spaceVisual.ClearState();
@@ -165,12 +189,69 @@ public sealed class BoardVisualGenerator : Component
 		Vector3 size,
 		float z,
 		Color color,
+		Material material,
 		Vector3? centerOverride = null )
 	{
 		var center = centerOverride ?? new Vector3( 0f, 0f, z );
-		var overlay = CreateBoxMesh( parent, name, center, size, HoverMaterial, color );
+		var overlay = CreateBoxMesh( parent, name, center, size, material, color );
 		overlay.Enabled = false;
 		return overlay;
+	}
+
+	private GameObject CreateBorderOverlay(
+		GameObject parent,
+		string name,
+		Vector3 tileSize,
+		float z,
+		float borderThickness,
+		Material material,
+		Color color )
+	{
+		var root = CreateGeneratedObject( name );
+		root.SetParent( parent );
+		root.LocalPosition = Vector3.Zero;
+		root.Enabled = false;
+
+		var thickness = MathF.Max( 0.08f, borderThickness );
+		var edgeHeight = 0.1f;
+		var halfX = tileSize.x * 0.5f;
+		var halfY = tileSize.y * 0.5f;
+		var centerZ = z;
+
+		CreateBoxMesh(
+			root,
+			"BorderTop",
+			new Vector3( 0f, halfY - thickness * 0.5f, centerZ ),
+			new Vector3( tileSize.x, thickness, edgeHeight ),
+			material,
+			color
+		);
+		CreateBoxMesh(
+			root,
+			"BorderBottom",
+			new Vector3( 0f, -halfY + thickness * 0.5f, centerZ ),
+			new Vector3( tileSize.x, thickness, edgeHeight ),
+			material,
+			color
+		);
+		CreateBoxMesh(
+			root,
+			"BorderLeft",
+			new Vector3( -halfX + thickness * 0.5f, 0f, centerZ ),
+			new Vector3( thickness, tileSize.y, edgeHeight ),
+			material,
+			color
+		);
+		CreateBoxMesh(
+			root,
+			"BorderRight",
+			new Vector3( halfX - thickness * 0.5f, 0f, centerZ ),
+			new Vector3( thickness, tileSize.y, edgeHeight ),
+			material,
+			color
+		);
+
+		return root;
 	}
 
 	private void CreateBoardBase( GameObject root, float baseSize )
