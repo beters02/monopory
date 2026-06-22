@@ -128,6 +128,18 @@
         "SettledLinearSpeed": 2,
         "SettledStillSeconds": 0.35,
         "UpFaceValue": 2
+      },
+      {
+        "__type": "DiceVisual",
+        "__guid": "c4d5e6f7-a8b9-4012-cdef-345678901234",
+        "__enabled": true,
+        "Flags": 0,
+        "OnComponentDestroy": null,
+        "OnComponentDisabled": null,
+        "OnComponentEnabled": null,
+        "OnComponentFixedUpdate": null,
+        "OnComponentStart": null,
+        "OnComponentUpdate": null
       }
     ],
     "Children": [

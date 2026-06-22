@@ -1,0 +1,502 @@
+We are overhauling Rent Rush visuals by moving away from a UI-rendered board into a generated 3D mesh board.
+
+Important goals:
+- Do not change Monopoly gameplay rules.
+- Do not rewrite turn logic, property ownership logic, money logic, or networking unless required to connect visuals.
+- Keep existing SpaceDef / board data as the source of truth.
+- Remove dice-face decals completely. Dice faces must become real geometry/materials so they cannot project onto the board.
+- The board should be generated from data, with real meshes/colliders for spaces.
+- Keep the implementation in these passes exactly:
+
+Phase 1 — kill the decal problem
+Phase 2 — make the generated board
+Phase 3 — improve board art
+Phase 4 — lighting pass
+Phase 5 — polish
+
+Before editing:
+1. Search the project for existing types related to:
+   - MonopolyGame
+   - SpaceDef
+   - SpaceType
+   - SelectSpace
+   - dice
+   - Decal
+   - MonopolyHud
+   - WorldPanelLabel
+   - board spaces / colliders / traces
+2. Preserve existing gameplay APIs where possible.
+3. Add new visual classes/components instead of mixing rendering logic directly into MonopolyGame.
+4. If s&box API names differ slightly, adapt to the project’s current API style.
+
+============================================================
+Phase 1 — kill the decal problem
+============================================================
+
+Goal:
+Remove all Decal-based dice faces and replace them with mesh/material based dice faces.
+
+Tasks:
+1. Find the current dice visual implementation.
+2. Remove or disable all Decal components used for dice faces.
+3. Create a new component:
+
+   DiceVisual.cs
+
+Responsibilities:
+- Own dice visual setup.
+- Create or reference dice body mesh.
+- Create six face child objects.
+- Each face child should be a real mesh/quad/plane, not a Decal.
+- Each face should have its own material or texture:
+  - Face 1
+  - Face 2
+  - Face 3
+  - Face 4
+  - Face 5
+  - Face 6
+- Offset each face slightly above the die body to avoid z-fighting.
+
+Suggested hierarchy:
+
+Die
+ ├── Body
+ ├── Face_1
+ ├── Face_2
+ ├── Face_3
+ ├── Face_4
+ ├── Face_5
+ └── Face_6
+
+Implementation notes:
+- If the project already has dice models, attach face meshes as children.
+- If no plane model exists, create/use a small quad model asset.
+- Do not use decals.
+- Do not project anything.
+- Face objects should move/rotate with the die because they are children of the dice object.
+- Make materials opaque or alpha-tested if possible. Avoid translucent blending unless required.
+
+Acceptance checks:
+- Dice faces render correctly.
+- Dice can sit on the board without any face texture appearing on the board.
+- No Decal component is used by dice.
+- Existing roll behavior still works.
+
+============================================================
+Phase 2 — make the generated board
+============================================================
+
+Goal:
+Create a real 3D board generated from SpaceDef data.
+
+Tasks:
+1. Add a new component:
+
+   BoardVisualGenerator.cs
+
+Responsibilities:
+- Build the board visual hierarchy.
+- Generate the board base.
+- Generate 40 board space objects.
+- Create a collider for each board space.
+- Attach metadata to each space for picking/selection.
+- Keep a dictionary mapping space index to generated visual object.
+
+2. Add a new component:
+
+   BoardSpaceVisual.cs
+
+Responsibilities:
+- Store the space index and key.
+- Store references to optional child visuals:
+  - hover visual
+  - selected visual
+  - ownership visual
+  - property color strip
+  - can-buy indicator
+- Expose methods:
+  - SetHovered(bool)
+  - SetSelected(bool)
+  - SetOwner(...)
+  - SetCanBuy(bool)
+  - ClearState()
+
+Example shape:
+
+public sealed class BoardSpaceVisual : Component
+{
+    [Property] public int SpaceIndex { get; set; }
+    [Property] public string SpaceKey { get; set; }
+
+    [Property] public GameObject HoverVisual { get; set; }
+    [Property] public GameObject SelectedVisual { get; set; }
+    [Property] public GameObject OwnershipVisual { get; set; }
+    [Property] public GameObject CanBuyVisual { get; set; }
+
+    public void SetHovered(bool hovered) { ... }
+    public void SetSelected(bool selected) { ... }
+    public void SetCanBuy(bool canBuy) { ... }
+    public void ClearState() { ... }
+}
+
+3. Add a layout helper:
+
+   BoardLayout.cs
+
+Responsibilities:
+- Convert board index 0-39 into board-space transform data.
+- Return:
+  - position
+  - rotation
+  - scale
+  - collider size
+  - whether the space is a corner
+  - which side of the board it belongs to
+
+Suggested struct:
+
+public readonly struct BoardSpaceLayout
+{
+    public Vector3 Position { get; init; }
+    public Rotation Rotation { get; init; }
+    public Vector3 Scale { get; init; }
+    public Vector3 ColliderSize { get; init; }
+    public bool IsCorner { get; init; }
+}
+
+public static class BoardLayout
+{
+    public static BoardSpaceLayout GetSpaceLayout(int index)
+    {
+        ...
+    }
+}
+
+4. BoardVisualGenerator should use SpaceDef[] / existing board data.
+
+Expected generated hierarchy:
+
+BoardVisualRoot
+ ├── BoardBase
+ ├── Spaces
+ │   ├── Space_00_go
+ │   ├── Space_01_...
+ │   ├── ...
+ │   └── Space_39_...
+ ├── Text
+ ├── Details
+ └── Effects
+
+5. Add a new component:
+
+   BoardInteractionController.cs
+
+Responsibilities:
+- Ray trace from the active camera to board space colliders.
+- Detect hovered space.
+- Detect clicked space.
+- Call the existing MonopolyGame.SelectSpace(spaceIndex) method.
+- Do not duplicate selection/gameplay logic.
+- Only bridge physical board interaction to existing game logic.
+
+Pseudo flow:
+
+var ray = Camera.ScreenPixelToRay(Mouse.Position);
+var trace = Scene.Trace.Ray(ray, distance)
+    .WithTag("board_space")
+    .Run();
+
+if trace hits a BoardSpaceVisual:
+    update hover state
+    if clicked:
+        MonopolyGame.SelectSpace(visual.SpaceIndex)
+
+6. Add a tag or equivalent filter to generated board spaces:
+
+"board_space"
+
+7. Disable or hide the old UI-rendered board once the generated board works.
+Do not delete the old UI board yet unless it is safe. Prefer leaving it disabled for fallback.
+
+Acceptance checks:
+- Board generates all 40 spaces.
+- Spaces align around the board correctly.
+- Each space has a collider.
+- Hover detects the correct space.
+- Clicking a generated board space calls existing SelectSpace(index).
+- Existing HUD/card UI still works.
+- Gameplay does not break.
+
+============================================================
+Phase 3 — improve board art
+============================================================
+
+Goal:
+Make the generated board visually readable and polished.
+
+Tasks:
+1. Add board thickness.
+The board should not be a single flat plane.
+Create/use a board base mesh with visible thickness.
+
+2. Add bevels where possible.
+Prioritize:
+- board outer edge
+- board space tiles
+- dice
+- tokens
+
+3. Add property color strips.
+For property spaces:
+- Create a child mesh/quad on top of the space.
+- Color it based on SpaceDef.PropertyColor or equivalent data.
+- If the current SpaceDef does not expose color data, add a non-breaking optional color field or mapping.
+
+4. Add icons/details for special spaces.
+Examples:
+- tax
+- chance
+- chest
+- railroad
+- utility
+- go/jail/free parking/go to jail
+
+Use simple child meshes/materials or placeholder icons first.
+Do not block the implementation on final art.
+
+5. Add a board text layer.
+Use the simplest reliable version first:
+- Reuse existing WorldPanelLabel / LabelRenderer approach if it works.
+- Attach one label/text object per board space.
+- Position and rotate labels using BoardLayout.
+- Keep labels slightly above the board surface.
+- Make text high contrast.
+- Add a backing/shadow if possible.
+
+Important:
+- Do not rely on the old UI board for space names.
+- The generated board should be readable without the UI board.
+
+6. Add ownership indicators.
+Each purchasable space should be able to show owner color.
+Possible implementation:
+- small colored flag
+- colored corner tab
+- colored border
+- small token marker
+
+Use child objects, not whole material swaps where possible.
+
+7. Add visual update method.
+
+BoardVisualGenerator or a related controller should expose methods like:
+
+- RefreshFromGameState()
+- SetSelectedSpace(int? index)
+- SetHoveredSpace(int? index)
+- SetSpaceOwner(int spaceIndex, PlayerState owner)
+- SetCanBuySpace(int spaceIndex, bool canBuy)
+
+Do not make BoardSpaceVisual query global state every frame if avoidable.
+Have the game/controller push visual updates.
+
+Acceptance checks:
+- Board has visible physical depth.
+- Properties have color strips.
+- Space names are visible.
+- Owned spaces show owner indicators.
+- Selected/hovered spaces are visually distinct.
+- Visuals remain data-driven from SpaceDef/game state.
+
+============================================================
+Phase 4 — lighting pass
+============================================================
+
+Goal:
+Create a clean tabletop board-game lighting setup.
+
+Tasks:
+1. Add a LightingRig object/component.
+
+Suggested hierarchy:
+
+LightingRig
+ ├── KeyLight
+ ├── FillLight
+ ├── RimLight
+ └── Optional environment/indirect lighting volume/probes
+
+2. Lighting target:
+“Premium board game on a table under soft studio lighting.”
+
+3. Key light:
+- Above the board.
+- Slightly toward the camera/front.
+- Main source of shadows.
+- Soft enough that dice/tokens look good but text remains readable.
+
+4. Fill light:
+- Lower intensity.
+- Opposite side of key/camera.
+- Prevents dark unreadable board corners.
+
+5. Rim/accent light:
+- Behind or side/back of board.
+- Helps tokens/dice separate from the board.
+
+6. Add/adjust indirect lighting if available in the project.
+If s&box indirect light volumes/probes are already used, add one covering:
+- board
+- dice
+- tokens
+- space above board where pieces move
+
+7. Materials:
+Update or create materials for:
+- board base
+- board tiles
+- property strips
+- dice body
+- dice pips/faces
+- tokens
+- hover/selection indicators
+
+Material goals:
+- Board: rough, subtle texture, not shiny.
+- Spaces: readable, medium/high roughness.
+- Property strips: saturated but not neon.
+- Dice: off-white or clean material, medium roughness.
+- Pips/faces: dark, opaque.
+- Tokens: readable silhouettes, slightly more contrast.
+
+8. Add post-processing lightly if already supported by the scene/camera.
+Use subtle settings only.
+Avoid heavy blur/depth of field during gameplay.
+
+Acceptance checks:
+- Board is readable from gameplay camera.
+- Dice and tokens cast/receive nice shadows.
+- Text remains readable.
+- Nothing looks over-bloomed or washed out.
+- Lighting works in normal gameplay, not just screenshots.
+
+============================================================
+Phase 5 — polish
+============================================================
+
+Goal:
+Add game-state visual polish without changing gameplay.
+
+Tasks:
+1. Hover effect.
+When the mouse is over a space:
+- enable hover border/glow/outline.
+- disable previous hover.
+
+2. Selected effect.
+When a space is selected:
+- enable a stronger border/glow.
+- keep it separate from hover.
+
+3. Current player landed effect.
+When the current player lands on a space:
+- add a temporary pulse/ring/marker.
+- Should be visual-only.
+
+4. Can-buy effect.
+When the selected/current space can be bought:
+- add subtle coin/glow indicator.
+- This must use existing game state checks.
+- Do not duplicate purchase rules.
+
+5. Ownership polish.
+Owned spaces should show a stable owner indicator.
+Use player color if available.
+
+6. Dice polish.
+Make sure dice:
+- still roll/animate correctly.
+- faces remain attached.
+- no decals are involved.
+- faces do not flicker or z-fight.
+
+7. Camera/readability polish.
+Tune:
+- board scale
+- camera angle
+- text size
+- token scale
+- dice size
+- hover/selected intensity
+
+8. Cleanup.
+After the generated board is stable:
+- remove unused dice decal assets/components.
+- keep old UI board disabled or delete if confirmed unused.
+- remove dead references.
+- make sure no compiler warnings/errors remain.
+
+Acceptance checks:
+- Full game can be played with the generated board.
+- All space selection is done through generated board colliders.
+- Dice faces never render on the board.
+- Board is visually readable.
+- Existing HUD/card UI still works.
+- Existing networking still works.
+- No gameplay rule behavior changed.
+
+============================================================
+Implementation constraints
+============================================================
+
+Do not:
+- Use decals for dice faces.
+- Put board rendering logic directly inside MonopolyGame if avoidable.
+- Rewrite gameplay rules.
+- Break existing HUD/card UI.
+- Depend on the old UI board for clicking.
+- Create one giant hardcoded visual script if clean components are possible.
+
+Prefer:
+- Data-driven visuals.
+- Small components with clear responsibilities.
+- Child meshes for visual states.
+- Existing SpaceDef data.
+- Existing SelectSpace(index) flow.
+- Non-destructive migration: disable old UI board before deleting it.
+
+============================================================
+Suggested new files
+============================================================
+
+Create these if they do not already exist:
+
+- BoardVisualGenerator.cs
+- BoardSpaceVisual.cs
+- BoardInteractionController.cs
+- BoardLayout.cs
+- DiceVisual.cs
+- LightingRig.cs, only if there is no clean scene/prefab-based lighting setup
+
+Optional later:
+- BoardVisualTheme.cs
+- BoardSkin.cs
+- BoardTextGenerator.cs
+- SpaceOwnershipIndicator.cs
+- SpaceSelectionEffect.cs
+
+============================================================
+Final success state
+============================================================
+
+The game should use:
+- generated 3D board meshes
+- generated/attached board space colliders
+- real mesh/material dice faces
+- no dice decals
+- data-driven board visuals
+- separate visual state components
+- improved tabletop lighting
+- readable labels and ownership indicators
+
+The old UI board should no longer be responsible for the physical board visuals or board-space clicking.

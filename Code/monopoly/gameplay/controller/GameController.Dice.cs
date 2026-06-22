@@ -35,26 +35,7 @@ public sealed partial class GameController : Component
 		if ( die?.GameObject is null || diceSkin is null )
 			return;
 
-		var renderer = die.GameObject.GetComponent<ModelRenderer>();
-		if ( renderer is not null )
-			renderer.MaterialOverride = string.IsNullOrWhiteSpace( diceSkin.BodyMaterialPath )
-				? null
-				: Material.Load( diceSkin.BodyMaterialPath );
-
-		foreach ( var child in die.GameObject.Children )
-		{
-			var decal = child.GetComponent<Decal>();
-			if ( decal is null )
-				continue;
-
-			if ( child.Name.Contains( "Bg", StringComparison.OrdinalIgnoreCase ) )
-				decal.ColorTint = diceSkin.BackgroundColor;
-			else if (
-				child.Name.Contains( "Dot", StringComparison.OrdinalIgnoreCase ) ||
-				child.Name.Contains( "Pip", StringComparison.OrdinalIgnoreCase ) ||
-				child.Name.Contains( "Fg", StringComparison.OrdinalIgnoreCase ) )
-				decal.ColorTint = diceSkin.DotColor;
-		}
+		DiceVisual.TryApplySkin( die.GameObject, diceSkin );
 	}
 
 	public bool TryGetPhysicalDice( out DiceComponent dieA, out DiceComponent dieB )

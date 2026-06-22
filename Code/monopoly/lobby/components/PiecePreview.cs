@@ -275,26 +275,7 @@ public sealed class PiecePreview : Component
 
 	private static void ApplyDiceSkinToPreview( GameObject die, DiceSkinDefinition diceSkin )
 	{
-		if ( die is null || diceSkin is null )
-			return;
-
-		var renderer = die.GetComponent<ModelRenderer>();
-		if ( renderer is not null )
-			renderer.MaterialOverride = string.IsNullOrWhiteSpace( diceSkin.BodyMaterialPath )
-				? null
-				: Material.Load( diceSkin.BodyMaterialPath );
-
-		foreach ( var child in die.Children )
-		{
-			var decal = child.GetComponent<Decal>();
-			if ( decal is null )
-				continue;
-
-			if ( child.Name.Contains( "Bg", StringComparison.OrdinalIgnoreCase ) )
-				decal.ColorTint = diceSkin.BackgroundColor;
-			else
-				decal.ColorTint = diceSkin.DotColor;
-		}
+		DiceVisual.TryApplySkin( die, diceSkin );
 	}
 
 	private static void DisableDicePhysics( GameObject die )
