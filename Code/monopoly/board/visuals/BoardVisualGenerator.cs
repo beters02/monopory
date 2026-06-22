@@ -242,17 +242,19 @@ public sealed class BoardVisualGenerator : Component
 		var quadrant = Board.GetSpaceQuadrantIncludeCorners( def.Index );
 		var anchor = BoardVisualLayout.GetLabelPosition( layout.SideIndex, layout.VisualSize, surfaceZ + LabelHeight );
 		var rotation = BoardVisualLayout.GetLabelRotationForQuadrant( quadrant );
-		var startOffset = -(labelLayout.Lines.Count - 1) * labelLayout.LineSpacing * 0.5f;
+		var lineCount = labelLayout.Lines.Count;
+		var halfSpan = (lineCount - 1) * 0.5f;
 
-		for ( var i = 0; i < labelLayout.Lines.Count; i++ )
+		for ( var i = 0; i < lineCount; i++ )
 		{
 			var lineObject = CreateGeneratedObject( $"Label_{def.Index:00}_Line_{i}" );
 			lineObject.SetParent( parent );
 
+			var lineOffset = (i - halfSpan) * labelLayout.LineSpacing;
 			var stackOffset = BoardVisualLayout.GetLabelLineTileOffset(
 				rotation,
 				quadrant,
-				startOffset + i * labelLayout.LineSpacing
+				lineOffset
 			);
 			lineObject.LocalPosition = anchor + stackOffset;
 			lineObject.LocalRotation = rotation;

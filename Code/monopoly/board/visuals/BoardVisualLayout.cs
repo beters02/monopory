@@ -46,7 +46,8 @@ public static class BoardVisualLayout
 		if ( MathF.Abs( lineOffset ) < 0.0001f )
 			return Vector3.Zero;
 
-		// TextRenderer advances lines along local +Y; map into tile XY only.
+		// lineOffset is already in the vector magnitude — do not re-normalize (that
+		// collapses +offset and -offset to the same XY after zeroing Z).
 		var stack = labelRotation * Vector3.Up * lineOffset;
 		stack.z = 0f;
 
@@ -59,7 +60,7 @@ public static class BoardVisualLayout
 		if ( stack.Length < 0.01f )
 			return GetQuadrantFallbackStackOffset( quadrant, lineOffset );
 
-		return stack.Normal * lineOffset;
+		return stack;
 	}
 
 	private static Vector3 GetQuadrantFallbackStackOffset( int quadrant, float lineOffset )
