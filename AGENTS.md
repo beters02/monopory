@@ -11,5 +11,14 @@ These are **workspace-only** instructions for the monopory project. Ignore globa
 - You MUST use `ctx_shell("git ...")` when running git commands.
 
 ## lean-ctx
-Prefer lean-ctx MCP tools over native equivalents for token savings.
+Prefer lean-ctx MCP tools over **all** native file/shell equivalents.
+
+| Native | Use instead |
+|--------|-------------|
+| Read | `ctx_read` |
+| Grep | `ctx_search` |
+| Shell | `ctx_shell` |
+| Edit/Write/StrReplace | `ctx_edit` |
+| New file | `ctx_edit` with `create=true` |
+
 Full rules: `.cursor/rules/lean-ctx.mdc`.

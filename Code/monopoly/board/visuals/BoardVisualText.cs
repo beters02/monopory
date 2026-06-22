@@ -6,18 +6,66 @@ public static class BoardVisualText
 {
 	private const int DefaultMaxLineLength = 10;
 	private const int MaxLabelLines = 3;
+	private const float CharWidthFactor = 0.55f;
+	private const float LongEdgePadding = 0.78f;
+	private const float NarrowEdgePadding = 0.68f;
 
-	public static string GetSpaceLabel( SpaceDef def, BoardSpaceLayout layout )
+	public readonly struct SpaceLabelLayout
+	{
+		public IReadOnlyList<string> Lines { get; init; }
+		public float Scale { get; init; }
+		public int FontSize { get; init; }
+		public float LineSpacing { get; init; }
+	}
+
+	public static SpaceLabelLayout BuildSpaceLabelLayout( SpaceDef def, BoardSpaceLayout layout )
 	{
 		if ( def is null )
-			return "";
+			return default;
 
 		var source = def.DisplayName ?? def.Key ?? "";
 		if ( string.IsNullOrWhiteSpace( source ) )
-			return "";
+			return default;
 
-		var maxLineLength = GetMaxLineLength( layout );
-		return FormatWrappedLabel( source, maxLineLength );
+		var fontSize = layout.IsCorner ? 64 : 50;
+		var longEdge = GetLongEdge( layout ) * LongEdgePadding;
+		var narrowEdge = GetNarrowEdge( layout ) * NarrowEdgePadding;
+		var probeScale = layout.IsCorner ? 0.046f : 0.036f;
+		var maxChars = GetMaxLineLength( layout, fontSize, probeScale );
+
+		var lines = FormatWrappedLabelLines( source, maxChars );
+		if ( lines.Count == 0 )
+			return default;
+
+		var scale = ComputeLabelScale( lines, fontSize, longEdge, narrowEdge );
+		var lineSpacing = scale * fontSize * CharWidthFactor * 1.32f;
+
+		return new SpaceLabelLayout
+		{
+			Lines = lines,
+			Scale = scale,
+			FontSize = fontSize,
+			LineSpacing = lineSpacing
+		};
+	}
+
+	public static string GetSpaceLabel( SpaceDef def, BoardSpaceLayout layout )
+	{
+		var lines = GetSpaceLabelLines( def, layout );
+		return lines.Count == 0 ? "" : string.Join( "\n", lines );
+	}
+
+	public static IReadOnlyList<string> GetSpaceLabelLines( SpaceDef def, BoardSpaceLayout layout )
+	{
+		if ( def is null )
+			return Array.Empty<string>();
+
+		var source = def.DisplayName ?? def.Key ?? "";
+		if ( string.IsNullOrWhiteSpace( source ) )
+			return Array.Empty<string>();
+
+		var maxLineLength = GetMaxLineLength( layout, layout.IsCorner ? 64 : 50, layout.IsCorner ? 0.046f : 0.036f );
+		return FormatWrappedLabelLines( source, maxLineLength );
 	}
 
 	public static int CountLabelLines( string labelText )
@@ -28,40 +76,84 @@ public static class BoardVisualText
 		return labelText.Split( '\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries ).Length;
 	}
 
-	public static float GetLabelScale( BoardSpaceLayout layout, int lineCount )
+	public static float GetLabelScale( BoardSpaceLayout layout, int lineCount, int longestLineLength = 0 )
 	{
-		var baseScale = layout.IsCorner ? 0.078f : 0.065f;
+		var fontSize = layout.IsCorner ? 64 : 50;
+		var longEdge = GetLongEdge( layout ) * LongEdgePadding;
+		var narrowEdge = GetNarrowEdge( layout ) * NarrowEdgePadding;
+		var lines = Enumerable.Repeat( new string( 'M', Math.Max( 1, longestLineLength ) ), Math.Max( 1, lineCount ) ).ToArray();
+		return ComputeLabelScale( lines, fontSize, longEdge, narrowEdge );
+	}
 
-		if ( lineCount >= 3 )
-			return baseScale * 0.82f;
+	public static float GetLineSpacing( BoardSpaceLayout layout, float labelScale, int fontSize )
+	{
+		return labelScale * fontSize * CharWidthFactor * 1.32f;
+	}
 
-		if ( lineCount >= 2 )
-			return baseScale * 0.9f;
+	public static int GetMaxLineLength( BoardSpaceLayout layout, int fontSize, float probeScale )
+	{
+		var longEdge = GetLongEdge( layout ) * LongEdgePadding;
+		var chars = (int)(longEdge / (fontSize * probeScale * CharWidthFactor));
 
-		return baseScale;
+		if ( layout.IsCorner )
+			return Math.Clamp( chars, 6, 11 );
+
+		return Math.Clamp( chars, 4, DefaultMaxLineLength );
 	}
 
 	public static int GetMaxLineLength( BoardSpaceLayout layout )
 	{
-		var longEdge = layout.SideIndex is 0 or 2
-			? layout.VisualSize.y
-			: layout.VisualSize.x;
+		return GetMaxLineLength( layout, layout.IsCorner ? 64 : 50, layout.IsCorner ? 0.046f : 0.036f );
+	}
 
+	private static float GetLongEdge( BoardSpaceLayout layout )
+	{
 		if ( layout.IsCorner )
-			return Math.Clamp( (int)(longEdge * 1.05f), 8, 14 );
+			return MathF.Max( layout.VisualSize.x, layout.VisualSize.y );
 
-		return Math.Clamp( (int)(longEdge * 0.9f), 6, DefaultMaxLineLength );
+		return layout.SideIndex is 0 or 2 ? layout.VisualSize.y : layout.VisualSize.x;
+	}
+
+	private static float GetNarrowEdge( BoardSpaceLayout layout )
+	{
+		if ( layout.IsCorner )
+			return MathF.Min( layout.VisualSize.x, layout.VisualSize.y );
+
+		return layout.SideIndex is 0 or 2 ? layout.VisualSize.x : layout.VisualSize.y;
+	}
+
+	private static float ComputeLabelScale(
+		IReadOnlyList<string> lines,
+		int fontSize,
+		float longEdge,
+		float narrowEdge )
+	{
+		var longestLine = lines.Max( line => line.Length );
+		var scaleByLength = longEdge / (longestLine * fontSize * CharWidthFactor);
+		var scaleByStack = narrowEdge / (lines.Count * fontSize * CharWidthFactor * 1.35f);
+		var scale = MathF.Min( scaleByLength, scaleByStack );
+
+		foreach ( var line in lines )
+		{
+			var lineScale = longEdge / (line.Length * fontSize * CharWidthFactor);
+			scale = MathF.Min( scale, lineScale );
+		}
+
+		return Math.Clamp( scale, 0.022f, 0.052f );
 	}
 
 	public static string FormatWrappedLabel( string displayName, int maxLineLength )
 	{
-		var lines = GetDisplayNameLines( displayName )
+		return string.Join( "\n", FormatWrappedLabelLines( displayName, maxLineLength ) );
+	}
+
+	public static IReadOnlyList<string> FormatWrappedLabelLines( string displayName, int maxLineLength )
+	{
+		return GetDisplayNameLines( displayName )
 			.SelectMany( line => WrapLine( line, maxLineLength ) )
 			.Where( line => !string.IsNullOrWhiteSpace( line ) )
 			.Take( MaxLabelLines )
 			.ToArray();
-
-		return string.Join( "\n", lines );
 	}
 
 	public static string GetSpaceDetailIcon( SpaceDef def )
@@ -84,9 +176,12 @@ public static class BoardVisualText
 		};
 	}
 
-	public static bool ShouldShowDetailIcon( SpaceDef def )
+	public static bool ShouldShowDetailIcon( SpaceDef def, bool labelsEnabled = false )
 	{
 		if ( def is null )
+			return false;
+
+		if ( labelsEnabled && def.Type is SpaceType.Chance or SpaceType.CommunityChest )
 			return false;
 
 		return def.Type != SpaceType.Property && !string.IsNullOrWhiteSpace( GetSpaceDetailIcon( def ) );

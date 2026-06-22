@@ -108,7 +108,7 @@ public sealed class BoardVisualGenerator : Component
 			if ( def.Type == SpaceType.Property && def.ColorGroup != ColorGroup.None )
 				CreatePropertyAccent( spaceObject, def, layout.VisualSize, tileCenterZ );
 
-			if ( CreateDetailIcons && BoardVisualText.ShouldShowDetailIcon( def ) )
+			if ( CreateDetailIcons && BoardVisualText.ShouldShowDetailIcon( def, CreateLabels ) )
 				CreateSpaceDetailIcon( spaceObject, def, layout, surfaceZ );
 
 			if ( CreateLabels )
@@ -235,29 +235,37 @@ public sealed class BoardVisualGenerator : Component
 
 	private void CreateSpaceLabel( GameObject parent, SpaceDef def, BoardSpaceLayout layout, float surfaceZ )
 	{
-		var labelText = BoardVisualText.GetSpaceLabel( def, layout );
-		if ( string.IsNullOrWhiteSpace( labelText ) )
+		var labelLayout = BoardVisualText.BuildSpaceLabelLayout( def, layout );
+		if ( labelLayout.Lines is null || labelLayout.Lines.Count == 0 )
 			return;
 
-		var lineCount = BoardVisualText.CountLabelLines( labelText );
+		var startOffset = -(labelLayout.Lines.Count - 1) * labelLayout.LineSpacing * 0.5f;
 
-		var labelObject = CreateGeneratedObject( $"Label_{def.Index:00}" );
-		labelObject.SetParent( parent );
-		labelObject.LocalPosition = BoardVisualLayout.GetLabelPosition( layout.SideIndex, layout.VisualSize, surfaceZ + LabelHeight );
-		labelObject.LocalRotation = BoardVisualLayout.GetLabelRotation( layout.SideIndex );
+		var labelRoot = CreateGeneratedObject( $"Label_{def.Index:00}" );
+		labelRoot.SetParent( parent );
+		labelRoot.LocalPosition = BoardVisualLayout.GetLabelPosition( layout.SideIndex, layout.VisualSize, surfaceZ + LabelHeight );
+		labelRoot.LocalRotation = BoardVisualLayout.GetLabelRotation( layout.SideIndex );
 
-		var label = labelObject.Components.Create<TextRenderer>();
-		label.Text = labelText;
-		label.FontSize = layout.IsCorner ? 72 : 56;
-		label.FontWeight = 800;
-		label.Color = new Color( 0.08f, 0.07f, 0.06f );
-		label.Scale = BoardVisualText.GetLabelScale( layout, lineCount );
+		for ( var i = 0; i < labelLayout.Lines.Count; i++ )
+		{
+			var lineObject = new GameObject( true, $"Line_{i}" );
+			lineObject.SetParent( labelRoot );
+			lineObject.LocalPosition = BoardVisualLayout.GetLabelLineLocalOffset( layout.SideIndex, startOffset + i * labelLayout.LineSpacing );
+			lineObject.LocalRotation = Rotation.Identity;
 
-		var scope = label.TextScope;
-		scope.Shadow.Enabled = true;
-		scope.Shadow.Color = new Color( 1f, 1f, 1f, 0.65f );
-		scope.Shadow.Offset = new Vector2( 2f, 2f );
-		label.TextScope = scope;
+			var label = lineObject.Components.Create<TextRenderer>();
+			label.Text = labelLayout.Lines[i];
+			label.FontSize = labelLayout.FontSize;
+			label.FontWeight = 800;
+			label.Color = new Color( 0.08f, 0.07f, 0.06f );
+			label.Scale = labelLayout.Scale;
+
+			var scope = label.TextScope;
+			scope.Shadow.Enabled = true;
+			scope.Shadow.Color = new Color( 1f, 1f, 1f, 0.65f );
+			scope.Shadow.Offset = new Vector2( 2f, 2f );
+			label.TextScope = scope;
+		}
 	}
 
 	private void CreateSpaceDetailIcon( GameObject parent, SpaceDef def, BoardSpaceLayout layout, float surfaceZ )

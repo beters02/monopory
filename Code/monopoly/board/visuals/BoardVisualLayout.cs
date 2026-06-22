@@ -27,15 +27,19 @@ public static class BoardVisualLayout
 
 	public static Rotation GetLabelRotation( int sideIndex )
 	{
-		// Yaw around world Z first, then pitch flat — keeps left/right in the tile plane.
-		// Horizontal sides use yaw 0/180; vertical sides use tuned quadrant rotations.
+		// Match legacy BoardSpace quadrant rotations; left/right already correct.
 		return sideIndex switch
 		{
-			0 => Rotation.FromYaw( 0f ) * Rotation.FromPitch( -90f ),
+			0 => SpaceLayoutSettings.FirstQuadrantLocalRotation,
 			1 => SpaceLayoutSettings.SecondQuadrantLocalRotation,
-			2 => Rotation.FromYaw( 180f ) * Rotation.FromPitch( -90f ),
+			2 => SpaceLayoutSettings.ThirdQuadrantLocalRotation,
 			_ => SpaceLayoutSettings.FourthQuadrantLocalRotation
 		};
+	}
+
+	public static Vector3 GetLabelLineLocalOffset( int sideIndex, float lineOffset )
+	{
+		return new Vector3( 0f, lineOffset, 0f );
 	}
 
 	public static Vector3 GetLabelPosition( int sideIndex, Vector3 tileSize, float surfaceZ )
