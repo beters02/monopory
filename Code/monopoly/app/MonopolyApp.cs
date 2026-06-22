@@ -11,7 +11,7 @@ public partial class MonopolyApp : Component
 {
 
     public static readonly string GameVersion = "0.0.952";
-    public static readonly ulong AppId = 4745160;
+    public static readonly ulong AppId = 4745090;
     
     private static bool Standalone = false;
     private static bool DebugEnabled = false;
