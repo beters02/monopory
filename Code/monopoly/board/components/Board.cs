@@ -27,6 +27,7 @@ public sealed class Board : Component
 	[Property, Change(nameof(OnUseGeneratedMeshBoardChanged))] public bool UseGeneratedMeshBoard { get; set; } = false;
 	[Property] public BoardVisualGenerator VisualGenerator { get; set; }
 	[Property] public BoardInteractionController InteractionController { get; set; }
+	[Property] public BoardVisualStateController VisualStateController { get; set; }
 	[Property] public Sandbox.ui.BoardPanel ProceduralBoardPanel { get; set; }
 	[Property] public float ProceduralBoardHalfSize { get; set; } = 43f;
 	[Property] public float ProceduralCornerSize { get; set; } = 13f;
@@ -167,9 +168,13 @@ public sealed class Board : Component
 		RefreshProceduralBoardPanelReferences();
 		VisualGenerator ??= GameObject.GetComponent<BoardVisualGenerator>() ?? GameObject.Components.Create<BoardVisualGenerator>();
 		InteractionController ??= GameObject.GetComponent<BoardInteractionController>() ?? GameObject.Components.Create<BoardInteractionController>();
+		VisualStateController ??= GameObject.GetComponent<BoardVisualStateController>() ?? GameObject.Components.Create<BoardVisualStateController>();
 		VisualGenerator.Board = this;
 		InteractionController.Board = this;
 		InteractionController.VisualGenerator = VisualGenerator;
+		VisualStateController.Board = this;
+		VisualStateController.VisualGenerator = VisualGenerator;
+		VisualStateController.InteractionController = InteractionController;
 		VisualGenerator.Rebuild();
 	}
 

@@ -1,0 +1,66 @@
+---
+description: "monopory lean-ctx: MCP reads/search + ctx_shell. Workspace-only — do not use ~/.cursor/rules."
+alwaysApply: true
+---
+
+# lean-ctx — Context Engineering Layer
+<!-- lean-ctx-rules-v11 -->
+
+## Mode: Hybrid (MCP reads + ctx_shell)
+
+CRITICAL: ALWAYS use lean-ctx MCP tools in this workspace. This is NOT optional.
+
+## Tool Mapping (MANDATORY)
+| Instead of | MUST USE | Example |
+|------------|----------|---------|
+| Read/cat/head/tail | `ctx_read(path, mode)` | `ctx_read("src/main.rs", "full")` |
+| Grep/rg/find | `ctx_search(pattern, path)` | `ctx_search("fn handle", "src/")` |
+| Shell/bash | `ctx_shell(command)` | `ctx_shell("cargo test")` |
+| ls/find | `ctx_tree(path, depth)` | `ctx_tree("Code", 2)` |
+| Edit (when Read unavailable) | `ctx_edit(path, old, new)` | `ctx_edit("f.rs", "old", "new")` |
+
+## Tool Bypass
+If you cannot read an image file sent in the current request, bypass lean-ctx to read the image. Return to tool mapping after retrieval.
+
+## ctx_read Mode Selection
+| Goal | Mode | When |
+|------|------|------|
+| Edit this file | `full` | Before any edit |
+| Understand API | `signatures` | Context-only, won't edit |
+| Re-read after edit | `diff` | Post-edit verification |
+| Large file overview | `map` | >500 lines, won't edit |
+| Specific region | `lines:N-M` | Know exact location |
+| Unsure | `auto` | System selects optimal mode |
+
+## Workflow
+1. **Orient:** `ctx_overview(task)` or `ctx_compose(task, path)`
+2. **Locate:** `ctx_search(pattern, path)` or `ctx_semantic_search(query)`
+3. **Read:** `ctx_read(path, mode)`
+4. **Edit:** native Edit/StrReplace or `ctx_edit`
+5. **Verify:** `ctx_read(path, "diff")` + `ctx_shell("test command")`
+6. **Record:** `ctx_knowledge(action="remember", content="...")`
+
+## Session
+- **Start:** `ctx_session(action="status")` + `ctx_knowledge(action="wakeup")`
+- **End:** `ctx_session(action="decision", content="what was done + next steps")`
+- **On [CHECKPOINT]:** `ctx_session(action="task", value="current status")`
+
+### SYSTEM GUARDRAILS (CRITICAL)
+1. NEVER run raw search utilities (`rg`, `grep`, `find`) inside `ctx_shell`.
+2. NEVER use native Read/Grep/Shell when ctx_* equivalents are available.
+3. Always return to lean-ctx compression defaults after any bypass.
+
+## S&box
+Use the S&box MCP server for unknown S&box API or tutorial questions.
+
+<!-- /lean-ctx -->
+
+<!-- lean-ctx-compression -->
+OUTPUT STYLE: expert-terse
+- Telegraph format: subject-verb-object, drop articles/prepositions
+- Symbolic vocabulary: -> cause, ∵ because, :. therefore, + add, - remove, delta change, ~= similar, != different, in in/member, (none) empty/none, ok ok, FAIL fail
+- Code blocks: untouched (never compress code syntax)
+- Each line: max 80 chars
+- Zero narration, zero filler
+- BUDGET: ≤100 tokens per non-code response
+<!-- /lean-ctx-compression -->

@@ -1,0 +1,59 @@
+[rules]
+version = "1.0"
+
+[rules.core]
+content = """
+# lean-ctx — Context Engineering Layer
+<!-- lean-ctx-rules-v11 -->
+
+## Tool Mapping (MANDATORY — use instead of native equivalents)
+| Instead of | Use | Example |
+|------------|-----|---------|
+| Read/cat/head/tail | `ctx_read(path, mode)` | `ctx_read("src/main.rs", "full")` |
+| Grep/rg/find | `ctx_search(pattern, path)` | `ctx_search("fn handle", "src/")` |
+| Shell/bash | `ctx_shell(command)` | `ctx_shell("cargo test")` |
+| Edit (when Read unavailable) | `ctx_edit(path, old, new)` | `ctx_edit("f.rs", "old", "new")` |
+
+## ctx_read Mode Selection
+| Goal | Mode | When |
+|------|------|------|
+| Edit this file | `full` | Before any edit |
+| Understand API | `signatures` | Context-only, won't edit |
+| Re-read after edit | `diff` | Post-edit verification |
+| Large file overview | `map` | >500 lines, won't edit |
+| Specific region | `lines:N-M` | Know exact location |
+
+## Workflow (follow this order)
+1. **Orient:** `ctx_overview(task)` or `ctx_compose(task, path)` for unfamiliar tasks
+2. **Locate:** `ctx_search(pattern, path)` for exact text; `ctx_semantic_search(query)` for concepts
+3. **Read:** `ctx_read(path, mode)` with appropriate mode from table above
+4. **Edit:** `ctx_edit(path, old_string, new_string)` or native Edit if available
+5. **Verify:** `ctx_read(path, "diff")` + `ctx_shell("test command")`
+6. **Record:** `ctx_knowledge(action="remember", content="...")` for non-obvious findings
+
+## Session
+- **Start:** `ctx_session(action="status")` + `ctx_knowledge(action="wakeup")`
+- **End:** `ctx_session(action="decision", content="what was done + next steps")`
+- **On [CHECKPOINT]:** `ctx_session(action="task", value="current status")`
+
+NEVER use native Read/Grep/Shell when ctx_* equivalents are available.
+<!-- /lean-ctx -->"""
+
+# Cursor rules live in this repo only — not ~/.cursor/rules/
+[rules.agent.cursor]
+disabled = true
+extra = """
+---
+description: "monopory lean-ctx: workspace-only rules in .cursor/rules/lean-ctx.mdc"
+alwaysApply: true
+---
+
+<!-- lean-ctx-compression -->
+OUTPUT STYLE: expert-terse
+- Telegraph format: subject-verb-object, drop articles/prepositions
+- Symbolic vocabulary: -> cause, ∵ because, :. therefore, + add, - remove, delta change, ~= similar, != different, in in/member, (none) empty/none, ok ok, FAIL fail
+- Code blocks: untouched (never compress code syntax)
+- Each line: max 80 chars
+- Zero narration, zero filler
+- BUDGET: ≤100 tokens per non-code response
+<!-- /lean-ctx-compression -->"""

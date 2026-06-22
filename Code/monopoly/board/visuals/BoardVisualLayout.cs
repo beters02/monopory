@@ -14,10 +14,43 @@ public readonly struct BoardSpaceLayout
 	public Vector3 ColliderSize { get; init; }
 	public Vector3 ColliderCenter { get; init; }
 	public bool IsCorner { get; init; }
+	public int SideIndex { get; init; }
 }
 
 public static class BoardVisualLayout
 {
+	public static int GetSideIndex( int spaceIndex, Board board )
+	{
+		var layout = board.Layout ?? BoardLayoutDefinition.Classic();
+		return layout.GetSideIndex( spaceIndex, board.SpaceCount );
+	}
+
+	public static Rotation GetLabelRotation( int sideIndex )
+	{
+		return sideIndex switch
+		{
+			0 => Rotation.Identity,
+			1 => Rotation.FromYaw( -90f ),
+			2 => Rotation.FromYaw( 180f ),
+			_ => Rotation.FromYaw( 90f )
+		};
+	}
+
+	public static Vector3 GetOwnershipMarkerCenter( int sideIndex, Vector3 tileSize, float surfaceZ )
+	{
+		var insetX = tileSize.x * 0.34f;
+		var insetY = tileSize.y * 0.34f;
+		var z = surfaceZ + 0.18f;
+
+		return sideIndex switch
+		{
+			0 => new Vector3( insetX, 0f, z ),
+			1 => new Vector3( 0f, -insetY, z ),
+			2 => new Vector3( -insetX, 0f, z ),
+			_ => new Vector3( 0f, insetY, z )
+		};
+	}
+
 	public static BoardSpaceLayout GetSpaceLayout( int index, Board board, float spaceThickness, float boardThickness, float spaceGap )
 	{
 		var panel = board.ProceduralBoardPanel;
@@ -38,6 +71,7 @@ public static class BoardVisualLayout
 
 		var position = BoardMath.RectPercentToLocal( rect, worldSize, board.ProceduralSpaceZOffset );
 		var tileCenterZ = boardThickness + spaceThickness * 0.5f;
+		var sideIndex = layout.GetSideIndex( index, board.SpaceCount );
 
 		return new BoardSpaceLayout
 		{
@@ -50,7 +84,8 @@ public static class BoardVisualLayout
 				boardThickness + spaceThickness + 4f
 			),
 			ColliderCenter = new Vector3( 0f, 0f, tileCenterZ ),
-			IsCorner = layout.IsCornerIndex( index )
+			IsCorner = layout.IsCornerIndex( index ),
+			SideIndex = sideIndex
 		};
 	}
 

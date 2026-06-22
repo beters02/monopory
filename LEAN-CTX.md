@@ -54,6 +54,7 @@ and `ctx_callgraph(action="callers")` to confirm blast radius.
 2. If searching inside compiled binaries (.dll, .exe, .so, .bin), you are forbidden from utilizing flags that force text formatting (e.g., `rg -a`). You must read offsets programmatically or use targeted binary dump commands.
 3. Always pipe unexpected or potentially large terminal outputs to `head -n 50`.
 4. NEVER use native Read/Grep/Shell when ctx_* equivalents are available.
+5. Always return to lean-ctx compression defaults after you deviate at ANY TIME.
 
 ## S&box
 Use the S&box mcp server for unknown solutions for S&box related requests

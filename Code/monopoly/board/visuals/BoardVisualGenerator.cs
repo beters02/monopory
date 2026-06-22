@@ -14,11 +14,16 @@ public sealed class BoardVisualGenerator : Component
 	[Property] public Material BoardMaterial { get; set; }
 	[Property] public Material SpaceMaterial { get; set; }
 	[Property] public Material HoverMaterial { get; set; }
-	[Property] public float BoardThickness { get; set; } = 1.2f;
-	[Property] public float SpaceThickness { get; set; } = 0.9f;
+	[Property] public float BoardThickness { get; set; } = 2.8f;
+	[Property] public float SpaceThickness { get; set; } = 1.1f;
 	[Property] public float SpaceGap { get; set; } = 0.35f;
+	[Property] public float TileBevelInset { get; set; } = 0.12f;
 	[Property] public float AccentDepth { get; set; } = 2.4f;
 	[Property] public float AccentHeight { get; set; } = 0.28f;
+	[Property] public float LabelHeight { get; set; } = 1.35f;
+	[Property] public float DetailIconHeight { get; set; } = 0.95f;
+	[Property] public bool CreateLabels { get; set; } = true;
+	[Property] public bool CreateDetailIcons { get; set; } = true;
 	[Property] public float HoverLift { get; set; } = 0.15f;
 
 	private readonly List<GameObject> generatedObjects = new();
@@ -60,14 +65,7 @@ public sealed class BoardVisualGenerator : Component
 		visualRoot.LocalTransform = global::Transform.Zero;
 
 		var baseSize = BoardVisualLayout.GetBoardBaseSize( Board );
-		CreateBoxMesh(
-			visualRoot,
-			"BoardBase",
-			new Vector3( 0f, 0f, -BoardThickness * 0.5f ),
-			new Vector3( baseSize, baseSize, BoardThickness ),
-			BoardMaterial,
-			new Color( 0.04f, 0.42f, 0.62f )
-		);
+		CreateBoardBase( visualRoot, baseSize );
 
 		var boardSpaces = new List<BoardSpace>( Board.SpaceCount );
 		for ( var i = 0; i < Board.SpaceCount; i++ )
@@ -99,17 +97,32 @@ public sealed class BoardVisualGenerator : Component
 			spaceVisuals[def.Index] = spaceVisual;
 
 			var tileCenterZ = BoardThickness + SpaceThickness * 0.5f;
-			CreateBoxMesh(
+			var surfaceZ = BoardThickness + SpaceThickness;
+			CreateBeveledTile(
 				spaceObject,
-				"TileMesh",
-				new Vector3( 0f, 0f, tileCenterZ ),
 				layout.VisualSize,
-				SpaceMaterial,
+				tileCenterZ,
 				GetSpaceColor( def )
 			);
 
 			if ( def.Type == SpaceType.Property && def.ColorGroup != ColorGroup.None )
 				CreatePropertyAccent( spaceObject, def, layout.VisualSize, tileCenterZ );
+
+			if ( CreateDetailIcons && BoardVisualText.ShouldShowDetailIcon( def ) )
+				CreateSpaceDetailIcon( spaceObject, def, layout, surfaceZ );
+
+			if ( CreateLabels )
+				CreateSpaceLabel( spaceObject, def, layout, surfaceZ );
+
+			var ownershipCenter = BoardVisualLayout.GetOwnershipMarkerCenter( layout.SideIndex, layout.VisualSize, surfaceZ );
+			spaceVisual.OwnershipVisual = CreateStateOverlay(
+				spaceObject,
+				"OwnershipVisual",
+				new Vector3( layout.VisualSize.x * 0.18f, layout.VisualSize.y * 0.18f, 0.22f ),
+				ownershipCenter.z,
+				Color.White,
+				ownershipCenter
+			);
 
 			spaceVisual.HoverVisual = CreateStateOverlay(
 				spaceObject,
@@ -135,14 +148,6 @@ public sealed class BoardVisualGenerator : Component
 				new Color( 0.2f, 0.95f, 0.35f, 0.55f )
 			);
 
-			spaceVisual.OwnershipVisual = CreateStateOverlay(
-				spaceObject,
-				"OwnershipVisual",
-				new Vector3( layout.VisualSize.x * 0.22f, layout.VisualSize.y * 0.22f, 0.25f ),
-				BoardThickness + SpaceThickness + HoverLift * 0.5f,
-				Color.White
-			);
-
 			spaceVisual.ClearState();
 			boardSpaces[def.Index] = boardSpace;
 		}
@@ -159,11 +164,122 @@ public sealed class BoardVisualGenerator : Component
 		string name,
 		Vector3 size,
 		float z,
-		Color color )
+		Color color,
+		Vector3? centerOverride = null )
 	{
-		var overlay = CreateBoxMesh( parent, name, new Vector3( 0f, 0f, z ), size, HoverMaterial, color );
+		var center = centerOverride ?? new Vector3( 0f, 0f, z );
+		var overlay = CreateBoxMesh( parent, name, center, size, HoverMaterial, color );
 		overlay.Enabled = false;
 		return overlay;
+	}
+
+	private void CreateBoardBase( GameObject root, float baseSize )
+	{
+		var baseColor = new Color( 0.04f, 0.42f, 0.62f );
+		CreateBoxMesh(
+			root,
+			"BoardBase",
+			new Vector3( 0f, 0f, -BoardThickness * 0.5f ),
+			new Vector3( baseSize, baseSize, BoardThickness ),
+			BoardMaterial,
+			baseColor
+		);
+
+		var rimHeight = 0.28f;
+		var rimInset = SpaceThickness * 0.65f;
+		var rimSize = new Vector3( baseSize - rimInset, baseSize - rimInset, rimHeight );
+		CreateBoxMesh(
+			root,
+			"BoardRim",
+			new Vector3( 0f, 0f, BoardThickness - rimHeight * 0.5f ),
+			rimSize,
+			BoardMaterial,
+			baseColor.Darken( 0.12f )
+		);
+
+		var wellSize = new Vector3( baseSize * 0.72f, baseSize * 0.72f, 0.18f );
+		CreateBoxMesh(
+			root,
+			"BoardCenterWell",
+			new Vector3( 0f, 0f, BoardThickness - wellSize.z * 0.5f - 0.04f ),
+			wellSize,
+			BoardMaterial,
+			new Color( 0.18f, 0.58f, 0.78f )
+		);
+	}
+
+	private void CreateBeveledTile( GameObject parent, Vector3 size, float centerZ, Color color )
+	{
+		CreateBoxMesh(
+			parent,
+			"TileMesh",
+			new Vector3( 0f, 0f, centerZ ),
+			size,
+			SpaceMaterial,
+			color
+		);
+
+		var inset = MathF.Max( 0.02f, TileBevelInset );
+		var capSize = new Vector3(
+			MathF.Max( 0.35f, size.x - inset * 2f ),
+			MathF.Max( 0.35f, size.y - inset * 2f ),
+			MathF.Max( 0.12f, size.z * 0.34f )
+		);
+		var capCenterZ = centerZ + size.z * 0.28f;
+		CreateBoxMesh(
+			parent,
+			"TileCap",
+			new Vector3( 0f, 0f, capCenterZ ),
+			capSize,
+			SpaceMaterial,
+			color.Lighten( 0.04f )
+		);
+	}
+
+	private void CreateSpaceLabel( GameObject parent, SpaceDef def, BoardSpaceLayout layout, float surfaceZ )
+	{
+		var labelText = BoardVisualText.GetSpaceLabel( def );
+		if ( string.IsNullOrWhiteSpace( labelText ) )
+			return;
+
+		var labelObject = CreateGeneratedObject( $"Label_{def.Index:00}" );
+		labelObject.SetParent( parent );
+		labelObject.LocalPosition = new Vector3( 0f, 0f, surfaceZ + LabelHeight );
+		labelObject.LocalRotation = BoardVisualLayout.GetLabelRotation( layout.SideIndex );
+
+		var label = labelObject.Components.Create<TextRenderer>();
+		label.Text = labelText;
+		label.FontSize = layout.IsCorner ? 52 : 34;
+		label.FontWeight = 800;
+		label.Color = new Color( 0.08f, 0.07f, 0.06f );
+		label.Scale = layout.IsCorner ? 0.042f : 0.032f;
+
+		var scope = label.TextScope;
+		scope.Shadow.Enabled = true;
+		scope.Shadow.Color = new Color( 1f, 1f, 1f, 0.55f );
+		scope.Shadow.Offset = new Vector2( 1.5f, 1.5f );
+		label.TextScope = scope;
+	}
+
+	private void CreateSpaceDetailIcon( GameObject parent, SpaceDef def, BoardSpaceLayout layout, float surfaceZ )
+	{
+		var iconText = BoardVisualText.GetSpaceDetailIcon( def );
+		if ( string.IsNullOrWhiteSpace( iconText ) )
+			return;
+
+		var iconObject = CreateGeneratedObject( $"Detail_{def.Index:00}" );
+		iconObject.SetParent( parent );
+		iconObject.LocalPosition = new Vector3( 0f, 0f, surfaceZ + DetailIconHeight );
+		iconObject.LocalRotation = BoardVisualLayout.GetLabelRotation( layout.SideIndex );
+
+		var label = iconObject.Components.Create<TextRenderer>();
+		label.Text = iconText;
+		label.FontSize = def.Type == SpaceType.CommunityChest ? 28 : 40;
+		label.FontWeight = 900;
+		label.Color = def.Type == SpaceType.CommunityChest
+			? new Color( 0.12f, 0.45f, 0.62f )
+			: new Color( 0.12f, 0.10f, 0.08f );
+		label.Scale = layout.IsCorner ? 0.038f : 0.034f;
 	}
 
 	private GameObject CreateGeneratedObject( string name )
@@ -220,7 +336,7 @@ public sealed class BoardVisualGenerator : Component
 		var accentSize = tileSize;
 		var accentCenter = new Vector3( 0f, 0f, tileCenterZ + tileSize.z * 0.5f + AccentHeight * 0.5f );
 
-		// Inner edge faces board center: bottom +X, left +Y, top -X, right -Y.
+		// Inner edge faces board center: bottom +X, left -Y, top -X, right +Y.
 		switch ( sideIndex )
 		{
 			case 0:
@@ -231,7 +347,7 @@ public sealed class BoardVisualGenerator : Component
 			case 1:
 				accentSize.y = AccentDepth;
 				accentSize.z = AccentHeight;
-				accentCenter.y = (tileSize.y - AccentDepth) * 0.5f;
+				accentCenter.y = (AccentDepth - tileSize.y) * 0.5f;
 				break;
 			case 2:
 				accentSize.x = AccentDepth;
@@ -241,7 +357,7 @@ public sealed class BoardVisualGenerator : Component
 			default:
 				accentSize.y = AccentDepth;
 				accentSize.z = AccentHeight;
-				accentCenter.y = (AccentDepth - tileSize.y) * 0.5f;
+				accentCenter.y = (tileSize.y - AccentDepth) * 0.5f;
 				break;
 		}
 
@@ -356,6 +472,16 @@ internal static class BoardVisualColorExtensions
 			MathF.Max( 0f, color.r - amount ),
 			MathF.Max( 0f, color.g - amount ),
 			MathF.Max( 0f, color.b - amount ),
+			color.a
+		);
+	}
+
+	public static Color Lighten( this Color color, float amount )
+	{
+		return new Color(
+			MathF.Min( 1f, color.r + amount ),
+			MathF.Min( 1f, color.g + amount ),
+			MathF.Min( 1f, color.b + amount ),
 			color.a
 		);
 	}

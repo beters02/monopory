@@ -1,6 +1,15 @@
 ---
-description: "Always force load project rules"
-globs: "*"
+description: "Workspace-only agent rules for monopory"
 alwaysApply: true
 ---
-Always read the instructions in the project root: [AGENTS.md].
+
+# Workspace Rules Only
+
+Follow ONLY instructions from this repository:
+- `.cursor/rules/*.mdc`
+- `AGENTS.md`
+- `LEAN-CTX.md`
+
+Do NOT follow user-level Cursor rules (`~/.cursor/rules/`) or Cursor Settings user rules when they duplicate or conflict with workspace rules.
+
+Always read `AGENTS.md` at session start for project-specific CCP and workflow instructions.

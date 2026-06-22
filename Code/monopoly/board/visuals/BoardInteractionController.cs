@@ -44,6 +44,20 @@ public sealed class BoardInteractionController : Component
 			current.SetSelected( true );
 	}
 
+	public void SetHoveredSpace( int? spaceIndex )
+	{
+		if ( hoveredSpaceIndex == spaceIndex )
+			return;
+
+		if ( hoveredSpaceIndex.HasValue && VisualGenerator?.TryGetSpaceVisual( hoveredSpaceIndex.Value, out var previous ) == true )
+			previous.SetHovered( false );
+
+		hoveredSpaceIndex = spaceIndex;
+
+		if ( spaceIndex.HasValue && VisualGenerator?.TryGetSpaceVisual( spaceIndex.Value, out var current ) == true )
+			current.SetHovered( true );
+	}
+
 	private void UpdateHoverCursor()
 	{
 		EnsureGameControllerRef();
@@ -67,31 +81,20 @@ public sealed class BoardInteractionController : Component
 			Board.LastPointerHoverPosition = Mouse.Position;
 
 		Board.LastCursorType = desiredCursor;
-		UpdateHoveredVisual( traceResult );
+		SetHoveredSpace( GetHoveredSpaceIndex( traceResult ) );
 	}
 
-	private void UpdateHoveredVisual( SceneTraceResult? traceResult )
+	private static int? GetHoveredSpaceIndex( SceneTraceResult? traceResult )
 	{
-		int? nextHover = null;
-
 		if ( traceResult.HasValue &&
 			traceResult.Value.Hit &&
 			traceResult.Value.GameObject is not null &&
 			traceResult.Value.GameObject.Components.TryGet<BoardSpaceVisual>( out var visual ) )
 		{
-			nextHover = visual.SpaceIndex;
+			return visual.SpaceIndex;
 		}
 
-		if ( hoveredSpaceIndex == nextHover )
-			return;
-
-		if ( hoveredSpaceIndex.HasValue && VisualGenerator?.TryGetSpaceVisual( hoveredSpaceIndex.Value, out var previous ) == true )
-			previous.SetHovered( false );
-
-		hoveredSpaceIndex = nextHover;
-
-		if ( nextHover.HasValue && VisualGenerator?.TryGetSpaceVisual( nextHover.Value, out var current ) == true )
-			current.SetHovered( true );
+		return null;
 	}
 
 	private void UpdateSelection()
