@@ -1,0 +1,150 @@
+@namespace Sandbox.ui.components
+@using Sandbox;
+@using Sandbox.UI;
+@using Sandbox.ui.components.buttons
+@using System;
+@inherits Panel
+
+<root>
+	@if ( IsOpen )
+	{
+		<div class="trade-history-backdrop">
+			<div class="trade-history-modal">
+				<CloseButton Variant="trade-history-close" Title="Close" OnClick="@Close"></CloseButton>
+				<div class="trade-history-header">
+					<div class="trade-history-heading">
+						<div class="trade-history-kicker">Table Ledger</div>
+						<div class="trade-history-title">Trade History</div>
+					</div>
+					<div class="trade-history-summary">@GetHistorySummary()</div>
+				</div>
+				@if ( Entries.Count == 0 )
+				{
+					<div class="trade-history-empty">No completed trades have been recorded yet.</div>
+				}
+				else
+				{
+					<div class="trade-history-list monopory-scroll-y">
+						@foreach ( var entry in Entries )
+						{
+							<div class="@GetEntryClasses( entry )">
+								<div class="trade-history-card-header">
+									<div class="trade-history-card-heading">
+										<div class="trade-history-card-kicker">Trade #@entry.Trade.Id</div>
+										<div class="trade-history-parties">@GetPlayerName( entry.Trade.SenderPlayerIndex ) → @GetPlayerName( entry.Trade.ReceiverPlayerIndex )</div>
+									</div>
+									<div class="@GetOutcomeClasses( entry.Outcome )">@entry.Outcome</div>
+								</div>
+								<div class="trade-history-exchange">
+									<div class="trade-history-side">
+										<div class="trade-history-side-title">@GetPlayerName( entry.Trade.SenderPlayerIndex ) @(IsAccepted( entry ) ? "gave" : "offered")</div>
+										<div class="trade-history-assets">
+											@foreach ( var asset in GetAssets( entry.Trade, true ) )
+											{
+												<div class="@asset.Classes">@asset.Label</div>
+											}
+										</div>
+									</div>
+									<div class="trade-history-arrow">⇄</div>
+									<div class="trade-history-side">
+										<div class="trade-history-side-title">@GetPlayerName( entry.Trade.ReceiverPlayerIndex ) @(IsAccepted( entry ) ? "gave" : "offered")</div>
+										<div class="trade-history-assets">
+											@foreach ( var asset in GetAssets( entry.Trade, false ) )
+											{
+												<div class="@asset.Classes">@asset.Label</div>
+											}
+										</div>
+									</div>
+								</div>
+								<div class="trade-history-card-footer">@GetFooterText( entry )</div>
+							</div>
+						}
+					</div>
+				}
+			</div>
+		</div>
+	}
+</root>
+
+@code
+{
+	[Parameter] public GameController GameRef { get; set; }
+	[Parameter] public bool IsOpen { get; set; }
+	[Parameter] public Action OnClose { get; set; }
+
+	private readonly record struct TradeAsset( string Label, string Classes );
+
+	private List<TradeHistoryEntry> Entries =>
+		GameRef?.GetTradeHistory()
+			.OrderByDescending( entry => entry.Id )
+			.ToList() ?? new();
+
+	private void Close() => OnClose?.Invoke();
+
+	private string GetPlayerName( int playerIndex ) =>
+		GameRef?.Players?.ElementAtOrDefault( playerIndex )?.PlayerName ?? $"Player {playerIndex + 1}";
+
+	private string GetPropertyName( int propertyIndex ) =>
+		GameRef?.Board?.GetSpaceDef( propertyIndex )?.DisplayName ?? $"Space {propertyIndex}";
+
+	private string GetCardName( string cardId ) =>
+		GameRef?.GetTradableCardName( cardId ) ?? "Get Out of Jail Free";
+
+	private List<TradeAsset> GetAssets( TradeRequest trade, bool senderSide )
+	{
+		var assets = new List<TradeAsset>();
+		var money = senderSide ? trade.SenderMoney : trade.ReceiverMoney;
+		var properties = senderSide ? trade.SenderPropertyIndexes : trade.ReceiverPropertyIndexes;
+		var cards = senderSide ? trade.SenderCardIds : trade.ReceiverCardIds;
+
+		if ( money > 0 )
+			assets.Add( new TradeAsset( "$" + money.ToString( "N0" ), "trade-history-asset money" ) );
+
+		foreach ( var propertyIndex in properties )
+		{
+			var def = GameRef?.Board?.GetSpaceDef( propertyIndex );
+			assets.Add( new TradeAsset( GetPropertyName( propertyIndex ), $"trade-history-asset property color-{HudUi.GetPropertyColorClass( def )}" ) );
+		}
+
+		foreach ( var cardId in cards )
+			assets.Add( new TradeAsset( GetCardName( cardId ), "trade-history-asset card" ) );
+
+		if ( assets.Count == 0 )
+			assets.Add( new TradeAsset( "Nothing", "trade-history-asset empty" ) );
+
+		return assets;
+	}
+
+	private string GetHistorySummary()
+	{
+		var accepted = Entries.Count( IsAccepted );
+		var denied = Entries.Count - accepted;
+		return $"{Entries.Count} recorded · {accepted} accepted · {denied} denied";
+	}
+
+	private static bool IsAccepted( TradeHistoryEntry entry ) =>
+		entry.Outcome == TradeHistoryEntry.Accepted;
+
+	private static string GetEntryClasses( TradeHistoryEntry entry ) =>
+		IsAccepted( entry ) ? "trade-history-card accepted" : "trade-history-card denied";
+
+	private static string GetOutcomeClasses( string outcome ) =>
+		outcome == TradeHistoryEntry.Accepted
+			? "trade-history-outcome accepted"
+			: "trade-history-outcome denied";
+
+	private static string GetFooterText( TradeHistoryEntry entry ) =>
+		IsAccepted( entry )
+			? "Completed exchange"
+			: "Offer closed without an exchange";
+
+	protected override int BuildHash()
+	{
+		var hash = new HashCode();
+		hash.Add( IsOpen );
+		hash.Add( HudUi.GetPlayersHash( GameRef ) );
+		foreach ( var entry in Entries )
+			hash.Add( entry.Serialize() );
+		return hash.ToHashCode();
+	}
+}

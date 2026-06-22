@@ -1,5 +1,7 @@
-@import "../../GameTheme.scss";
+@import "../../styles/GameTheme.scss";
 
+// Variants that override base button box/color styles should target
+// `.monopoly-button.variant-name`; this file is imported by many components.
 .monopoly-button {
     position: relative;
     min-height: $monopoly-control-height;
@@ -27,6 +29,38 @@
 
 .monopoly-button.hold-capture-active {
     overflow: visible;
+}
+
+.monopoly-button-content {
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    pointer-events: none;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.monopoly-button.has-input-action-icon .monopoly-button-content {
+    padding-left: 36px;
+    padding-right: 36px;
+    overflow: visible;
+}
+
+.monopoly-button-input-action-icon {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    width: 36px;
+    height: 36px;
+    transform: translateY(-50%);
+    background-color: currentColor;
+    mask-repeat: no-repeat;
+    mask-position: center;
+    mask-size: contain;
+    pointer-events: none;
+    z-index: 1;
 }
 
 .button-hold-capture {

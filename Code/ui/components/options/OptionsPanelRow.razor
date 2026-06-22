@@ -1,0 +1,35 @@
+@namespace Sandbox.ui.components
+@using Sandbox;
+@using Sandbox.UI;
+@using System.Linq;
+@inherits Panel
+<root class="@RowClasses">
+	<div class="options-panel-row-text">
+		<div class="options-panel-row-title">@Title</div>
+		@if ( !string.IsNullOrWhiteSpace( Value ) )
+		{
+			<div class="options-panel-row-value">@Value</div>
+		}
+	</div>
+	@if ( ChildContent is not null )
+	{
+		<div class="options-panel-row-control">
+			@ChildContent
+		</div>
+	}
+</root>
+
+@code
+{
+	[Parameter] public string Title { get; set; } = "";
+	[Parameter] public string Value { get; set; } = "";
+	[Parameter] public string Variant { get; set; } = "";
+	[Parameter] public new RenderFragment ChildContent { get; set; }
+
+	private string RowClasses => BuildClass( "options-panel-row", Variant );
+
+	private static string BuildClass( params string[] classes )
+	{
+		return string.Join( " ", classes.Where( value => !string.IsNullOrWhiteSpace( value ) ) );
+	}
+}

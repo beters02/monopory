@@ -1,25 +1,33 @@
 using System.Threading.Tasks;
 using System;
-using System.Text.RegularExpressions;
 using Sandbox;
 using Sandbox.UI;
+using Microsoft.VisualBasic;
+
+public class CardActionResult : GameResultKind
+{
+	protected CardActionResult( string msg ) : base( msg ) {}
+}
 
 public sealed partial class GameController : Component
 {
 	private readonly List<CardDef> chanceDrawPile = new();
 	private readonly List<CardDef> communityChestDrawPile = new();
 
-	private void ResolveCardLanding( PlayerState player, CardDeck deck )
+	private string ResolveCardLanding( PlayerState player, CardDeck deck )
 	{
 		var card = DrawCard( deck );
 		if ( player is null || card is null )
-			return;
+			return card is null ? $"No {deck} card drawn" : "Card landing missing player";
 
 		string cardDisplayText = GetCardDisplayText( card );
 		ShowCardForPlayerWhoLanded( player, cardDisplayText );
 		SendCardDrawPopupToOtherPlayers( player, card );
-		Log.Info( $"{player.PlayerName} drew {deck}: {card.Title}." );
-		ApplyCard( player, card );
+		var cardResult = ApplyCard( player, card );
+		Log.Info(
+			$"{player.PlayerName} drew {deck}: title=\"{ResolveCardText( card.Title )}\", text=\"{ResolveCardText( card.Description )}\", " +
+			$"action={card.Action}, result={cardResult}" );
+		return $"Drew {deck}: {card.Title}; {cardResult}";
 	}
 
 	private void SendCardDrawPopupToOtherPlayers( PlayerState drawingPlayer, CardDef card )
@@ -32,8 +40,8 @@ public sealed partial class GameController : Component
 		{
 			SendPopupToPlayer(
 				playerIndex,
-				card.Title,
-				card.Description,
+				ResolveCardText( card.Title ),
+				ResolveCardText( card.Description ),
 				PopupKind.Info,
 				true,
 				6f
@@ -41,18 +49,47 @@ public sealed partial class GameController : Component
 		}
 	}
 
-	private static string GetCardDisplayText( CardDef card )
+	private string GetCardDisplayText( CardDef card )
 	{
 		if ( card is null )
 			return "";
 
-		if ( string.IsNullOrWhiteSpace( card.Title ) )
-			return card.Description ?? "";
+		var title = ResolveCardText( card.Title );
+		var description = ResolveCardText( card.Description );
 
-		if ( string.IsNullOrWhiteSpace( card.Description ) )
-			return card.Title;
+		if ( string.IsNullOrWhiteSpace( title ) )
+			return description ?? "";
 
-		return $"{card.Title}. {card.Description}";
+		if ( string.IsNullOrWhiteSpace( description ) )
+			return title;
+
+		return $"{title}. {description}";
+	}
+
+	private string ResolveCardText( string text )
+	{
+		if ( string.IsNullOrWhiteSpace( text ) )
+			return text ?? "";
+
+		return text
+			.Replace( "{pass_go_money}", GetPassGoMoney().ToString() )
+			.Replace( "{land_on_go_money}", GetLandOnGoMoney().ToString() )
+			.Replace( "{go_landing_money}", GetGoLandingMoney().ToString() );
+	}
+
+	private int GetPassGoMoney()
+	{
+		return Math.Max( Config?.PassGoMoney ?? 200, 0 );
+	}
+
+	private int GetLandOnGoMoney()
+	{
+		return Math.Max( Config?.LandOnGoMoney ?? 200, 0 );
+	}
+
+	private int GetGoLandingMoney()
+	{
+		return GetPassGoMoney() + GetLandOnGoMoney();
 	}
 
 	private CardDef DrawCard( CardDeck deck )
@@ -76,6 +113,53 @@ public sealed partial class GameController : Component
 	{
 		chanceDrawPile.Clear();
 		communityChestDrawPile.Clear();
+	}
+
+	public string BuildDeckListText( CardDeck deck )
+	{
+		var drawPile = deck == CardDeck.Chance
+			? chanceDrawPile
+			: communityChestDrawPile;
+
+		if ( drawPile.Count == 0 )
+			ReshuffleCardDrawPile( deck );
+
+		if ( drawPile.Count == 0 )
+			return $"{GetDeckDisplayName( deck )} deck is empty.";
+
+		var lines = drawPile
+			.Select( ( card, index ) => $"{index + 1}. {ResolveCardText( card.Title )}: {ResolveCardText( card.Description )}" )
+			.ToList();
+
+		return $"{GetDeckDisplayName( deck )} deck ({lines.Count} cards):\n{string.Join( "\n", lines )}";
+	}
+
+	public bool TryParseCardDeck( string value, out CardDeck deck )
+	{
+		deck = CardDeck.Chance;
+
+		if ( string.IsNullOrWhiteSpace( value ) )
+			return false;
+
+		var normalized = value.Trim().Replace( "_", "" ).Replace( "-", "" ).Replace( " ", "" ).ToLowerInvariant();
+		switch ( normalized )
+		{
+			case "chance":
+				deck = CardDeck.Chance;
+				return true;
+			case "chest":
+			case "community":
+			case "communitychest":
+				deck = CardDeck.CommunityChest;
+				return true;
+			default:
+				return false;
+		}
+	}
+
+	private static string GetDeckDisplayName( CardDeck deck )
+	{
+		return deck == CardDeck.Chance ? "Chance" : "Community Chest";
 	}
 
 	private void ReshuffleCardDrawPile( CardDeck deck )
@@ -196,10 +280,10 @@ public sealed partial class GameController : Component
 		}
 	}
 
-	private void ApplyCard( PlayerState player, CardDef card )
+	private string ApplyCard( PlayerState player, CardDef card )
 	{
 		if ( player is null || card is null )
-			return;
+			return "Card not applied";
 
 		switch ( card.Action )
 		{
@@ -209,33 +293,38 @@ public sealed partial class GameController : Component
 				ShowMoneyReceivedPopup( player, collectedAmount, string.IsNullOrWhiteSpace( card.Title ) ? "the bank" : card.Title );
 				TrySettlePendingForcedPaymentForPlayer( GetPlayerIndex( player ) );
 				Log.Info( $"{player.PlayerName} collected ${card.Amount} from {card.Title}." );
-				break;
+				return $"Collected ${collectedAmount} from bank";
 
 			case CardAction.PayBank:
 				if ( PayBank( player, card.Amount, true, BankPaymentSource.ChanceOrCommunityChest ) )
+				{
 					Log.Info( $"{player.PlayerName} paid ${card.Amount} from {card.Title}." );
-				break;
+					return $"Paid ${card.Amount} to bank";
+				}
+				return $"Bank payment unresolved for ${card.Amount}";
 
 			case CardAction.MoveToSpace:
 				MovePlayerToCardDestination( player, card.TargetSpaceIndex, card.CollectGo, card.ResolveDestination );
-				break;
+				return $"Moved to space {NormalizeSpaceIndex( card.TargetSpaceIndex )}";
 
 			case CardAction.MoveToNearestRailroad:
-				MovePlayerToCardDestination( player, GetNextSpaceIndexOfType( player.SpaceIndex, SpaceType.Railroad ), card.CollectGo, card.ResolveDestination );
-				break;
+				var railroadIndex = GetNextSpaceIndexOfType( player.SpaceIndex, SpaceType.Railroad );
+				MovePlayerToCardDestination( player, railroadIndex, card.CollectGo, card.ResolveDestination );
+				return $"Moved to nearest railroad at space {railroadIndex}";
 
 			case CardAction.MoveToNearestUtility:
-				MovePlayerToCardDestination( player, GetNextSpaceIndexOfType( player.SpaceIndex, SpaceType.Utility ), card.CollectGo, card.ResolveDestination );
-				break;
+				var utilityIndex = GetNextSpaceIndexOfType( player.SpaceIndex, SpaceType.Utility );
+				MovePlayerToCardDestination( player, utilityIndex, card.CollectGo, card.ResolveDestination );
+				return $"Moved to nearest utility at space {utilityIndex}";
 
 			case CardAction.MoveRelative:
 				MovePlayerByCardOffset( player, card.RelativeSpaces, card.CollectGo, card.ResolveDestination );
-				break;
+				return $"Moved {card.RelativeSpaces} spaces";
 
 			case CardAction.GoToJail:
 				SendPlayerToJail( player );
 				MarkResolvedActionToAdvanceImmediately();
-				break;
+				return "Sent to Jail";
 
 			case CardAction.GetOutOfJailFree:
 				if ( card.Deck == CardDeck.Chance )
@@ -244,24 +333,31 @@ public sealed partial class GameController : Component
 					player.CommunityChestGetOutOfJailFreeCards++;
 
 				Log.Info( $"{player.PlayerName} kept a Get Out of Jail Free card." );
-				break;
+				return $"Kept Get Out of Jail Free card from {card.Deck}";
 
 			case CardAction.CollectFromEachPlayer:
 				CollectFromEachPlayerForCard( player, card.Amount );
-				break;
+				return $"Collected up to ${Math.Max( card.Amount, 0 )} from each player";
 
 			case CardAction.PayEachPlayer:
 				PayEachPlayerForCard( player, card.Amount );
-				break;
+				return $"Paid or owes ${Math.Max( card.Amount, 0 )} to each player";
 
 			case CardAction.PayPerImprovement:
 				PayPerImprovementForCard( player, card.HouseAmount, card.HotelAmount );
-				break;
+				return $"Paid repairs at ${Math.Max( card.HouseAmount, 0 )}/house and ${Math.Max( card.HotelAmount, 0 )}/hotel";
 
 			case CardAction.Gamble:
 				_ = PlayGambleCardAsync( player, card );
-				break;
+				return "Started gamble card";
+
+			case CardAction.SwapPlayerPosition:
+				HandleSwapPlayerPositionsCard( player );
+				return "Swapping player positions";
+				
 		}
+
+		return $"Unhandled card action {card.Action}";
 	}
 
 	private int GetNextSpaceIndexOfType( int startSpaceIndex, SpaceType type )
@@ -283,6 +379,59 @@ public sealed partial class GameController : Component
 		return -1;
 	}
 
+
+	// TODO: polish. need to account for other player potentially having skipped turn etc
+	private void HandleSwapPlayerPositionsCard( PlayerState player )
+	{
+		if ( player is null || Board is null )
+			return;
+
+		var allowedPlayers = Players
+			.Where( loopPlayer => loopPlayer is not null && loopPlayer != player && loopPlayer.IsAssigned && !loopPlayer.IsBankrupt )
+			.ToList();
+		if ( allowedPlayers.Count == 0 )
+			return;
+
+		var randomInt = Game.Random.Int(allowedPlayers.Count - 1);
+		if ( randomInt < 0 )
+			return;
+		
+		PlayerState tradingPlayer = allowedPlayers[randomInt];
+		if ( tradingPlayer is null || tradingPlayer == player )
+			return;
+
+		SwapPlayerPositions( player, tradingPlayer );
+	}
+
+	private void SwapPlayerPositions( PlayerState player, PlayerState swapPlayer )
+	{
+		if ( player is null || swapPlayer is null || Board is null )
+			return;
+
+		var playerStartSpaceIndex = player.SpaceIndex;
+		var swapPlayerStartSpaceIndex = swapPlayer.SpaceIndex;
+
+		if ( swapPlayer.IsInJail )
+		{
+			// release player automatically cancels extra turn for current player which is great
+			ReleasePlayerFromJail( swapPlayer );
+			SendPlayerToJail( player );
+			MovePlayerToCardDestination( swapPlayer, playerStartSpaceIndex, true, false );
+			return;
+		}
+
+		var playerGoPassCount = GetGoPassCountForAbsoluteMove( playerStartSpaceIndex, swapPlayerStartSpaceIndex, true );
+		var swapPlayerGoPassCount = GetGoPassCountForAbsoluteMove( swapPlayerStartSpaceIndex, playerStartSpaceIndex, true );
+
+		player.SpaceIndex = NormalizeSpaceIndex( swapPlayerStartSpaceIndex );
+		swapPlayer.SpaceIndex = NormalizeSpaceIndex( playerStartSpaceIndex );
+		SnapPlayerTokenToSpace( player );
+		SnapPlayerTokenToSpace( swapPlayer );
+
+		ApplyGoMovementPayout( swapPlayer, swapPlayerGoPassCount, swapPlayer.SpaceIndex == (Board?.GoSpaceIndex ?? 0) );
+		ResolveLanding( player, playerGoPassCount );
+	}
+	
 	private void MovePlayerToCardDestination( PlayerState player, int targetSpaceIndex, bool collectGo, bool resolveDestination )
 	{
 		if ( player is null || Board is null || targetSpaceIndex < 0 )
@@ -293,6 +442,7 @@ public sealed partial class GameController : Component
 		var goPassCount = GetGoPassCountForAbsoluteMove( startSpaceIndex, targetSpaceIndex, collectGo );
 
 		player.SpaceIndex = targetSpaceIndex;
+		SnapPlayerTokenToSpace( player );
 
 		if ( resolveDestination )
 		{
@@ -300,7 +450,7 @@ public sealed partial class GameController : Component
 			return;
 		}
 
-		ApplyGoMovementPayout( player, goPassCount, targetSpaceIndex == 0 );
+		ApplyGoMovementPayout( player, goPassCount, targetSpaceIndex == (Board?.GoSpaceIndex ?? 0) );
 	}
 
 	private void MovePlayerByCardOffset( PlayerState player, int relativeSpaces, bool collectGo, bool resolveDestination )
@@ -313,6 +463,7 @@ public sealed partial class GameController : Component
 		var goPassCount = GetGoPassCountForRelativeMove( startSpaceIndex, relativeSpaces, collectGo );
 
 		player.SpaceIndex = targetSpaceIndex;
+		SnapPlayerTokenToSpace( player );
 
 		if ( resolveDestination )
 		{
@@ -320,34 +471,36 @@ public sealed partial class GameController : Component
 			return;
 		}
 
-		ApplyGoMovementPayout( player, goPassCount, targetSpaceIndex == 0 );
+		ApplyGoMovementPayout( player, goPassCount, targetSpaceIndex == (Board?.GoSpaceIndex ?? 0) );
 	}
 
-	private static int GetGoPassCountForAbsoluteMove( int startSpaceIndex, int targetSpaceIndex, bool collectGo )
+	private int GetGoPassCountForAbsoluteMove( int startSpaceIndex, int targetSpaceIndex, bool collectGo )
 	{
 		if ( !collectGo )
 			return 0;
 
 		startSpaceIndex = NormalizeSpaceIndex( startSpaceIndex );
 		targetSpaceIndex = NormalizeSpaceIndex( targetSpaceIndex );
+		var spaceCount = Math.Max( Board?.SpaceCount ?? BoardCatalog.GetDefaultSpaceCount(), 1 );
 
 		var forwardDistance = targetSpaceIndex >= startSpaceIndex
 			? targetSpaceIndex - startSpaceIndex
-			: 40 - startSpaceIndex + targetSpaceIndex;
+			: spaceCount - startSpaceIndex + targetSpaceIndex;
 
 		if ( forwardDistance <= 0 )
 			return 0;
 
-		return (startSpaceIndex + forwardDistance) / 40;
+		return (startSpaceIndex + forwardDistance) / spaceCount;
 	}
 
-	private static int GetGoPassCountForRelativeMove( int startSpaceIndex, int relativeSpaces, bool collectGo )
+	private int GetGoPassCountForRelativeMove( int startSpaceIndex, int relativeSpaces, bool collectGo )
 	{
 		if ( !collectGo || relativeSpaces <= 0 )
 			return 0;
 
 		startSpaceIndex = NormalizeSpaceIndex( startSpaceIndex );
-		return (startSpaceIndex + relativeSpaces) / 40;
+		var spaceCount = Math.Max( Board?.SpaceCount ?? BoardCatalog.GetDefaultSpaceCount(), 1 );
+		return (startSpaceIndex + relativeSpaces) / spaceCount;
 	}
 
 	private void PayPerImprovementForCard( PlayerState player, int houseAmount, int hotelAmount )

@@ -33,7 +33,7 @@
           "OnComponentStart": null,
           "OnComponentUpdate": null,
           "SceneTags": "",
-          "Title": null,
+          "Title": "Menu",
           "Version": null
         }
       ],
@@ -159,6 +159,37 @@
             }
           ],
           "Children": []
+        },
+        {
+          "__guid": "ca7f691f-03d9-4777-bced-3d5e0923987c",
+          "__version": 2,
+          "Flags": 0,
+          "Name": "StandaloneConsole",
+          "Position": "0,0,0",
+          "Rotation": "0,0,0,1",
+          "Scale": "1,1,1",
+          "Tags": "",
+          "Enabled": true,
+          "NetworkMode": 2,
+          "NetworkFlags": 0,
+          "NetworkOrphaned": 0,
+          "NetworkTransmit": true,
+          "OwnerTransfer": 1,
+          "Components": [
+            {
+              "__type": "Sandbox.ui.components.StandaloneConsole",
+              "__guid": "1fc5c481-4225-406d-883b-55e4a14cb0c8",
+              "__enabled": true,
+              "Flags": 0,
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null
+            }
+          ],
+          "Children": []
         }
       ]
     },
@@ -203,6 +234,61 @@
       "Scale": "1,1,1",
       "Tags": "",
       "Enabled": true,
+      "NetworkMode": 1,
+      "NetworkFlags": 0,
+      "NetworkOrphaned": 1,
+      "NetworkTransmit": true,
+      "OwnerTransfer": 1,
+      "Components": [
+        {
+          "__type": "MonopolyApp",
+          "__guid": "d9f2a97a-844d-4c9a-8471-e57c7b235329",
+          "__enabled": true,
+          "Flags": 0,
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null
+        },
+        {
+          "__type": "AuthTest",
+          "__guid": "a8d48af9-6e78-4f56-845d-1b5e80f7747d",
+          "__enabled": true,
+          "Flags": 0,
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null
+        },
+        {
+          "__type": "Sandbox.ScenePersistentObject",
+          "__guid": "61b3d706-15f4-433e-a844-0c98f01e12cc",
+          "__enabled": true,
+          "Flags": 0,
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null
+        }
+      ],
+      "Children": []
+    },
+    {
+      "__guid": "2b10ba76-5db8-4a19-bc53-4319cf36bd45",
+      "__version": 2,
+      "Flags": 0,
+      "Name": "PersistentLoadingUIRoot",
+      "Position": "0,0,0",
+      "Rotation": "0,0,0,1",
+      "Scale": "1,1,1",
+      "Tags": "",
+      "Enabled": true,
       "NetworkMode": 2,
       "NetworkFlags": 0,
       "NetworkOrphaned": 0,
@@ -210,8 +296,211 @@
       "OwnerTransfer": 1,
       "Components": [
         {
-          "__type": "MonopolyApp",
-          "__guid": "d9f2a97a-844d-4c9a-8471-e57c7b235329",
+          "__type": "Sandbox.ScreenPanel",
+          "__guid": "8da4ca3b-0f20-48a1-b325-8a29800586c2",
+          "__enabled": true,
+          "Flags": 0,
+          "AutoScreenScale": true,
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null,
+          "Opacity": 1,
+          "Scale": 1,
+          "ScaleStrategy": "ConsistentHeight",
+          "TargetCamera": null,
+          "ZIndex": 1000
+        },
+        {
+          "__type": "Sandbox.ui.components.PersistentLoadingOverlay",
+          "__guid": "81f678c1-611c-470d-89b9-c2c4b43e75c8",
+          "__enabled": true,
+          "Flags": 0,
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null
+        },
+        {
+          "__type": "Sandbox.ScenePersistentObject",
+          "__guid": "343e4b49-57d4-40f1-8175-33f82a3f9bdd",
+          "__enabled": true,
+          "Flags": 0,
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null
+        }
+      ],
+      "Children": []
+    },
+    {
+      "__guid": "379fe77b-d429-4ada-8da6-8ceea4347180",
+      "__version": 2,
+      "Flags": 0,
+      "Name": "MusicController",
+      "Position": "149.994965,149.994995,-212.124985",
+      "Rotation": "0,0,0,1",
+      "Scale": "1,1,1",
+      "Tags": "",
+      "Enabled": true,
+      "NetworkMode": 2,
+      "NetworkFlags": 0,
+      "NetworkOrphaned": 0,
+      "NetworkTransmit": true,
+      "OwnerTransfer": 1,
+      "Components": [
+        {
+          "__type": "Sandbox.MusicController",
+          "__guid": "ab2bd852-3362-4edd-b617-158c48674c0f",
+          "__enabled": true,
+          "Flags": 0,
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null,
+          "StartEnabled": true
+        },
+        {
+          "__type": "Sandbox.ScenePersistentObject",
+          "__guid": "7c55e0ba-d692-4c6b-8044-84821f9a20a6",
+          "__enabled": true,
+          "Flags": 0,
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null
+        }
+      ],
+      "Children": []
+    },
+    {
+      "__guid": "cf8670ae-becf-48a3-88b6-c90fd9665800",
+      "__version": 2,
+      "Flags": 0,
+      "Name": "GameSettingsController",
+      "Position": "149.994965,149.994995,-212.124985",
+      "Rotation": "0,0,0,1",
+      "Scale": "1,1,1",
+      "Tags": "",
+      "Enabled": true,
+      "NetworkMode": 2,
+      "NetworkFlags": 0,
+      "NetworkOrphaned": 0,
+      "NetworkTransmit": true,
+      "OwnerTransfer": 1,
+      "Components": [
+        {
+          "__type": "AppSettings",
+          "__guid": "e9a2914f-2dd5-4966-8eca-2bcefa1bf9f4",
+          "__enabled": true,
+          "Flags": 0,
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null
+        },
+        {
+          "__type": "Sandbox.ScenePersistentObject",
+          "__guid": "4cd5d457-82d8-4b3d-b9a3-20d4bf51f117",
+          "__enabled": true,
+          "Flags": 0,
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null
+        }
+      ],
+      "Children": []
+    },
+    {
+      "__guid": "0e123ce0-889a-4470-94cc-62f78a159d8b",
+      "__version": 2,
+      "Flags": 0,
+      "Name": "GameCommandManager",
+      "Position": "149.994965,149.994995,-212.124985",
+      "Rotation": "0,0,0,1",
+      "Scale": "1,1,1",
+      "Tags": "",
+      "Enabled": true,
+      "NetworkMode": 2,
+      "NetworkFlags": 0,
+      "NetworkOrphaned": 0,
+      "NetworkTransmit": true,
+      "OwnerTransfer": 1,
+      "Components": [
+        {
+          "__type": "GameCommandManager",
+          "__guid": "35bd1899-ff20-4f68-a07e-8d5b98f7eeb8",
+          "__enabled": true,
+          "Flags": 0,
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null
+        },
+        {
+          "__type": "Sandbox.ScenePersistentObject",
+          "__guid": "5cc1ed42-48f9-4af5-935d-20435b9103d4",
+          "__enabled": true,
+          "Flags": 0,
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null
+        }
+      ],
+      "Children": []
+    },
+    {
+      "__guid": "9a14f19a-766a-4176-9995-c2f165cf8caa",
+      "__version": 2,
+      "Flags": 0,
+      "Name": "SceneSystemService",
+      "Position": "48.7789001,-210.76799,98.9650726",
+      "Rotation": "0,0,0,1",
+      "Scale": "1,1,1",
+      "Tags": "",
+      "Enabled": true,
+      "NetworkMode": 1,
+      "NetworkFlags": 0,
+      "NetworkOrphaned": 1,
+      "NetworkTransmit": true,
+      "OwnerTransfer": 1,
+      "Components": [
+        {
+          "__type": "Sandbox.ScenePersistentObject",
+          "__guid": "0bd2df0a-4261-4bde-a3bc-ea771a6a042f",
+          "__enabled": true,
+          "Flags": 0,
+          "OnComponentDestroy": null,
+          "OnComponentDisabled": null,
+          "OnComponentEnabled": null,
+          "OnComponentFixedUpdate": null,
+          "OnComponentStart": null,
+          "OnComponentUpdate": null
+        },
+        {
+          "__type": "SceneSystemService",
+          "__guid": "4f66e45b-eb53-4e1a-b14d-5342805e2d64",
           "__enabled": true,
           "Flags": 0,
           "OnComponentDestroy": null,
@@ -229,7 +518,9 @@
     "NetworkInterpolation": true,
     "TimeScale": 1,
     "WantsSystemScene": true,
-    "Metadata": {},
+    "Metadata": {
+      "Title": "Menu"
+    },
     "NavMesh": {
       "Enabled": false,
       "IncludeStaticBodies": true,
@@ -258,7 +549,7 @@
     }
   },
   "ResourceVersion": 3,
-  "Title": null,
+  "Title": "Menu",
   "Description": null,
   "__references": [],
   "__version": 3

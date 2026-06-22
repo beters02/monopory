@@ -1,10 +1,21 @@
 @using Sandbox;
 @using Sandbox.UI;
+@using Sandbox.ui.components;
 @using System;
 @inherits Button
 
-<root class="@RootClasses" title="@Title" onclick="@HandleClick" onmousedown="@HandlePressStart" onmouseup="@HandlePressEnd" onmouseover="@HandleMouseEnter" onmouseout="@HandleMouseLeave">
-	@ChildContent
+<root class="@RootClasses" title="@Title" onclick="@HandleClick" onrightclick="@HandleRightClick" onmousedown="@HandlePressStart" onmouseup="@HandlePressEnd" onmouseover="@HandleMouseEnter" onmouseout="@HandleMouseLeave">
+	@if ( ShouldShowInputActionIcon )
+	{
+		<div class="monopoly-button-input-action-icon" style="@InputActionIconStyle"></div>
+		<div class="monopoly-button-content">
+			@ChildContent
+		</div>
+	}
+	else
+	{
+		@ChildContent
+	}
 </root>
 
 @code
@@ -24,14 +35,56 @@
 	[Parameter] public Action<float> OnHoldComplete { get; set; }
 	[Parameter] public float HoldMaxSeconds { get; set; } = 1.25f;
 	[Parameter] public new Action OnClick { get; set; }
+	[Parameter] public new Action OnRightClick { get; set; }
 	[Parameter] public Action OnBlocked { get; set; }
 	[Parameter] public new RenderFragment ChildContent { get; set; }
+	[Parameter] public InputAction KeyboardInputAction { get; set; }
+	[Parameter] public string InputActionIconColor { get; set; } = "";
 
 	private bool isPressing;
 	private float pressStartedAt;
 	private bool isHovering = false;
 
 	public bool IsHolding => isPressing;
+
+	public void TriggerInputAction( float holdStrength = 1f )
+	{
+		if ( OnHoldComplete is not null )
+		{
+			TriggerHoldComplete( holdStrength );
+			return;
+		}
+
+		HandleClick();
+	}
+
+	public void StartInputActionHold()
+	{
+		if ( OnHoldComplete is null || Disabled )
+			return;
+
+		isPressing = true;
+		isHovering = true;
+		pressStartedAt = Time.Now;
+		StateHasChanged();
+	}
+
+	public void CompleteInputActionHold()
+	{
+		if ( OnHoldComplete is null || !isPressing )
+			return;
+
+		StopHolding();
+
+		var heldSeconds = Math.Max( Time.Now - pressStartedAt, 0f );
+		var strength = HoldMaxSeconds <= 0f ? 1f : Math.Clamp( heldSeconds / HoldMaxSeconds, 0f, 1f );
+		TriggerHoldComplete( strength );
+	}
+
+	public void CancelInputActionHold()
+	{
+		StopHolding();
+	}
 
 	protected string RootClasses
 	{
@@ -43,6 +96,9 @@
 
 			if ( isPressing && OnHoldComplete is not null )
 				classes += " hold-capture-active";
+
+			if ( ShouldShowInputActionIcon )
+				classes += " has-input-action-icon";
 
 			return classes;
 		}
@@ -64,6 +120,10 @@
 		SoundEnabled &&
 		!HasVariantClass( "blocked-action-button" ) &&
 		!HasVariantClass( "disabled" );
+	private bool ShouldShowInputActionIcon => InputActionIcon is not null;
+	private bool UseOutlineInputActionIcon => MonopolyApp.InputActionIconType == InputActionIconType.Outline;
+	private GameIcon InputActionIcon => GetInputActionIcon();
+	private string InputActionIconStyle => GetInputActionIconStyle();
 
 	protected void HandleClick()
 	{
@@ -92,6 +152,27 @@
 		OnClick?.Invoke();
 	}
 
+	protected void HandleRightClick()
+	{
+		if ( GameController.Instance?.HasBlockingPopup == true && !IgnoreGlobalPopupBlock )
+			return;
+
+		ButtonPopEffects.Show( Mouse.Position );
+
+		if ( !CanClick )
+		{
+			PlayBlockedActionSound();
+			ShowBlockedActionPopup();
+			OnBlocked?.Invoke();
+			return;
+		}
+
+		if ( ShouldPlayClickSound )
+			Sound.Play();
+
+		OnRightClick?.Invoke();
+	}
+
 	private void HandlePressStart()
 	{
 		if ( OnHoldComplete is null || Disabled )
@@ -117,6 +198,13 @@
 
 		var heldSeconds = Math.Max( Time.Now - pressStartedAt, 0f );
 		var strength = HoldMaxSeconds <= 0f ? 1f : Math.Clamp( heldSeconds / HoldMaxSeconds, 0f, 1f );
+		TriggerHoldComplete( strength );
+	}
+
+	private void TriggerHoldComplete( float strength )
+	{
+		if ( Disabled )
+			return;
 
 		ButtonPopEffects.Show( Mouse.Position );
 
@@ -134,7 +222,7 @@
 		if ( ShouldPlayClickSound )
 			Sound.Play();
 
-		OnHoldComplete?.Invoke( strength );
+		OnHoldComplete?.Invoke( Math.Clamp( strength, 0f, 1f ) );
 	}
 
 	private void HandleMouseEnter()
@@ -170,6 +258,9 @@
 		hash.Add( CanClick );
 		hash.Add( Disabled );
 		hash.Add( isPressing );
+		hash.Add( GetKeyboardInputActionCode() );
+		hash.Add( InputActionIconColor );
+		hash.Add( MonopolyApp.InputActionIconType );
 
 		if ( isPressing )
 			hash.Add( MathF.Round( Time.Now * 60f ) );
@@ -183,6 +274,48 @@
 			return false;
 
 		return $" {Variant} ".Contains( $" {className} " );
+	}
+
+	private GameIcon GetInputActionIcon()
+	{
+		var keyboardCode = GetKeyboardInputActionCode();
+		if ( string.IsNullOrWhiteSpace( keyboardCode ) )
+			return null;
+
+		return IsMouseKeyboardCode( keyboardCode )
+			? GameAssets.MouseIcons.Get( keyboardCode, UseOutlineInputActionIcon )
+			: GameAssets.KeyboardIcons.Get( keyboardCode, UseOutlineInputActionIcon );
+	}
+
+	private string GetKeyboardInputActionCode()
+	{
+		if ( KeyboardInputAction is null )
+			return "";
+
+		var boundCode = IGameInstance.Current?.GetBind( KeyboardInputAction.Name, out bool _, out bool _ );
+		if ( !string.IsNullOrWhiteSpace( boundCode ) )
+			return boundCode;
+
+		return KeyboardInputAction.KeyboardCode ?? "";
+	}
+
+	private static bool IsMouseKeyboardCode( string keyboardCode )
+	{
+		var code = (keyboardCode ?? "").Trim();
+		return code.StartsWith( "mouse", StringComparison.OrdinalIgnoreCase );
+	}
+
+	private string GetInputActionIconStyle()
+	{
+		var icon = InputActionIcon;
+		if ( icon is null )
+			return "";
+
+		var style = $"mask-image: url({icon.Path});";
+		if ( !string.IsNullOrWhiteSpace( InputActionIconColor ) )
+			style += $" background-color: {InputActionIconColor};";
+
+		return style;
 	}
 
 	private void ShowBlockedActionPopup()

@@ -1,4 +1,5 @@
 using System;
+using System.Dynamic;
 
 public sealed partial class GameController : Component
 {
@@ -7,6 +8,7 @@ public sealed partial class GameController : Component
 	{
 		double div = Config.TurnTimeLimitSeconds / MaxTurnReminders;
 		SecondsBetweenTurnReminders = (int) Math.Ceiling(div);
+		BankruptedPieceMaterial?.Preload();
 	}
     
     // Jail
@@ -55,9 +57,11 @@ public sealed partial class GameController : Component
 	public GameSound TradeAcceptedSound = GameAssets.Sounds.Success; // success
 	public GameSound TradeDeniedSound = GameAssets.Sounds.Warning; // error
 	public GameSound TradeNegotiationReceivedSound = GameAssets.Sounds.TradeNegotiated; // retro 9
+	public GameSound AuctionStartSound = GameAssets.Sounds.AuctionStart;
+	public GameSound AuctionBidSound = GameAssets.Sounds.AuctionBid;
 
 	// Turns
-	private int MaxTurnReminders { get; set; } = 3;
+	private int MaxTurnReminders { get; set; } = 4;
 	private int SecondsBetweenTurnReminders { get; set; }
 
 	// Popups
@@ -65,5 +69,6 @@ public sealed partial class GameController : Component
 
 	// Tokens
 	public bool RestrictPieceThrowToCurrentTurn { get; set; } = true;
+	public GameMaterial BankruptedPieceMaterial { get; set; } = GameAssets.Materials.BankruptedPiece;
 
 }

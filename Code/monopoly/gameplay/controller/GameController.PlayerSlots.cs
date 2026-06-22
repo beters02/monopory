@@ -104,11 +104,14 @@ public sealed partial class GameController : Component
 			if ( emptySlot is null )
 				return;
 
+			var startingSteamId = (long)startingPlayer.SteamId;
 			emptySlot.OwnerId = startingPlayer.OwnerId;
+			emptySlot.SteamId = startingSteamId != 0 ? startingSteamId : startingPlayer.OwnerId;
 			emptySlot.PlayerName = string.IsNullOrWhiteSpace( startingPlayer.Name ) ? "Player" : startingPlayer.Name;
 			emptySlot.IsReady = false;
 			ResetPlayerForGame( emptySlot );
 			emptySlot.SelectedPieceId = PieceCatalog.GetByIdOrDefault( startingPlayer.SelectedPieceId ).Id;
+			emptySlot.SelectedDiceSkinId = DiceSkinCatalog.GetByIdOrDefault( startingPlayer.SelectedDiceSkinId ).Id;
 		}
 	}
 
@@ -121,50 +124,33 @@ public sealed partial class GameController : Component
 
 	private void EnsurePlayerSlots()
 	{
-		var targetSlotCount = Math.Max( MaxPlayers, 1 );
-		while ( Players.Count < targetSlotCount )
-		{
-			var slotNumber = Players.Count + 1;
-			var player = CreatePlayerStateObject( slotNumber );
-			player.PlayerName = $"Player {slotNumber}";
-			Players.Add( player );
-		}
+		RefreshScenePlayerSlots();
 
 		for ( var i = 0; i < Players.Count; i++ )
 			EnsurePlayerStateObject( i );
+
+		if ( Players.Count < MaxPlayers )
+			Log.Warning( $"GameController has {Players.Count} scene PlayerState slot(s), but config allows {MaxPlayers} player(s)." );
 	}
 
-	private void RemoveSerializedRuntimeChildren()
+	private void RefreshScenePlayerSlots()
 	{
-		var removedCount = 0;
-		foreach ( var child in GameObject.Children.ToArray() )
+		var scenePlayers = Scene.GetAllComponents<PlayerState>()
+			.Where( player => player?.GameObject is not null )
+			.Where( player => player.GameObject.Name.StartsWith( "PlayerState_", StringComparison.OrdinalIgnoreCase ) )
+			.OrderBy( player => GetPlayerSlotSortValue( player.GameObject.Name ) )
+			.ToList();
+
+		if ( scenePlayers.Count == 0 )
 		{
-			if ( child is null || !child.IsValid() )
-				continue;
-
-			if ( !child.Name.StartsWith( "PlayerState_", StringComparison.OrdinalIgnoreCase ) )
-				continue;
-
-			if ( child.Components.Get<PlayerState>() is null )
-				continue;
-
-			child.Destroy();
-			removedCount++;
+			Log.Warning( "No scene PlayerState slots were found. Add PlayerState_01..PlayerState_24 objects under the GameController object." );
+			return;
 		}
 
-		if ( removedCount > 0 )
-			Log.Warning( $"Removed {removedCount} serialized PlayerState child object(s). Runtime player slots must be spawned by the host, not saved in the scene." );
-	}
+		if ( AreSamePlayerSlots( scenePlayers ) )
+			return;
 
-	private PlayerState CreatePlayerStateObject( int slotNumber )
-	{
-		var playerObject = new GameObject( true, $"PlayerState_{slotNumber:00}" );
-		playerObject.SetParent( GameObject );
-		playerObject.NetworkMode = NetworkMode.Object;
-
-		var player = playerObject.Components.Create<PlayerState>();
-		playerObject.NetworkSpawn();
-		return player;
+		Players = scenePlayers;
 	}
 
 	private void RefreshReplicatedPlayerSlots()
@@ -172,19 +158,7 @@ public sealed partial class GameController : Component
 		if ( Networking.IsHost )
 			return;
 
-		var replicatedPlayers = Scene.GetAllComponents<PlayerState>()
-			.Where( player => player?.GameObject is not null )
-			.Where( player => player.GameObject.Name.StartsWith( "PlayerState_", StringComparison.OrdinalIgnoreCase ) )
-			.OrderBy( player => GetPlayerSlotSortValue( player.GameObject.Name ) )
-			.ToList();
-
-		if ( replicatedPlayers.Count == 0 )
-			return;
-
-		if ( AreSamePlayerSlots( replicatedPlayers ) )
-			return;
-
-		Players = replicatedPlayers;
+		RefreshScenePlayerSlots();
 	}
 
 	private bool AreSamePlayerSlots( List<PlayerState> replicatedPlayers )
@@ -217,13 +191,14 @@ public sealed partial class GameController : Component
 
 		if ( player is null || player.GameObject is null || !player.GameObject.IsValid() )
 		{
-			Players[playerIndex] = CreatePlayerStateObject( slotNumber );
-			Players[playerIndex].PlayerName = $"Player {slotNumber}";
+			Log.Warning( $"Missing scene PlayerState slot {slotNumber}." );
 			return;
 		}
 
 		player.GameObject.Name = $"PlayerState_{slotNumber:00}";
 		player.GameObject.SetParent( GameObject );
+		player.GameObject.NetworkMode = NetworkMode.Object;
+		player.GameObject.Network.SetOrphanedMode( NetworkOrphaned.Host );
 	}
 
 	private void ClearPlayerSlot( PlayerState player )
@@ -232,6 +207,7 @@ public sealed partial class GameController : Component
 			return;
 
 		player.OwnerId = 0;
+		player.SteamId = 0;
 		player.PlayerName = "Player";
 		player.IsReady = false;
 		player.IsDisconnected = false;
@@ -239,6 +215,7 @@ public sealed partial class GameController : Component
 		player.TurnTimeoutCount = 0;
 		ResetPlayerForGame( player );
 		player.SelectedPieceId = PieceCatalog.DefaultPieceId;
+		player.SelectedDiceSkinId = DiceSkinCatalog.DefaultDiceSkinId;
 	}
 
 	private void ResetPlayerForGame( PlayerState player )
@@ -254,6 +231,7 @@ public sealed partial class GameController : Component
 		player.CommunityChestGetOutOfJailFreeCards = 0;
 		player.ConsecutiveDoubles = 0;
 		player.SkipsNextTurn = false;
+		player.IsReturningFromVacationCashBreak = false;
 		player.IsBankrupt = false;
 		player.IsDisconnected = false;
 		player.AbandonEndsAt = 0f;
@@ -273,7 +251,8 @@ public sealed partial class GameController : Component
 		PendingPurchaseSpaceIndex = -1;
 		ClearAuction();
 		NextTradeId = 1;
-		FreeParkingBank = 0;
+		NextTradeHistoryId = 1;
+		ResetVacationCashBankToMinimum();
 		CurrentTurnGetsExtraRoll = false;
 		CurrentTurnConsecutiveDoubles = 0;
 		CurrentTurnDoublesPlayerIndex = -1;
@@ -286,6 +265,7 @@ public sealed partial class GameController : Component
 		StartingPlayerCount = 0;
 		pausedTurnRemainingSeconds = 0f;
 		pausedAuctionRemainingSeconds = 0f;
+		auctionPausedTurnRemainingSeconds = 0f;
 		LocalSelectedDrawnCardText = "";
 		ClearMovementRecoveryState();
 		ClearPendingForcedPayment();
@@ -295,8 +275,27 @@ public sealed partial class GameController : Component
 		PropertyImprovements.Clear();
 		MortgagedProperties.Clear();
 		PendingTrades.Clear();
+		TradeHistory.Clear();
 		TradeViewers.Clear();
+		TradeEditors.Clear();
 		TokenPhysicsStates.Clear();
+		StatsLogDiceFaceCounts.Clear();
+		DiceHistory.Clear();
+		AdminHistory.Clear();
+		MoveHistory.Clear();
+		GambleHistory.Clear();
+		GambleSessions.Clear();
+		NextGambleHistoryId = 1;
+		NextGambleSessionId = 1;
+		CheatsEnabledEver = false;
+		AdminCommandUsedEver = false;
+		MatchConfigChangedAfterStart = false;
+		DiceCommitmentHash = "";
+		RevealedSeed = "";
+		NextDiceRollIndex = 0;
+		NextAdminHistoryId = 1;
+		NextMoveHistoryTurnNumber = 1;
+		RestoreMatchIntegritySeed( "" );
 
 		foreach ( var player in Players )
 		{
@@ -319,21 +318,28 @@ public sealed partial class GameController : Component
 
 		if ( emptySlot is null )
 		{
-			Log.Warning( $"No available player slot for {connection.DisplayName}" );
+			Log.Warning( $"No available player slot for {GetConnectionPlayerName( connection )}" );
 			return;
 		}
 
 		emptySlot.SteamId = connection.SteamId;
 		emptySlot.OwnerId = connection.SteamId;
-		emptySlot.PlayerName = connection.DisplayName;
+		emptySlot.PlayerName = GetConnectionPlayerName( connection );
 		emptySlot.IsReady = false;
 		ResetPlayerForGame( emptySlot );
 		emptySlot.SelectedPieceId = PieceCatalog.DefaultPieceId;
+		emptySlot.SelectedDiceSkinId = DiceSkinCatalog.DefaultDiceSkinId;
 
 		if ( PreferredHostOwnerId == 0 )
 			PreferredHostOwnerId = connection.SteamId;
 
-		Log.Info( $"Assigned {connection.DisplayName} to player slot {Players.IndexOf( emptySlot )}" );
+		Log.Info( $"Assigned {emptySlot.PlayerName} to player slot {Players.IndexOf( emptySlot )}" );
+	}
+
+	private static string GetConnectionPlayerName( Connection connection, string fallback = "Player" )
+	{
+		var name = connection?.Name ?? "";
+		return string.IsNullOrWhiteSpace( name ) ? fallback : name;
 	}
 
 	private void HandleDisconnectedPlayerSlot( PlayerState player )
@@ -377,6 +383,8 @@ public sealed partial class GameController : Component
 			else
 				AdvanceTurn();
 		}
+
+		TryAutosaveStablePoint( "Player abandoned" );
 	}
 
 	private void RemoveTradesForPlayer( int playerIndex )
@@ -387,6 +395,7 @@ public sealed partial class GameController : Component
 			{
 				PendingTrades.Remove( trade.Id );
 				TradeViewers.Remove( trade.Id );
+				TradeEditors.Remove( trade.Id );
 			}
 		}
 	}

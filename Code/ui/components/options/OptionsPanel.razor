@@ -1,0 +1,62 @@
+@namespace Sandbox.ui.components
+@using Sandbox;
+@using Sandbox.UI;
+@using Sandbox.ui.components.buttons;
+@using System;
+@using System.Linq;
+@inherits Panel
+<root class="@RootClasses">
+	@if ( IsOpen )
+	{
+		<div class="@ScreenClasses">
+			<div class="@PanelClasses">
+				<div class="@HeaderClasses">
+					<div class="@HeaderTextClasses">
+						@if ( !string.IsNullOrWhiteSpace( Kicker ) )
+						{
+							<div class="@KickerClasses">@Kicker</div>
+						}
+						@if ( !string.IsNullOrWhiteSpace( Title ) )
+						{
+							<div class="@TitleClasses">@Title</div>
+						}
+					</div>
+					<CloseButton Variant="@CloseButtonVariant" Title="Close" OnClick="@OnClose"></CloseButton>
+				</div>
+				@ChildContent
+			</div>
+			@OverlayContent
+		</div>
+	}
+</root>
+
+@code
+{
+	[Parameter] public bool IsOpen { get; set; }
+	[Parameter] public string Kicker { get; set; } = "";
+	[Parameter] public string Title { get; set; } = "";
+	[Parameter] public Action OnClose { get; set; }
+	[Parameter] public string RootVariant { get; set; } = "";
+	[Parameter] public string ScreenVariant { get; set; } = "";
+	[Parameter] public string PanelVariant { get; set; } = "";
+	[Parameter] public string HeaderVariant { get; set; } = "";
+	[Parameter] public string HeaderTextVariant { get; set; } = "";
+	[Parameter] public string KickerVariant { get; set; } = "";
+	[Parameter] public string TitleVariant { get; set; } = "";
+	[Parameter] public string CloseButtonVariant { get; set; } = "options-panel-close-button";
+	[Parameter] public new RenderFragment ChildContent { get; set; }
+	[Parameter] public RenderFragment OverlayContent { get; set; }
+
+	private string RootClasses => BuildClass( "options-panel-root", RootVariant, IsOpen ? "open" : "" );
+	private string ScreenClasses => BuildClass( "options-panel-screen", ScreenVariant );
+	private string PanelClasses => BuildClass( "options-panel", PanelVariant );
+	private string HeaderClasses => BuildClass( "options-panel-header", HeaderVariant );
+	private string HeaderTextClasses => BuildClass( "options-panel-header-text", HeaderTextVariant );
+	private string KickerClasses => BuildClass( "options-panel-kicker", KickerVariant );
+	private string TitleClasses => BuildClass( "options-panel-title", TitleVariant );
+
+	private static string BuildClass( params string[] classes )
+	{
+		return string.Join( " ", classes.Where( value => !string.IsNullOrWhiteSpace( value ) ) );
+	}
+}

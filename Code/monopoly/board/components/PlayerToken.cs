@@ -25,11 +25,32 @@ public sealed class PlayerToken : Component
 	[Property] public float CollisionImpulseScale { get; set; } = 0.85f;
 	[Property] public bool ReturnToSpaceAfterPhysics { get; set; } = true;
 	[Property] public float SharedSpaceOffsetDistance { get; set; } = 10f;
+	[Property] public float TokenControlGroundMoveSpeed { get; set; } = 95f;
+	[Property] public float TokenControlAirMoveSpeed { get; set; } = 95f;
+	[Property] public float TokenControlTurnSpeed { get; set; } = 12f;
+	[Property] public float TokenControlGroundAcceleration { get; set; } = 900f;
+	[Property] public float TokenControlAirAcceleration { get; set; } = 120f;
+	[Property] public float TokenControlFriction { get; set; } = 8f;
+	[Property] public float TokenControlStopSpeed { get; set; } = 35f;
+	[Property] public float TokenControlGravity { get; set; } = 800f;
+	[Property] public float TokenControlJumpSpeed { get; set; } = 260f;
+	[Property] public float TokenControlGroundSnapDistance { get; set; } = 8f;
+	[Property] public float TokenControlHullRadius { get; set; } = 12f;
+	[Property] public float TokenControlHullHeight { get; set; } = 36f;
+	[Property] public int TokenControlMaxSlideBumps { get; set; } = 4;
+	[Property] public float TokenControlReplicationRate { get; set; } = 20f;
+	[Property] public float TokenControlRemoteTimeout { get; set; } = 0.35f;
+	[Property] public float TokenControlRemoteLerpSpeed { get; set; } = 18f;
+	public float TokenControlBoardPadding { get; set; } = 20f;
+	[Property] public float BoardSpotSilhouetteAlpha { get; set; } = 0.28f;
 
 	private SkinnedModelRenderer renderer;
 	private ModelRenderer markerRenderer;
 	private GameObject markerObject;
 	private HighlightOutline markerHighlight;
+	private bool hasOriginalPieceMaterialOverrides;
+	private Material originalModelMaterialOverride;
+	private Material originalSkinnedMaterialOverride;
 	private bool walkingAnim;
 	private bool hasAppliedWalkingAnim;
 	private bool requestedWalking;
@@ -41,12 +62,35 @@ public sealed class PlayerToken : Component
 	private bool isReplicatedPhysics;
 	private string activeReplicatedPhysicsKey;
 	private string completedReplicatedPhysicsKey;
+	private PieceDefinition currentPieceDefinition;
+	private Color currentPlayerColor = Color.White;
+	private GameObject boardSpotSilhouetteObject;
+	private ModelRenderer boardSpotSilhouetteRenderer;
+	private HighlightOutline boardSpotSilhouetteHighlight;
+	private Vector3 tokenControlVelocity;
+	private bool tokenControlGrounded;
+	private float lastTokenControlReplicatedAt;
+	private Vector3 remoteTokenControlPosition;
+	private Rotation remoteTokenControlRotation;
+	private Vector3 remoteTokenControlVelocity;
+	private bool remoteTokenControlWalking;
+	private float remoteTokenControlActiveUntil;
+
+	public bool IsLocalPlayerToken => PlayerState?.IsOwner == true;
+	public bool CanAlwaysControlTokenCameraMode => IsLocalPlayerToken && GameController.Instance?.Config?.TokenCameraModeCanAlwaysControl == true;
+	public bool ShouldReleaseTokenMouseForTokenUi => CanAlwaysControlTokenCameraMode && Input.Down( "Score" );
+	public bool IsLocallyControllable => CanUseTokenController();
 
 
 	protected override void OnStart()
 	{
 		renderer = GameObject.GetComponentInChildren<SkinnedModelRenderer>();
 		EnsurePlayerMarker();
+	}
+
+	protected override void OnDestroy()
+	{
+		DestroyBoardSpotSilhouette();
 	}
 
 	protected override void OnUpdate()
@@ -65,6 +109,26 @@ public sealed class PlayerToken : Component
 
 		var target = GetSpaceTargetPosition();
 		var targetRot = GetRotation( PlayerState.SpaceIndex );
+
+		if ( IsLocallyControllable )
+		{
+			UpdateBoardSpotSilhouette( target, targetRot );
+			UpdateLocalTokenController();
+			return;
+		}
+
+		tokenControlVelocity = Vector3.Zero;
+		tokenControlGrounded = false;
+
+		if ( IsRemoteTokenControlActive() )
+		{
+			UpdateBoardSpotSilhouette( target, targetRot );
+			UpdateRemoteTokenControl();
+			return;
+		}
+
+		DestroyBoardSpotSilhouette();
+
 		var isMoving = !GameObject.WorldPosition.AlmostEqual( target, 0.1f );
 
         if (isMoving)
@@ -85,6 +149,370 @@ public sealed class PlayerToken : Component
 
 		ApplyWalkingAnim( requestedWalking || isMoving );
 		//ApplyDirection(targetRot.Forward);
+	}
+
+	private bool CanUseTokenController()
+	{
+		if ( Board is null || PlayerState is null || PlayerState.IsBankrupt || !IsLocalPlayerToken )
+			return false;
+
+		var game = GameController.Instance;
+		if ( game is null || game.MatchState != MatchLifecycleState.InGame )
+			return false;
+
+		if ( game.CurrentPlayer == PlayerState && !CanAlwaysControlTokenCameraMode )
+			return false;
+
+		if ( GameCamera.Instance?.IsGameplayMovementLocked == true )
+			return false;
+
+		if ( GameCamera.Instance?.IsTokenModeRequested != true )
+			return false;
+
+		if ( game.HasBlockingPopup )
+			return false;
+
+		return !isGrabbed && !isThrowing;
+	}
+
+	private void UpdateLocalTokenController()
+	{
+		var input = GetTokenMoveInput();
+		var move = GetCameraRelativeMove( input );
+		var wishDirection = move.Length > 0.001f ? move.Normal : Vector3.Zero;
+
+		UpdateTokenGroundState();
+		var maxWishSpeed = tokenControlGrounded ? TokenControlGroundMoveSpeed : TokenControlAirMoveSpeed;
+		var wishSpeed = maxWishSpeed * MathX.Clamp( input.Length, 0f, 1f );
+
+		if ( tokenControlGrounded )
+		{
+			ApplyTokenGroundFriction();
+
+			if ( ShouldJump() )
+			{
+				tokenControlVelocity.z = TokenControlJumpSpeed;
+				tokenControlGrounded = false;
+			}
+		}
+
+		AccelerateToken( wishDirection, wishSpeed, tokenControlGrounded ? TokenControlGroundAcceleration : TokenControlAirAcceleration );
+
+		if ( !tokenControlGrounded )
+			tokenControlVelocity.z -= TokenControlGravity * Time.Delta;
+
+		MoveTokenWithSlide( tokenControlVelocity * Time.Delta );
+
+		if ( tokenControlGrounded && tokenControlVelocity.z < 0f )
+			tokenControlVelocity.z = 0f;
+
+		var horizontalVelocity = tokenControlVelocity.WithZ( 0f );
+		if ( horizontalVelocity.Length > 1f )
+		{
+			var targetYaw = MathF.Atan2( horizontalVelocity.y, horizontalVelocity.x ) * 180f / MathF.PI;
+			GameObject.WorldRotation = GameObject.WorldRotation.LerpTo(
+				Rotation.From( 0f, targetYaw, 0f ),
+				Time.Delta * TokenControlTurnSpeed
+			);
+		}
+
+		ApplyWalkingAnim( horizontalVelocity.Length > 2f );
+		PublishTokenControlTransform( horizontalVelocity.Length > 2f );
+	}
+
+	private bool ShouldJump()
+	{
+		return GameController.Instance?.Config?.AutoBHopEnabled == true
+			? Input.Down( "Jump" )
+			: Input.Pressed( "Jump" );
+	}
+
+	private void PublishTokenControlTransform( bool walking )
+	{
+		if ( GameController.Instance is null )
+			return;
+
+		var interval = TokenControlReplicationRate > 0f ? 1f / TokenControlReplicationRate : 0f;
+		if ( interval > 0f && Time.Now - lastTokenControlReplicatedAt < interval )
+			return;
+
+		lastTokenControlReplicatedAt = Time.Now;
+		GameController.Instance.RequestTokenControlTransform(
+			GameObject.WorldPosition,
+			GameObject.WorldRotation,
+			tokenControlVelocity,
+			walking
+		);
+	}
+
+	public void ApplyReplicatedTokenControlTransform( int playerIndex, Vector3 position, Rotation rotation, Vector3 velocity, bool walking )
+	{
+		if ( IsLocalPlayerToken || GameController.Instance is null || PlayerState is null )
+			return;
+
+		if ( GameController.Instance.GetPlayerIndex( PlayerState ) != playerIndex )
+			return;
+
+		remoteTokenControlPosition = position;
+		remoteTokenControlRotation = rotation;
+		remoteTokenControlVelocity = velocity;
+		remoteTokenControlWalking = walking;
+		remoteTokenControlActiveUntil = Time.Now + Math.Max( TokenControlRemoteTimeout, 0.05f );
+	}
+
+	public void SnapToAssignedSpace()
+	{
+		if ( Board is null || PlayerState is null )
+			return;
+
+		isGrabbed = false;
+		isThrowing = false;
+		isReplicatedPhysics = false;
+		throwVelocity = Vector3.Zero;
+		tokenControlVelocity = Vector3.Zero;
+		tokenControlGrounded = false;
+		remoteTokenControlVelocity = Vector3.Zero;
+		remoteTokenControlWalking = false;
+		remoteTokenControlActiveUntil = 0f;
+		activeReplicatedPhysicsKey = null;
+
+		GameObject.WorldPosition = GetSpaceTargetPosition();
+		GameObject.LocalRotation = GetRotation( PlayerState.SpaceIndex );
+		ApplyWalkingAnim( false );
+	}
+
+	private bool IsRemoteTokenControlActive()
+	{
+		return remoteTokenControlActiveUntil > Time.Now;
+	}
+
+	private void UpdateRemoteTokenControl()
+	{
+		var lerpAmount = Time.Delta * TokenControlRemoteLerpSpeed;
+		GameObject.WorldPosition = GameObject.WorldPosition.LerpTo( remoteTokenControlPosition, lerpAmount );
+		GameObject.WorldRotation = GameObject.WorldRotation.LerpTo( remoteTokenControlRotation, lerpAmount );
+		ApplyWalkingAnim( remoteTokenControlWalking || remoteTokenControlVelocity.WithZ( 0f ).Length > 2f );
+	}
+
+	private Vector2 GetTokenMoveInput()
+	{
+		var analog = Input.AnalogMove;
+		var input = new Vector2( -analog.y, analog.x );
+
+		if ( input.Length <= 0.001f )
+		{
+			if ( Input.Down( "Forward" ) )
+				input.y += 1f;
+
+			if ( Input.Down( "Backward" ) )
+				input.y -= 1f;
+
+			if ( Input.Down( "Right" ) )
+				input.x += 1f;
+
+			if ( Input.Down( "Left" ) )
+				input.x -= 1f;
+		}
+
+		return input.Length > 1f ? input.Normal : input;
+	}
+
+	private Vector3 GetCameraRelativeMove( Vector2 input )
+	{
+		var cameraRotation = Scene?.Camera?.GameObject.WorldRotation ?? GameObject.WorldRotation;
+		var forward = cameraRotation.Forward.WithZ( 0f );
+		var right = cameraRotation.Right.WithZ( 0f );
+
+		if ( forward.Length <= 0.001f )
+			forward = GameObject.WorldRotation.Forward.WithZ( 0f );
+
+		if ( right.Length <= 0.001f )
+			right = GameObject.WorldRotation.Right.WithZ( 0f );
+
+		return forward.Normal * input.y + right.Normal * input.x;
+	}
+
+	private void UpdateTokenGroundState()
+	{
+		var groundHeight = GetSpaceTargetPosition().z;
+		var wasGrounded = tokenControlGrounded;
+		var distanceToGround = GameObject.WorldPosition.z - groundHeight;
+		tokenControlGrounded = distanceToGround <= TokenControlGroundSnapDistance && tokenControlVelocity.z <= 0f;
+
+		if ( tokenControlGrounded )
+		{
+			GameObject.WorldPosition = GameObject.WorldPosition.WithZ( groundHeight );
+			if ( tokenControlVelocity.z < 0f )
+				tokenControlVelocity.z = 0f;
+		}
+		else if ( wasGrounded )
+		{
+			tokenControlVelocity.z = Math.Min( tokenControlVelocity.z, 0f );
+		}
+	}
+
+	private void ApplyTokenGroundFriction()
+	{
+		var horizontalVelocity = tokenControlVelocity.WithZ( 0f );
+		var speed = horizontalVelocity.Length;
+		if ( speed <= 0.001f )
+			return;
+
+		var control = Math.Max( speed, TokenControlStopSpeed );
+		var drop = control * TokenControlFriction * Time.Delta;
+		var newSpeed = Math.Max( speed - drop, 0f );
+		tokenControlVelocity = horizontalVelocity * (newSpeed / speed) + Vector3.Up * tokenControlVelocity.z;
+	}
+
+	private void AccelerateToken( Vector3 wishDirection, float wishSpeed, float acceleration )
+	{
+		if ( wishDirection.Length <= 0.001f || wishSpeed <= 0f || acceleration <= 0f )
+			return;
+
+		var currentSpeed = Vector3.Dot( tokenControlVelocity, wishDirection );
+		var addSpeed = wishSpeed - currentSpeed;
+		if ( addSpeed <= 0f )
+			return;
+
+		var accelSpeed = Math.Min( acceleration * Time.Delta * wishSpeed, addSpeed );
+		tokenControlVelocity += wishDirection * accelSpeed;
+	}
+
+	private void MoveTokenWithSlide( Vector3 move )
+	{
+		if ( move.Length <= 0.001f )
+			return;
+
+		var position = GameObject.WorldPosition;
+		var remaining = move;
+		var maxBumps = Math.Max( TokenControlMaxSlideBumps, 1 );
+
+		for ( var bump = 0; bump < maxBumps; bump++ )
+		{
+			var targetPosition = ClampPositionToBoard( position + remaining );
+			var trace = TraceTokenHull( position, targetPosition );
+
+			if ( !trace.Hit || trace.StartedSolid )
+			{
+				position = targetPosition;
+				break;
+			}
+
+			position = trace.EndPosition;
+
+			var normal = trace.Normal;
+			tokenControlVelocity -= normal * Vector3.Dot( tokenControlVelocity, normal );
+			remaining -= normal * Vector3.Dot( remaining, normal );
+			remaining *= MathX.Clamp( 1f - trace.Fraction, 0f, 1f );
+
+			if ( remaining.Length <= 0.001f )
+				break;
+		}
+
+		GameObject.WorldPosition = ClampPositionToBoard( position );
+	}
+
+	private SceneTraceResult TraceTokenHull( Vector3 startPosition, Vector3 endPosition )
+	{
+		var hull = GetTokenControlHull();
+
+		if ( Scene is null )
+			return default;
+
+		var trace = Scene.Trace
+			.Box( hull, startPosition, endPosition )
+			.WithoutTags( "trigger" )
+			.Run();
+
+		return trace.GameObject is not null && IsTokenObject( trace.GameObject )
+			? default
+			: trace;
+	}
+
+	private BBox GetTokenControlHull()
+	{
+		var radius = Math.Max( TokenControlHullRadius, 1f );
+		var height = Math.Max( TokenControlHullHeight, radius * 2f );
+		return new BBox(
+			new Vector3( -radius, -radius, 0f ),
+			new Vector3( radius, radius, height )
+		);
+	}
+
+	private Vector3 ClampPositionToBoard( Vector3 position )
+	{
+		if ( Board?.Spaces is null || Board.Spaces.Count == 0 || TokenControlBoardPadding <= 0f )
+			return position;
+
+		var min = new Vector3( float.MaxValue, float.MaxValue, position.z );
+		var max = new Vector3( float.MinValue, float.MinValue, position.z );
+
+		foreach ( var space in Board.Spaces )
+		{
+			if ( space is null )
+				continue;
+
+			var spacePosition = space.TokenPosition;
+			min.x = Math.Min( min.x, spacePosition.x );
+			min.y = Math.Min( min.y, spacePosition.y );
+			max.x = Math.Max( max.x, spacePosition.x );
+			max.y = Math.Max( max.y, spacePosition.y );
+		}
+
+		position.x = MathX.Clamp( position.x, min.x - TokenControlBoardPadding, max.x + TokenControlBoardPadding );
+		position.y = MathX.Clamp( position.y, min.y - TokenControlBoardPadding, max.y + TokenControlBoardPadding );
+		return position;
+	}
+
+	private void UpdateBoardSpotSilhouette( Vector3 targetPosition, Rotation targetRotation )
+	{
+		EnsureBoardSpotSilhouette();
+
+		if ( boardSpotSilhouetteObject is null )
+			return;
+
+		boardSpotSilhouetteObject.WorldPosition = targetPosition;
+		boardSpotSilhouetteObject.WorldRotation = targetRotation;
+	}
+
+	private void EnsureBoardSpotSilhouette()
+	{
+		if ( boardSpotSilhouetteObject is not null && boardSpotSilhouetteObject.IsValid() )
+			return;
+
+		var piece = currentPieceDefinition ?? PieceCatalog.GetByIdOrDefault( PlayerState?.SelectedPieceId ?? PieceCatalog.DefaultPieceId );
+		if ( piece is null )
+			return;
+
+		var model = Model.Load( piece.ModelPath );
+		if ( model is null )
+			return;
+
+		boardSpotSilhouetteObject = new GameObject( true, $"{GameObject.Name}_BoardSpotSilhouette" );
+		var visualObject = new GameObject( true, "Visual" );
+		visualObject.SetParent( boardSpotSilhouetteObject );
+		visualObject.LocalPosition = piece.LocalVisualOffset;
+		visualObject.LocalRotation = Rotation.Identity;
+		visualObject.LocalScale = piece.LocalVisualScale;
+
+		boardSpotSilhouetteRenderer = visualObject.Components.Create<ModelRenderer>();
+		boardSpotSilhouetteRenderer.Model = model;
+		boardSpotSilhouetteRenderer.Tint = currentPlayerColor.WithAlpha( BoardSpotSilhouetteAlpha );
+
+		boardSpotSilhouetteHighlight = visualObject.Components.Create<HighlightOutline>();
+		boardSpotSilhouetteHighlight.Color = currentPlayerColor.WithAlpha( 0.85f ).Saturate( 1f );
+		boardSpotSilhouetteHighlight.InsideColor = currentPlayerColor.WithAlpha( BoardSpotSilhouetteAlpha );
+	}
+
+	private void DestroyBoardSpotSilhouette()
+	{
+		if ( boardSpotSilhouetteObject is null )
+			return;
+
+		boardSpotSilhouetteObject.Destroy();
+		boardSpotSilhouetteObject = null;
+		boardSpotSilhouetteRenderer = null;
+		boardSpotSilhouetteHighlight = null;
 	}
 
 	private void UpdatePhysicsTestGrab()
@@ -419,6 +847,9 @@ public sealed class PlayerToken : Component
 	public void ApplyPieceDefinition( PieceDefinition piece )
 	{
 		var selectedPiece = piece ?? PieceCatalog.GetByIdOrDefault( PieceCatalog.DefaultPieceId );
+		currentPieceDefinition = selectedPiece;
+		DestroyBoardSpotSilhouette();
+
 		var visualObject = GameObject.Children.FirstOrDefault( child => string.Equals( child?.Name, "Visual", StringComparison.OrdinalIgnoreCase ) );
 		var renderHost = visualObject?.Children.FirstOrDefault() ?? visualObject;
 		if ( renderHost is null )
@@ -455,8 +886,37 @@ public sealed class PlayerToken : Component
 		HeightOffset = selectedPiece.HeightOffset;
 	}
 
+	public void ApplyPieceMaterialOverride( Material material )
+	{
+		var visualObject = GameObject.Children.FirstOrDefault( child => string.Equals( child?.Name, "Visual", StringComparison.OrdinalIgnoreCase ) );
+		var renderHost = visualObject?.Children.FirstOrDefault() ?? visualObject;
+		if ( renderHost is null )
+			return;
+
+		var modelRenderer = renderHost.Components.Get<ModelRenderer>();
+		var skinnedRenderer = renderHost.Components.Get<SkinnedModelRenderer>();
+		RememberOriginalPieceMaterialOverrides( modelRenderer, skinnedRenderer );
+
+		if ( modelRenderer is not null )
+			modelRenderer.MaterialOverride = material ?? originalModelMaterialOverride;
+
+		if ( skinnedRenderer is not null )
+			skinnedRenderer.MaterialOverride = material ?? originalSkinnedMaterialOverride;
+	}
+
+	private void RememberOriginalPieceMaterialOverrides( ModelRenderer modelRenderer, SkinnedModelRenderer skinnedRenderer )
+	{
+		if ( hasOriginalPieceMaterialOverrides )
+			return;
+
+		originalModelMaterialOverride = modelRenderer?.MaterialOverride;
+		originalSkinnedMaterialOverride = skinnedRenderer?.MaterialOverride;
+		hasOriginalPieceMaterialOverrides = true;
+	}
+
 	public void ApplyPlayerColor( Color color )
 	{
+		currentPlayerColor = color;
 		EnsurePlayerMarker();
 		if ( markerRenderer is not null )
 			markerRenderer.Tint = color.WithAlpha( 0f );
@@ -465,6 +925,15 @@ public sealed class PlayerToken : Component
 		{
 			markerHighlight.Color = color.WithAlpha( 1f ).Saturate( 1f );
 			markerHighlight.InsideColor = color.WithAlpha ( 0.55f );
+		}
+
+		if ( boardSpotSilhouetteRenderer is not null )
+			boardSpotSilhouetteRenderer.Tint = currentPlayerColor.WithAlpha( BoardSpotSilhouetteAlpha );
+
+		if ( boardSpotSilhouetteHighlight is not null )
+		{
+			boardSpotSilhouetteHighlight.Color = currentPlayerColor.WithAlpha( 0.85f ).Saturate( 1f );
+			boardSpotSilhouetteHighlight.InsideColor = currentPlayerColor.WithAlpha( BoardSpotSilhouetteAlpha );
 		}
 	}
 

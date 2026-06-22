@@ -139,10 +139,12 @@ public sealed partial class GameController : Component
 
 		var ownedSetsBeforePurchase = CaptureOwnedSetKeys( playerIndex );
 		PropertyOwners[def.Index] = playerIndex;
+		ReportPropertyAcquiredAchievements( playerIndex, def );
 		ShowPropertyBoughtPopup( player, def );
 		ShowNewlyOwnedSetPopups( ownedSetsBeforePurchase, playerIndex );
 		Log.Info( $"{player.PlayerName} bought {def.DisplayName} for ${def.Price}." );
 		message = $"{player.PlayerName} bought {def.DisplayName}.";
+		TryAutosaveStablePoint( "Property purchased" );
 		return true;
 	}
 
@@ -220,6 +222,7 @@ public sealed partial class GameController : Component
 		foreach ( var def in propertiesToBuy )
 		{
 			PropertyOwners[def.Index] = playerIndex;
+			ReportPropertyAcquiredAchievements( playerIndex, def );
 			Log.Info( $"{player.PlayerName} bought {def.DisplayName} for ${def.Price}." );
 		}
 
@@ -235,6 +238,7 @@ public sealed partial class GameController : Component
 		ShowNewlyOwnedSetPopups( ownedSetsBeforePurchase, playerIndex );
 
 		message = $"{player.PlayerName} bought {propertiesToBuy.Count} properties for ${totalPrice}.";
+		TryAutosaveStablePoint( "Property set purchased" );
 		return true;
 	}
 
@@ -274,6 +278,7 @@ public sealed partial class GameController : Component
 
 		PendingPurchaseSpaceIndex = -1;
 		SetPostActionPhase();
+		TryAutosaveStablePoint( "Property purchased" );
 	}
 
 	[Button( "Skip Pending Property" )]
@@ -295,6 +300,7 @@ public sealed partial class GameController : Component
 
 		PendingPurchaseSpaceIndex = -1;
 		SetPostActionPhase();
+		TryAutosaveStablePoint( "Property skipped" );
 	}
 
 	private void BuyUnownedPropertyForPlayer( PlayerState player, SpaceDef def, int ownerIndex )
@@ -304,6 +310,7 @@ public sealed partial class GameController : Component
 
 		var ownedSetsBeforePurchase = CaptureOwnedSetKeys( ownerIndex );
 		PropertyOwners[def.Index] = ownerIndex;
+		ReportPropertyAcquiredAchievements( ownerIndex, def );
 		ShowNewlyOwnedSetPopups( ownedSetsBeforePurchase, ownerIndex );
 
 		Log.Info( $"{player.PlayerName} bought {def.DisplayName} for ${def.Price}." );

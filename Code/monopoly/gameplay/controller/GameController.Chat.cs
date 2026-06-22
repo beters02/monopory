@@ -1,12 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 using Sandbox;
 
 public sealed partial class GameController
 {
-	private static readonly Regex MentionRegex = new( @"(?<!\S)@([^\s@]+)", RegexOptions.Compiled );
+	private static readonly char[] MentionTrailingCharacters = ['.', ',', '!', '?', ':', ';', ')', ']', '}'];
 
 	[Rpc.Host]
 	public void RequestSendChatMessage( string rawMessage )
@@ -14,12 +13,15 @@ public sealed partial class GameController
 		if ( Rpc.Caller is null )
 			return;
 
-		var message = (rawMessage ?? "").Trim();
+		var message = (rawMessage ?? "").Replace( '\u00A0', ' ' ).Trim();
 		if ( string.IsNullOrWhiteSpace( message ) )
 			return;
 
 		if ( message.Length > MaxChatMessageLength )
 			message = message[..MaxChatMessageLength];
+
+		if ( TryHandleChatCommand( message ) )
+			return;
 
 		var sender = GetPlayerForConnection( Rpc.Caller );
 		message = NormalizeMentionSpacing( message );
@@ -89,28 +91,11 @@ public sealed partial class GameController
 		if ( string.IsNullOrWhiteSpace( message ) || Players is null || Players.Count == 0 )
 			yield break;
 
-		var mentions = new HashSet<string>( StringComparer.OrdinalIgnoreCase );
-		foreach ( Match match in MentionRegex.Matches( message ) )
+		var mentions = new HashSet<PlayerState>();
+		foreach ( var mention in FindPlayerMentions( message ) )
 		{
-			var token = match.Groups[1].Value.TrimEnd( '.', ',', '!', '?', ':', ';', ')', ']', '}' );
-			if ( !string.IsNullOrWhiteSpace( token ) )
-				mentions.Add( token );
-		}
-
-		if ( mentions.Count == 0 )
-			yield break;
-
-		foreach ( var player in Players )
-		{
-			if ( player is null || !player.IsAssigned )
-				continue;
-
-			var playerName = (player.PlayerName ?? "").Trim();
-			if ( string.IsNullOrWhiteSpace( playerName ) )
-				continue;
-
-			if ( mentions.Contains( playerName ) )
-				yield return player;
+			if ( mentions.Add( mention.Player ) )
+				yield return mention.Player;
 		}
 	}
 
@@ -119,28 +104,79 @@ public sealed partial class GameController
 		if ( string.IsNullOrWhiteSpace( message ) )
 			return message ?? "";
 
-		var mentionedNames = GetMentionedPlayers( message )
-			.Select( player => (player.PlayerName ?? "").Trim())
-			.Where( name => !string.IsNullOrWhiteSpace( name ) )
-			.ToHashSet( StringComparer.OrdinalIgnoreCase );
-
-		if ( mentionedNames.Count == 0 )
+		var mentions = FindPlayerMentions( message, true, true ).ToList();
+		if ( mentions.Count == 0 )
 			return message;
 
-		return MentionRegex.Replace( message, match =>
+		var normalized = message;
+		for ( var i = mentions.Count - 1; i >= 0; i-- )
 		{
-			var full = match.Value;
-			var name = match.Groups[1].Value.TrimEnd( '.', ',', '!', '?', ':', ';', ')', ']', '}' );
-			if ( !mentionedNames.Contains( name ) )
-				return full;
+			var mention = mentions[i];
+			if ( mention.End >= normalized.Length || char.IsWhiteSpace( normalized[mention.End] ) )
+				continue;
 
-			var matchEnd = match.Index + match.Length;
-			if ( matchEnd < message.Length && !char.IsWhiteSpace( message[matchEnd] ) )
-				return $"{full} ";
+			normalized = normalized.Insert( mention.End, " " );
+		}
 
-			return full;
-		} );
+		return normalized;
 	}
+
+	private IEnumerable<PlayerMention> FindPlayerMentions( string message, bool allowMissingTrailingSpace = false, bool forceMentionBoundary = false )
+	{
+		if ( string.IsNullOrWhiteSpace( message ) || Players is null )
+			yield break;
+
+		var mentionablePlayers = Players
+			.Where( player => player is not null && player.IsAssigned )
+			.Select( player => new
+			{
+				Player = player,
+				Name = (player.PlayerName ?? "").Trim()
+			} )
+			.Where( entry => !string.IsNullOrWhiteSpace( entry.Name ) )
+			.OrderByDescending( entry => entry.Name.Length )
+			.ToList();
+
+		if ( mentionablePlayers.Count == 0 )
+			yield break;
+
+		for ( var index = 0; index < message.Length; index++ )
+		{
+			if ( message[index] != '@' || (index > 0 && !char.IsWhiteSpace( message[index - 1] )) )
+				continue;
+
+			var entriesToSearch = forceMentionBoundary
+				? mentionablePlayers
+					.OrderByDescending( entry => entry.Name.Contains( ' ' ) )
+					.ThenBy( entry => entry.Name.Length )
+					.ToList()
+				: mentionablePlayers;
+
+			foreach ( var entry in entriesToSearch )
+			{
+				var nameStart = index + 1;
+				if ( nameStart + entry.Name.Length > message.Length )
+					continue;
+
+				if ( !message.AsSpan( nameStart, entry.Name.Length ).Equals( entry.Name, StringComparison.OrdinalIgnoreCase ) )
+					continue;
+
+				var nameEnd = nameStart + entry.Name.Length;
+				var end = nameEnd;
+				if ( end < message.Length && MentionTrailingCharacters.Contains( message[end] ) )
+					end++;
+
+				if ( end < message.Length && !char.IsWhiteSpace( message[end] ) && !allowMissingTrailingSpace )
+					continue;
+
+				yield return new PlayerMention( index, end, entry.Player );
+				index = end - 1;
+				break;
+			}
+		}
+	}
+
+	private readonly record struct PlayerMention( int Start, int End, PlayerState Player );
 
 	public void SendSystemChatMessage( string message )
 	{
@@ -157,6 +193,27 @@ public sealed partial class GameController
 		AppendChatMessage( "System", text );
 	}
 
+	public static void SendSystemChatMessageToConnection( Connection caller, string message )
+	{
+		if ( caller is null || string.IsNullOrWhiteSpace( message ) )
+			return;
+
+		using ( Rpc.FilterInclude( caller ) )
+			Instance.AppendLocalChatMessage( "System", message );
+	}
+
+	[Rpc.Broadcast]
+	private void AppendLocalChatMessage( string senderName, string message )
+	{
+		Sandbox.ui.components.ChatOverlayPanel.AppendLocalChatMessage( senderName, message );
+	}
+
+	[Rpc.Broadcast]
+	private void ClearChatLocal( int newestClearedChatId )
+	{
+		Sandbox.ui.components.ChatOverlayPanel.ClearLocalChat( newestClearedChatId );
+	}
+
 	private static string SanitizeChatField( string value )
 	{
 		if ( string.IsNullOrEmpty( value ) )
@@ -169,3 +226,4 @@ public sealed partial class GameController
 			.Trim();
 	}
 }
+

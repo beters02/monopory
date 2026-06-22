@@ -16,7 +16,10 @@ public sealed partial class GameController : Component
 
 		var activePlayers = GetLobbyPlayers();
 		if ( HasVisualTokensForPlayers( activePlayers ) )
+		{
+			RefreshTokenMaterials();
 			return;
+		}
 
 		SpawnTokensForPlayers( activePlayers );
 	}
@@ -52,6 +55,7 @@ public sealed partial class GameController : Component
 			var colorIndex = player.ColorSlot >= 0 ? player.ColorSlot : i;
 			var playerColor = Theme is not null ? Theme.GetPlayerColor( colorIndex ) : Color.White;
 			token.ApplyPlayerColor( playerColor );
+			ApplyBankruptcyMaterial( token );
 
 			if ( Board is not null )
 				tokenObject.WorldPosition = Board.GetSpacePosition( player.SpaceIndex ) + Vector3.Up * token.HeightOffset;
@@ -87,6 +91,30 @@ public sealed partial class GameController : Component
 		}
 
 		return true;
+	}
+
+	private void RefreshTokenMaterials()
+	{
+		foreach ( var tokenObject in spawnedTokenObjects )
+		{
+			var token = tokenObject?.Components.Get<PlayerToken>();
+			if ( token is null )
+				continue;
+
+			ApplyBankruptcyMaterial( token );
+		}
+	}
+
+	private void ApplyBankruptcyMaterial( PlayerToken token )
+	{
+		if ( token is null )
+			return;
+
+		var material = token.PlayerState?.IsBankrupt == true
+			? BankruptedPieceMaterial?.Material
+			: null;
+
+		token.ApplyPieceMaterialOverride( material );
 	}
 
 	private void ClearExistingTokenObjects()

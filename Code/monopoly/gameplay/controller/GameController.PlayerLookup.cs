@@ -1,6 +1,5 @@
 using System.Threading.Tasks;
 using System;
-using System.Text.RegularExpressions;
 using Sandbox;
 
 public sealed partial class GameController : Component
@@ -21,11 +20,7 @@ public sealed partial class GameController : Component
 	public int LocalPlayerIndex => Players.IndexOf( LocalPlayer );
 	public bool IsLocalEffectiveHost
 	{
-		get
-		{
-			var localSteamId = GetLocalSteamId();
-			return localSteamId.HasValue && PreferredHostOwnerId != 0 && localSteamId.Value == PreferredHostOwnerId;
-		}
+		get => MonopolyApp.IsLocalEffectiveHost;
 	}
 
 	public int GetPlayerIndex( PlayerState player )
@@ -45,127 +40,7 @@ public sealed partial class GameController : Component
 
 	public PlayerState ResolvePlayerReference( string playerString, Connection caller = null )
 	{
-		if ( string.IsNullOrWhiteSpace( playerString ) )
-			return null;
-
-		playerString = TrimPlayerReference( playerString );
-
-		if ( playerString.Equals( "self", StringComparison.OrdinalIgnoreCase ) ||
-			playerString.Equals( "me", StringComparison.OrdinalIgnoreCase ) )
-		{
-			return GetPlayerForConnection( caller ) ?? LocalPlayer;
-		}
-
-		if ( long.TryParse( playerString, out var steamId ) )
-		{
-			var steamIdMatch = Players.FirstOrDefault( player => player is not null && player.OwnerId == steamId );
-			if ( steamIdMatch is not null )
-				return steamIdMatch;
-		}
-
-		if ( TryResolvePlayerByName( playerString, PlayerNameMatchMode.Exact, out var exactMatch ) )
-			return exactMatch;
-
-		if ( playerString.Contains( '_' ) &&
-			TryResolvePlayerByName( playerString.Replace( '_', ' ' ), PlayerNameMatchMode.Exact, out var underscoreMatch ) )
-		{
-			return underscoreMatch;
-		}
-
-		if ( TryResolvePlayerByName( playerString, PlayerNameMatchMode.RegexNormalizedExact, out var normalizedMatch ) )
-			return normalizedMatch;
-
-		if ( TryResolvePlayerByName( playerString, PlayerNameMatchMode.Partial, out var partialMatch ) )
-			return partialMatch;
-
-		if ( playerString.Contains( '_' ) &&
-			TryResolvePlayerByName( playerString.Replace( '_', ' ' ), PlayerNameMatchMode.Partial, out var underscorePartialMatch ) )
-		{
-			return underscorePartialMatch;
-		}
-
-		if ( TryResolvePlayerByName( playerString, PlayerNameMatchMode.RegexNormalizedPartial, out var normalizedPartialMatch ) )
-			return normalizedPartialMatch;
-
-		return null;
-	}
-
-	private enum PlayerNameMatchMode
-	{
-		Exact,
-		Partial,
-		RegexNormalizedExact,
-		RegexNormalizedPartial
-	}
-
-	private bool TryResolvePlayerByName( string playerName, PlayerNameMatchMode matchMode, out PlayerState match )
-	{
-		match = null;
-
-		var reference = matchMode switch
-		{
-			PlayerNameMatchMode.RegexNormalizedExact or PlayerNameMatchMode.RegexNormalizedPartial => NormalizePlayerReference( playerName ),
-			_ => playerName
-		};
-
-		if ( string.IsNullOrWhiteSpace( reference ) )
-			return false;
-
-		var matches = Players
-			.Where( player => player is not null && player.IsAssigned && !player.IsBankrupt )
-			.Where( player => IsPlayerNameMatch( player.PlayerName, reference, matchMode ) )
-			.ToList();
-
-		if ( matches.Count == 1 )
-		{
-			match = matches[0];
-			return true;
-		}
-
-		if ( matches.Count > 1 )
-		{
-			Log.Warning( $"Multiple players matched \"{playerName}\" with {matchMode} matching." );
-			return false;
-		}
-
-		return false;
-	}
-
-	private static bool IsPlayerNameMatch( string playerName, string reference, PlayerNameMatchMode matchMode )
-	{
-		if ( string.IsNullOrWhiteSpace( playerName ) )
-			return false;
-
-		return matchMode switch
-		{
-			PlayerNameMatchMode.Exact => string.Equals( playerName, reference, StringComparison.OrdinalIgnoreCase ),
-			PlayerNameMatchMode.Partial => playerName.Contains( reference, StringComparison.OrdinalIgnoreCase ),
-			PlayerNameMatchMode.RegexNormalizedExact => NormalizePlayerReference( playerName ) == reference,
-			PlayerNameMatchMode.RegexNormalizedPartial => NormalizePlayerReference( playerName ).Contains( reference, StringComparison.OrdinalIgnoreCase ),
-			_ => false
-		};
-	}
-
-	private static string TrimPlayerReference( string playerString )
-	{
-		playerString = playerString.Trim();
-
-		if ( playerString.Length >= 2 &&
-			((playerString[0] == '"' && playerString[^1] == '"') ||
-			(playerString[0] == '\'' && playerString[^1] == '\'')) )
-		{
-			return playerString[1..^1].Trim();
-		}
-
-		return playerString;
-	}
-
-	private static string NormalizePlayerReference( string playerString )
-	{
-		if ( string.IsNullOrWhiteSpace( playerString ) )
-			return "";
-
-		return Regex.Replace( playerString, @"[\W_]+", "" ).ToLowerInvariant();
+		return MonopolyApp.ResolvePlayerReference( Players, playerString, caller, LocalPlayer );
 	}
 
 	private static long? GetLocalSteamId()
@@ -221,6 +96,10 @@ public sealed partial class GameController : Component
 
 	public static int NormalizeSpaceIndex( int spaceIndex )
 	{
-		return ((spaceIndex % 40) + 40) % 40;
+		var spaceCount = Board.Instance?.SpaceCount ?? BoardCatalog.GetDefaultSpaceCount();
+		if ( spaceCount <= 0 )
+			return 0;
+
+		return ((spaceIndex % spaceCount) + spaceCount) % spaceCount;
 	}
 }

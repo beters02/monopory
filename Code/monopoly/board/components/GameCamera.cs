@@ -5,7 +5,8 @@ public enum BoardCameraMode
 {
 	Default,
 	Board,
-	FreeCam
+	FreeCam,
+	Token
 }
 
 public sealed class GameCamera : Component
@@ -14,14 +15,12 @@ public sealed class GameCamera : Component
 	public static GameCamera Instance => instance;
 
 	[Property] public GameObject Target { get; set; }
-
 	[Property] public float Distance { get; set; } = 900f;
 	[Property] public float FreecamModeStartDistance = 400f;
 	[Property] public float DefaultModeDistance { get; set; } = 200f;
 	[Property] public float Pitch { get; set; } = 60f;
 	[Property] public float DefaultModePitch { get; set; } = 75f;
-	[Property] public float DefaultModeDicePitch { get; set; } = 75f;
-	[Property] public float Fov { get; set; } = 35f;
+	[Property] public float Fov { get; set; } = 60f;
 	[Property] public float FollowLerpSpeed { get; set; } = 3f;
 	[Property] public float RotationLerpSpeed { get; set; } = 2.5f;
 	[Property] public float FreeCamMoveSpeed { get; set; } = 120f;
@@ -29,79 +28,164 @@ public sealed class GameCamera : Component
 	[Property] public float FreeCamMinDistance { get; set; } = 75f;
 	[Property] public float FreeCamMaxDistance { get; set; } = 1200f;
 	[Property] public float FreeCamBoundsPadding { get; set; } = 48f;
-	[Property] public float DiceFramingPadding { get; set; } = 16f;
-	[Property] public float DiceFramingMinDistance { get; set; } = 140f;
+	public float TokenModeDistance { get; set; } = 48f;
+	public float TokenModeHeight { get; set; } = 14f;
+	public float TokenModePitch { get; set; } = 12f;
+	[Property] public float TokenModeMinPitch { get; set; } = -12f;
+	[Property] public float TokenModeMaxPitch { get; set; } = 55f;
+	[Property] public float TokenModeLookSensitivity { get; set; } = 1f;
+	[Property] public bool AutoExpsureEnabled { get; set; } = false;
+
+	public float DiceFramingPadding { get; set; } = 30f;
+	public float DiceFramingMinDistance { get; set; } = 250f;
+	public float DefaultModeDicePitch { get; set; } = 75f;
+	[Property] public float DiceFollowLerpSpeed = 4f;
+	[Property] public float DiceRotationLerpSpeed = 3.5f;
+
 
 	public BoardCameraMode Mode { get; private set; } = BoardCameraMode.Default;
+	public bool IsTokenModeRequested => requestedMode == BoardCameraMode.Token;
+	public bool IsTokenCameraActive => Mode == BoardCameraMode.Token;
+	public bool IsGameplayMovementLocked { get; private set; }
 
 	private Vector3 freeCamFocus;
 	private float freeCamDistance;
 	private bool hasFreeCamFocus;
+	private BoardCameraMode requestedMode = BoardCameraMode.Default;
+	private float tokenCameraYaw;
+	private float tokenCameraPitch;
+	private bool didHideMouse;
+
+	private CameraComponent cameraComponent;
 
 	protected override void OnStart()
 	{
 		instance = this;
-
-		CameraComponent camera = Components.Get<CameraComponent>();
-
-		if ( camera != null )
-		{
-			camera.FieldOfView = Fov;
-		}
-
+		cameraComponent = GetComponentInChildren<CameraComponent>();
 		freeCamDistance = Distance;
+		cameraComponent?.FieldOfView = Fov;
+	}
+
+	protected override void OnDestroy()
+	{
+		ReleaseTokenMouse();
 	}
 
 	protected override void OnUpdate()
 	{
+		UpdateRequestedModeAvailability();
+
+		if ( TryUpdateGambleCamera() )
+			return;
+
 		if ( Mode == BoardCameraMode.FreeCam )
 		{
 			UpdateFreeCam();
 			return;
 		}
 
-		var center = GetModeFocus();
-		var yaw = Mode == BoardCameraMode.Default
-			? GetCurrentTokenYaw()
-			: 0f;
-		var distance = Mode == BoardCameraMode.Default ? DefaultModeDistance : Distance;
-		float pitch = Mode == BoardCameraMode.Default ? DefaultModePitch : Pitch;
-
-		if ( Mode == BoardCameraMode.Default )
+		if ( Mode == BoardCameraMode.Token )
 		{
-			var controller = GameController.Instance;
-			if ( controller?.IsResolvingPhysicalDice == true &&
-				controller.TryGetPhysicalDice( out var dieA, out var dieB ) )
-			{
-				distance = GetDiceFramingDistance( center, yaw, dieA.GameObject.WorldPosition, dieB.GameObject.WorldPosition );
-				if (Mode == BoardCameraMode.Default)
-					pitch = DefaultModeDicePitch;
-			}
+			UpdateTokenCamera();
+			return;
 		}
 
-		ApplyView( center, distance, yaw, pitch, true );
+		UpdateStandardCamera( Mode );
+
+		cameraComponent?.AutoExposure.Enabled = AutoExpsureEnabled;
+		//cameraComponent?.FieldOfView = Fov;
 	}
 
 	public void SetMode( BoardCameraMode mode )
 	{
+		requestedMode = mode;
+		ApplyMode( mode );
+	}
+
+	private void ApplyMode( BoardCameraMode mode )
+	{
 		if ( Mode == mode )
 			return;
-
+	
 		Mode = mode;
 
 		if ( mode == BoardCameraMode.FreeCam )
 		{
-			freeCamFocus = GetModeFocus();
+			freeCamFocus = GetModeFocus( Mode );
 			freeCamDistance = FreecamModeStartDistance;
 			hasFreeCamFocus = true;
 		}
+		else if ( mode == BoardCameraMode.Token )
+		{
+			var token = GetLocalPlayerToken();
+			tokenCameraYaw = token is not null ? GetYawFromForward( token.GameObject.WorldRotation.Forward ) : GetCurrentTokenYaw();
+			tokenCameraPitch = TokenModePitch;
+		}
+		else
+		{
+			ReleaseTokenMouse();
+		}
+	}
+
+	private void UpdateRequestedModeAvailability()
+	{
+		if ( requestedMode != BoardCameraMode.Token )
+		{
+			ApplyMode( requestedMode );
+			return;
+		}
+
+		var token = GetLocalPlayerToken();
+		var desiredMode = token is not null ? BoardCameraMode.Token : BoardCameraMode.Default;
+		ApplyMode( desiredMode );
+	}
+
+	private bool TryUpdateGambleCamera()
+	{
+		if ( GameController.Instance?.TryGetLocalGambleCameraTarget( out var station ) != true )
+		{
+			IsGameplayMovementLocked = false;
+			return false;
+		}
+
+		IsGameplayMovementLocked = true;
+		ReleaseTokenMouse();
+		ApplyGambleView( station );
+		return true;
+	}
+
+	private void ApplyGambleView( GambleStation station )
+	{
+		var pitch = MathX.Clamp( station.CameraPitch, -89.9f, 89.9f ).DegreeToRadian();
+		var yaw = station.CameraYaw.DegreeToRadian();
+		var horizontal = MathF.Cos( pitch );
+		var viewDirection = new Vector3(
+			horizontal * MathF.Cos( yaw ),
+			horizontal * MathF.Sin( yaw ),
+			-MathF.Sin( pitch )
+		).Normal;
+
+		var targetPosition = station.FocusPosition - viewDirection * station.CameraDistance;
+		var upReference = Math.Abs( Vector3.Dot( viewDirection, Vector3.Up ) ) > 0.98f
+			? Vector3.Forward
+			: Vector3.Up;
+		var targetRotation = Rotation.LookAt( viewDirection, upReference );
+
+		GameObject.WorldPosition = GameObject.WorldPosition.LerpTo(
+			targetPosition,
+			Time.Delta * FollowLerpSpeed
+		);
+		GameObject.WorldRotation = GameObject.WorldRotation.LerpTo(
+			targetRotation,
+			Time.Delta * RotationLerpSpeed
+		);
 	}
 
 	private void UpdateFreeCam()
 	{
 		if ( !hasFreeCamFocus )
 		{
-			freeCamFocus = GetModeFocus();
+			freeCamFocus = GetModeFocus( Mode );
 			freeCamDistance = Distance;
 			hasFreeCamFocus = true;
 		}
@@ -124,7 +208,7 @@ public sealed class GameCamera : Component
 			);
 		}
 
-		ApplyView( freeCamFocus, freeCamDistance, 0f, Pitch, true );
+		ApplyView( freeCamFocus, freeCamDistance, 0f, Pitch, FollowLerpSpeed, RotationLerpSpeed, true );
 	}
 
 	private Vector3 GetFreeCamMoveInput()
@@ -146,9 +230,106 @@ public sealed class GameCamera : Component
 		return move;
 	}
 
-	private Vector3 GetModeFocus()
+	private void UpdateTokenCamera()
 	{
-		if ( Mode == BoardCameraMode.Default )
+		var token = GetLocalPlayerToken();
+		if ( token is null )
+		{
+			ApplyMode( BoardCameraMode.Default );
+			return;
+		}
+
+		if ( !token.IsLocallyControllable )
+		{
+			ReleaseTokenMouse();
+			UpdateStandardCamera( BoardCameraMode.Default );
+			return;
+		}
+
+		var isTokenUiMouseReleased = token.ShouldReleaseTokenMouseForTokenUi;
+		if ( isTokenUiMouseReleased )
+			ReleaseTokenMouse();
+		else
+			CaptureTokenMouse();
+
+		var look = isTokenUiMouseReleased ? Angles.Zero : Input.AnalogLook * TokenModeLookSensitivity;
+		tokenCameraYaw += look.yaw;
+		tokenCameraPitch = MathX.Clamp( tokenCameraPitch + look.pitch, TokenModeMinPitch, TokenModeMaxPitch );
+
+		var rotation = Rotation.From( tokenCameraPitch, tokenCameraYaw, 0f );
+		var focus = token.GameObject.WorldPosition + Vector3.Up * TokenModeHeight;
+
+		GameObject.WorldPosition = focus - rotation.Forward * TokenModeDistance;
+		GameObject.WorldRotation = rotation;
+	}
+
+	private void UpdateStandardCamera( BoardCameraMode effectiveMode )
+	{
+		var center = GetModeFocus( effectiveMode );
+		var yaw = effectiveMode == BoardCameraMode.Default
+			? GetCurrentTokenYaw()
+			: 0f;
+		var distance = effectiveMode == BoardCameraMode.Default ? DefaultModeDistance : Distance;
+		float pitch = effectiveMode == BoardCameraMode.Default ? DefaultModePitch : Pitch;
+		var followLerpSpeed = FollowLerpSpeed;
+		var rotLerpSpeed = RotationLerpSpeed;
+
+		if ( effectiveMode == BoardCameraMode.Default )
+		{
+			var controller = GameController.Instance;
+			if ( controller?.IsResolvingPhysicalDice == true &&
+				controller.TryGetPhysicalDice( out var dieA, out var dieB ) )
+			{
+				distance = GetDiceFramingDistance( center, yaw, dieA.GameObject.WorldPosition, dieB.GameObject.WorldPosition );
+				pitch = DefaultModeDicePitch;
+				followLerpSpeed = DiceFollowLerpSpeed;
+				rotLerpSpeed = DiceRotationLerpSpeed;
+			}
+		}
+
+		ApplyView( center, distance, yaw, pitch, followLerpSpeed, rotLerpSpeed, true );
+	}
+
+	private void CaptureTokenMouse()
+	{
+		Mouse.Visibility = MouseVisibility.Hidden;
+		didHideMouse = true;
+	}
+
+	private void ReleaseTokenMouse()
+	{
+		if ( !didHideMouse )
+			return;
+
+		Mouse.Visibility = MouseVisibility.Visible;
+		didHideMouse = false;
+	}
+
+	private PlayerToken GetLocalPlayerToken()
+	{
+		if ( Scene is null )
+			return null;
+
+		foreach ( var token in Scene.GetAllComponents<PlayerToken>() )
+		{
+			if ( token?.IsLocalPlayerToken == true )
+				return token;
+		}
+
+		return null;
+	}
+
+	private static float GetYawFromForward( Vector3 forward )
+	{
+		if ( forward.Length <= 0.001f )
+			return 0f;
+
+		return MathF.Atan2( forward.y, forward.x ) * 180f / MathF.PI;
+	}
+
+	private Vector3 GetModeFocus( BoardCameraMode effectiveMode )
+	{
+		if ( effectiveMode == BoardCameraMode.Default )
 		{
 			var controller = GameController.Instance;
 			if ( controller?.IsResolvingPhysicalDice == true &&
@@ -279,17 +460,17 @@ public sealed class GameCamera : Component
 		return Math.Max( Math.Max( DefaultModeDistance, DiceFramingMinDistance ), requiredDistance );
 	}
 
-	private void ApplyView( Vector3 center, float distance, float yaw, float pitch, bool smooth )
+	private void ApplyView( Vector3 center, float distance, float yaw, float pitch, float followLerpSpeed, float rotLerpSpeed, bool smooth )
 	{
 		var rotation = Rotation.From( pitch, yaw, 0f );
 		var offset = -rotation.Forward * distance;
 		var targetPosition = center + offset;
 
 		GameObject.WorldPosition = smooth
-			? GameObject.WorldPosition.LerpTo( targetPosition, Time.Delta * FollowLerpSpeed )
+			? GameObject.WorldPosition.LerpTo( targetPosition, Time.Delta * followLerpSpeed )
 			: targetPosition;
 		GameObject.WorldRotation = smooth
-			? GameObject.WorldRotation.LerpTo( rotation, Time.Delta * RotationLerpSpeed )
+			? GameObject.WorldRotation.LerpTo( rotation, Time.Delta * rotLerpSpeed )
 			: rotation;
 	}
 }

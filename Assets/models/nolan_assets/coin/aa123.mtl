@@ -1,0 +1,20 @@
+newmtl Coinlow1Mtl
+Material Color
+Ka 0.373615 0.368591 0.383775
+Kd 0.373615 0.368591 0.383775
+Ks 0.0322335 0.0318 0.03311 
+
+d 1
+
+Ns 255
+
+map_Ka Coinlow1_diff.png
+map_Kd Coinlow1_diff.png
+map_d Coinlow1_diff.png
+
+map_Bump Coinlow1_nmap.png
+
+map_Ns Coinlow1_spec.png
+
+rbx_alphamode overlay
+

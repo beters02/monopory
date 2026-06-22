@@ -1,4 +1,4 @@
-@import "../../GameTheme.scss";
+@import "../../styles/GameTheme.scss";
 @import "GameButton.razor.scss";    
 
 .monopoly-button.monopoly-close-button {
@@ -42,8 +42,7 @@
 
 .monopoly-button.monopoly-close-button.modal-close-button,
 .monopoly-button.monopoly-close-button.trade-modal-close,
-.monopoly-button.monopoly-close-button.options-close-button,
-.monopoly-button.monopoly-close-button.match-config-close-button {
+.monopoly-button.monopoly-close-button.options-panel-close-button {
     width: 48px;
     height: 48px;
     min-width: 48px;
@@ -53,8 +52,7 @@
 
 .monopoly-button.monopoly-close-button.modal-close-button span,
 .monopoly-button.monopoly-close-button.trade-modal-close span,
-.monopoly-button.monopoly-close-button.options-close-button span,
-.monopoly-button.monopoly-close-button.match-config-close-button span {
+.monopoly-button.monopoly-close-button.options-panel-close-button span {
     width: $monopoly-close-size-large;
     height: $monopoly-close-size-large;
     line-height: $monopoly-close-size-large;

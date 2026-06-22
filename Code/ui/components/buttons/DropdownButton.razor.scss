@@ -1,25 +1,27 @@
-@import "../../GameTheme.scss";
+@import "../../styles/GameTheme.scss";
 @import "GameButton.razor.scss";
+@import "../MonoScrollbar.razor.scss";
 
 .dropdown-button {
 	position: relative;
 	min-width: 172px;
-	height: 178px;
-	min-height: 178px;
+	height: 42px;
+	min-height: 42px;
 
 	display: flex;
 	flex-direction: column;
 
 	pointer-events: all;
-	z-index: 10;
+	z-index: 1100;
 	overflow: visible;
 }
 
 .dropdown-button.open {
-	z-index: 1000;
+	z-index: 1200;
 }
 
-.dropdown-toggle {
+.monopoly-button.dropdown-toggle {
+	position: relative;
 	width: 100%;
 	min-width: 0;
 	height: 42px;
@@ -40,11 +42,11 @@
 	font-weight: 900;
 	text-transform: uppercase;
 	flex-shrink: 0;
-	z-index: 1002;
+	z-index: 1003;
 	pointer-events: all;
 }
 
-.dropdown-toggle:hover {
+.monopoly-button.dropdown-toggle:hover {
 	background-color: $monopoly-ink-hover;
 }
 
@@ -86,30 +88,65 @@
 }
 
 .dropdown-menu {
-	position: relative;
+	position: absolute;
+	left: 0;
+	top: 50px;
 	width: 100%;
-	margin-top: 8px;
 	z-index: 1003;
 
-	padding: 4px;
+	padding: 6px 0;
 
-	background-color: $monopoly-ink;
-	border: 1px solid $monopoly-panel-line;
+	background-color: rgba(12, 22, 30, 0.98);
+	border: 1px solid $monopoly-gold-glow;
 	border-radius: $monopoly-radius-control;
-	box-shadow: $monopoly-panel-shadow-soft;
+	box-shadow: $monopoly-panel-shadow-strong;
 
 	display: flex;
 	flex-direction: column;
+	justify-content: flex-start;
+	align-items: center;
 	gap: 4px;
 
 	pointer-events: all;
-	overflow: hidden;
+	overflow-x: hidden;
+	overflow-y: hidden;
 }
 
-.dropdown-item {
+.dropdown-menu.scrollable {
+	width: calc(100% + 18px);
+	max-height: 240px;
+	overflow-y: scroll;
+}
+
+.mono-scrollbar.dropdown-scrollbar {
+	top: 56px;
+	right: -14px;
+	bottom: auto;
+	height: 228px;
+	z-index: 1006;
+}
+
+.dropdown-menu.scrollable .monopoly-button.dropdown-item {
+	width: calc(100% - 24px);
+	margin-right: 18px;
+}
+
+.dropdown-dismiss-layer {
+	position: absolute;
+	left: -4096px;
+	right: -4096px;
+	top: -4096px;
+	bottom: -4096px;
+	z-index: 1001;
+
+	background-color: $monopoly-transparent;
+	pointer-events: all;
+}
+
+.monopoly-button.dropdown-item {
 	position: relative;
-	z-index: 1002;
-	width: 100%;
+	z-index: 1005;
+	width: 95%;
 	min-width: 0;
 	min-height: 36px;
 	height: 36px;
@@ -128,7 +165,9 @@
 	align-items: center;
 	justify-content: flex-start;
 	flex-direction: row;
+	flex-shrink: 0;
 	pointer-events: all;
+	z-index: 1004;
 }
 
 .dropdown-item-label {
@@ -143,9 +182,10 @@
 
 	color: $monopoly-text;
 	text-align: left;
-	white-space: nowrap;
-	text-overflow: ellipsis;
-	overflow: hidden;
+	white-space: normal;
+	text-overflow: clip;
+	overflow: visible;
+	pointer-events: none;
 }
 
 .dropdown-item-label .label {
@@ -156,28 +196,28 @@
 
 	color: $monopoly-text;
 	text-align: left;
-	white-space: nowrap;
-	text-overflow: ellipsis;
-	overflow: hidden;
+	white-space: normal;
+	text-overflow: clip;
+	overflow: visible;
 }
 
-.dropdown-item:hover {
+.monopoly-button.dropdown-item:hover {
 	background-color: $monopoly-surface-strong;
 }
 
-.dropdown-item.selected {
+.monopoly-button.dropdown-item.selected {
 	background-color: $monopoly-gold;
 	color: $monopoly-ink;
 	box-shadow: none;
 	z-index: 1004;
 }
 
-.dropdown-item.selected:hover {
+.monopoly-button.dropdown-item.selected:hover {
 	background-color: $monopoly-gold-hover;
 }
 
-.dropdown-item.selected .dropdown-item-label,
-.dropdown-item.selected .dropdown-item-label .label {
+.monopoly-button.dropdown-item.selected .dropdown-item-label,
+.monopoly-button.dropdown-item.selected .dropdown-item-label .label {
 	color: $monopoly-ink;
 }
 

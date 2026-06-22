@@ -1,10 +1,12 @@
 using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.RegularExpressions;
 using Sandbox;
 
 public sealed class Board : Component
 {
+	private static readonly Regex SpaceCardTextTokenRegex = new( @"\{space_(\d+)\}", RegexOptions.IgnoreCase | RegexOptions.Compiled );
 	private static Board instance;
 	public static Board Instance => instance;
 	private GameController GameRef;
@@ -12,7 +14,10 @@ public sealed class Board : Component
 	private Logger boardSpace = new("BoardSpace");
 
 	[Property] public List<BoardSpace> Spaces { get; set; } = new();
+	public BoardDefinition ActiveDefinition { get; private set; }
 	public List<SpaceDef> SpaceDefs { get; private set; } = new();
+	public BoardLayoutDefinition Layout { get; private set; } = BoardLayoutDefinition.Classic();
+	public BoardThemeDefinition BoardTheme { get; private set; } = new();
 	public RailroadDef RailroadData { get; private set; } = new();
 	public UtilityDef UtilityData { get; private set; } = new();
 
@@ -38,6 +43,9 @@ public sealed class Board : Component
 
 	public List<CardDef> ChanceCards { get; private set; } = new();
 	public List<CardDef> CommunityChestCards { get; private set; } = new();
+	public int SpaceCount => SpaceDefs?.Count ?? 0;
+	public int GoSpaceIndex => Layout?.GoSpaceIndex ?? 0;
+	public int JailSpaceIndex => Layout?.JailSpaceIndex ?? 10;
 	
 	public static bool UseProceduralBoardPanelStatic => Instance.UseProceduralBoardPanel;
 
@@ -48,6 +56,7 @@ public sealed class Board : Component
 	private float lastProcRefPanelSize;
 	private string lastCursorType;
 	private Vector2? lastPointerHoverPosition;
+	private string appliedBoardSpaceNamesSnapshot = "";
 
 	// Component
 
@@ -55,14 +64,14 @@ public sealed class Board : Component
 	{
 		instance = this;
 
-		if (MonopolyApp.IsDebugEnabled)
+		if ( MonopolyApp.IsDebugEnabled() )
 			DebugEnabled = true;
 
 		lastProcBoardWorldScale = ProceduralBoardWorldScale;
 		lastProcRefPanelSize = ProceduralReferencePanelSize;
 
 #if STANDALONE
-		if (DebugEnabled && !MonopolyApp.GameLaunchedWithDebugConvar)
+		if (DebugEnabled && !MonopolyApp.IsGameLaunchedWithDebugConvar())
 		{
 			DebugEnabled = false;
 			Log.Warning("Game was published with Board DebugEnabled!");
@@ -81,6 +90,7 @@ public sealed class Board : Component
 
 	protected override void OnUpdate()
 	{
+		EnsureBoardSpaceNameConfigApplied();
 		DrawAllHitboxesDebug();
 		UpdateSpaceHoverCursor();
 		UpdateLocalSpaceSelection();
@@ -244,15 +254,135 @@ public sealed class Board : Component
 
 	private void LoadBoardDefinitions()
 	{
-		SpaceDefs = BoardData.CreateSpaceDefs();
-		RailroadData = BoardData.CreateRailroadDefs();
-		UtilityData = BoardData.CreateUtilityDefs();
+		ActiveDefinition = BoardCatalog.GetById( GetCurrentBoardId() );
+		SpaceDefs = ActiveDefinition.Spaces;
+		Layout = ActiveDefinition.Layout;
+		BoardTheme = ActiveDefinition.Theme;
+		appliedBoardSpaceNamesSnapshot = "";
+		EnsureBoardSpaceNameConfigApplied( true );
+		RailroadData = ActiveDefinition.RailroadData;
+		UtilityData = ActiveDefinition.UtilityData;
+	}
+
+	private void EnsureBoardSpaceNameConfigApplied( bool force = false )
+	{
+		if ( SpaceDefs is null || SpaceDefs.Count == 0 )
+			return;
+
+		var snapshot = GetCurrentBoardSpaceNamesSnapshot();
+		if ( !force && string.Equals( appliedBoardSpaceNamesSnapshot, snapshot, StringComparison.Ordinal ) )
+			return;
+
+		BoardSpaceNameConfig.ApplySnapshot( SpaceDefs, snapshot, ActiveDefinition?.Id ?? BoardCatalog.DefaultBoardId );
+		appliedBoardSpaceNamesSnapshot = snapshot;
+		RefreshSpaceDefinitions();
+		LoadCardDefinitions();
+		RefreshProceduralBoardPanel();
+	}
+
+	private string GetCurrentBoardSpaceNamesSnapshot()
+	{
+		EnsureGameControllerRef();
+
+		var snapshot = GameRef?.Config?.BoardSpaceNamesSnapshot ?? "";
+		if ( !string.IsNullOrWhiteSpace( snapshot ) )
+			return snapshot;
+
+		var bootstrap = MatchBootstrap.Current;
+		return bootstrap?.HasConfig == true ? bootstrap.Config?.BoardSpaceNamesSnapshot ?? "" : "";
+	}
+
+	private string GetCurrentBoardId()
+	{
+		EnsureGameControllerRef();
+
+		var boardId = GameRef?.Config?.BoardId;
+		if ( !string.IsNullOrWhiteSpace( boardId ) )
+			return boardId;
+
+		var bootstrap = MatchBootstrap.Current;
+		return bootstrap?.HasConfig == true ? bootstrap.Config?.BoardId ?? BoardCatalog.DefaultBoardId : BoardCatalog.DefaultBoardId;
+	}
+
+	private void RefreshSpaceDefinitions()
+	{
+		if ( Spaces is null )
+			return;
+
+		foreach ( var space in Spaces )
+		{
+			if ( space is null )
+				continue;
+
+			space.EnsureDef( GetSpaceDef( space.Index ) );
+		}
 	}
 
 	private void LoadCardDefinitions()
 	{
-		ChanceCards = CardData.CreateChanceCards();
-		CommunityChestCards = CardData.CreateCommunityChestCards();
+		ChanceCards = ActiveDefinition?.ChanceCards?.Select( CloneCard ).ToList() ?? CardData.CreateChanceCards();
+		CommunityChestCards = ActiveDefinition?.CommunityChestCards?.Select( CloneCard ).ToList() ?? CardData.CreateCommunityChestCards();
+
+		ResolveCardTextTokens( ChanceCards );
+		ResolveCardTextTokens( CommunityChestCards );
+	}
+
+	private static CardDef CloneCard( CardDef card )
+	{
+		if ( card is null )
+			return null;
+
+		return new CardDef
+		{
+			Key = card.Key,
+			Title = card.Title,
+			Description = card.Description,
+			Deck = card.Deck,
+			Action = card.Action,
+			Weight = card.Weight,
+			Amount = card.Amount,
+			TargetSpaceIndex = card.TargetSpaceIndex,
+			RelativeSpaces = card.RelativeSpaces,
+			CollectGo = card.CollectGo,
+			ResolveDestination = card.ResolveDestination,
+			HouseAmount = card.HouseAmount,
+			HotelAmount = card.HotelAmount,
+			GambleType = card.GambleType
+		};
+	}
+
+	private void ResolveCardTextTokens( IEnumerable<CardDef> cards )
+	{
+		if ( cards is null )
+			return;
+
+		foreach ( var card in cards )
+		{
+			if ( card is null )
+				continue;
+
+			card.Title = ResolveCardTextTokens( card.Title );
+			card.Description = ResolveCardTextTokens( card.Description );
+		}
+	}
+
+	private string ResolveCardTextTokens( string text )
+	{
+		if ( string.IsNullOrWhiteSpace( text ) || SpaceDefs is null || SpaceDefs.Count == 0 )
+			return text ?? "";
+
+		return SpaceCardTextTokenRegex.Replace( text, match =>
+		{
+			if ( !int.TryParse( match.Groups[1].Value, out var spaceIndex ) )
+				return match.Value;
+
+			spaceIndex = GameController.NormalizeSpaceIndex( spaceIndex );
+			var spaceName = SpaceDefs.ElementAtOrDefault( spaceIndex )?.DisplayName;
+			if ( string.IsNullOrWhiteSpace( spaceName ) )
+				return match.Value;
+
+			return Regex.Replace( spaceName, @"\s+", " " ).Trim();
+		} );
 	}
 
 
@@ -389,34 +519,25 @@ public sealed class Board : Component
 
 	public static int GetSpaceQuadrant( int index )
 	{
-		return index switch
-		{
-			10 or 20 or 30 or 40 => 0,
-			< 10 => 1,
-			< 20 => 2,
-			< 30 => 3,
-			_ => 4
-		};
+		var layout = Instance?.Layout ?? BoardLayoutDefinition.Classic();
+		var spaceCount = Instance?.SpaceCount ?? BoardCatalog.GetDefaultSpaceCount();
+		if ( layout.IsCornerIndex( index ) )
+			return 0;
+
+		return layout.GetSideIndex( index, spaceCount ) + 1;
 	}
 
 	public static int GetSpaceQuadrantIncludeCorners( int index )
 	{
-		return index switch
-		{
-			< 10 => 1,
-			< 20 => 2,
-			< 30 => 3,
-			_ => 4
-		};
+		var layout = Instance?.Layout ?? BoardLayoutDefinition.Classic();
+		var spaceCount = Instance?.SpaceCount ?? BoardCatalog.GetDefaultSpaceCount();
+		return layout.GetSideIndex( index, spaceCount ) + 1;
 	}
 
 	public static Vector3 GetHitboxSize(int SpaceIndex)
 	{
-		var isCorner =
-			SpaceIndex == 0 ||
-			SpaceIndex == 10 ||
-			SpaceIndex == 20 ||
-			SpaceIndex == 30;
+		var layout = Instance?.Layout ?? BoardLayoutDefinition.Classic();
+		var isCorner = layout.IsCornerIndex( SpaceIndex );
 
 		var cornHbs = SpaceLayoutSettings.CornerHitboxSize;
 		var regHbs = SpaceLayoutSettings.HitboxSize;
@@ -432,20 +553,7 @@ public sealed class Board : Component
 
 	public static int GetQuadFromIndex(int Index)
 	{
-		if (Index == 0 || Index == 10 || Index == 20 || Index == 30)
-		{
-			return 0;
-		} else if(Index < 10)
-		{
-			return 1;
-		} else if (Index < 20)
-		{
-			return 2;
-		} else if (Index < 30)
-		{
-			return 3;
-		}
-		return 4;
+		return GetSpaceQuadrant( Index );
 	}
 
 	// Local Space Selection

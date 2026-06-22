@@ -1,9 +1,10 @@
 @using Sandbox;
 @using Sandbox.UI;
+@using Sandbox.ui.components;
 @using System;
 @inherits Panel
 
-<root class="@RootClasses" style="@RootStyle">
+<root class="@RootClasses">
 	<GameButton
 		Variant="@ButtonClasses"
 		Title="@Title"
@@ -22,7 +23,8 @@
 
 	@if ( IsOpen )
 	{
-		<div class="dropdown-menu" @ref="MenuPanel">
+		<div class="dropdown-dismiss-layer" onclick="@(() => CloseOpenDropdown( InstanceId ))"></div>
+		<div class="@MenuClasses" @ref="MenuPanel">
 			@foreach ( var item in Items )
 			{
 				<GameButton Variant="@GetItemClasses( item )" OnClick="@(() => SelectItem( item ))" SoundEnabled="@SoundEnabled">
@@ -32,6 +34,10 @@
 				</GameButton>
 			}
 		</div>
+		@if ( MenuCanScroll )
+		{
+			<MonoScrollbar Target="@MenuPanel" Variant="dropdown-scrollbar"></MonoScrollbar>
+		}
 	}
 </root>
 
@@ -42,6 +48,7 @@
 	[Parameter] public string Placeholder { get; set; } = "Select";
 	[Parameter] public string Value { get; set; } = "";
 	[Parameter] public IReadOnlyList<string> Items { get; set; } = Array.Empty<string>();
+	[Parameter] public Func<string, string> ItemFormatter { get; set; }
 	[Parameter] public bool CanClick { get; set; } = true;
 	[Parameter] public bool SoundEnabled { get; set; } = true;
 	[Parameter] public string BlockedPopupTitle { get; set; } = "Action blocked";
@@ -54,6 +61,7 @@
 	private static int NextInstanceId;
 	private static int ActiveInstanceId;
 	private static int OpenVersion;
+	private const int MaxVisibleItems = 5;
 
 	private readonly int InstanceId = ++NextInstanceId;
 	private Panel MenuPanel = null!;
@@ -65,7 +73,9 @@
 
 	private bool IsOpen => ActiveInstanceId == InstanceId;
 	private string RootClasses => IsOpen ? "dropdown-button open" : "dropdown-button";
-	private string RootStyle => "";
+	private bool MenuCanScroll => (Items?.Count ?? 0) > MaxVisibleItems;
+	private string MenuClasses => MenuCanScroll ? "dropdown-menu scrollable" : "dropdown-menu";
+	//private string MenuStyle => $"height: {GetMenuHeight()}px; min-height: {GetMenuHeight()}px;";
 	private string ButtonClasses => string.IsNullOrWhiteSpace( Variant )
 		? "dropdown-toggle"
 		: $"dropdown-toggle {Variant}";
@@ -113,6 +123,7 @@
 		if ( IsOpen )
 		{
 			UpdateHoverClose();
+			ClampMenuScroll();
 			MeasureScrollTarget();
 			UpdateSmoothScroll();
 		}
@@ -131,6 +142,19 @@
 		StateHasChanged();
 	}
 
+	private void ClampMenuScroll()
+	{
+		if ( MenuPanel is null )
+			return;
+
+		var maxOffsetY = MenuCanScroll ? Math.Max( 0f, MenuPanel.ScrollSize.y ) : 0f;
+		var currentY = MenuPanel.ScrollOffset.y;
+		var nextY = Math.Clamp( currentY, 0f, maxOffsetY );
+
+		if ( MathF.Abs( currentY - nextY ) > 0.1f )
+			MenuPanel.ScrollOffset = new Vector2( 0f, nextY );
+	}
+
 	private void UpdateHoverClose()
 	{
 		if ( IsMouseInsideOpenDropdown() )
@@ -143,7 +167,8 @@
 			CloseAfterMouseLeaveAt = Time.Now + 0.35f;
 
 		if ( Time.Now >= CloseAfterMouseLeaveAt )
-			CloseOpenDropdown( InstanceId );
+			return;
+			//CloseOpenDropdown( InstanceId );
 	}
 
 	private void MeasureScrollTarget()
@@ -207,8 +232,15 @@
 			: "dropdown-item";
 	}
 
-	private static string FormatItem( string item )
+	private string FormatItem( string item )
 	{
+		if ( ItemFormatter is not null )
+		{
+			var formatted = ItemFormatter.Invoke( item );
+			if ( !string.IsNullOrWhiteSpace( formatted ) )
+				return formatted;
+		}
+
 		if ( string.IsNullOrWhiteSpace( item ) )
 			return "";
 
@@ -222,6 +254,13 @@
 		return label;
 	}
 
+	private int GetMenuHeight()
+	{
+		var itemCount = Math.Max( Items?.Count ?? 0, 1 );
+		var menuGapHeight = Math.Max( itemCount - 1, 0 ) * 4;
+		return 12 + menuGapHeight + itemCount * 52;
+	}
+
 	protected override int BuildHash()
 	{
 		var hash = new HashCode();
@@ -231,10 +270,13 @@
 		hash.Add( Value ?? "" );
 		hash.Add( Placeholder ?? "" );
 		hash.Add( CanClick );
-		hash.Add( RootStyle );
+		//hash.Add( MenuStyle );
 
 		foreach ( var item in Items )
+		{
 			hash.Add( item ?? "" );
+			hash.Add( FormatItem( item ) );
+		}
 
 		return hash.ToHashCode();
 	}

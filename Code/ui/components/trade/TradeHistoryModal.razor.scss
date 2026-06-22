@@ -1,0 +1,259 @@
+@import "../../styles/GameTheme.scss";
+@import "../buttons/CloseButton.razor.scss";
+
+.trade-history-backdrop {
+	position: absolute;
+	left: 0;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	z-index: 58;
+	align-items: center;
+	justify-content: center;
+	background-color: $monopoly-modal-backdrop;
+	pointer-events: all;
+}
+
+.trade-history-modal {
+	position: relative;
+	width: 780px;
+	max-width: 82%;
+	height: 720px;
+	max-height: 88%;
+	padding: 18px;
+	background-color: $monopoly-board;
+	border: 4px solid $monopoly-ink;
+	border-radius: $monopoly-radius-board;
+	box-shadow: 0 0 0 5px $monopoly-board-outline, $monopoly-panel-shadow-strong;
+	color: $monopoly-ink;
+	font-family: $monopoly-font-family;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	pointer-events: all;
+}
+
+.trade-history-close {
+	position: absolute;
+	top: 10px;
+	right: 10px;
+	z-index: 4;
+	width: 38px;
+	height: 38px;
+	min-width: 38px;
+	min-height: 38px;
+	padding: 4px;
+	pointer-events: all;
+}
+
+.trade-history-header {
+	padding-right: 52px;
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 14px;
+}
+
+.trade-history-heading {
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+}
+
+.trade-history-kicker,
+.trade-history-card-kicker {
+	color: $monopoly-danger;
+	font-size: $monopoly-font-kicker;
+	font-weight: 900;
+	text-transform: uppercase;
+}
+
+.trade-history-title {
+	font-size: 34px;
+	font-weight: 900;
+	line-height: 38px;
+}
+
+.trade-history-summary {
+	margin-top: 6px;
+	padding: 7px 10px;
+	background-color: $monopoly-board-surface;
+	border: 2px solid $monopoly-board-surface-line;
+	border-radius: $monopoly-radius-control;
+	font-size: 12px;
+	font-weight: 800;
+	white-space: nowrap;
+}
+
+.trade-history-list {
+	flex: 1;
+	min-height: 0;
+	padding-right: 6px;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	overflow-y: scroll;
+}
+
+.trade-history-card {
+	flex-shrink: 0;
+	padding: 12px;
+	display: flex;
+	flex-direction: column;
+	gap: 9px;
+	background-color: $monopoly-board-surface;
+	border: 2px solid $monopoly-board-surface-line;
+	border-left: 6px solid $monopoly-success;
+	border-radius: $monopoly-radius-control;
+}
+
+.trade-history-card.denied {
+	border-left-color: $monopoly-danger;
+}
+
+.trade-history-card-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+}
+
+.trade-history-card-heading {
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 1px;
+}
+
+.trade-history-parties {
+	max-width: 540px;
+	font-size: 18px;
+	font-weight: 900;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
+}
+
+.trade-history-outcome {
+	flex-shrink: 0;
+	padding: 5px 9px;
+	border-radius: $monopoly-radius-control;
+	font-size: 11px;
+	font-weight: 900;
+	text-transform: uppercase;
+}
+
+.trade-history-outcome.accepted {
+	background-color: $monopoly-success-soft;
+	color: $monopoly-success;
+}
+
+.trade-history-outcome.denied {
+	background-color: $monopoly-danger-soft;
+	color: $monopoly-danger;
+}
+
+.trade-history-exchange {
+	display: flex;
+	align-items: stretch;
+	gap: 8px;
+}
+
+.trade-history-side {
+	flex: 1;
+	min-width: 0;
+	padding: 9px;
+	display: flex;
+	flex-direction: column;
+	gap: 7px;
+	background-color: $monopoly-board-surface-strong;
+	border-radius: $monopoly-radius-control;
+}
+
+.trade-history-side-title {
+	font-size: 11px;
+	font-weight: 900;
+	text-transform: uppercase;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
+}
+
+.trade-history-arrow {
+	flex-shrink: 0;
+	width: 30px;
+	align-items: center;
+	justify-content: center;
+	color: $monopoly-danger;
+	font-size: 19px;
+	font-weight: 900;
+}
+
+.trade-history-assets {
+	display: flex;
+	flex-wrap: wrap;
+	align-content: flex-start;
+	gap: 5px;
+}
+
+.trade-history-asset {
+	min-height: 26px;
+	padding: 4px 8px;
+	align-items: center;
+	background-color: $monopoly-card-ink-surface;
+	border: 2px solid $monopoly-card-ink-line;
+	border-radius: $monopoly-radius-control;
+	color: $monopoly-ink;
+	font-size: 10px;
+	font-weight: 900;
+}
+
+.trade-history-asset.money {
+	background-color: $monopoly-gold;
+	border-color: $monopoly-ink;
+}
+
+.trade-history-asset.card {
+	background-color: $monopoly-gold-soft;
+	border-color: $monopoly-gold;
+}
+
+.trade-history-asset.empty {
+	opacity: 0.55;
+	font-style: italic;
+}
+
+.trade-history-asset.color-brown { background-color: $property-brown; }
+.trade-history-asset.color-light_blue { background-color: $property-light-blue; }
+.trade-history-asset.color-pink { background-color: $property-pink; }
+.trade-history-asset.color-orange { background-color: $property-orange; }
+.trade-history-asset.color-red { background-color: $property-red; }
+.trade-history-asset.color-yellow { background-color: $property-yellow; }
+.trade-history-asset.color-green { background-color: $property-green; }
+.trade-history-asset.color-dark_blue { background-color: $property-dark-blue; color: $monopoly-text; }
+.trade-history-asset.color-railroad { background-color: $monopoly-ink-hover; color: $monopoly-text; }
+.trade-history-asset.color-utility { background-color: $property-utility; }
+.trade-history-asset.color-none { background-color: $property-none; }
+
+.trade-history-card-footer {
+	padding-top: 7px;
+	border-top: 1px solid $monopoly-board-surface-line;
+	font-size: 9px;
+	font-weight: 800;
+	text-transform: uppercase;
+	opacity: 0.62;
+}
+
+.trade-history-empty {
+	flex: 1;
+	min-height: 160px;
+	align-items: center;
+	justify-content: center;
+	background-color: $monopoly-board-surface;
+	border: 2px solid $monopoly-board-surface-line;
+	border-radius: $monopoly-radius-control;
+	font-size: 13px;
+	font-weight: 800;
+}

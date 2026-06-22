@@ -1,4 +1,4 @@
-@import "../../GameTheme.scss";
+@import "../../styles/GameTheme.scss";
 
 .hold-indicator {
 	position: absolute;
@@ -11,7 +11,7 @@
 	box-shadow:
 		inset 0 0 0 1px rgba(23, 38, 48, 0.7),
 		0 1px 0 rgba(241, 247, 243, 0.28);
-	z-index: 1;
+	z-index: 2;
 	//overflow: hidden;
 	pointer-events: none;
 }

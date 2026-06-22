@@ -11,7 +11,8 @@ public enum GamePhase
 	WaitingForBuyDecision,
 	Auctioning,
 	TurnEnded,
-	Error
+	Error,
+	ResolvingDiceRoll
 }
 
 public enum MatchLifecycleState
@@ -42,11 +43,13 @@ public sealed partial class GameController : Component, Component.INetworkListen
 	{
 		Other,
 		TaxSpace,
-		ChanceOrCommunityChest
+		ChanceOrCommunityChest,
+		JailFine
 	}
 
 	[JsonIgnore] public List<PlayerState> Players { get; set; } = new();
 	public MatchConfig Config { get; set; } = new();
+	[Sync] public string GameConfigSnapshot { get; set; } = "";
 	[Property] public GameObject TokenPrefab { get; set; }
 	[Property] public MonopolyTheme Theme { get; set; }
 
@@ -62,19 +65,49 @@ public sealed partial class GameController : Component, Component.INetworkListen
 	[Sync] public int PendingRollPlayerIndex { get; set; } = -1;
 	[Sync] public int PendingRollExecutionKind { get; set; } = -1;
 	[Sync] public int PendingRollTotal { get; set; }
+	[Sync] public bool PendingRollStatsRecorded { get; set; }
 	[Sync] public bool PendingRollSuppressDoublesExtraTurn { get; set; }
 	[Sync] public bool PendingRollIsJailAttempt { get; set; }
 	[Sync] public float PendingRollStartedAt { get; set; }
-	[Sync] public long PreferredHostOwnerId { get; set; }
-	[Sync] public bool PreferredHostDisconnected { get; set; }
+	public long PreferredHostOwnerId
+	{
+		get => MonopolyApp.GetPreferredHostOwnerId();
+		set => MonopolyApp.SetPreferredHostOwnerId( value );
+	}
+	public bool PreferredHostDisconnected
+	{
+		get => MonopolyApp.GetPreferredHostDisconnected();
+		set => MonopolyApp.SetPreferredHostDisconnected( value );
+	}
 	[Sync] public bool IsRecoveringHostState { get; set; }
 	[Sync] public NetDictionary<int, int> PropertyOwners { get; set; } = new();
 	[Sync] public NetDictionary<int, int> PropertyImprovements { get; set; } = new();
 	[Sync] public NetDictionary<int, bool> MortgagedProperties { get; set; } = new();
 	[Sync] public NetDictionary<int, string> PendingTrades { get; set; } = new();
+	[Sync] public NetDictionary<int, string> TradeHistory { get; set; } = new();
 	[Sync] public NetDictionary<int, string> TradeViewers { get; set; } = new();
+	[Sync] public NetDictionary<int, string> TradeEditors { get; set; } = new();
 	[Sync] public NetDictionary<int, string> TokenPhysicsStates { get; set; } = new();
 	[Sync] public NetDictionary<int, string> ChatMessages { get; set; } = new();
+	[Sync] public NetDictionary<int, int> StatsLogDiceFaceCounts { get; set; } = new();
+	[Sync] public bool CheatsEnabledEver { get; set; }
+	[Sync] public bool AdminCommandUsedEver { get; set; }
+	[Sync] public bool MatchConfigChangedAfterStart { get; set; }
+	[Sync] public string DiceCommitmentHash { get; set; } = "";
+	[Sync] public string RevealedSeed { get; set; } = "";
+	[Sync] public int NextDiceRollIndex { get; set; }
+	[Sync] public int NextAdminHistoryId { get; set; } = 1;
+	[Sync] public int NextMoveHistoryTurnNumber { get; set; } = 1;
+	[Sync] public NetDictionary<int, string> DiceHistory { get; set; } = new();
+	[Sync] public NetDictionary<int, string> AdminHistory { get; set; } = new();
+	[Sync] public NetDictionary<int, string> MoveHistory { get; set; } = new();
+	[Sync] public NetDictionary<int, string> GambleHistory { get; set; } = new();
+	[Sync] public NetDictionary<int, string> GambleSessions { get; set; } = new();
+	[Sync] public int NextGambleHistoryId { get; set; } = 1;
+	[Sync] public int NextGambleSessionId { get; set; } = 1;
+	private string lastAppliedGameConfigSnapshot = "";
+	[Sync] public NetDictionary<int, int> PropertyLandingCounts { get; set; } = new();
+	[Sync] public NetDictionary<int, int> PropertyRentEarned { get; set; } = new();
 	[Property] public Board Board { get; set; }
 
 	public PlayerState CurrentPlayer =>
@@ -87,6 +120,7 @@ public sealed partial class GameController : Component, Component.INetworkListen
 	[Sync] public int AuctionHighBidderIndex { get; set; } = -1;
 	[Sync] public float AuctionEndsAt { get; set; }
 	[Sync] public int NextTradeId { get; set; } = 1;
+	[Sync] public int NextTradeHistoryId { get; set; } = 1;
 	[Sync] public int NextChatMessageId { get; set; } = 1;
 	[Sync] public int FreeParkingBank { get; set; }
 	[Sync] public bool CurrentTurnGetsExtraRoll { get; set; }
@@ -148,10 +182,12 @@ public sealed partial class GameController : Component, Component.INetworkListen
 	private readonly List<GameObject> spawnedTokenObjects = new();
 	private float pausedTurnRemainingSeconds;
 	private float pausedAuctionRemainingSeconds;
+	private float auctionPausedTurnRemainingSeconds;
 	private bool isContinuingRecoveredMovement;
 	private bool isRecoveringPendingRoll;
 	private float lastRecoveryAttemptAt;
 	private ResolvedActionOutcome resolvedActionOutcome = ResolvedActionOutcome.StayInTurnEnded;
+	private string lastAppliedLocalDiceSkinId = "";
 
 	public static GameController Instance => instance;
 	public IReadOnlyList<GamePopup> Popups => popups;
@@ -168,7 +204,6 @@ public sealed partial class GameController : Component, Component.INetworkListen
 		instance = this;
 		GameAssets.PrewarmUiAssets();
 		SteamInviteBridge.Register( Scene );
-		//RemoveSerializedRuntimeChildren();
 		RefreshReplicatedPlayerSlots();
 
 		if ( Theme is null )
@@ -177,36 +212,56 @@ public sealed partial class GameController : Component, Component.INetworkListen
 		if ( Theme is null )
 			Theme = Components.GetOrCreate<MonopolyTheme>();
 
+		EnsureGambleStations();
+
 		if ( !Networking.IsHost )
+		{
+			LoadingState.HideAfterSceneReady();
 			return;
+		}
 
-		var bootstrap = MatchBootstrap.Current;
-		if ( bootstrap?.HasConfig == true )
-			Config = bootstrap.Config;
+		BeginServerLoading( "Preparing game", "The host is setting up the table state." );
+		try
+		{
+			var bootstrap = MatchBootstrap.Current;
+			if ( bootstrap?.HasConfig == true )
+				Config = bootstrap.Config;
 
-		StartPrivateConfig();
-		EnsurePreferredHostOwnerId();
-		EnsurePlayerSlots();
-		ResetGameState( false );
-		MatchState = MatchLifecycleState.Lobby;
-		SyncLobbyConnections();
-		
-		TryStartBootstrappedGame();
+			PublishGameConfigSnapshot();
+			StartPrivateConfig();
+			EnsurePreferredHostOwnerId();
+			EnsurePlayerSlots();
+			ResetGameState( false );
+			MatchState = MatchLifecycleState.Lobby;
+			SyncLobbyConnections();
+			
+			TryStartBootstrappedGame();
 
-		Log.Info(MaxTurnReminders);
+			Log.Info(MaxTurnReminders);
+		}
+		finally
+		{
+			ClearServerLoading();
+			LoadingState.HideAfterSceneReady();
+		}
 	}
 
 	protected override void OnUpdate()
 	{
+		ApplyGameConfigSnapshot();
 		RefreshReplicatedPlayerSlots();
 		UpdatePopups();
 		UpdateVisualTokens();
+		ApplyLocalDiceSkin();
 		RecoverPendingPurchaseSelection();
+		UpdateServerLoadingWatchdog();
+		EnsureGambleSessionStations();
 
 		if ( !Networking.IsHost )
 			return;
 
 		SyncLobbyConnections();
+		UpdateGambleSessions();
 
 		if ( MatchState == MatchLifecycleState.Lobby )
 			TryStartBootstrappedGame();
@@ -226,6 +281,12 @@ public sealed partial class GameController : Component, Component.INetworkListen
 		var bootstrap = MatchBootstrap.Current;
 		if ( bootstrap?.AutoStartGame != true )
 			return;
+
+		if ( bootstrap.HasLoadedGame )
+		{
+			if ( TryStartLoadedGameFromBootstrap() )
+				return;
+		}
 
 		var expectedPlayerCount = Math.Max( bootstrap.StartingPlayerCount, MinPlayers );
 		if ( GetLobbyPlayers().Count < expectedPlayerCount )

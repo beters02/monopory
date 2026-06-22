@@ -1,0 +1,573 @@
+@namespace Sandbox.ui.components
+@using Sandbox
+@using Sandbox.UI
+@using Sandbox.ui.components.buttons
+@using System
+@inherits PanelComponent
+
+<root class="@GetRootClasses()">
+	@if ( ShouldShowReopenButton )
+	{
+		<GameButton Variant="chat-overlay-reopen-button" OnClick="@OpenPermanentlyClosedChat" SoundEnabled="@false">Open chat</GameButton>
+	}
+	else if ( ShouldShowChatPanel )
+	{
+		<div class="chat-overlay-panel">
+			<div class="chat-overlay-messages-shell">
+				<GameButton Variant="chat-overlay-permanent-close-button" Title="Close chat" OnClick="@ClosePermanently" SoundEnabled="@false">×</GameButton>
+				<div class="chat-overlay-messages monopory-scroll-y" @ref="MessagesPanel">
+					@foreach ( var entry in ChatEntries )
+					{
+						<div class="chat-overlay-line">
+							<span class="chat-overlay-sender">@entry.Sender:</span>
+							<span class="chat-overlay-message">
+								@foreach ( var segment in BuildMessageSegments( entry.Message ) )
+								{
+									if ( segment.IsMention )
+									{
+										<span class="chat-overlay-mention">@segment.Text</span>
+									}
+									else
+									{
+										@segment.Text
+									}
+								}
+							</span>
+						</div>
+					}
+				</div>
+				<MonoScrollbar Target="@MessagesPanel" Variant="chat-scrollbar"></MonoScrollbar>
+			</div>
+
+			<div class="chat-overlay-input-row" onclick="@HandleInputRowClick">
+				@if ( IsComposing )
+				{
+					<ChatTextEntry
+						@ref="ChatInput"
+						class="chat-overlay-input"
+						Placeholder="Type message and press Enter..."
+						OnCloseRequested="@CancelCompose"
+						onsubmit="@SubmitMessage" />
+					<GameButton Variant="chat-overlay-send-button" OnClick="@SubmitMessage">Send</GameButton>
+				}
+				else
+				{
+					<div class="chat-overlay-input-placeholder">Press Enter to chat, and Shift+Enter to close...</div>
+				}
+			</div>
+		</div>
+	}
+</root>
+
+@code
+{
+	[Property] public GameController GameRef { get; set; }
+	public float HideAfterSeconds { get; set; } = 5f;
+	public GameSound OpenChatSound = GameAssets.Sounds.ClickAndOpen;
+	public GameSound CloseChatSound = GameAssets.Sounds.ClickAndClose;
+	private static int LocallyClearedThroughChatId;
+	private static int NextLocalChatEntryId = 1000000;
+	private static readonly List<ChatEntry> LocalChatEntries = new();
+	private readonly record struct ChatEntry( int Id, string Sender, string Message );
+	private readonly record struct MessageSegment( string Text, bool IsMention );
+	private readonly record struct MentionMatch( int Start, int NameEnd, int End, string Name );
+	private readonly List<ChatEntry> ChatEntries = new();
+	private static readonly char[] MentionTrailingCharacters = ['.', ',', '!', '?', ':', ';', ')', ']', '}'];
+	private ChatTextEntry ChatInput = null!;
+	private Panel MessagesPanel = null!;
+	private bool IsComposing;
+	private bool IsPermanentlyClosed;
+	private bool WantsFocus;
+	private int ScrollToBottomFramesRemaining;
+	private float LastInteractionAt;
+	private float MentionPreviewUntil;
+	private int LastSeenChatId;
+
+	protected override void OnUpdate()
+	{
+		base.OnUpdate();
+
+		if ( LastInteractionAt <= 0f )
+			Touch();
+
+		SyncEntries();
+		if ( ScrollToBottomFramesRemaining > 0 && MessagesPanel is not null )
+		{
+			MessagesPanel.TryScrollToBottom();
+			ScrollToBottomFramesRemaining--;
+		}
+
+		if ( IsLoadingBlockingChat || StandaloneConsole.IsConsoleOpen || NetworkSession.IsEditorSoftLeftLobby || GameHud.IsMenuBlockingHud )
+		{
+			if ( IsComposing )
+				CancelCompose();
+			return;
+		}
+
+		if ( IsChatShortcutPressed() && IsShiftDown() )
+		{
+			TogglePermanentlyClosed();
+			return;
+		}
+
+		if ( IsComposing )
+		{
+			Mouse.Visibility = MouseVisibility.Visible;
+			ConfigureInput();
+
+			if ( Input.EscapePressed )
+			{
+				CancelCompose();
+				Input.EscapePressed = false;
+				return;
+			}
+
+			if ( WantsFocus && ChatInput is not null )
+			{
+				ChatInput.Focus();
+				if ( ChatInput.HasFocus )
+					WantsFocus = false;
+			}
+
+			return;
+		}
+
+		if ( IsPermanentlyClosed )
+			return;
+
+		if ( IsChatShortcutPressed() )
+			BeginCompose();
+	}
+
+	private void ConfigureInput()
+	{
+		if ( ChatInput is null )
+			return;
+
+		ChatInput.AutoComplete = GetMentionAutoComplete;
+	}
+
+	public static void ClearLocalChat( int newestClearedChatId )
+	{
+		LocallyClearedThroughChatId = Math.Max( LocallyClearedThroughChatId, newestClearedChatId );
+		LocalChatEntries.Clear();
+	}
+
+	public static void AppendLocalChatMessage( string senderName, string message )
+	{
+		LocalChatEntries.Add( new ChatEntry( NextLocalChatEntryId++, senderName ?? "System", message ?? "" ) );
+
+		while ( LocalChatEntries.Count > 20 )
+			LocalChatEntries.RemoveAt( 0 );
+	}
+
+	private void SyncEntries()
+	{
+		ChatEntries.Clear();
+
+		var game = GameRef ?? GameController.Instance;
+		if ( game?.ChatMessages is null )
+			return;
+
+		foreach ( var pair in game.ChatMessages.OrderBy( kv => kv.Key ) )
+		{
+			if ( pair.Key <= LocallyClearedThroughChatId )
+				continue;
+
+			var payload = pair.Value ?? "";
+			var separator = payload.IndexOf( '\t' );
+			var sender = "Player";
+			var message = payload;
+
+			if ( separator >= 0 )
+			{
+				sender = payload[..separator];
+				message = separator + 1 < payload.Length ? payload[(separator + 1)..] : "";
+			}
+
+			ChatEntries.Add( new ChatEntry( pair.Key, sender, message ) );
+		}
+
+		ChatEntries.AddRange( LocalChatEntries );
+		ChatEntries.Sort( ( a, b ) => a.Id.CompareTo( b.Id ) );
+
+		var newestId = ChatEntries.Count > 0 ? ChatEntries[^1].Id : 0;
+		if ( newestId > LastSeenChatId )
+		{
+			var newestEntry = ChatEntries[^1];
+			LastSeenChatId = newestId;
+			if ( IsPermanentlyClosed && MentionsLocalPlayer( newestEntry.Message ) )
+				MentionPreviewUntil = Time.Now + HideAfterSeconds;
+
+			Touch();
+			RequestScrollToBottom();
+		}
+	}
+
+	private void BeginCompose()
+	{
+		IsPermanentlyClosed = false;
+		IsComposing = true;
+		WantsFocus = true;
+		if ( ChatInput is not null )
+		{
+			ChatInput.Text = "";
+		}
+		Touch();
+		StateHasChanged();
+	}
+
+	private void TogglePermanentlyClosed()
+	{
+		if ( IsPermanentlyClosed )
+		{
+			OpenPermanentlyClosedChat();
+			return;
+		}
+
+		ClosePermanently();
+	}
+
+	private void ClosePermanently()
+	{
+		CloseChatSound.Play();
+		IsPermanentlyClosed = true;
+		IsComposing = false;
+		WantsFocus = false;
+		MentionPreviewUntil = 0f;
+		if ( ChatInput is not null )
+		{
+			ChatInput.Text = "";
+		}
+		ChatInput?.Blur();
+		StateHasChanged();
+	}
+
+	private void OpenPermanentlyClosedChat()
+	{
+		OpenChatSound.Play();
+		IsPermanentlyClosed = false;
+		MentionPreviewUntil = 0f;
+		Touch();
+		RequestScrollToBottom();
+		BeginCompose();
+	}
+
+	private static bool IsChatShortcutPressed()
+	{
+		return Input.Keyboard.Pressed( "Enter" ) || Input.Keyboard.Pressed( "KP_ENTER" );
+	}
+
+	private static bool IsShiftDown()
+	{
+		return Input.Down( "Run" ) ||
+			Input.Keyboard.Down( "Shift" ) ||
+			Input.Keyboard.Down( "LeftShift" ) ||
+			Input.Keyboard.Down( "RightShift" );
+	}
+
+	private void HandleInputRowClick()
+	{
+		if ( !IsComposing )
+			BeginCompose();
+	}
+
+	private void CancelCompose()
+	{
+		IsComposing = false;
+		WantsFocus = false;
+		if ( ChatInput is not null )
+		{
+			ChatInput.Text = "";
+		}
+		ChatInput?.Blur();
+		Touch();
+		StateHasChanged();
+	}
+
+	private bool MentionsLocalPlayer( string message )
+	{
+		var localName = (GameRef?.LocalPlayer?.PlayerName ?? "").Trim();
+		if ( string.IsNullOrWhiteSpace( localName ) )
+			return false;
+
+		return FindMentionMatches( message, new[] { localName } ).Any();
+	}
+
+	private void SubmitMessage()
+	{
+		if ( ChatInput is null )
+			return;
+
+		var message = (ChatInput.Text ?? "").Trim();
+		ChatInput.Text = "";
+		
+		if ( !string.IsNullOrWhiteSpace( message ) )
+		{
+			var game = GameRef ?? GameController.Instance;
+			game?.RequestSendChatMessage( message );
+			RequestScrollToBottom();
+			WantsFocus = true;
+			Touch();
+			StateHasChanged();
+			return;
+		}
+
+		CancelCompose();
+	}
+
+	private object[] GetMentionAutoComplete( string value )
+	{
+		if ( string.IsNullOrWhiteSpace( value ) )
+			return Array.Empty<object>();
+
+		if ( value.StartsWith( "/", StringComparison.Ordinal ) )
+			return GetChatCommandAutoComplete( value );
+
+		var mentionStart = FindMentionStartIndex( value );
+		if ( mentionStart < 0 )
+			return Array.Empty<object>();
+
+		var prefix = value[(mentionStart + 1)..];
+		var beforeMention = value[..mentionStart];
+		return GetMentionablePlayerNames()
+			.Where( name => name.StartsWith( prefix, StringComparison.OrdinalIgnoreCase ) )
+			.Take( 20 )
+			.Select( name => (object)new TextEntry.AutocompleteEntry
+			{
+				Title = $"@{name}",
+				Value = $"{beforeMention}@{name} "
+			} )
+			.ToArray();
+	}
+
+	private object[] GetChatCommandAutoComplete( string value )
+	{
+		var commandText = value[1..];
+		var commandParts = commandText.Split( ' ', 2, StringSplitOptions.None );
+		var commandPrefix = commandParts[0];
+
+		if ( commandParts.Length == 1 )
+			return GetChatCommandNameAutoComplete( commandPrefix );
+
+		var commandName = ChatCommandManager.NormalizeCommandName( commandPrefix );
+		var arguments = commandParts[1];
+
+		if ( commandName == PrivateMessageChatCommand.Name )
+			return GetPrivateMessagePlayerAutoComplete( arguments );
+
+		return Array.Empty<object>();
+	}
+
+	private static object[] GetChatCommandNameAutoComplete( string commandPrefix )
+	{
+		var normalizedPrefix = ChatCommandManager.NormalizeCommandName( commandPrefix );
+
+		return ChatCommands.All.Values
+			.Where( command => string.IsNullOrWhiteSpace( normalizedPrefix ) || command.Name.StartsWith( normalizedPrefix, StringComparison.OrdinalIgnoreCase ) )
+			.OrderBy( command => command.Name )
+			.Take( 20 )
+			.Select( command => (object)new TextEntry.AutocompleteEntry
+			{
+				Title = command.Usage,
+				Value = $"/{command.Name} "
+			} )
+			.ToArray();
+	}
+
+	private static object[] GetPrivateMessagePlayerAutoComplete( string arguments )
+	{
+		if ( HasCompletedPrivateMessageTarget( arguments ) )
+			return Array.Empty<object>();
+
+		var playerPrefix = arguments ?? "";
+		return MonopolyApp.GetPlayerReferenceAutocompleteNames( playerPrefix )
+			.Take( 20 )
+			.Select( playerName => (object)new TextEntry.AutocompleteEntry
+			{
+				Title = playerName,
+				Value = $"/{PrivateMessageChatCommand.Name} {playerName} "
+			} )
+			.ToArray();
+	}
+
+	private static bool HasCompletedPrivateMessageTarget( string arguments )
+	{
+		if ( string.IsNullOrWhiteSpace( arguments ) || !char.IsWhiteSpace( arguments[^1] ) )
+			return false;
+
+		return MonopolyApp.TryGetPlayerFullNameFromString( arguments.Trim(), out _ );
+	}
+
+	private IEnumerable<string> GetMentionablePlayerNames()
+	{
+		var game = GameRef ?? GameController.Instance;
+		if ( game?.Players is null )
+			return Array.Empty<string>();
+
+		return game.Players
+			.Where( player => player is not null && player.IsAssigned )
+			.Select( player => (player.PlayerName ?? "").Trim() )
+			.Where( name => !string.IsNullOrWhiteSpace( name ) )
+			.Distinct( StringComparer.OrdinalIgnoreCase );
+	}
+
+	private static int FindMentionStartIndex( string value )
+	{
+		if ( string.IsNullOrEmpty( value ) )
+			return -1;
+
+		for ( var i = value.Length - 1; i >= 0; i-- )
+		{
+			if ( value[i] != '@' )
+				continue;
+
+			var isWordStart = i == 0 || char.IsWhiteSpace( value[i - 1] );
+			if ( isWordStart )
+				return i;
+		}
+
+		return -1;
+	}
+
+	private IReadOnlyList<MessageSegment> BuildMessageSegments( string message )
+	{
+		if ( string.IsNullOrEmpty( message ) )
+			return new[] { new MessageSegment( "", false ) };
+
+		var segments = new List<MessageSegment>();
+		var index = 0;
+
+		var mentionableNames = GetMentionablePlayerNames()
+			.OrderByDescending( name => name.Length )
+			.ToList();
+
+		foreach ( var match in FindMentionMatches( message, mentionableNames ) )
+		{
+			if ( match.Start > index )
+				segments.Add( new MessageSegment( message[index..match.Start], false ) );
+
+			var mentionEnd = match.NameEnd;
+			if ( mentionEnd < message.Length && char.IsWhiteSpace( message[mentionEnd] ) )
+				mentionEnd++;
+
+			segments.Add( new MessageSegment( message[match.Start..mentionEnd], true ) );
+
+			var trailing = mentionEnd < match.End ? message[mentionEnd..match.End] : "";
+			if ( trailing.Length > 0 )
+				segments.Add( new MessageSegment( trailing, false ) );
+
+			index = Math.Max( match.End, mentionEnd );
+		}
+
+		if ( index < message.Length )
+			segments.Add( new MessageSegment( message[index..], false ) );
+
+		return segments;
+	}
+
+	private static IEnumerable<MentionMatch> FindMentionMatches( string message, IReadOnlyList<string> mentionableNames )
+	{
+		if ( string.IsNullOrWhiteSpace( message ) || mentionableNames.Count == 0 )
+			yield break;
+
+		for ( var index = 0; index < message.Length; index++ )
+		{
+			if ( message[index] != '@' || (index > 0 && !char.IsWhiteSpace( message[index - 1] )) )
+				continue;
+
+			foreach ( var name in mentionableNames )
+			{
+				var nameStart = index + 1;
+				if ( nameStart + name.Length > message.Length )
+					continue;
+
+				if ( !message.AsSpan( nameStart, name.Length ).Equals( name, StringComparison.OrdinalIgnoreCase ) )
+					continue;
+
+				var nameEnd = nameStart + name.Length;
+				var end = nameEnd;
+				if ( end < message.Length && MentionTrailingCharacters.Contains( message[end] ) )
+					end++;
+
+				if ( end < message.Length && !char.IsWhiteSpace( message[end] ) )
+					continue;
+
+				yield return new MentionMatch( index, nameEnd, end, name );
+				index = end - 1;
+				break;
+			}
+		}
+	}
+
+	private void Touch()
+	{
+		LastInteractionAt = Time.Now;
+	}
+
+	private void RequestScrollToBottom()
+	{
+		// Give layout a couple of frames to settle so we hit the true final bottom.
+		ScrollToBottomFramesRemaining = 3;
+	}
+
+	private bool IsVisible()
+	{
+		if ( IsLoadingBlockingChat )
+			return false;
+
+		if ( GameHud.IsMenuBlockingHud )
+			return false;
+
+		if ( GameRef is not null && !GameRef.ForceHiddenUiVisible && !GameRef.IsGameHudVisible() )
+			return false;
+		
+		if ( IsPermanentlyClosed )
+			return ShouldShowReopenButton || IsMentionPreviewActive;
+
+		return IsComposing || (Time.Now - LastInteractionAt) <= HideAfterSeconds;
+	}
+
+	private bool IsMentionPreviewActive => IsPermanentlyClosed && MentionPreviewUntil > Time.Now;
+	private bool ShouldShowReopenButton => IsPermanentlyClosed && !IsMentionPreviewActive;
+	private bool ShouldShowChatPanel => !IsPermanentlyClosed || IsMentionPreviewActive;
+
+	private bool IsLoadingBlockingChat => LoadingState.IsBlockingInteraction || GameRef?.IsServerLoading == true;
+
+	private string GetRootClasses()
+	{
+
+		var str = "chat-overlay-root";
+		if (IsVisible())
+		{
+			str += " visible";
+		} else
+		{
+			str += " hidden";
+		}
+
+		return str;
+	}
+
+	protected override int BuildHash()
+	{
+		var hash = new HashCode();
+		hash.Add( IsComposing );
+		hash.Add( IsPermanentlyClosed );
+		hash.Add( IsMentionPreviewActive );
+		hash.Add( IsVisible() );
+		hash.Add( IsLoadingBlockingChat );
+		hash.Add( GameHud.IsMenuBlockingHud );
+		hash.Add( ChatEntries.Count );
+		hash.Add( GameRef.IsGameHudVisible() );
+
+		foreach ( var entry in ChatEntries )
+		{
+			hash.Add( entry.Id );
+			hash.Add( entry.Sender );
+			hash.Add( entry.Message );
+		}
+
+		return hash.ToHashCode();
+	}
+}

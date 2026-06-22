@@ -24,7 +24,7 @@
         "CreateAttachments": false,
         "LodOverride": null,
         "MaterialGroup": null,
-        "MaterialOverride": null,
+        "MaterialOverride": "materials/dice/dice_shiny.vmat",
         "Materials": null,
         "Model": "models/dev/box.vmdl",
         "OnComponentDestroy": null,

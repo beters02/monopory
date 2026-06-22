@@ -14,6 +14,7 @@ public sealed class PlayerState : Component
 	[Sync] public int CommunityChestGetOutOfJailFreeCards { get; set; }
 	[Sync] public int ConsecutiveDoubles { get; set; }
 	[Sync] public bool SkipsNextTurn { get; set; }
+	[Sync] public bool IsReturningFromVacationCashBreak { get; set; }
 	[Sync] public bool IsBankrupt { get; set; }
 	[Sync] public bool IsReady { get; set; }
 	[Sync] public bool IsDisconnected { get; set; }
@@ -23,6 +24,7 @@ public sealed class PlayerState : Component
 	[Sync] public string PlayerName { get; set; } = "Player";
 	[Sync] public int ColorSlot { get; set; } = -1;
 	[Sync] public string SelectedPieceId { get; set; } = PieceCatalog.DefaultPieceId;
+	[Sync] public string SelectedDiceSkinId { get; set; } = DiceSkinCatalog.DefaultDiceSkinId;
 
 	public bool IsOwner => OwnerId == Connection.Local.SteamId;
 

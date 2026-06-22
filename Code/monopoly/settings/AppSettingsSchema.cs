@@ -1,4 +1,5 @@
 using Sandbox.Engine.Settings;
+using Sandbox;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +8,8 @@ public enum AppSettingOptionKind
 {
 	Bool,
 	Enum,
-	Int
+	Int,
+	Keybind
 }
 
 public sealed class AppSettingCategory
@@ -29,25 +31,27 @@ public sealed class AppSettingOption
 	public AppSettingOptionKind Kind { get; init; }
 	public string[] EnumNames { get; init; } = Array.Empty<string>();
 	public Func<bool> IsVisible { get; init; } = () => true;
-	public Func<bool> IsAvailable { get; init; } = () => AppSettings.SettingsAvailable;
+	public Func<bool> IsAvailable { get; init; } = () => true;
 	public Func<bool> GetBoolValue { get; init; } = () => false;
 	public Func<bool> ToggleBoolValue { get; init; } = () => false;
 	public Func<string> GetEnumValue { get; init; } = () => "";
 	public Func<string, bool> SetEnumValue { get; init; } = _ => false;
 	public Func<int> GetIntValue { get; init; } = () => 0;
 	public Func<int, bool> SetIntValue { get; init; } = _ => false;
+	public Func<string> GetKeybindValue { get; init; } = () => "";
+	public Func<string, bool> SetKeybindValue { get; init; } = _ => false;
+	public Func<string, string> GetKeybindConflict { get; init; } = _ => "";
 	public int IntMin { get; init; }
 	public int IntMax { get; init; } = 100;
 	public int IntStep { get; init; } = 1;
 }
 
-public static class AppSettingsSchema
+public static partial class AppSettingsSchema
 {
 	private static readonly IReadOnlyList<AppSettingCategory> categories = BuildCategories();
-	private static readonly IReadOnlyList<AppSettingOption> options = BuildOptions();
 
 	public static IReadOnlyList<AppSettingCategory> Categories => categories;
-	public static IReadOnlyList<AppSettingOption> Options => options;
+	public static IReadOnlyList<AppSettingOption> Options => BuildOptions();
 
 	public static IEnumerable<string> GetSectionsForCategory( string categoryKey )
 	{
@@ -73,6 +77,7 @@ public static class AppSettingsSchema
 		return new List<AppSettingCategory>
 		{
 			new() { Key = "general", Label = "General", Description = "Gameplay-facing preferences and comfort settings.", Order = 0 },
+			new() { Key = "controls", Label = "Controls", Description = "Keyboard bindings for common actions.", Order = 5 },
 			new() { Key = "video", Label = "Video", Description = "Rendering and upscaling settings.", Order = 10 },
 			new() { Key = "audio", Label = "Audio", Description = "Sound and mix settings.", Order = 20 },
 		};
@@ -80,7 +85,7 @@ public static class AppSettingsSchema
 
 	private static IReadOnlyList<AppSettingOption> BuildOptions()
 	{
-		return new List<AppSettingOption>
+		var options = new List<AppSettingOption>
 		{
 			EnumOption<FullscreenMode>(
 				key: "display.fullscreen",
@@ -147,8 +152,30 @@ public static class AppSettingsSchema
 				setter: AppSettings.TrySetVolume,
 				isAvailable: () => true
 			),
-			
-		}
+			IntOption(
+				key: "audio.music_volume",
+				category: "audio",
+				section: "Music",
+				label: "Music Volume",
+				description: "Adjusts soundtrack music without changing game or UI sounds.",
+				order: 21,
+				min: 0,
+				max: 100,
+				step: 1,
+				getter: AppSettings.GetMusicVolume,
+				setter: AppSettings.TrySetMusicVolume,
+				isAvailable: () => true
+			),
+		};
+
+		options.AddRange( GetEditableKeybinds().Select( ( action, index ) => KeybindOption(
+			action: action,
+			category: "controls",
+			section: string.IsNullOrWhiteSpace( action.GroupName ) ? "Keyboard" : action.GroupName,
+			order: 100 + index
+		) ) );
+
+		return options
 		.OrderBy( option => option.Order )
 		.ThenBy( option => option.Label )
 		.ToList();
@@ -238,12 +265,36 @@ public static class AppSettingsSchema
 			Order = order,
 			Kind = AppSettingOptionKind.Int,
 			IsVisible = isVisible ?? (() => true),
-			IsAvailable = isAvailable ?? (() => AppSettings.SettingsAvailable),
+			IsAvailable = isAvailable ?? (() => true),
 			IntMin = min,
 			IntMax = max,
 			IntStep = step,
 			GetIntValue = getter,
 			SetIntValue = rawValue => setter( rawValue )
+		};
+	}
+
+	private static AppSettingOption KeybindOption(
+		InputAction action,
+		string category,
+		string section,
+		int order )
+	{
+		var actionName = action?.Name ?? "";
+		var label = !string.IsNullOrWhiteSpace( action?.Title ) ? action.Title : actionName;
+
+		return new AppSettingOption
+		{
+			Key = $"keybind.{actionName}",
+			Category = category,
+			Section = section,
+			Label = label,
+			Description = "Click to change this keyboard binding.",
+			Order = order,
+			Kind = AppSettingOptionKind.Keybind,
+			GetKeybindValue = () => AppSettings.GetKeybind( action ),
+			SetKeybindValue = keyboardCode => AppSettings.TrySetKeybind( action, keyboardCode ),
+			GetKeybindConflict = keyboardCode => AppSettings.GetKeybindConflictName( action, keyboardCode )
 		};
 	}
 }

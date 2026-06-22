@@ -30,7 +30,7 @@ public sealed partial class GameController : Component
 		var totalAssets = GetPlayerLiquidAssetTotal( playerIndex );
 		if ( totalAssets < amount )
 		{
-			BankruptPlayer( playerIndex, Players.ElementAtOrDefault( receiverIndex ), true );
+			BankruptPlayer( playerIndex, Players.ElementAtOrDefault( receiverIndex ), true, amount );
 			return false;
 		}
 
@@ -49,7 +49,7 @@ public sealed partial class GameController : Component
 		if ( toBank )
 		{
 			if ( addToFreeParking && Config?.VacationCash == true )
-				FreeParkingBank += amount;
+				AddToVacationCashBank( amount );
 
 			if ( showForcedPaymentPopup )
 				ShowForcedPaymentToBankPopup( player, amount );
@@ -105,7 +105,11 @@ public sealed partial class GameController : Component
 
 		var player = Players.ElementAtOrDefault( playerIndex );
 		if ( player is not null )
+		{
+			var needed = Math.Max( amount - player.Money, 0 );
+			SendConfirmationNoticeToPlayer( player, "Mortgage required", $"You need ${needed} more to pay this ${amount} debt.", "OK", "Bankrupt" );
 			Log.Info( $"{player.PlayerName} must raise ${amount} before their turn can end." );
+		}
 	}
 
 	private void BeginPendingForcedPaymentToEachPlayer( int playerIndex, int amountPerPlayer )
@@ -125,7 +129,11 @@ public sealed partial class GameController : Component
 
 		var player = Players.ElementAtOrDefault( playerIndex );
 		if ( player is not null )
+		{
+			var needed = Math.Max( total - player.Money, 0 );
+			SendConfirmationNoticeToPlayer( player, "Mortgage required", $"You need ${needed} more to pay ${amountPerPlayer} to each player.", "OK", "Bankrupt" );
 			Log.Info( $"{player.PlayerName} must raise ${total} to pay each player ${amountPerPlayer}." );
+		}
 	}
 
 	private bool TrySettlePendingForcedPaymentForPlayer( int playerIndex )
@@ -166,6 +174,10 @@ public sealed partial class GameController : Component
 		ClearPendingForcedPayment();
 
 		Log.Info( $"{player.PlayerName} paid their pending ${amount} debt." );
+
+		if ( Phase == GamePhase.TurnEnded && player == CurrentPlayer )
+			SetPostActionPhase();
+
 		return true;
 	}
 

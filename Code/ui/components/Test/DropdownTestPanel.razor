@@ -1,0 +1,45 @@
+@using Sandbox;
+@using Sandbox.UI;
+@using System;
+@using Sandbox.ui.components.buttons
+@inherits Panel
+
+<root class="dropdown-test-panel">
+    @if (@IsDropdownTestEnabled)
+    {
+        <DropdownButton Value="@DefaultVal" Items="@ValOptions">
+            
+        </DropdownButton>
+    }
+    
+</root>
+
+@code
+{
+
+    private bool IsDropdownTestEnabled = false;
+
+    private string DefaultVal = "aaaa";
+
+    private List<string> ValOptions;
+
+    protected override void OnAfterTreeRender(bool firstTime)
+    {
+        base.OnAfterTreeRender(firstTime);
+
+        ValOptions = new();
+        for (int i = 0; i < 24; i++)
+        {
+            ValOptions.Add(i.ToString());
+        }
+    }
+
+	protected override int BuildHash()
+	{
+		var hash = new HashCode();
+
+		hash.Add(ValOptions);
+
+		return hash.ToHashCode();
+	}
+}

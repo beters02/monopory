@@ -30,35 +30,51 @@ public sealed partial class GameController : Component
 		if ( !requireReady && GetLobbyPlayers().Count < MinPlayers )
 			return false;
 
-		var activePlayers = GetLobbyPlayers();
-		ResetGameState( false );
-		StartingPlayerCount = activePlayers.Count;
-
-		foreach ( var player in Players )
+		BeginServerLoading( "Starting game", "The host is preparing players, tokens, and the first turn." );
+		try
 		{
-			if ( player is not null && player.IsAssigned && !activePlayers.Contains( player ) )
-				ClearPlayerSlot( player );
-		}
+			var activePlayers = GetLobbyPlayers();
+			CurrentGameIdentifier = GameSaveService.CreateGameIdentifier( activePlayers.Select( player => player.PlayerName ).ToList() );
+			loadedSourceSaveId = "";
+			currentManualSaveId = "";
+			hasLoadedRestorePoint = false;
+			ResetGameState( false );
+			InitializeMatchIntegrity();
+			StartingPlayerCount = activePlayers.Count;
 
-		foreach ( var player in activePlayers )
+			foreach ( var player in Players )
+			{
+				if ( player is not null && player.IsAssigned && !activePlayers.Contains( player ) )
+					ClearPlayerSlot( player );
+			}
+
+			foreach ( var player in activePlayers )
+			{
+				ResetPlayerForGame( player );
+				player.ColorSlot = activePlayers.IndexOf( player );
+				player.IsReady = false;
+			}
+
+			SpawnTokensForPlayers( activePlayers );
+
+			var firstPlayerIndex = Players.FindIndex( player => player is not null && player.IsAssigned );
+			CurrentPlayerIndex = Math.Max( firstPlayerIndex, 0 );
+			MatchState = MatchLifecycleState.Starting;
+			GameStartedAt = Time.Now;
+			MatchState = MatchLifecycleState.InGame;
+			BeginTurnForCurrentPlayer();
+			BeginMoveHistoryTurn();
+			StartTurnTimer();
+
+			ReportMatchStartedAchievements();
+			SendGlobalPopupToAll( "Game started", "The first turn is live.", PopupKind.Success, true, 4f );
+			TryAutosaveStablePoint( "Game started" );
+			return true;
+		}
+		finally
 		{
-			ResetPlayerForGame( player );
-			player.ColorSlot = activePlayers.IndexOf( player );
-			player.IsReady = false;
+			ClearServerLoading();
 		}
-
-		SpawnTokensForPlayers( activePlayers );
-
-		var firstPlayerIndex = Players.FindIndex( player => player is not null && player.IsAssigned );
-		CurrentPlayerIndex = Math.Max( firstPlayerIndex, 0 );
-		MatchState = MatchLifecycleState.Starting;
-		GameStartedAt = Time.Now;
-		MatchState = MatchLifecycleState.InGame;
-		BeginTurnForCurrentPlayer();
-		StartTurnTimer();
-
-		SendGlobalPopupToAll( "Game started", "The first turn is live.", PopupKind.Success, true, 4f );
-		return true;
 	}
 
 	public bool TrySetReady( PlayerState player, bool isReady )
@@ -70,6 +86,37 @@ public sealed partial class GameController : Component
 			return false;
 
 		player.IsReady = isReady;
+		return true;
+	}
+
+	public bool TryForceReadyUp( out string message )
+	{
+		message = "";
+
+		if ( !Networking.IsHost )
+		{
+			message = "Only the host can force ready up.";
+			return false;
+		}
+
+		if ( MatchState != MatchLifecycleState.Lobby )
+		{
+			message = "Players can only be forced ready in the lobby.";
+			return false;
+		}
+
+		var players = GetLobbyPlayers();
+		if ( players.Count == 0 )
+		{
+			message = "No lobby players to ready up.";
+			return false;
+		}
+
+		foreach ( var player in players )
+			player.IsReady = true;
+
+		message = $"Forced {players.Count} player{(players.Count == 1 ? "" : "s")} ready.";
+		SendTableChatMessage( "Ready up", message );
 		return true;
 	}
 
@@ -110,11 +157,59 @@ public sealed partial class GameController : Component
 		if ( !Networking.IsHost )
 			return false;
 
+		TryAutosaveStablePoint( "Returned to lobby" );
 		ClearSpawnedTokens();
 		ResetGameState( false );
 		SyncLobbyConnections();
 		MatchState = MatchLifecycleState.Lobby;
 		SceneFlow.LoadLobby( Scene );
+		return true;
+	}
+
+	public bool TryForceEndGameWin( PlayerState winner, out string message )
+	{
+		message = "";
+
+		if ( !Networking.IsHost )
+		{
+			message = "Only the host can force a game win.";
+			return false;
+		}
+
+		if ( winner is null || !winner.IsAssigned )
+		{
+			message = "Winner is not an active player.";
+			return false;
+		}
+
+		var winnerIndex = Players.IndexOf( winner );
+		if ( winnerIndex < 0 )
+		{
+			message = "Winner is not part of this game.";
+			return false;
+		}
+
+		CurrentTurnEndsAt = 0f;
+		ClearAuction();
+		ClearPendingForcedPayment();
+		PendingPurchaseSpaceIndex = -1;
+		CurrentTurnGetsExtraRoll = false;
+		CurrentTurnConsecutiveDoubles = 0;
+		CurrentTurnDoublesPlayerIndex = -1;
+		Phase = GamePhase.TurnEnded;
+		WinnerPlayerIndex = winnerIndex;
+		FinalizeMoveHistoryTurn();
+		RevealMatchSeed();
+		MatchState = MatchLifecycleState.GameOver;
+		if ( Networking.IsHost && Connection.All.Count <= 1 )
+			NetworkSession.ClearRejoinWindow();
+
+		ReportMatchCompletedAchievements();
+		ReportWinnerAchievements();
+		SendGlobalPopupToAll( "Game over", $"{winner.PlayerName} won the game.", PopupKind.Success, true, 8f );
+		Log.Info( $"Game force-ended. Winner: {winner.PlayerName}." );
+
+		message = $"Forced game over. Winner: {winner.PlayerName}.";
 		return true;
 	}
 
@@ -148,6 +243,8 @@ public sealed partial class GameController : Component
 		CurrentTurnDoublesPlayerIndex = -1;
 
 		Phase = GamePhase.TurnEnded;
+		FinalizeMoveHistoryTurn();
+		RevealMatchSeed();
 		MatchState = MatchLifecycleState.GameOver;
 		if ( Networking.IsHost && Connection.All.Count <= 1 )
 			NetworkSession.ClearRejoinWindow();

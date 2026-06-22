@@ -88,7 +88,7 @@ public static class BoardData
 			{
 				Index = 6,
 				Key = "property_light_blue_0",
-				DisplayName = "CSGOWild\n.com", // CSGO Blackjack
+				DisplayName = "CSGO\nWild\n.com", // CSGO Blackjack
 				Type = SpaceType.Property,
 				Price = 100,
 				BaseRent = 6,
@@ -110,7 +110,7 @@ public static class BoardData
 			{
 				Index = 8,
 				Key = "property_light_blue_1",
-				DisplayName = "CSGORoll\n.com",
+				DisplayName = "CSGO\nRoll\n.com",
 				Type = SpaceType.Property,
 				Price = 100,
 				BaseRent = 6,
@@ -147,7 +147,7 @@ public static class BoardData
 			{
 				Index = 11,
 				Key = "property_pink_0",
-				DisplayName = "Yodie-Land",
+				DisplayName = "The Liqo Sto",
 				Type = SpaceType.Property,
 				Price = 140,
 				BaseRent = 10,
@@ -171,7 +171,7 @@ public static class BoardData
 			{
 				Index = 13,
 				Key = "property_pink_1",
-				DisplayName = "The Liqo Sto", //  
+				DisplayName = "Section 80",
 				Type = SpaceType.Property,
 				Price = 140,
 				BaseRent = 10,
@@ -186,7 +186,7 @@ public static class BoardData
 			{
 				Index = 14,
 				Key = "property_pink_2",
-				DisplayName = "Section 80", // Section 80
+				DisplayName = "Yodie-Land",
 				Type = SpaceType.Property,
 				Price = 160,
 				BaseRent = 12,
@@ -247,7 +247,7 @@ public static class BoardData
 			{
 				Index = 19,
 				Key = "property_orange_2",
-				DisplayName = "Bryce's Skunky Dungeon",
+				DisplayName = "Bryce's Skunky Dungeon", 
 				Type = SpaceType.Property,
 				Price = 200,
 				BaseRent = 16,
@@ -327,10 +327,10 @@ public static class BoardData
 				BaseRent = 2
 			},
 			new()
-			{
+			{ // Quinn's
 				Index = 26,
 				Key = "property_yellow_0",
-				DisplayName = "LeBron’s Bedroom",
+				DisplayName = "LeBron's Room",
 				Type = SpaceType.Property,
 				Price = 260,
 				BaseRent = 22,
@@ -369,7 +369,7 @@ public static class BoardData
 			{
 				Index = 29,
 				Key = "property_yellow_2",
-				DisplayName = "Shrine Auditorium",
+				DisplayName = "The Co-Op", // Shrine Auditorium
 				Type = SpaceType.Property,
 				Price = 280,
 				BaseRent = 24,
@@ -403,10 +403,10 @@ public static class BoardData
 				ColorGroup = ColorGroup.Green
 			},
 			new()
-			{
+			{ // Troops
 				Index = 32,
 				Key = "property_green_1",
-				DisplayName = "Troop",
+				DisplayName = "House\nMade Of\nVelos",
 				Type = SpaceType.Property,
 				Price = 300,
 				BaseRent = 26,
@@ -474,7 +474,7 @@ public static class BoardData
 			{
 				Index = 38,
 				Key = "tax_luxury",
-				DisplayName = "Luxury Tax",
+				DisplayName = "Bag Tax",
 				Type = SpaceType.Tax,
 				TaxAmount = 200
 			},
@@ -490,7 +490,7 @@ public static class BoardData
 				TwoHouseRent = 600,
 				ThreeHouseRent = 1400,
 				FourHouseRent = 1700,
-				HotelRent = 1500,
+				HotelRent = 2000,
 				ColorGroup = ColorGroup.DarkBlue
 			},
 		};
@@ -517,4 +517,5 @@ public static class BoardData
 			BothOwnedMultiplier = defaultUtilityDefs.BothOwnedMultiplier
 		};
 	}
+
 }

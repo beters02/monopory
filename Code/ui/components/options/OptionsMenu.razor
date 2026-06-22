@@ -1,0 +1,510 @@
+@namespace Sandbox.ui.components
+@using Sandbox;
+@using Sandbox.UI;
+@using Sandbox.Engine.Settings;
+@using Sandbox.ui.components.buttons
+@using System;
+@using System.Threading.Tasks;
+@inherits Panel
+
+<OptionsPanel IsOpen="@IsOpen" Kicker="Settings" Title="Options" OnClose="@Close" RootVariant="options-menu-root" ScreenVariant="@OptionsScreenVariant" PanelVariant="options-menu-panel">
+	<ChildContent>
+		@if ( !string.IsNullOrWhiteSpace( applyErrorMessage ) )
+		{
+			<div class="options-apply-error">@applyErrorMessage</div>
+		}
+		<OptionsPanelBody>
+			<ChildContent Context="scrollPanel">
+				<OptionsPanelSectionList Sections="@AppSettingSections" ListVariant="reverse">
+					<ChildContent Context="section">
+						<OptionsPanelSubsectionList Subsections="@section.Subsections" ListVariant="reverse" SubsectionOptionsVariant="reverse">
+							<ChildContent Context="subsection">
+								@foreach ( var option in GetOptionsForSection( section.Key, subsection.Key ).Reverse() )
+								{
+									<OptionsPanelRow Title="@option.Label" Value="@GetOptionStatusText( option )">
+										<ChildContent>
+											@if ( option.Kind == AppSettingOptionKind.Bool )
+											{
+												<GameButton Variant="@GetToggleButtonClasses( GetBoolValue( option ) )" CanClick="@IsOptionAvailable( option )" OnClick="@(() => ToggleBoolOption( option ))" BlockedPopupTitle="Unavailable" BlockedPopupMessage="@UnavailableMessage">
+													@(GetBoolValue( option ) ? "On" : "Off")
+												</GameButton>
+											}
+											else if ( option.Kind == AppSettingOptionKind.Enum )
+											{
+												<DropdownButton
+													Value="@GetEnumValue( option )"
+													Items="@option.EnumNames"
+													ScrollTarget="@scrollPanel"
+													CanClick="@IsOptionAvailable( option )"
+													OnSelected="@((string value) => SetEnumValue( option, value ))"
+													BlockedPopupTitle="Unavailable"
+													BlockedPopupMessage="@UnavailableMessage">
+												</DropdownButton>
+											}
+											else if ( option.Kind == AppSettingOptionKind.Int )
+											{
+												<SliderControl
+													class="options-slider"
+													Value="@GetIntValue( option )"
+													OnValueChanged="@((float value) => SetIntValue( option, value ))"
+													Min="@option.IntMin"
+													Max="@option.IntMax"
+													Step="@option.IntStep"
+													ShowTextEntry="@true"
+													NumberFormat="0">
+												</SliderControl>
+											}
+											else if ( option.Kind == AppSettingOptionKind.Keybind )
+											{
+												<GameButton Variant="@GetKeybindButtonClasses( option )" CanClick="@IsOptionAvailable( option )" OnClick="@(() => StartKeybindCapture( option ))" BlockedPopupTitle="Unavailable" BlockedPopupMessage="@UnavailableMessage">
+													@GetKeybindButtonText( option )
+												</GameButton>
+											}
+										</ChildContent>
+									</OptionsPanelRow>
+								}
+							</ChildContent>
+						</OptionsPanelSubsectionList>
+					</ChildContent>
+				</OptionsPanelSectionList>
+			</ChildContent>
+			<Footer>
+				<GameButton Variant="options-panel-primary-button" OnClick="@ApplyOptions">Apply</GameButton>
+			</Footer>
+		</OptionsPanelBody>
+	</ChildContent>
+	<OverlayContent>
+		<ConfirmationDialog
+			IsOpen="@IsCloseConfirmationOpen"
+			Title="Unsaved settings"
+			Message="Are you sure you want to close without saving?"
+			ConfirmLabel="Yes"
+			CancelLabel="No"
+			OnConfirm="@ConfirmCloseWithoutSaving"
+			OnCancel="@CancelCloseWithoutSaving">
+		</ConfirmationDialog>
+	</OverlayContent>
+</OptionsPanel>
+
+@code
+{
+	[Parameter] public bool IsOpen { get; set; }
+	[Parameter] public Action OnClose { get; set; }
+	[Parameter] public bool UseBlurBackdrop { get; set; }
+	private int revision;
+	private bool wasOpen;
+	private bool isCloseConfirmationOpen;
+	private AppSettingsData openingSettingsSnapshot;
+	private AppSettingOption keybindCaptureOption;
+	private string applyErrorMessage = "";
+
+	private string OptionsScreenVariant => UseBlurBackdrop ? "blur-backdrop" : "";
+	private bool IsCloseConfirmationOpen => IsOpen && isCloseConfirmationOpen;
+	private bool HasUnsavedChanges => openingSettingsSnapshot is not null && !AppSettings.Matches( openingSettingsSnapshot );
+	private bool SettingsAvailable => AppSettings.SettingsAvailable;
+	private string UnavailableMessage => "This setting is not available right now.";
+	private string RenderSettingsUnavailableMessage => "Video settings cannot be applied because s&box is not exposing render settings for this session. Try standalone mode if this is the editor.";
+	private IReadOnlyList<OptionsPanelSection> AppSettingSections => BuildAppSettingSections();
+	public override bool AcceptsImeInput => keybindCaptureOption is not null;
+
+	protected override void OnParametersSet()
+	{
+		base.OnParametersSet();
+
+		if ( IsOpen && !wasOpen )
+			CaptureOpeningSettings();
+		else if ( !IsOpen && wasOpen )
+			isCloseConfirmationOpen = false;
+
+		wasOpen = IsOpen;
+	}
+
+	private IReadOnlyList<OptionsPanelSection> BuildAppSettingSections()
+	{
+		var sections = new List<OptionsPanelSection>();
+
+		foreach ( var category in AppSettingsSchema.Categories.Reverse() )
+		{
+			var categorySections = GetSectionsForCategory( category ).Reverse().ToList();
+			if ( categorySections.Count == 0 )
+			{
+				sections.Add( new OptionsPanelSection
+				{
+					Kicker = category.Label,
+					Title = category.Label,
+					Copy = category.Description,
+					EmptyTitle = category.Label,
+					EmptyMessage = "No settings are wired into this section yet.",
+					HasItems = false
+				} );
+				continue;
+			}
+
+			var subsections = categorySections.Select( sectionName => new OptionsPanelSubsection
+			{
+				Key = sectionName,
+				Title = sectionName,
+				EmptyTitle = sectionName,
+				EmptyMessage = "No settings are wired into this section yet.",
+				HasItems = GetOptionsForSection( category.Key, sectionName ).Any()
+			} ).ToList();
+
+			sections.Add( new OptionsPanelSection
+			{
+				Key = category.Key,
+				Kicker = category.Label,
+				Title = category.Label,
+				Copy = category.Description,
+				EmptyTitle = category.Label,
+				EmptyMessage = "No settings are wired into this section yet.",
+				HasItems = subsections.Count > 0,
+				Subsections = subsections
+			} );
+		}
+
+		return sections;
+	}
+
+	private IEnumerable<string> GetSectionsForCategory( AppSettingCategory category )
+	{
+		return AppSettingsSchema.GetSectionsForCategory( category?.Key ?? "" );
+	}
+
+	private IEnumerable<AppSettingOption> GetOptionsForSection( string categoryKey, string section )
+	{
+		return AppSettingsSchema.GetOptionsForSection( categoryKey, section );
+	}
+
+	private static bool IsOptionAvailable( AppSettingOption option )
+	{
+		return option?.IsAvailable?.Invoke() == true;
+	}
+
+	private static bool GetBoolValue( AppSettingOption option )
+	{
+		return option?.GetBoolValue?.Invoke() == true;
+	}
+
+	private void ToggleBoolOption( AppSettingOption option )
+	{
+		ApplySetting( option?.ToggleBoolValue?.Invoke() == true );
+	}
+
+	private static string GetEnumValue( AppSettingOption option )
+	{
+		return option?.GetEnumValue?.Invoke() ?? "";
+	}
+
+	private void SetEnumValue( AppSettingOption option, string rawValue )
+	{
+		ApplySetting( option?.SetEnumValue?.Invoke( rawValue ) == true );
+	}
+
+	private static int GetIntValue( AppSettingOption option )
+	{
+		return option?.GetIntValue?.Invoke() ?? 0;
+	}
+
+	private void SetIntValue( AppSettingOption option, float rawValue )
+	{
+		ApplySetting( option?.SetIntValue?.Invoke( (int)MathF.Round( rawValue ) ) == true );
+	}
+
+	private static string GetKeybindValue( AppSettingOption option )
+	{
+		return option?.GetKeybindValue?.Invoke() ?? "";
+	}
+
+	private void SetKeybindValue( AppSettingOption option, string keyboardCode )
+	{
+		if ( option is null )
+			return;
+
+		var conflictName = option.GetKeybindConflict?.Invoke( keyboardCode ) ?? "";
+		if ( !string.IsNullOrWhiteSpace( conflictName ) )
+		{
+			ShowApplyError( $"{keyboardCode.ToUpperInvariant()} is already bound to {conflictName}." );
+			return;
+		}
+
+		var applied = option.SetKeybindValue?.Invoke( keyboardCode ) == true;
+		if ( !applied )
+			Log.Warning( $"Could not apply keybind '{option.Key}' to '{keyboardCode}'." );
+
+		ApplySetting( applied );
+	}
+
+	private string GetOptionStatusText( AppSettingOption option )
+	{
+		if ( IsOptionAvailable( option ) )
+			return option?.Description ?? "";
+
+		return $"{option?.Description} Unavailable in this session.";
+	}
+
+	private async void ApplyOptions()
+	{
+		if ( HasPendingVideoChanges && !SettingsAvailable )
+		{
+			ShowApplyError( RenderSettingsUnavailableMessage );
+			return;
+		}
+
+		LoadingState.Show( "Applying settings", "Updating video and audio options." );
+		await LoadingState.WaitUntilPresentedAsync();
+
+		try
+		{
+			if ( !AppSettings.TryApply() )
+			{
+				LoadingState.Hide();
+				ShowApplyError( "Settings could not be applied." );
+				return;
+			}
+		}
+		catch ( Exception exception )
+		{
+			LoadingState.Hide();
+			ShowApplyError( $"Settings could not be applied: {exception.Message}" );
+			return;
+		}
+
+		openingSettingsSnapshot = AppSettings.Capture();
+		isCloseConfirmationOpen = false;
+		applyErrorMessage = "";
+		revision++;
+		StateHasChanged();
+		LoadingState.HideAfterSceneReady( 8, 0.25f );
+	}
+
+	private void Close()
+	{
+		StopKeybindCapture();
+		DropdownButton.CloseOpenDropdown();
+
+		if ( HasUnsavedChanges )
+		{
+			isCloseConfirmationOpen = true;
+			revision++;
+			StateHasChanged();
+			return;
+		}
+
+		CloseWithoutRestoring();
+	}
+
+	private void ConfirmCloseWithoutSaving()
+	{
+		if ( openingSettingsSnapshot is not null )
+			AppSettings.Restore( openingSettingsSnapshot );
+
+		isCloseConfirmationOpen = false;
+		revision++;
+		CloseWithoutRestoring();
+	}
+
+	private void CancelCloseWithoutSaving()
+	{
+		isCloseConfirmationOpen = false;
+		revision++;
+		StateHasChanged();
+	}
+
+	private void CloseWithoutRestoring()
+	{
+		isCloseConfirmationOpen = false;
+		OnClose?.Invoke();
+	}
+
+	private void ApplySetting( bool applied )
+	{
+		if ( !applied )
+			return;
+
+		applyErrorMessage = "";
+		revision++;
+		StateHasChanged();
+	}
+
+	private void CaptureOpeningSettings()
+	{
+		openingSettingsSnapshot = AppSettings.Capture();
+		isCloseConfirmationOpen = false;
+		StopKeybindCapture();
+		applyErrorMessage = "";
+	}
+
+	private bool HasPendingVideoChanges =>
+		openingSettingsSnapshot is not null &&
+		(
+			AppSettings.Data.FullscreenMode != openingSettingsSnapshot.FullscreenMode ||
+			AppSettings.Data.VSync != openingSettingsSnapshot.VSync ||
+			AppSettings.Data.UpscalerMode != openingSettingsSnapshot.UpscalerMode ||
+			AppSettings.Data.Fsr3Quality != openingSettingsSnapshot.Fsr3Quality ||
+			MathF.Abs( AppSettings.Data.MotionBlurScale - openingSettingsSnapshot.MotionBlurScale ) >= 0.001f
+		);
+
+	private void ShowApplyError( string message )
+	{
+		applyErrorMessage = message;
+		Log.Warning( $"Could not apply options: {message}" );
+		revision++;
+		StateHasChanged();
+	}
+
+	private static string GetToggleButtonClasses( bool enabled )
+	{
+		return enabled ? "options-panel-toggle-button selected" : "options-panel-toggle-button";
+	}
+
+	private string GetKeybindButtonClasses( AppSettingOption option )
+	{
+		return IsCapturingKeybind( option )
+			? "options-panel-toggle-button selected options-keybind-capturing"
+			: "options-panel-toggle-button";
+	}
+
+	private string GetKeybindButtonText( AppSettingOption option )
+	{
+		if ( IsCapturingKeybind( option ) )
+			return "Press a key";
+
+		var keyboardCode = GetKeybindValue( option );
+		return string.IsNullOrWhiteSpace( keyboardCode ) ? "Unbound" : keyboardCode.ToUpperInvariant();
+	}
+
+	private void StartKeybindCapture( AppSettingOption option )
+	{
+		if ( !IsOptionAvailable( option ) )
+			return;
+		
+		keybindCaptureOption = option;
+		AcceptsFocus = true;
+		Focus();
+		applyErrorMessage = "";
+		revision++;
+		StateHasChanged();
+	}
+
+	public override void OnButtonEvent( ButtonEvent e )
+	{
+		if ( keybindCaptureOption is null || e is null || !e.Pressed )
+		{
+			base.OnButtonEvent( e );
+			return;
+		}
+
+		if ( IsMouseButton( e.Button ) )
+		{
+			e.StopPropagation = true;
+			TryCaptureKeybindButton( e );
+			return;
+		}
+
+		base.OnButtonEvent( e );
+	}
+
+	public override void OnButtonTyped( ButtonEvent e )
+	{
+		if ( keybindCaptureOption is null || e is null || !e.Pressed )
+		{
+			base.OnButtonTyped( e );
+			return;
+		}
+
+		e.StopPropagation = true;
+		TryCaptureKeybindButton( e );
+	}
+
+	private void TryCaptureKeybindButton( ButtonEvent e )
+	{
+		var button = (e.Button ?? "").Trim();
+		if ( string.IsNullOrWhiteSpace( button ) )
+			return;
+
+		if ( string.Equals( button, "escape", StringComparison.OrdinalIgnoreCase ) )
+		{
+			StopKeybindCapture();
+			revision++;
+			StateHasChanged();
+			return;
+		}
+
+		SetKeybindValue( keybindCaptureOption, FormatKeybindCode( button, e ) );
+		StopKeybindCapture();
+		revision++;
+		StateHasChanged();
+	}
+
+	private void StopKeybindCapture()
+	{
+		keybindCaptureOption = null;
+		Blur();
+	}
+
+	private static string FormatKeybindCode( string button, ButtonEvent e )
+	{
+		var parts = new List<string>();
+		var normalizedButton = button.Trim();
+
+		if ( e.HasCtrl && !IsModifierButton( normalizedButton, "ctrl", "control" ) )
+			parts.Add( "ctrl" );
+
+		if ( e.HasAlt && !IsModifierButton( normalizedButton, "alt" ) )
+			parts.Add( "alt" );
+
+		if ( e.HasShift && !IsModifierButton( normalizedButton, "shift" ) )
+			parts.Add( "shift" );
+
+		parts.Add( normalizedButton );
+		return string.Join( " + ", parts );
+	}
+
+	private bool IsCapturingKeybind( AppSettingOption option )
+	{
+		return keybindCaptureOption is not null &&
+			option is not null &&
+			string.Equals( keybindCaptureOption.Key, option.Key, StringComparison.Ordinal );
+	}
+
+	private static bool IsMouseButton( string button )
+	{
+		return (button ?? "").Trim().StartsWith( "mouse", StringComparison.OrdinalIgnoreCase );
+	}
+
+	private static bool IsModifierButton( string button, params string[] modifierNames )
+	{
+		foreach ( var modifierName in modifierNames )
+		{
+			if ( button.Contains( modifierName, StringComparison.OrdinalIgnoreCase ) )
+				return true;
+		}
+
+		return false;
+	}
+
+	protected override int BuildHash()
+	{
+		var hash = new HashCode();
+		hash.Add( IsOpen );
+		hash.Add( revision );
+		hash.Add( SettingsAvailable );
+		hash.Add( keybindCaptureOption?.Key );
+
+		foreach ( var option in AppSettingsSchema.Options )
+		{
+			hash.Add( option.Key );
+			hash.Add( option.IsVisible() );
+			hash.Add( option.IsAvailable() );
+			hash.Add( option.Kind switch
+			{
+				AppSettingOptionKind.Bool => GetBoolValue( option ).ToString(),
+				AppSettingOptionKind.Int => GetIntValue( option ).ToString(),
+				AppSettingOptionKind.Keybind => GetKeybindValue( option ),
+				_ => GetEnumValue( option )
+			} );
+		}
+
+		return hash.ToHashCode();
+	}
+}

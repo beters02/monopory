@@ -50,8 +50,10 @@ public sealed partial class GameController : Component
 		AuctionCurrentBid = 0;
 		AuctionHighBidderIndex = -1;
 		AuctionEndsAt = Time.Now + 15f;
+		PauseTurnTimerForAuction();
 		Phase = GamePhase.Auctioning;
 
+		PlayGlobalSound( AuctionStartSound );
 		SendGlobalPopupToAll( "Auction started", $"{def.DisplayName} is up for auction.", PopupKind.Info, true, 4f );
 		Log.Info( $"Auction started for {def.DisplayName}." );
 	}
@@ -70,6 +72,7 @@ public sealed partial class GameController : Component
 			{
 				var ownedSetsBeforePurchase = CaptureOwnedSetKeys( AuctionHighBidderIndex );
 				PropertyOwners[def.Index] = AuctionHighBidderIndex;
+				ReportPropertyAcquiredAchievements( AuctionHighBidderIndex, def );
 				SendPopupToPlayer( winner, "Auction won", $"You won {def.DisplayName} for ${AuctionCurrentBid}.", PopupKind.Success, true, 5f );
 				SendTableChatMessage( "Auction won", $"{winner.PlayerName} won {def.DisplayName} for ${AuctionCurrentBid}." );
 				ShowNewlyOwnedSetPopups( ownedSetsBeforePurchase, AuctionHighBidderIndex );
@@ -84,6 +87,8 @@ public sealed partial class GameController : Component
 
 		ClearAuction();
 		SetPostActionPhase();
+		ResumeTurnTimerAfterAuction();
+		TryAutosaveStablePoint( "Auction ended" );
 	}
 
 	private void ClearAuction()
@@ -92,6 +97,20 @@ public sealed partial class GameController : Component
 		AuctionCurrentBid = 0;
 		AuctionHighBidderIndex = -1;
 		AuctionEndsAt = 0f;
+	}
+
+	private void PauseTurnTimerForAuction()
+	{
+		auctionPausedTurnRemainingSeconds = CurrentTurnEndsAt <= 0f ? 0f : Math.Max( 0f, CurrentTurnEndsAt - Time.Now );
+		CurrentTurnEndsAt = 0f;
+	}
+
+	private void ResumeTurnTimerAfterAuction()
+	{
+		if ( CurrentTurnEndsAt <= 0f && auctionPausedTurnRemainingSeconds > 0f && MatchState == MatchLifecycleState.InGame )
+			CurrentTurnEndsAt = Time.Now + auctionPausedTurnRemainingSeconds;
+
+		auctionPausedTurnRemainingSeconds = 0f;
 	}
 
 	public void PlaceAuctionBid( int bidderIndex, int bidAmount )
@@ -120,6 +139,7 @@ public sealed partial class GameController : Component
 		AuctionHighBidderIndex = bidderIndex;
 		AuctionEndsAt = MathF.Max( AuctionEndsAt, Time.Now + 7f );
 
+		PlayGlobalSound( AuctionBidSound );
 		Log.Info( $"{bidder.PlayerName} bid ${AuctionCurrentBid} on {def.DisplayName}." );
 	}
 }

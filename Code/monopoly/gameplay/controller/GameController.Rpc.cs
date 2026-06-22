@@ -65,6 +65,18 @@ public sealed partial class GameController : Component
 	}
 
 	[Rpc.Host]
+	public void RequestBankruptAndAbandon()
+	{
+		TryBankruptAndAbandonPlayer( GetPlayerForConnection( Rpc.Caller ) );
+	}
+
+	[Rpc.Host]
+	public void RequestDeclareBankruptcy()
+	{
+		TryDeclareBankruptcy( GetPlayerForConnection( Rpc.Caller ) );
+	}
+
+	[Rpc.Host]
 	public void RequestRollDice(int amount = -1, float throwStrength = 0.5f)
 	{
 		if ( !CanCurrentPlayerAct( Rpc.Caller ) )
@@ -93,6 +105,15 @@ public sealed partial class GameController : Component
 	}
 
 	[Rpc.Host]
+	public void RequestUseGetOutOfJailFreeCard()
+	{
+		if ( !CanCurrentPlayerAct( Rpc.Caller ) )
+			return;
+
+		_ = UseGetOutOfJailFreeCardAsync();
+	}
+
+	[Rpc.Host]
 	public void RequestRollForJailRelease( float throwStrength = 0.5f )
 	{
 		if ( !CanCurrentPlayerAct( Rpc.Caller ) )
@@ -102,12 +123,28 @@ public sealed partial class GameController : Component
 	}
 
 	[Rpc.Host]
+	public void RequestDisplayStatsLog()
+	{
+		DisplayStatsLog();
+	}
+
+	[Rpc.Host]
 	public void RequestEndTurn()
 	{
 		if ( !CanCurrentPlayerAct( Rpc.Caller ) )
 			return;
 
 		EndTurn();
+	}
+
+	[Rpc.Host]
+	public void RequestFinishActiveMovement()
+	{
+		var player = GetPlayerForCaller( Rpc.Caller );
+		if ( player is null || CurrentPlayer != player )
+			return;
+
+		FinishActiveMovement( player );
 	}
 
 	[Rpc.Host]
@@ -162,6 +199,29 @@ public sealed partial class GameController : Component
 	}
 
 	[Rpc.Host]
+	public void RequestTokenControlTransform( Vector3 position, Rotation rotation, Vector3 velocity, bool walking )
+	{
+		if ( MatchState != MatchLifecycleState.InGame )
+			return;
+
+		var player = GetPlayerForCaller( Rpc.Caller );
+		var playerIndex = GetPlayerIndex( player );
+		if ( playerIndex < 0 )
+			return;
+
+		BroadcastTokenControlTransform( playerIndex, position, rotation, velocity, walking );
+	}
+
+	[Rpc.Broadcast]
+	private void BroadcastTokenControlTransform( int playerIndex, Vector3 position, Rotation rotation, Vector3 velocity, bool walking )
+	{
+		foreach ( var token in Scene.GetAllComponents<PlayerToken>() )
+		{
+			token?.ApplyReplicatedTokenControlTransform( playerIndex, position, rotation, velocity, walking );
+		}
+	}
+
+	[Rpc.Host]
 	public void RequestSendPlayerToJail( PlayerState player )
 	{
 		SendPlayerToJail( player );
@@ -202,20 +262,40 @@ public sealed partial class GameController : Component
 
 	private void PlaySoundToConnection( Connection connection, GameSound sound, float delaySec = 0f )
 	{
-		if ( !Networking.IsHost || connection is null )
+		if ( !Networking.IsHost || connection is null || sound is null || !sound.IsAssigned )
 			return;
 
 		using ( Rpc.FilterInclude( connection ) )
 		{
-			if ( delaySec != 0f )
-			{
-				_ = PlayDelayedSound( sound, delaySec );
-				return;
-			}
-
-			sound.Play();
+			PlaySoundLocal( sound.Path, delaySec );
 		}
 	}
+
+	private void PlayGlobalSound( GameSound sound, float delaySec = 0f )
+	{
+		if ( !Networking.IsHost || sound is null || !sound.IsAssigned )
+			return;
+
+		PlaySoundLocal( sound.Path, delaySec );
+	}
+
+	[Rpc.Broadcast]
+	private void PlaySoundLocal( string soundPath, float delaySec = 0f )
+	{
+		var sound = new GameSound( soundPath );
+		if ( !sound.IsAssigned )
+			return;
+
+		if ( delaySec > 0f )
+		{
+			_ = PlayDelayedSound( sound, delaySec );
+			return;
+		}
+
+		sound.Play();
+	}
+
+	
 
 	private async Task PlayDelayedSound( GameSound sound, float delaySec )
 	{

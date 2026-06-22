@@ -1,69 +1,6 @@
 {
   "__guid": "10be9e1c-8018-4b89-8830-284cf440a17a",
-  "GameObjects": [
-    {
-      "__guid": "006aeafb-333f-4a5a-b1e6-0902be86ae4f",
-      "__version": 2,
-      "Flags": 0,
-      "Name": "GameSettingsController",
-      "Position": "149.994965,149.994995,-212.124985",
-      "Rotation": "0,0,0,1",
-      "Scale": "1,1,1",
-      "Tags": "",
-      "Enabled": true,
-      "NetworkMode": 2,
-      "NetworkFlags": 0,
-      "NetworkOrphaned": 0,
-      "NetworkTransmit": true,
-      "OwnerTransfer": 1,
-      "Components": [
-        {
-          "__type": "AppSettings",
-          "__guid": "5811b874-d972-4459-a700-78d8ec7ba138",
-          "__enabled": true,
-          "Flags": 0,
-          "OnComponentDestroy": null,
-          "OnComponentDisabled": null,
-          "OnComponentEnabled": null,
-          "OnComponentFixedUpdate": null,
-          "OnComponentStart": null,
-          "OnComponentUpdate": null
-        }
-      ],
-      "Children": []
-    },
-    {
-      "__guid": "db27c11e-e5e8-4ef5-bac4-f1a5bf4c4608",
-      "__version": 2,
-      "Flags": 0,
-      "Name": "MusicController",
-      "Position": "149.994965,149.994995,-212.124985",
-      "Rotation": "0,0,0,1",
-      "Scale": "1,1,1",
-      "Tags": "",
-      "Enabled": true,
-      "NetworkMode": 2,
-      "NetworkFlags": 0,
-      "NetworkOrphaned": 0,
-      "NetworkTransmit": true,
-      "OwnerTransfer": 1,
-      "Components": [
-        {
-          "__type": "Sandbox.MusicController",
-          "__guid": "bead5279-5005-4654-9543-7310c8279891",
-          "__enabled": true,
-          "Flags": 0,
-          "OnComponentDestroy": null,
-          "OnComponentDisabled": null,
-          "OnComponentEnabled": null,
-          "OnComponentFixedUpdate": null,
-          "OnComponentStart": null,
-          "OnComponentUpdate": null
-        }
-      ],
-      "Children": []
-    }
-  ],
+  "GameObjects": [],
   "SceneProperties": {
     "NetworkInterpolation": true,
     "TimeScale": 1,
@@ -84,14 +21,14 @@
       "CustomBounds": false
     },
     "GameObjectSystems": {
-      "Sandbox.SelectionSetsSystem": {
-        "Data": {
-          "SelectionSets": []
-        }
-      },
       "Sandbox.Clutter.ClutterGridSystem": {
         "Storage": {
           "$blob": "caf2dd0e-ed01-4f5a-b09d-9a7fcd3e1915"
+        }
+      },
+      "Sandbox.SelectionSetsSystem": {
+        "Data": {
+          "SelectionSets": []
         }
       }
     }

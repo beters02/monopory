@@ -8,7 +8,7 @@ public sealed class GameMaterial
         Path = path ?? "";
     }
 
-	public string Path { get; }
+	public string Path { get; init; }
 
     private Material loadedMaterial;
 
@@ -29,6 +29,12 @@ public sealed class GameMaterial
 	public bool Preload()
 	{
 		return Material is not null;
+	}
+
+	public bool Reload()
+	{
+		loadedMaterial = null;
+		return Preload();
 	}
 
 	public override string ToString() => Path;

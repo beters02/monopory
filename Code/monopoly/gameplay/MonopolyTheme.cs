@@ -11,6 +11,8 @@ public sealed class MonopolyTheme : Component
 	[Property] public Color Player7Color { get; set; } = ColorUtils.FromHex( "ffe45e" );
 	[Property] public Color Player8Color { get; set; } = ColorUtils.FromHex( "ff7ab6" );
 
+	public static Color MonopolyGoldColor { get; set; } = ColorUtils.FromHex("B98403");
+
 	public Color GetPlayerColor( int playerIndex )
 	{
 		return playerIndex switch

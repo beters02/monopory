@@ -1,11 +1,10 @@
-public static class GameAssets
+using System;
+
+public sealed class GameAssetCategoryAttribute : Attribute {}
+
+public static partial class GameAssets
 {
 	private static bool uiAssetsPrewarmed;
-
-	public static void PrewarmSongAssets()
-	{
-		Soundtracks.Nolan01.Preload();
-	}
 
 	public static void PrewarmUiAssets()
 	{
@@ -14,44 +13,94 @@ public static class GameAssets
 
 		uiAssetsPrewarmed = true;
 
-		Images.Chance.Preload();
+		foreach ( (var type, GameAssetCategoryAttribute attribute) in TypeLibrary.GetTypesWithAttribute<GameAssetCategoryAttribute>() )
+			PreloadAssets( type );
 
-		Materials.House.Preload();
-		Materials.Hotel.Preload();
-
-		Sounds.Click.Preload();
-		Sounds.ClosingClick.Preload();
-		Sounds.ClickAndOpen.Preload();
-		Sounds.ClickAndClose.Preload();
-		Sounds.CardFlip.Preload();
-		Sounds.Warning.Preload();
-		Sounds.Error.Preload();
-		Sounds.DiceImpact.Preload();
-		Sounds.TokenStep.Preload();
-		Sounds.Success.Preload();
-		Sounds.PianoBingBingBing.Preload();
-		Sounds.TradeNegotiated.Preload();
-		Sounds.TradeReceived.Preload();
-		Sounds.ChatReceived.Preload();
-		Sounds.ChatSent.Preload();
+		KeyboardIcons.Preload();
+		MouseIcons.Preload();
 	}
 
+	[ConCmd( "gameassets_reload" )]
+	public static void ReloadAll( Connection connection = null )
+	{
+		uiAssetsPrewarmed = false;
+
+		foreach ( (var type, GameAssetCategoryAttribute attribute) in TypeLibrary.GetTypesWithAttribute<GameAssetCategoryAttribute>() )
+			ReloadAssets( type );
+
+		Log.Info( "GameAssets reloaded." );
+	}
+
+	private static void PreloadAssets( TypeDescription type )
+	{
+		if ( type is null )
+			return;
+
+		foreach ( var field in type.Fields )
+			PreloadAsset( field );
+	}
+
+	private static void PreloadAsset( FieldDescription field )
+	{
+		var asset = field.GetValue( null );
+		if ( asset is null )
+			return;
+
+		var assetType = Game.TypeLibrary.GetType( field.FieldType );
+		var preloadMethod = assetType?.GetMethod( "Preload" );
+		preloadMethod?.Invoke( asset );
+	}
+
+	private static void ReloadAssets( TypeDescription type )
+	{
+		if ( type is null )
+			return;
+
+		foreach ( var field in type.Fields )
+			ReloadAsset( field );
+	}
+
+	private static void ReloadAsset( FieldDescription field )
+	{
+		var asset = field.GetValue( null );
+		if ( asset is null )
+			return;
+
+		var assetType = Game.TypeLibrary.GetType( field.FieldType );
+		var reloadMethod = assetType?.GetMethod( "Reload" );
+		if ( reloadMethod is not null )
+		{
+			reloadMethod.Invoke( asset );
+			return;
+		}
+
+		var preloadMethod = assetType?.GetMethod( "Preload" );
+		preloadMethod?.Invoke( asset );
+	}
+
+	[GameAssetCategory]
 	public static class Images
 	{
 		public static readonly GameImage Chance = new ( "textures/Chance.png" );
 	}
 
+	[GameAssetCategory]
 	public static class Icons
 	{
-		public static readonly GameIcon CameraWhiteFixedSvg = new ( "textures/icons/camera_white_fixed.svg" );
+		public static readonly GameIcon CameraWhiteFixedSvg = new ( "textures/icons/a_white_camera.svg" );
 	}
 
+	[GameAssetCategory]
 	public static class Materials
 	{
 		public static readonly GameMaterial House = new ( "materials/pieces/house.vmat" );
 		public static readonly GameMaterial Hotel = new ( "materials/pieces/hotel.vmat" );
+		public static readonly GameMaterial Piece = new ( "materials/pieces/piece.vmat" );
+		public static readonly GameMaterial BankruptedPiece = new ( "materials/pieces/piece_bankrupt.vmat" );
+		public static readonly GameMaterial Shiny = new ( "materials/dice/dice_shiny.vmat" );
 	}
 
+	[GameAssetCategory]
 	public static class Sounds
 	{
 		public static readonly GameSound Click = new ( "sounds/effects/click.sound" );
@@ -71,6 +120,9 @@ public static class GameAssets
 		public static readonly GameSound ChatReceived = new ( "sounds/effects/chat-message-received.sound" );
 		public static readonly GameSound ChatSent = new ( "sounds/effects/chat-message-sent.sound" );
 		public static readonly GameSound ChatMentioned = new ( "sounds/effects/chat-message-mentioned.sound" );
+		public static readonly GameSound AuctionStart = new ( "sounds/effects/auction-start.sound" );
+		public static readonly GameSound AuctionBid = new ( "sounds/effects/auction-bid.sound" );
+		public static readonly GameSound Pluh = new ( "sounds/effects/pluh.sound" );
 
 		public static class Popup
 		{
@@ -93,9 +145,17 @@ public static class GameAssets
 		}
 	}
 
+	[GameAssetCategory]
 	public static class Soundtracks
 	{
-		public static readonly GameSoundtrack Nolan01 = new ( "sounds/music/soundtrack1.sound" );
+		public static readonly GameSoundtrack Menu0 = new ( "sounds/music/menu_soundtrack.sound", 0f, 3f );
+		public static readonly GameSoundtrack Game0 = new ( "sounds/music/game_soundtrack.sound", 6f, 3f );
 	}
+
+	[GameAssetCategory]
+	public static partial class KeyboardIcons {}
+
+	[GameAssetCategory]
+	public static partial class MouseIcons {}
 
 }

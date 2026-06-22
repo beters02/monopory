@@ -6,22 +6,14 @@ public sealed partial class GameController
 	
 	public bool IsEffectiveHostCaller( Connection caller )
 	{
-		if ( !Networking.IsHost )
-			return false;
-
-		if ( caller is null || caller == Connection.Local )
-			return true;
-
-		return PreferredHostOwnerId != 0 && caller.SteamId == PreferredHostOwnerId;
+		return MonopolyApp.IsEffectiveHostCaller( caller );
 	}
+
+	public long CurrentHostOwnerId => MonopolyApp.CurrentHostOwnerId;
 
 	private void EnsurePreferredHostOwnerId()
 	{
-		if ( PreferredHostOwnerId != 0 )
-			return;
-
-		PreferredHostOwnerId = Connection.Local?.SteamId ?? Connection.Host?.SteamId ?? 0L;
-		PreferredHostDisconnected = false;
+		MonopolyApp.EnsurePreferredHostOwnerId();
 	}
 
 	void Component.INetworkListener.OnConnected( Connection connection )
@@ -48,6 +40,8 @@ public sealed partial class GameController
 		if ( previousHost is not null && previousHost.SteamId == PreferredHostOwnerId )
 			PreferredHostDisconnected = true;
 
+		SetHudIsVisibleAll( true );
+
 		if ( IsResolvingPhysicalDice && PendingRollPlayerIndex < 0 )
 		{
 			Log.Warning( "Previous host left while physical dice were resolving. Cancelling dice wait and recovering current space." );
@@ -55,7 +49,7 @@ public sealed partial class GameController
 			PhysicalDiceStartedAt = 0f;
 		}
 
-		Log.Warning( $"Became network host after {previousHost?.DisplayName ?? "previous host"} left. Recovering game state." );
+		Log.Warning( $"Became network host after {GetConnectionPlayerName( previousHost, "previous host" )} left. Recovering game state." );
 		IsRecoveringHostState = true;
 		SendGlobalPopupToAll( "Host changed", "Recovering game state after the host left.", PopupKind.Warning, true, 4f );
 		RecoverGameplayState( true );
@@ -73,7 +67,23 @@ public sealed partial class GameController
 			return;
 
 		PreferredHostDisconnected = !connected;
-		Log.Info( $"Preferred host {connection.DisplayName} {eventName}." );
+		Log.Info( $"Preferred host {GetConnectionPlayerName( connection )} {eventName}." );
+
+		if ( connected )
+			TryRestorePreferredHost();
+	}
+
+	private void TryRestorePreferredHost()
+	{
+		if ( PreferredHostOwnerId == 0 || !Networking.IsHost || Connection.Local?.SteamId == PreferredHostOwnerId )
+			return;
+
+#if STANDALONE
+		if ( MonopolyApp.TryTransferSteamLobbyHostSync( PreferredHostOwnerId, out var message ) )
+			Log.Info( $"Restored Steam lobby host to preferred host. {message}" );
+		else
+			Log.Warning( $"Could not restore Steam lobby host to preferred host: {message}" );
+#endif
 	}
 
 	private void UpdateHostRecoveryWatchdog()
@@ -82,23 +92,38 @@ public sealed partial class GameController
 		RecoverDisconnectedCurrentPlayerDecision();
 		UpdateHostRecoveryStateFlag();
 
-		if ( Phase != GamePhase.ResolvingSpace )
+		var pendingRollStale = PendingRollPlayerIndex >= 0 &&
+			(PendingRollStartedAt <= 0f || Time.Now - PendingRollStartedAt > DiceSettleTimeout + ResolvingSpaceRecoveryDelay);
+
+		if ( pendingRollStale )
+		{
+			Log.Warning( "Recovering stale pending roll." );
+			IsResolvingPhysicalDice = false;
+			PhysicalDiceStartedAt = 0f;
+			SetHudIsVisibleAll( true );
+			RecoverGameplayState( true );
 			return;
+		}
 
 		if ( IsResolvingPhysicalDice && PendingRollPlayerIndex >= 0 && PhysicalDiceStartedAt > 0f && Time.Now - PhysicalDiceStartedAt > DiceSettleTimeout + ResolvingSpaceRecoveryDelay )
 		{
 			Log.Warning( "Recovering stale physical dice roll." );
 			IsResolvingPhysicalDice = false;
 			PhysicalDiceStartedAt = 0f;
+			SetHudIsVisibleAll( true );
 			RecoverGameplayState( true );
 			return;
 		}
+
+		if ( Phase != GamePhase.ResolvingSpace )
+			return;
 
 		if ( IsResolvingPhysicalDice && PhysicalDiceStartedAt > 0f && Time.Now - PhysicalDiceStartedAt > DiceSettleTimeout + ResolvingSpaceRecoveryDelay )
 		{
 			Log.Warning( "Recovering stale physical dice resolution." );
 			IsResolvingPhysicalDice = false;
 			PhysicalDiceStartedAt = 0f;
+			SetHudIsVisibleAll( true );
 		}
 
 		if ( IsResolvingPhysicalDice && PendingRollPlayerIndex < 0 )
@@ -123,8 +148,10 @@ public sealed partial class GameController
 		if ( !Networking.IsHost || MatchState != MatchLifecycleState.InGame )
 			return;
 
-		if ( Phase != GamePhase.ResolvingSpace && !force )
+		if ( Phase is not (GamePhase.ResolvingDiceRoll or GamePhase.ResolvingSpace) && !force )
 			return;
+
+		SetHudIsVisibleAll( true );
 
 		if ( PendingRollPlayerIndex >= 0 )
 		{
@@ -152,6 +179,17 @@ public sealed partial class GameController
 			return;
 		}
 
+		if ( Phase == GamePhase.ResolvingDiceRoll )
+		{
+			Log.Warning( "Recovering stuck ResolvingDiceRoll without pending roll data." );
+			IsResolvingPhysicalDice = false;
+			PhysicalDiceStartedAt = 0f;
+			Phase = GamePhase.WaitingToRoll;
+			StartTurnTimer();
+			UpdateHostRecoveryStateFlag();
+			return;
+		}
+
 		if ( Phase == GamePhase.ResolvingSpace )
 		{
 			Log.Warning( "Recovering stuck ResolvingSpace without movement data." );
@@ -166,10 +204,11 @@ public sealed partial class GameController
 	{
 		try
 		{
-			await RecoverPendingRollAsync();
+			await RecoverPendingRollAsync( false );
 		}
 		finally
 		{
+			SetHudIsVisibleAll( true );
 			isRecoveringPendingRoll = false;
 			UpdateHostRecoveryStateFlag();
 		}
@@ -181,6 +220,7 @@ public sealed partial class GameController
 			return;
 
 		var hasRecoveryWork =
+			Phase == GamePhase.ResolvingDiceRoll ||
 			Phase == GamePhase.ResolvingSpace ||
 			PendingRollPlayerIndex >= 0 ||
 			ActiveMovementPlayerIndex >= 0 ||

@@ -2,6 +2,7 @@ public sealed partial class GameController : Component
 {
 
     [Sync(SyncFlags.FromHost)] private bool IsHudVisible { get; set; } = true;
+	[Sync(SyncFlags.FromHost)] public bool ForceHiddenUiVisible { get; private set; }
 
     public void SetHudIsVisibleAll(bool isVisible)
     {
@@ -10,6 +11,14 @@ public sealed partial class GameController : Component
 
         IsHudVisible = isVisible;
     }
+
+	public void SetForceHiddenUiVisible( bool isVisible )
+	{
+		if ( !Networking.IsHost )
+			return;
+
+		ForceHiddenUiVisible = isVisible;
+	}
 
     public bool IsGameHudVisible() => IsHudVisible;
     public static bool IsGameHudVisibleStatic()

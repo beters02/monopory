@@ -47,11 +47,48 @@ public sealed partial class GameController : Component
 
 		PendingTrades[request.Id] = request.Serialize();
 		TradeViewers.Remove( request.Id );
+		TradeEditors.Remove( request.Id );
 		if ( isNegotiation )
 			ShowTradeNegotiationReceivedNotification( request );
 		else
 			ShowTradeReceivedNotification( request );
 		Log.Info( $"{Players[senderPlayerIndex].PlayerName} offered a trade to {Players[receiverPlayerIndex].PlayerName}." );
+	}
+
+	[Rpc.Host]
+	public void RequestEditTrade( int tradeId, int senderMoney, int receiverMoney, string senderPropertyIndexes, string receiverPropertyIndexes, string senderCardIds = "", string receiverCardIds = "" )
+	{
+		if ( !CanAcceptGameplayInput() )
+			return;
+
+		if ( !TryGetTrade( tradeId, out var existingTrade ) )
+			return;
+
+		var senderPlayerIndex = GetPlayerIndexForCaller( Rpc.Caller );
+		if ( senderPlayerIndex != existingTrade.SenderPlayerIndex )
+			return;
+
+		var request = new TradeRequest
+		{
+			Id = tradeId,
+			SenderPlayerIndex = existingTrade.SenderPlayerIndex,
+			ReceiverPlayerIndex = existingTrade.ReceiverPlayerIndex,
+			SenderMoney = Math.Max( senderMoney, 0 ),
+			ReceiverMoney = Math.Max( receiverMoney, 0 ),
+			SenderPropertyIndexes = ParseSpaceIndexList( senderPropertyIndexes ),
+			ReceiverPropertyIndexes = ParseSpaceIndexList( receiverPropertyIndexes ),
+			SenderCardIds = ParseTradableCardIdList( senderCardIds ),
+			ReceiverCardIds = ParseTradableCardIdList( receiverCardIds )
+		};
+
+		if ( request.IsEmpty || !IsTradeValid( request ) )
+			return;
+
+		PendingTrades[tradeId] = request.Serialize();
+		TradeViewers.Remove( tradeId );
+		TradeEditors.Remove( tradeId );
+		ShowTradeNegotiationReceivedNotification( request );
+		Log.Info( $"{Players[request.SenderPlayerIndex].PlayerName} edited a trade to {Players[request.ReceiverPlayerIndex].PlayerName}." );
 	}
 
 	[Rpc.Host]
@@ -70,6 +107,7 @@ public sealed partial class GameController : Component
 		{
 			PendingTrades.Remove( tradeId );
 			TradeViewers.Remove( tradeId );
+			TradeEditors.Remove( tradeId );
 			return;
 		}
 
@@ -84,10 +122,16 @@ public sealed partial class GameController : Component
 		sender.Money += trade.ReceiverMoney;
 
 		foreach ( var spaceIndex in trade.SenderPropertyIndexes )
+		{
 			PropertyOwners[spaceIndex] = trade.ReceiverPlayerIndex;
+			ReportPropertyAcquiredAchievements( trade.ReceiverPlayerIndex, Board?.GetSpaceDef( spaceIndex ) );
+		}
 
 		foreach ( var spaceIndex in trade.ReceiverPropertyIndexes )
+		{
 			PropertyOwners[spaceIndex] = trade.SenderPlayerIndex;
+			ReportPropertyAcquiredAchievements( trade.SenderPlayerIndex, Board?.GetSpaceDef( spaceIndex ) );
+		}
 
 		foreach ( var cardId in trade.SenderCardIds )
 			TransferTradableCard( trade.SenderPlayerIndex, trade.ReceiverPlayerIndex, cardId );
@@ -95,14 +139,20 @@ public sealed partial class GameController : Component
 		foreach ( var cardId in trade.ReceiverCardIds )
 			TransferTradableCard( trade.ReceiverPlayerIndex, trade.SenderPlayerIndex, cardId );
 
+		TrySettlePendingForcedPaymentForPlayer( trade.SenderPlayerIndex );
+		TrySettlePendingForcedPaymentForPlayer( trade.ReceiverPlayerIndex );
+
 		PendingTrades.Remove( tradeId );
+		RecordTradeHistory( trade, TradeHistoryEntry.Accepted );
 		TradeViewers.Remove( tradeId );
+		TradeEditors.Remove( tradeId );
 		RemoveInvalidTrades();
 		ShowTradeAcceptedNotification( sender, receiver );
 		ShowTradeAcceptedNotification( receiver, sender );
 		ShowNewlyOwnedSetPopups( ownedSetsBeforeTrade, trade.SenderPlayerIndex, trade.ReceiverPlayerIndex );
 
 		Log.Info( $"{receiver.PlayerName} accepted a trade from {sender.PlayerName}." );
+		TryAutosaveStablePoint( "Trade accepted" );
 	}
 
 	[Rpc.Host]
@@ -119,9 +169,14 @@ public sealed partial class GameController : Component
 			return;
 
 		if ( !suppressNotification )
+		{
 			ShowTradeDeniedNotification( trade, callerIndex );
+			RecordTradeHistory( trade, TradeHistoryEntry.Denied );
+		}
 		PendingTrades.Remove( tradeId );
 		TradeViewers.Remove( tradeId );
+		TradeEditors.Remove( tradeId );
+		TryAutosaveStablePoint( "Trade removed" );
 	}
 
 	[Rpc.Host]
@@ -152,6 +207,57 @@ public sealed partial class GameController : Component
 			TradeViewers[tradeId] = string.Join( ",", viewers.OrderBy( index => index ) );
 	}
 
+	[Rpc.Host]
+	public void RequestSetTradeEditing( int tradeId, bool isEditing )
+	{
+		if ( !CanAcceptGameplayInput() )
+			return;
+
+		if ( !TryGetTrade( tradeId, out var trade ) )
+		{
+			TradeEditors.Remove( tradeId );
+			return;
+		}
+
+		var editorIndex = GetPlayerIndexForCaller( Rpc.Caller );
+		if ( !trade.InvolvesPlayer( editorIndex ) )
+			return;
+
+		var editors = GetTradeEditorIndexes( tradeId ).ToHashSet();
+		if ( isEditing )
+			editors.Add( editorIndex );
+		else
+			editors.Remove( editorIndex );
+
+		if ( editors.Count == 0 )
+			TradeEditors.Remove( tradeId );
+		else
+			TradeEditors[tradeId] = string.Join( ",", editors.OrderBy( index => index ) );
+	}
+
+	private void RecordTradeHistory( TradeRequest trade, string outcome )
+	{
+		if ( trade is null )
+			return;
+
+		var entry = new TradeHistoryEntry
+		{
+			Id = NextTradeHistoryId++,
+			Outcome = outcome,
+			Trade = trade
+		};
+		TradeHistory[entry.Id] = entry.Serialize();
+	}
+
+	public List<TradeHistoryEntry> GetTradeHistory()
+	{
+		return TradeHistory
+			.Select( pair => TradeHistoryEntry.TryDeserialize( pair.Key, pair.Value, out var entry ) ? entry : null )
+			.Where( entry => entry is not null )
+			.OrderBy( entry => entry.Id )
+			.ToList();
+	}
+
 	public List<TradeRequest> GetTrades()
 	{
 		return PendingTrades
@@ -176,6 +282,11 @@ public sealed partial class GameController : Component
 		return GetTradeViewerIndexes( tradeId ).Contains( playerIndex );
 	}
 
+	public bool IsPlayerEditingTrade( int tradeId, int playerIndex )
+	{
+		return GetTradeEditorIndexes( tradeId ).Contains( playerIndex );
+	}
+
 	public bool IsTradeValid( TradeRequest trade )
 	{
 		if ( trade is null )
@@ -185,9 +296,6 @@ public sealed partial class GameController : Component
 		var receiver = Players.ElementAtOrDefault( trade.ReceiverPlayerIndex );
 
 		if ( sender is null || receiver is null || !sender.IsAssigned || !receiver.IsAssigned || sender.IsBankrupt || receiver.IsBankrupt )
-			return false;
-
-		if ( HasPendingForcedPaymentForPlayer( trade.SenderPlayerIndex ) || HasPendingForcedPaymentForPlayer( trade.ReceiverPlayerIndex ) )
 			return false;
 
 		if ( trade.SenderPlayerIndex == trade.ReceiverPlayerIndex )
@@ -200,11 +308,17 @@ public sealed partial class GameController : Component
 		{
 			if ( GetOwnerIndexForSpace( spaceIndex ) != trade.SenderPlayerIndex )
 				return false;
+
+			if ( GetImprovementCount( spaceIndex ) > 0 )
+				return false;
 		}
 
 		foreach ( var spaceIndex in trade.ReceiverPropertyIndexes )
 		{
 			if ( GetOwnerIndexForSpace( spaceIndex ) != trade.ReceiverPlayerIndex )
+				return false;
+
+			if ( GetImprovementCount( spaceIndex ) > 0 )
 				return false;
 		}
 
@@ -223,6 +337,19 @@ public sealed partial class GameController : Component
 		return true;
 	}
 
+	public List<int> GetImprovedTradePropertyIndexes( TradeRequest trade )
+	{
+		if ( trade is null )
+			return new();
+
+		return trade.SenderPropertyIndexes
+			.Concat( trade.ReceiverPropertyIndexes )
+			.Where( spaceIndex => GetImprovementCount( spaceIndex ) > 0 )
+			.Distinct()
+			.OrderBy( spaceIndex => spaceIndex )
+			.ToList();
+	}
+
 	private void RemoveInvalidTrades()
 	{
 		foreach ( var trade in GetTrades() )
@@ -231,6 +358,7 @@ public sealed partial class GameController : Component
 			{
 				PendingTrades.Remove( trade.Id );
 				TradeViewers.Remove( trade.Id );
+				TradeEditors.Remove( trade.Id );
 			}
 		}
 	}
@@ -243,6 +371,19 @@ public sealed partial class GameController : Component
 	private List<int> GetTradeViewerIndexes( int tradeId )
 	{
 		if ( !TradeViewers.TryGetValue( tradeId, out var value ) || string.IsNullOrWhiteSpace( value ) )
+			return new();
+
+		return value.Split( ',', StringSplitOptions.RemoveEmptyEntries )
+			.Select( part => int.TryParse( part, out var index ) ? index : -1 )
+			.Where( index => index >= 0 )
+			.Distinct()
+			.OrderBy( index => index )
+			.ToList();
+	}
+
+	private List<int> GetTradeEditorIndexes( int tradeId )
+	{
+		if ( !TradeEditors.TryGetValue( tradeId, out var value ) || string.IsNullOrWhiteSpace( value ) )
 			return new();
 
 		return value.Split( ',', StringSplitOptions.RemoveEmptyEntries )
