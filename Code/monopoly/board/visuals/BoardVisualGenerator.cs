@@ -239,19 +239,21 @@ public sealed class BoardVisualGenerator : Component
 		if ( labelLayout.Lines is null || labelLayout.Lines.Count == 0 )
 			return;
 
+		var anchor = BoardVisualLayout.GetLabelPosition( layout.SideIndex, layout.VisualSize, surfaceZ + LabelHeight );
+		var rotation = BoardVisualLayout.GetLabelRotation( layout.SideIndex );
 		var startOffset = -(labelLayout.Lines.Count - 1) * labelLayout.LineSpacing * 0.5f;
-
-		var labelRoot = CreateGeneratedObject( $"Label_{def.Index:00}" );
-		labelRoot.SetParent( parent );
-		labelRoot.LocalPosition = BoardVisualLayout.GetLabelPosition( layout.SideIndex, layout.VisualSize, surfaceZ + LabelHeight );
-		labelRoot.LocalRotation = BoardVisualLayout.GetLabelRotation( layout.SideIndex );
 
 		for ( var i = 0; i < labelLayout.Lines.Count; i++ )
 		{
-			var lineObject = new GameObject( true, $"Line_{i}" );
-			lineObject.SetParent( labelRoot );
-			lineObject.LocalPosition = BoardVisualLayout.GetLabelLineLocalOffset( layout.SideIndex, startOffset + i * labelLayout.LineSpacing );
-			lineObject.LocalRotation = Rotation.Identity;
+			var lineObject = CreateGeneratedObject( $"Label_{def.Index:00}_Line_{i}" );
+			lineObject.SetParent( parent );
+
+			var stackOffset = BoardVisualLayout.GetLabelLineTileOffset(
+				layout.SideIndex,
+				startOffset + i * labelLayout.LineSpacing
+			);
+			lineObject.LocalPosition = anchor + stackOffset;
+			lineObject.LocalRotation = rotation;
 
 			var label = lineObject.Components.Create<TextRenderer>();
 			label.Text = labelLayout.Lines[i];

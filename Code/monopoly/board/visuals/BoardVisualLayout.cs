@@ -37,12 +37,16 @@ public static class BoardVisualLayout
 		};
 	}
 
-	public static Vector3 GetLabelLineLocalOffset( int sideIndex, float lineOffset )
+	public static Vector3 GetLabelLineTileOffset( int sideIndex, float lineOffset )
 	{
-		// Stack perpendicular to reading direction: Y for bottom/top, X for left/right.
-		return sideIndex is 0 or 2
-			? new Vector3( 0f, lineOffset, 0f )
-			: new Vector3( lineOffset, 0f, 0f );
+		// Line stack stays in the tile plane (Z=0). Never offset depth.
+		return sideIndex switch
+		{
+			0 => new Vector3( 0f, lineOffset, 0f ),
+			1 => new Vector3( lineOffset, 0f, 0f ),
+			2 => new Vector3( 0f, -lineOffset, 0f ),
+			_ => new Vector3( -lineOffset, 0f, 0f )
+		};
 	}
 
 	public static Vector3 GetLabelPosition( int sideIndex, Vector3 tileSize, float surfaceZ )
