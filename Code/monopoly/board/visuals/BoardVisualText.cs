@@ -31,14 +31,14 @@ public static class BoardVisualText
 		var longEdge = GetLongEdge( layout ) * LongEdgePadding;
 		var narrowEdge = GetNarrowEdge( layout ) * NarrowEdgePadding;
 		var probeScale = layout.IsCorner ? 0.046f : 0.036f;
-		var maxChars = GetMaxLineLength( layout, fontSize, probeScale );
-
-		var lines = FormatWrappedLabelLines( source, maxChars );
+		var lines = WrapLabelLines( source, layout, fontSize, probeScale, longEdge, narrowEdge );
 		if ( lines.Count == 0 )
 			return default;
 
 		var scale = ComputeLabelScale( lines, fontSize, longEdge, narrowEdge );
-		var lineSpacing = scale * fontSize * CharWidthFactor * 1.32f;
+		var lineSpacing = lines.Count <= 1
+			? scale * fontSize * CharWidthFactor * 1.32f
+			: narrowEdge * 0.84f / lines.Count;
 
 		return new SpaceLabelLayout
 		{
@@ -111,7 +111,8 @@ public static class BoardVisualText
 		if ( layout.IsCorner )
 			return MathF.Max( layout.VisualSize.x, layout.VisualSize.y );
 
-		return layout.SideIndex is 0 or 2 ? layout.VisualSize.y : layout.VisualSize.x;
+		// Bottom/top: long along X. Left/right: long along Y.
+		return layout.SideIndex is 0 or 2 ? layout.VisualSize.x : layout.VisualSize.y;
 	}
 
 	private static float GetNarrowEdge( BoardSpaceLayout layout )
@@ -119,7 +120,37 @@ public static class BoardVisualText
 		if ( layout.IsCorner )
 			return MathF.Min( layout.VisualSize.x, layout.VisualSize.y );
 
-		return layout.SideIndex is 0 or 2 ? layout.VisualSize.x : layout.VisualSize.y;
+		return layout.SideIndex is 0 or 2 ? layout.VisualSize.y : layout.VisualSize.x;
+	}
+
+	private static IReadOnlyList<string> WrapLabelLines(
+		string source,
+		BoardSpaceLayout layout,
+		int fontSize,
+		float probeScale,
+		float longEdge,
+		float narrowEdge )
+	{
+		var maxChars = GetMaxLineLength( layout, fontSize, probeScale );
+		var lines = FormatWrappedLabelLines( source, maxChars );
+
+		while ( maxChars > 4 )
+		{
+			var scale = ComputeLabelScale( lines, fontSize, longEdge, narrowEdge );
+			var spacing = lines.Count <= 1 ? 0f : narrowEdge * 0.84f / lines.Count;
+			var stackUsed = spacing * Math.Max( 0, lines.Count - 1 ) + scale * fontSize * CharWidthFactor;
+
+			if ( lines.Count > 1 && stackUsed <= narrowEdge && scale >= 0.024f )
+				break;
+
+			if ( lines.Count == 1 && scale >= 0.032f )
+				break;
+
+			maxChars--;
+			lines = FormatWrappedLabelLines( source, maxChars );
+		}
+
+		return lines;
 	}
 
 	private static float ComputeLabelScale(

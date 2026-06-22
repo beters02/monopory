@@ -39,7 +39,10 @@ public static class BoardVisualLayout
 
 	public static Vector3 GetLabelLineLocalOffset( int sideIndex, float lineOffset )
 	{
-		return new Vector3( 0f, lineOffset, 0f );
+		// Stack perpendicular to reading direction: Y for bottom/top, X for left/right.
+		return sideIndex is 0 or 2
+			? new Vector3( 0f, lineOffset, 0f )
+			: new Vector3( lineOffset, 0f, 0f );
 	}
 
 	public static Vector3 GetLabelPosition( int sideIndex, Vector3 tileSize, float surfaceZ )
