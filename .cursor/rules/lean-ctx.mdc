@@ -40,7 +40,7 @@ If you cannot read an image file that is sent in the current request, you may by
 
 ## Compression Bypass (ONLY when compressed output hides needed detail)
 `ctx_read(path, "lines:N-M")` → `ctx_read(path, "full")` → `ctx_shell(cmd, raw=true)`
-Return to compressed defaults after one expanded retrieval. ALWAYS try to use compressed shell, even when its code output. Only bypass if that is the only way to expose the needed detail.
+Return to compressed defaults after one expanded retrieval.
 
 ## Risk Gate (before high-impact edits)
 Before editing exported symbols, auth, DB schemas, or 3+ files: run `ctx_impact(action="analyze")`
@@ -56,7 +56,7 @@ and `ctx_callgraph(action="callers")` to confirm blast radius.
 2. If searching inside compiled binaries (.dll, .exe, .so, .bin), you are forbidden from utilizing flags that force text formatting (e.g., `rg -a`). You must read offsets programmatically or use targeted binary dump commands.
 3. Always pipe unexpected or potentially large terminal outputs to `head -n 50`.
 4. NEVER use native Read/Grep/Shell/Edit/Write/StrReplace when ctx_* equivalents are available.
-5. Always return to lean-ctx compression defaults after you deviate at ANY TIME.
+5. Always return to lean-ctx compression defaults after you successfully deviate.
 
 ## S&box
 Use the S&box mcp server for unknown solutions for S&box related requests

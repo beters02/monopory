@@ -20,8 +20,11 @@ public sealed class BoardVisualGenerator : Component
 	[Property] public float TileBevelInset { get; set; } = 0.12f;
 	[Property] public float AccentDepth { get; set; } = 2.4f;
 	[Property] public float AccentHeight { get; set; } = 0.28f;
-	[Property] public float LabelHeight { get; set; } = 0.08f;
-	[Property] public float DetailIconHeight { get; set; } = 0.12f;
+	[Property, Title( "Label Height" ), Description( "Distance in tile XY toward the outer edge. Does not change Z — use Label Surface Lift for depth." )]
+	public float LabelHeight { get; set; } = 2.8f;
+	[Property, Title( "Label Surface Lift" ), Description( "Z offset above the tile surface." )]
+	public float LabelSurfaceLift { get; set; } = 0.08f;
+	[Property] public float DetailIconSurfaceLift { get; set; } = 0.12f;
 	[Property] public bool CreateLabels { get; set; } = true;
 	[Property] public bool CreateDetailIcons { get; set; } = true;
 	[Property] public float HoverLift { get; set; } = 0.15f;
@@ -240,7 +243,11 @@ public sealed class BoardVisualGenerator : Component
 			return;
 
 		var quadrant = Board.GetSpaceQuadrantIncludeCorners( def.Index );
-		var anchor = BoardVisualLayout.GetLabelPosition( layout.SideIndex, layout.VisualSize, surfaceZ + LabelHeight );
+		var anchor = BoardVisualLayout.GetLabelAnchor(
+			quadrant,
+			surfaceZ + LabelSurfaceLift,
+			LabelHeight
+		);
 		var rotation = BoardVisualLayout.GetLabelRotationForQuadrant( quadrant );
 		var lineCount = labelLayout.Lines.Count;
 		var halfSpan = (lineCount - 1) * 0.5f;
@@ -280,10 +287,16 @@ public sealed class BoardVisualGenerator : Component
 		if ( string.IsNullOrWhiteSpace( iconText ) )
 			return;
 
+		var quadrant = Board.GetSpaceQuadrantIncludeCorners( def.Index );
+
 		var iconObject = CreateGeneratedObject( $"Detail_{def.Index:00}" );
 		iconObject.SetParent( parent );
-		iconObject.LocalPosition = BoardVisualLayout.GetLabelPosition( layout.SideIndex, layout.VisualSize, surfaceZ + DetailIconHeight );
-		iconObject.LocalRotation = BoardVisualLayout.GetLabelRotation( layout.SideIndex );
+		iconObject.LocalPosition = BoardVisualLayout.GetDetailIconPosition(
+			layout.SideIndex,
+			layout.VisualSize,
+			surfaceZ + DetailIconSurfaceLift
+		);
+		iconObject.LocalRotation = BoardVisualLayout.GetLabelRotationForQuadrant( quadrant );
 
 		var label = iconObject.Components.Create<TextRenderer>();
 		label.Text = iconText;
@@ -361,32 +374,33 @@ public sealed class BoardVisualGenerator : Component
 	{
 		var layout = Board.Layout ?? BoardLayoutDefinition.Classic();
 		var sideIndex = layout.GetSideIndex( def.Index, Board.SpaceCount );
+		var barDepth = BoardVisualLayout.GetColorBarDepth( sideIndex, tileSize );
 
 		var accentSize = tileSize;
 		var accentCenter = new Vector3( 0f, 0f, tileCenterZ + tileSize.z * 0.5f + AccentHeight * 0.5f );
 
-		// Inner edge faces board center: bottom +X, left -Y, top -X, right +Y.
+		// BoardPanel GetColorBarRect: bar on inner edge toward board center.
 		switch ( sideIndex )
 		{
 			case 0:
-				accentSize.x = AccentDepth;
+				accentSize.x = barDepth;
 				accentSize.z = AccentHeight;
-				accentCenter.x = (tileSize.x - AccentDepth) * 0.5f;
+				accentCenter.x = (tileSize.x - barDepth) * 0.5f;
 				break;
 			case 1:
-				accentSize.y = AccentDepth;
+				accentSize.y = barDepth;
 				accentSize.z = AccentHeight;
-				accentCenter.y = (AccentDepth - tileSize.y) * 0.5f;
+				accentCenter.y = (barDepth - tileSize.y) * 0.5f;
 				break;
 			case 2:
-				accentSize.x = AccentDepth;
+				accentSize.x = barDepth;
 				accentSize.z = AccentHeight;
-				accentCenter.x = (AccentDepth - tileSize.x) * 0.5f;
+				accentCenter.x = (barDepth - tileSize.x) * 0.5f;
 				break;
 			default:
-				accentSize.y = AccentDepth;
+				accentSize.y = barDepth;
 				accentSize.z = AccentHeight;
-				accentCenter.y = (tileSize.y - AccentDepth) * 0.5f;
+				accentCenter.y = (tileSize.y - barDepth) * 0.5f;
 				break;
 		}
 

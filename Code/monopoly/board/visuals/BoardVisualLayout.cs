@@ -74,18 +74,91 @@ public static class BoardVisualLayout
 		};
 	}
 
-	public static Vector3 GetLabelPosition( int sideIndex, Vector3 tileSize, float surfaceZ )
+	private const float ColorBarThicknessFraction = 0.18f;
+	private const float IconInnerBiasFraction = 0.12f;
+
+	public static Vector3 GetOuterDirection( int sideIndex )
 	{
-		var z = surfaceZ + 0.08f;
-		var inset = 0.18f;
+		return sideIndex switch
+		{
+			0 => Vector3.Left,
+			1 => Vector3.Up,
+			2 => Vector3.Right,
+			_ => Vector3.Down
+		};
+	}
+
+	public static float GetColorBarDepth( int sideIndex, Vector3 tileSize )
+	{
+		return sideIndex is 0 or 2
+			? tileSize.x * ColorBarThicknessFraction
+			: tileSize.y * ColorBarThicknessFraction;
+	}
+
+	public static Vector3 GetContentCenter( int sideIndex, Vector3 tileSize )
+	{
+		var barDepth = GetColorBarDepth( sideIndex, tileSize );
 
 		return sideIndex switch
 		{
-			0 => new Vector3( -tileSize.x * inset, 0f, z ),
-			1 => new Vector3( 0f, tileSize.y * inset, z ),
-			2 => new Vector3( tileSize.x * inset, 0f, z ),
-			_ => new Vector3( 0f, -tileSize.y * inset, z )
+			0 => new Vector3( -barDepth * 0.5f, 0f, 0f ),
+			1 => new Vector3( 0f, barDepth * 0.5f, 0f ),
+			2 => new Vector3( barDepth * 0.5f, 0f, 0f ),
+			_ => new Vector3( 0f, -barDepth * 0.5f, 0f )
 		};
+	}
+
+	public static float GetContentSpan( int sideIndex, Vector3 tileSize )
+	{
+		return sideIndex is 0 or 2 ? tileSize.x : tileSize.y;
+	}
+
+	public static Vector3 GetDetailIconPosition( int sideIndex, Vector3 tileSize, float surfaceZ )
+	{
+		var z = surfaceZ + 0.12f;
+		var center = GetContentCenter( sideIndex, tileSize );
+		var inner = -GetOuterDirection( sideIndex );
+		var span = GetContentSpan( sideIndex, tileSize ) - GetColorBarDepth( sideIndex, tileSize );
+		return (center + inner * span * IconInnerBiasFraction) with { z = z };
+	}
+
+	public static Vector3 GetQuadrantLabelReference( int quadrant )
+	{
+		return quadrant switch
+		{
+			1 => SpaceLayoutSettings.FirstQuadrantLocalPosition,
+			2 => SpaceLayoutSettings.SecondQuadrantLocalPosition,
+			3 => SpaceLayoutSettings.ThirdQuadrantLocalPosition,
+			_ => SpaceLayoutSettings.FourthQuadrantLocalPosition
+		};
+	}
+
+	/// <summary>
+	/// Tile XY anchor for labels. <paramref name="labelHeight"/> is distance in the tile
+	/// plane along the legacy quadrant direction — never applied to Z.
+	/// </summary>
+	public static Vector3 GetLabelAnchor(
+		int quadrant,
+		float surfaceZ,
+		float labelHeight )
+	{
+		var reference = GetQuadrantLabelReference( quadrant );
+		var planar = new Vector3( reference.x, reference.y, 0f );
+		var magnitude = planar.Length;
+
+		if ( magnitude < 0.0001f || labelHeight <= 0f )
+			return new Vector3( 0f, 0f, surfaceZ );
+
+		var scaled = planar / magnitude * labelHeight;
+		return new Vector3( scaled.x, scaled.y, surfaceZ );
+	}
+
+	public static Vector3 GetLabelPosition(
+		int quadrant,
+		float surfaceZ,
+		float labelHeight = 2.8f )
+	{
+		return GetLabelAnchor( quadrant, surfaceZ, labelHeight );
 	}
 
 	public static void GetOwnershipTabLayout(

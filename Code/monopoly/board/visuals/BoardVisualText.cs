@@ -7,7 +7,8 @@ public static class BoardVisualText
 	private const int DefaultMaxLineLength = 10;
 	private const int MaxLabelLines = 3;
 	private const float CharWidthFactor = 0.55f;
-	private const float LongEdgePadding = 0.78f;
+	private const float LongEdgePadding = 0.72f;
+	private const float ScaleFitPadding = 0.92f;
 	private const float NarrowEdgePadding = 0.68f;
 
 	public readonly struct SpaceLabelLayout
@@ -170,7 +171,7 @@ public static class BoardVisualText
 			scale = MathF.Min( scale, lineScale );
 		}
 
-		return Math.Clamp( scale, 0.022f, 0.052f );
+		return Math.Clamp( scale * ScaleFitPadding, 0.022f, 0.048f );
 	}
 
 	public static string FormatWrappedLabel( string displayName, int maxLineLength )

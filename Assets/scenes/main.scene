@@ -202,6 +202,7 @@
               "ImprovementPrefabSideInset": 2.23,
               "ImprovementPrefabSpacing": 3.52,
               "ImprovementPrefabZOffset": 0.9,
+              "InteractionController": null,
               "OnComponentDestroy": null,
               "OnComponentDisabled": null,
               "OnComponentEnabled": null,
@@ -464,7 +465,37 @@
               ],
               "UseGeneratedMeshBoard": true,
               "UseProceduralBoardPanel": false,
-              "UseWorldPanelLabels": true
+              "UseWorldPanelLabels": true,
+              "VisualGenerator": null,
+              "VisualStateController": null
+            },
+            {
+              "__type": "BoardVisualGenerator",
+              "__guid": "72fbf749-3d06-408b-8d40-7dcd34dd9af0",
+              "__enabled": true,
+              "Flags": 0,
+              "AccentDepth": 2.4,
+              "AccentHeight": 0.28,
+              "Board": null,
+              "BoardMaterial": null,
+              "BoardThickness": 2.8,
+              "CreateDetailIcons": true,
+              "CreateLabels": true,
+              "DetailIconHeight": 0.12,
+              "HoverLift": 0.15,
+              "HoverMaterial": null,
+              "LabelHeight": 2.8,
+              "LabelSurfaceLift": 0.08,
+              "OnComponentDestroy": null,
+              "OnComponentDisabled": null,
+              "OnComponentEnabled": null,
+              "OnComponentFixedUpdate": null,
+              "OnComponentStart": null,
+              "OnComponentUpdate": null,
+              "SpaceGap": 0.35,
+              "SpaceMaterial": null,
+              "SpaceThickness": 1.1,
+              "TileBevelInset": 0.12
             }
           ],
           "Children": [
@@ -4467,7 +4498,7 @@
         "3fc079e0-70f5-4ad7-9af2-6b1e7d0df2a2": "91665df7-135a-430b-8aa3-df37cfb346bb",
         "59cd2d39-5498-4e08-8835-47063489072e": "1e617513-c394-491f-a1bc-9cffb76c8006",
         "3546f99c-c48c-40f1-b6b7-146037f3a169": "e88f1088-fbf9-4549-b9ab-5ec02cb1bb4f",
-        "1b935e96-675a-4f2a-91d4-aa25a12f1254": "2454de82-aed9-43d3-8439-7243446e0984"
+        "c4d5e6f7-a8b9-4012-cdef-345678901234": "ae6ec2a3-2aef-451d-b6a7-aa2b83ac087e"
       }
     },
     {
@@ -4551,7 +4582,7 @@
         "3fc079e0-70f5-4ad7-9af2-6b1e7d0df2a2": "89bcd407-8d88-4975-aeb7-caef58148f5f",
         "59cd2d39-5498-4e08-8835-47063489072e": "522a6d72-faa1-453f-9b57-57bfd7601832",
         "3546f99c-c48c-40f1-b6b7-146037f3a169": "9be4c9d3-ed5c-4db8-ac26-3bd5ff0cbd54",
-        "1b935e96-675a-4f2a-91d4-aa25a12f1254": "63f103b5-8c81-4878-8511-38c2b692189b"
+        "c4d5e6f7-a8b9-4012-cdef-345678901234": "8c6c4ccc-14e2-4cac-9836-2df6000a067f"
       }
     },
     {
@@ -5151,14 +5182,14 @@
       "CustomBounds": false
     },
     "GameObjectSystems": {
-      "Sandbox.SelectionSetsSystem": {
-        "Data": {
-          "SelectionSets": []
-        }
-      },
       "Sandbox.Clutter.ClutterGridSystem": {
         "Storage": {
           "$blob": "6516437d-f143-43ab-91e3-16eab14872b6"
+        }
+      },
+      "Sandbox.SelectionSetsSystem": {
+        "Data": {
+          "SelectionSets": []
         }
       }
     }
