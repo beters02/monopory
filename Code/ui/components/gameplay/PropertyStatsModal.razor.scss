@@ -438,8 +438,24 @@
 	min-width: 0;
 	font-size: 10px;
 }
-.integrity-tab.selected {
+.integrity-tab-label {
+	position: absolute;
+	left: 0;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+	pointer-events: none;
+}
+.integrity-tab.active-tab {
 	background-color: $monopoly-gold;
+	color: $monopoly-ink;
+	box-shadow: 0 0 0 2px $monopoly-selected-ring-soft;
+}
+.integrity-tab.active-tab:hover {
+	background-color: $monopoly-gold-hover;
 }
 .integrity-list {
 	flex: 1;

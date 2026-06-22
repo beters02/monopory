@@ -23,7 +23,9 @@
 				<div class="match-integrity-tabs">
 					@foreach ( var tab in Tabs )
 					{
-						<GameButton Variant="@GetTabButtonClass( tab.Id )" OnClick="@(() => SetActiveTab( tab.Id ))">@tab.Label</GameButton>
+						<GameButton Variant="@GetTabButtonClass( tab.Id )" OnClick="@(() => SetActiveTab( tab.Id ))">
+							<ChildContent><div class="integrity-tab-label">@tab.Label</div></ChildContent>
+						</GameButton>
 					}
 				</div>
 
@@ -206,7 +208,7 @@
 	private void Close() => OnClose?.Invoke();
 	private void SelectProperty( int spaceIndex ) => GameRef?.SelectSpace( spaceIndex );
 	private void SetActiveTab( string tab ) { ActiveTab = tab; StateHasChanged(); }
-	private string GetTabButtonClass( string tab ) => ActiveTab == tab ? "integrity-tab selected" : "integrity-tab";
+	private string GetTabButtonClass( string tab ) => ActiveTab == tab ? "integrity-tab active-tab" : "integrity-tab";
 	private string GetKickerText() => ActiveTab == IntegrityTab ? "Verified Match" : "Board Analytics";
 	private string GetTitleText() => Tabs.FirstOrDefault( tab => tab.Id == ActiveTab ).Label ?? "Property Stats";
 	private string GetMatchSummary() => $"{GameRef?.Players?.Count( player => player is not null && player.IsAssigned ) ?? 0} players - {GameRef?.PropertyOwners?.Count ?? 0} owned properties";
