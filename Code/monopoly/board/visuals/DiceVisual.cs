@@ -176,53 +176,17 @@ public sealed class DiceVisual : Component
 				continue;
 
 			var tint = layer.IsBackground ? backgroundColor : dotColor;
-			var tintColor = ToColor( tint );
-			var texturePath = layer.IsBackground
-				? GetBackgroundTexturePath( layer.PipValue )
-				: GetPipTexturePath( layer.PipValue );
+			var material = GameAssets.DiceFaces.GetMaterial( layer.PipValue, layer.IsBackground );
+			if ( material is null )
+			{
+				Log.Warning( $"DiceVisual could not load face material for pip value {layer.PipValue} (background={layer.IsBackground})." );
+				continue;
+			}
 
-			layer.Renderer.MaterialOverride = CreateTexturedMaterial( texturePath, tintColor );
-			layer.Renderer.Tint = tintColor;
+			layer.Renderer.MaterialOverride = material;
+			layer.Renderer.Tint = ToColor( tint );
 		}
 	}
-
-	private static Material CreateTexturedMaterial( string texturePath, Color tint )
-	{
-		var texture = Texture.Load( texturePath );
-		if ( texture is null || texture.IsError )
-			Log.Warning( $"DiceVisual could not load face texture '{texturePath}'." );
-
-		var material = Material.Create( "materials/dice/runtime/dice_face.vmat", "shaders/complex.shader", false );
-		material.Set( "TextureColor", texture );
-		material.Set( "TextureRoughness", Texture.White );
-		material.Set( "g_vColorTint", tint );
-		material.Set( "g_flModelTintAmount", 1f );
-		material.Set( "g_flRoughnessScaleFactor", 0.88f );
-		material.Set( "g_flMetalness", 0f );
-		return material;
-	}
-
-	private static string GetPipTexturePath( int pipValue ) => pipValue switch
-	{
-		1 => "textures/dice/new/dice-six-faces-one.vtex",
-		2 => "textures/dice/new/dice-six-faces-two.vtex",
-		3 => "textures/dice/new/dice-six-faces-three.vtex",
-		4 => "textures/dice/new/dice-six-faces-four.vtex",
-		5 => "textures/dice/new/dice-six-faces-five.vtex",
-		6 => "textures/dice/new/dice-six-faces-six.vtex",
-		_ => "textures/dice/new/dice-six-faces-one.vtex"
-	};
-
-	private static string GetBackgroundTexturePath( int pipValue ) => pipValue switch
-	{
-		1 => "textures/dice/new/dice-six-faces-one-bg.vtex",
-		2 => "textures/dice/new/dice-six-faces-two-bg.vtex",
-		3 => "textures/dice/new/dice-six-faces-three-bg.vtex",
-		4 => "textures/dice/new/dice-six-faces-four-bg.vtex",
-		5 => "textures/dice/new/dice-six-faces-five-bg.vtex",
-		6 => "textures/dice/new/dice-six-faces-six-bg.vtex",
-		_ => "textures/dice/new/dice-six-faces-one-bg.vtex"
-	};
 
 	public static bool TryApplySkin( GameObject dieObject, DiceSkinDefinition diceSkin )
 	{
