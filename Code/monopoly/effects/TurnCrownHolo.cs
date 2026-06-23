@@ -5,8 +5,11 @@ public sealed class TurnCrownParticles : Component
 {
 	[Property] public bool IsActive { get; set; }
 
+    [Header( "Scale" )]
+    public float HoloScale { get; set; } = 0.15f;
+
 	[Header( "Shape" )]
-	[Property] public float Height { get; set; } = 48f;
+	public float Height { get; set; } = 2f;
 	[Property] public float Radius { get; set; } = 18f;
 	[Property] public float UpperRadius { get; set; } = 12f;
 	[Property] public int RingParticles { get; set; } = 28;
@@ -14,7 +17,7 @@ public sealed class TurnCrownParticles : Component
 
 	[Header( "Motion" )]
 	[Property] public float SpinSpeed { get; set; } = 85f;
-	[Property] public float BobAmount { get; set; } = 3f;
+	public float BobAmount { get; set; } = 1.5f;
 	[Property] public float BobSpeed { get; set; } = 2.25f;
 	[Property] public float PulseSpeed { get; set; } = 4f;
 
@@ -28,6 +31,8 @@ public sealed class TurnCrownParticles : Component
 	[Property] public Color RingColor { get; set; } = new Color( 1.0f, 0.78f, 0.18f, 0.75f );
 	[Property] public Color SparkColor { get; set; } = new Color( 1.0f, 0.95f, 0.55f, 0.95f );
 
+    private Vector3 LocalOffset { get; set; } = new( 1.5f, 0, 0 );
+
 	private GameObject EffectObject;
 	private ParticleEffect Effect;
 	private ParticleSpriteRenderer Renderer;
@@ -39,10 +44,12 @@ public sealed class TurnCrownParticles : Component
 		EffectObject = new GameObject( true, "Turn Crown Particle Effect" );
 		EffectObject.SetParent( GameObject );
 
+        GameObject.LocalPosition += LocalOffset;
+
 		Effect = EffectObject.Components.Create<ParticleEffect>();
 		Effect.MaxParticles = 256;
 		Effect.Lifetime = ParticleLifetime;
-		Effect.LocalSpace = new();
+		Effect.LocalSpace = 256f;
 
 		Renderer = EffectObject.Components.Create<ParticleSpriteRenderer>();
 		Renderer.Additive = true;
@@ -177,24 +184,59 @@ public sealed class TurnCrownParticles : Component
 		}
 	}
 
-	private void EmitParticle( Vector3 localPosition, Vector3 localVelocity, Color color, float size )
-	{
-		if ( Effect is null )
-			return;
+	/*private void EmitParticle( Vector3 localPosition, Vector3 localVelocity, Color color, float size )
+    {
+        if ( Effect is null || EffectObject is null )
+            return;
 
-		// Newer s&box builds prefer passing Time.Delta here.
-		// If your compiler says this overload does not exist, change this to:
-		// var particle = Effect.Emit( localPosition );
-		var particle = Effect.Emit( localPosition, Time.Delta );
+        var worldPosition =
+            EffectObject.WorldPosition +
+            EffectObject.WorldRotation * localPosition;
 
-		particle.Position = localPosition;
-		particle.StartPosition = localPosition;
-		particle.Velocity = localVelocity;
-		particle.Color = color;
-		particle.Alpha = color.a;
-		particle.Size = Vector3.One * size;
-		particle.Radius = size;
-		particle.BornTime = Time.Now;
-		particle.DeathTime = Time.Now + ParticleLifetime;
-	}
+        var worldVelocity =
+            EffectObject.WorldRotation * localVelocity;
+
+        var particle = Effect.Emit( worldPosition, Time.Delta );
+
+        particle.Position = worldPosition;
+        particle.StartPosition = worldPosition;
+        particle.Velocity = worldVelocity;
+        particle.Color = color;
+        particle.Alpha = color.a;
+        particle.Size = Vector3.One * size;
+        particle.Radius = size;
+        particle.BornTime = Time.Now;
+        particle.DeathTime = Time.Now + ParticleLifetime;
+    }*/
+
+    private void EmitParticle( Vector3 localPosition, Vector3 localVelocity, Color color, float size )
+    {
+        if ( Effect is null || EffectObject is null )
+            return;
+
+            var scaledLocalPosition = localPosition * HoloScale;
+            var scaledLocalVelocity = localVelocity * HoloScale;
+            var scaledSize = size * HoloScale;
+
+            var worldPosition =
+                EffectObject.WorldPosition +
+                EffectObject.WorldRotation * scaledLocalPosition;
+
+            var worldVelocity =
+                EffectObject.WorldRotation * scaledLocalVelocity;
+
+            var particle = Effect.Emit( worldPosition, Time.Delta );
+
+            particle.Position = worldPosition;
+            particle.StartPosition = worldPosition;
+            particle.Velocity = worldVelocity;
+            particle.Color = color;
+            particle.Alpha = color.a;
+            particle.Size = Vector3.One * scaledSize;
+            particle.Radius = scaledSize;
+            particle.BornTime = Time.Now;
+            particle.DeathTime = Time.Now + ParticleLifetime;
+        }
+
+    
 }
