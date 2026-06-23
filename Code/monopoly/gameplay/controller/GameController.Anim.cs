@@ -61,4 +61,12 @@ public sealed partial class GameController : Component
         return Scene.GetAllComponents<PlayerToken>()
             .FirstOrDefault( token => token is not null && token.PlayerState == player );
     }
+
+	public static PlayerToken GetPlayerTokenStatic( PlayerState player )
+	{
+		if ( Instance is null )
+			return null;
+
+		return Instance.GetPlayerToken( player );
+	}
 }

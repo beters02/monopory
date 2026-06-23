@@ -81,6 +81,18 @@ public sealed class PlayerToken : Component
 	public bool ShouldReleaseTokenMouseForTokenUi => CanAlwaysControlTokenCameraMode && Input.Down( "Score" );
 	public bool IsLocallyControllable => CanUseTokenController();
 
+	private int CurrentTurnPlayerId
+	{
+		get
+        {
+            if ( GameController.Instance is null )
+				return -1;
+
+			return GameController.Instance.CurrentPlayerIndex;
+        }
+	}
+
+	private int LastTurnPlayerId = -1;
 
 	protected override void OnStart()
 	{
@@ -96,6 +108,7 @@ public sealed class PlayerToken : Component
 	protected override void OnUpdate()
 	{
 		UpdatePhysicsTestGrab();
+		UpdateTurnPlayerCrown();
 
 		if ( isGrabbed || isThrowing )
 		{
@@ -105,7 +118,6 @@ public sealed class PlayerToken : Component
 
 		if ( Board is null || PlayerState is null )
 			return;
-			
 
 		var target = GetSpaceTargetPosition();
 		var targetRot = GetRotation( PlayerState.SpaceIndex );
@@ -149,6 +161,36 @@ public sealed class PlayerToken : Component
 
 		ApplyWalkingAnim( requestedWalking || isMoving );
 		//ApplyDirection(targetRot.Forward);
+	}
+
+	private void UpdateTurnPlayerCrown()
+	{
+		if ( CurrentTurnPlayerId != LastTurnPlayerId )
+		{
+			if ( GameController.Instance is not null )
+			{
+				if ( LastTurnPlayerId != -1 )
+					SetTurnPlayerCrownEnabled( LastTurnPlayerId, false );
+
+				if ( CurrentTurnPlayerId != -1 )
+					SetTurnPlayerCrownEnabled( CurrentTurnPlayerId, true );
+			}
+
+			LastTurnPlayerId = CurrentTurnPlayerId;
+		}
+	}
+
+	private void SetTurnPlayerCrownEnabled( int index, bool enabled )
+	{	
+		PlayerState player = GameController.Instance.GetPlayerForIndex(index);
+		if ( player is null )
+			return;
+
+		TurnCrownParticles crownParticles = GameController.GetPlayerTokenStatic( player ).GetComponentInChildren<TurnCrownParticles>();
+		if ( crownParticles is null )
+			return;
+
+		crownParticles.SetActive( enabled );
 	}
 
 	private bool CanUseTokenController()
