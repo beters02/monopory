@@ -9,6 +9,27 @@
 			{
 				key = 
 				{
+					m_id = 333840730
+				}
+				value = 
+				{
+					_class = "CSequenceAnimNode"
+					m_sName = "Unnamed"
+					m_vecPosition = [ -496.0, 128.0 ]
+					m_nNodeID = 
+					{
+						m_id = 333840730
+					}
+					m_sNote = ""
+					m_tagSpans = [  ]
+					m_sequenceName = "Cheering"
+					m_playbackSpeed = 1.0
+					m_bLoop = false
+				}
+			},
+			{
+				key = 
+				{
 					m_id = 657039596
 				}
 				value = 
@@ -43,7 +64,7 @@
 				{
 					_class = "CSequenceAnimNode"
 					m_sName = "Unnamed"
-					m_vecPosition = [ -512.0, -64.0 ]
+					m_vecPosition = [ -512.0, -48.0 ]
 					m_nNodeID = 
 					{
 						m_id = 828512429
@@ -93,7 +114,7 @@
 				{
 					_class = "CSequenceAnimNode"
 					m_sName = "Unnamed"
-					m_vecPosition = [ -512.0, 32.0 ]
+					m_vecPosition = [ -496.0, 32.0 ]
 					m_nNodeID = 
 					{
 						m_id = 1493654768
@@ -173,19 +194,6 @@
 											m_comparisonOp = 0
 											m_paramID = 
 											{
-												m_id = 137480501
-											}
-											m_comparisonValue = 
-											{
-												m_nType = 1
-												m_data = true
-											}
-										},
-										{
-											_class = "CParameterAnimCondition"
-											m_comparisonOp = 0
-											m_paramID = 
-											{
 												m_id = 982344918
 											}
 											m_comparisonValue = 
@@ -194,16 +202,29 @@
 												m_data = false
 											}
 										},
+										{
+											_class = "CParameterAnimCondition"
+											m_comparisonOp = 0
+											m_paramID = 
+											{
+												m_id = 375016082
+											}
+											m_comparisonValue = 
+											{
+												m_nType = 1
+												m_data = true
+											}
+										},
 									]
 									m_blendDuration = 0.2
 									m_destState = 
 									{
-										m_id = 1713244139
+										m_id = 121070237
 									}
 									m_bReset = true
 									m_resetCycleOption = "Beginning"
 									m_flFixedCycleValue = 0.0
-									m_bBlendCycle = true
+									m_bBlendCycle = false
 									m_blendCurve = 
 									{
 										m_vControlPoint1 = [ 0.5, 0.0 ]
@@ -234,7 +255,7 @@
 							{
 								m_id = 1299422227
 							}
-							m_position = [ -32.0, -16.0 ]
+							m_position = [ -48.0, -32.0 ]
 							m_bIsStartState = true
 							m_bIsEndtState = false
 							m_bIsPassthrough = false
@@ -292,7 +313,7 @@
 											m_comparisonOp = 0
 											m_paramID = 
 											{
-												m_id = 137480501
+												m_id = 375016082
 											}
 											m_comparisonValue = 
 											{
@@ -317,12 +338,12 @@
 									m_blendDuration = 0.2
 									m_destState = 
 									{
-										m_id = 1713244139
+										m_id = 121070237
 									}
 									m_bReset = true
 									m_resetCycleOption = "Beginning"
 									m_flFixedCycleValue = 0.0
-									m_bBlendCycle = true
+									m_bBlendCycle = false
 									m_blendCurve = 
 									{
 										m_vControlPoint1 = [ 0.5, 0.0 ]
@@ -369,6 +390,12 @@
 									m_conditions = 
 									[
 										{
+											_class = "CFinishedCondition"
+											m_comparisonOp = 0
+											m_option = "FinishedConditionOption_OnFinished"
+											m_bIsFinished = true
+										},
+										{
 											_class = "CParameterAnimCondition"
 											m_comparisonOp = 0
 											m_paramID = 
@@ -378,25 +405,19 @@
 											m_comparisonValue = 
 											{
 												m_nType = 1
-												m_data = true
+												m_data = false
 											}
-										},
-										{
-											_class = "CFinishedCondition"
-											m_comparisonOp = 0
-											m_option = "FinishedConditionOption_OnFinished"
-											m_bIsFinished = true
 										},
 									]
 									m_blendDuration = 0.2
 									m_destState = 
 									{
-										m_id = 1159884736
+										m_id = 1299422227
 									}
 									m_bReset = true
 									m_resetCycleOption = "Beginning"
 									m_flFixedCycleValue = 0.0
-									m_bBlendCycle = true
+									m_bBlendCycle = false
 									m_blendCurve = 
 									{
 										m_vControlPoint1 = [ 0.5, 0.0 ]
@@ -428,19 +449,19 @@
 											m_comparisonValue = 
 											{
 												m_nType = 1
-												m_data = false
+												m_data = true
 											}
 										},
 									]
 									m_blendDuration = 0.2
 									m_destState = 
 									{
-										m_id = 1299422227
+										m_id = 1159884736
 									}
 									m_bReset = true
 									m_resetCycleOption = "Beginning"
 									m_flFixedCycleValue = 0.0
-									m_bBlendCycle = true
+									m_bBlendCycle = false
 									m_blendCurve = 
 									{
 										m_vControlPoint1 = [ 0.5, 0.0 ]
@@ -455,12 +476,12 @@
 							]
 							m_tags = [  ]
 							m_tagBehaviors = [  ]
-							m_name = "left_turn_90"
+							m_name = "Cheering"
 							m_inputConnection = 
 							{
 								m_nodeID = 
 								{
-									m_id = 4294967295
+									m_id = 333840730
 								}
 								m_outputID = 
 								{
@@ -469,9 +490,9 @@
 							}
 							m_stateID = 
 							{
-								m_id = 1713244139
+								m_id = 121070237
 							}
-							m_position = [ 128.0, 96.0 ]
+							m_position = [ 112.0, 112.0 ]
 							m_bIsStartState = false
 							m_bIsEndtState = false
 							m_bIsPassthrough = false
@@ -508,6 +529,18 @@
 				m_id = 
 				{
 					m_id = 137480501
+				}
+				m_previewButton = "ANIMPARAM_BUTTON_NONE"
+				m_bUseMostRecentValue = false
+				m_bAutoReset = false
+				m_bDefaultValue = false
+			},
+			{
+				_class = "CBoolAnimParameter"
+				m_name = "Cheering"
+				m_id = 
+				{
+					m_id = 375016082
 				}
 				m_previewButton = "ANIMPARAM_BUTTON_NONE"
 				m_bUseMostRecentValue = false

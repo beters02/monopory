@@ -2999,7 +2999,7 @@
                 "AfterUILayer": false
               },
               "RenderType": "On",
-              "Tint": "1,1,1,0.12"
+              "Tint": "1,1,1,1"
             },
             {
               "__type": "Sandbox.BoxCollider",
@@ -3031,49 +3031,6 @@
           "Children": []
         }
       ]
-    },
-    {
-      "__guid": "83447908-b93a-4b02-9349-7a8075257536",
-      "__version": 2,
-      "Flags": 0,
-      "Name": "Spot Light",
-      "Position": "-91.9076767,-199.842468,476.255341",
-      "Rotation": "-0.111845456,0.672201455,0.112130508,0.723230898",
-      "Scale": "1,1,1",
-      "Tags": "light_spot,light",
-      "Enabled": false,
-      "NetworkMode": 2,
-      "NetworkFlags": 0,
-      "NetworkOrphaned": 0,
-      "NetworkTransmit": true,
-      "OwnerTransfer": 1,
-      "Components": [
-        {
-          "__type": "Sandbox.SpotLight",
-          "__guid": "cd81abab-5ac2-4de7-be41-227b61805185",
-          "__enabled": true,
-          "Flags": 0,
-          "Attenuation": 1.9718311,
-          "ConeInner": 86.203865,
-          "ConeOuter": 52.038662,
-          "Contribution": "Diffuse, Specular, Transmissive",
-          "Cookie": null,
-          "FogMode": "Enabled",
-          "FogStrength": 1,
-          "LightColor": "1,1,1,1",
-          "OnComponentDestroy": null,
-          "OnComponentDisabled": null,
-          "OnComponentEnabled": null,
-          "OnComponentFixedUpdate": null,
-          "OnComponentStart": null,
-          "OnComponentUpdate": null,
-          "Radius": 501.71036,
-          "ShadowBias": 0.0005,
-          "ShadowHardness": 0,
-          "Shadows": true
-        }
-      ],
-      "Children": []
     },
     {
       "__guid": "fea6eff6-6d1e-449a-9db4-b7b69983f12e",
@@ -4321,7 +4278,7 @@
       "__guid": "0c45c368-c592-4fa2-b68f-cb528e456feb",
       "__version": 2,
       "Flags": 0,
-      "Name": "2D Skybox",
+      "Name": "r",
       "Position": "-135.164642,-209.876968,98.0613251",
       "Rotation": "0,0,0,1",
       "Scale": "1,1,1",
@@ -4909,49 +4866,6 @@
           "OnComponentFixedUpdate": null,
           "OnComponentStart": null,
           "OnComponentUpdate": null
-        }
-      ],
-      "Children": []
-    },
-    {
-      "__guid": "7033f6e0-6ddc-40c8-8bb7-cafcffa6cf52",
-      "__version": 2,
-      "Flags": 0,
-      "Name": "Object",
-      "Position": "-183.036011,-276.432831,90.5083923",
-      "Rotation": "0,0,0,1",
-      "Scale": "1,1,1",
-      "Tags": "",
-      "Enabled": true,
-      "NetworkMode": 2,
-      "NetworkFlags": 0,
-      "NetworkOrphaned": 0,
-      "NetworkTransmit": true,
-      "OwnerTransfer": 1,
-      "Components": [
-        {
-          "__type": "Sandbox.IndirectLightVolume",
-          "__guid": "0874fd47-b2ec-433c-b370-ebafd462dc79",
-          "__enabled": true,
-          "Flags": 0,
-          "Bounds": {
-            "Mins": "-75.8715363,-100.623199,-16",
-            "Maxs": "165.016525,166.62323,334.49704"
-          },
-          "Contrast": 1,
-          "DistanceTexture": "scenes/main_scene_data/ddgi/object_distance_0874fd47-b2ec-433c-b370-ebafd462dc79.vtex",
-          "InsideGeometry": "Relocate",
-          "IrradianceTexture": "scenes/main_scene_data/ddgi/object_irradiance_0874fd47-b2ec-433c-b370-ebafd462dc79.vtex",
-          "NormalBias": 16.009851,
-          "OnComponentDestroy": null,
-          "OnComponentDisabled": null,
-          "OnComponentEnabled": null,
-          "OnComponentFixedUpdate": null,
-          "OnComponentStart": null,
-          "OnComponentUpdate": null,
-          "ProbeDensity": 15,
-          "RelocationTexture": "scenes/main_scene_data/ddgi/object_relocation_0874fd47-b2ec-433c-b370-ebafd462dc79.vtex",
-          "RenderExcludeTags": ""
         }
       ],
       "Children": []

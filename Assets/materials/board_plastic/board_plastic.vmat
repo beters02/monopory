@@ -22,26 +22,26 @@ Layer0
 	TextureAmbientOcclusion "materials/default/default_ao.tga"
 
 	//---- Color ----
-	g_flModelTintAmount "0.463"
+	g_flModelTintAmount "0.653"
 	g_vColorTint "[1.000000 1.000000 1.000000 0.392157]"
 	TextureColor "[1.000000 1.000000 1.000000 0.003922]"
 
 	//---- Detail Texture ----
 	g_flDetailBlendFactor "1.000"
-	g_flDetailBlendToFull "0.000"
+	g_flDetailBlendToFull "1.000"
 	g_flDetailNormalStrength "1.000"
-	g_flDetailTexCoordRotation "0.000"
+	g_flDetailTexCoordRotation "216.000"
 	g_vDetailTexCoordOffset "[0.000 0.000]"
-	g_vDetailTexCoordScale "[1.000 1.000]"
-	TextureDetail "materials/default/default_detail.tga"
+	g_vDetailTexCoordScale "[0.000 1.000]"
+	TextureDetail "materials/board_plastic/Plastic015A_2K-JPG_Displacement.jpg"
 	TextureDetailMask "materials/board_plastic/Plastic015A_2K-JPG_Displacement.jpg"
-	TextureNormalDetail "materials/default/default_normal.tga"
+	TextureNormalDetail "materials/board_plastic/Plastic015A_2K-JPG_NormalGL.jpg"
 
 	//---- Fade ----
 	g_flFadeExponent "1.000"
 
 	//---- Fog ----
-	g_bFogEnabled "1"
+	g_bFogEnabled "0"
 
 	//---- Metalness ----
 	g_flMetalness "0.000"
@@ -60,5 +60,5 @@ Layer0
 
 	//---- Translucent ----
 	g_flOpacityScale "0.619"
-	TextureTranslucency "[0.114000 0.114000 0.114000 0.000000]"
+	TextureTranslucency "[0.123000 0.123000 0.123000 0.000000]"
 }
