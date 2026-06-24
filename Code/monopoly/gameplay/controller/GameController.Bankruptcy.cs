@@ -264,6 +264,7 @@ public sealed partial class GameController : Component
 		var winnerName = Winner?.PlayerName ?? "No one";
 		ReportMatchCompletedAchievements();
 		ReportWinnerAchievements();
+		PlayPlayerTokenCheering( Winner );
 		SendGlobalPopupToAll( "Game over", $"{winnerName} won the game.", PopupKind.Success, true, 8f );
 		Log.Info( $"Game over. Winner: {winnerName}." );
 		TryAutosaveStablePoint( "Game over" );

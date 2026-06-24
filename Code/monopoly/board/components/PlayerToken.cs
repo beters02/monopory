@@ -13,6 +13,8 @@ public sealed class PlayerToken : Component
 	[Property] public float MoveSpeed { get; set; } = 15f;
 	[Property] public float RotationSpeed {get; set;} = 10f;
 	[Property] public string WalkingParameterName { get; set; } = "Walking";
+	[Property] public string CheeringParameterName { get; set; } = "Cheering";
+	[Property] public float CheeringPulseDuration { get; set; } = 0.1f;
 	[Property] public string XDirectionParameterName { get; set; } = "XDirection";
 	[Property] public bool EnablePhysicsTestGrab { get; set; } = true;
 	[Property] public float ThrowSpeedScale { get; set; } = 1.1f;
@@ -54,6 +56,8 @@ public sealed class PlayerToken : Component
 	private bool walkingAnim;
 	private bool hasAppliedWalkingAnim;
 	private bool requestedWalking;
+	private bool cheeringAnim;
+	private float cheeringEndsAt;
 	private bool isGrabbed;
 	private bool isThrowing;
 	private Vector3 grabOffset;
@@ -81,6 +85,8 @@ public sealed class PlayerToken : Component
 	public bool ShouldReleaseTokenMouseForTokenUi => CanAlwaysControlTokenCameraMode && Input.Down( "Score" );
 	public bool IsLocallyControllable => CanUseTokenController();
 
+	private const bool cheeringAnimEnabled = false;
+
 	private int CurrentTurnPlayerId
 	{
 		get
@@ -107,6 +113,7 @@ public sealed class PlayerToken : Component
 
 	protected override void OnUpdate()
 	{
+		UpdateCheeringAnim();
 		UpdatePhysicsTestGrab();
 		UpdateTurnPlayerCrown();
 
@@ -886,6 +893,22 @@ public sealed class PlayerToken : Component
 		ApplyWalkingAnim( walking );
 	}
 
+	public void PlayCheeringAnim()
+	{
+		if ( !cheeringAnimEnabled )
+			return;
+
+		if ( renderer is null )
+			renderer = GameObject.GetComponentInChildren<SkinnedModelRenderer>();
+
+		if ( renderer is null || string.IsNullOrWhiteSpace( CheeringParameterName ) )
+			return;
+
+		renderer.Set( CheeringParameterName, true );
+		cheeringAnim = true;
+		cheeringEndsAt = Time.Now + MathF.Max( CheeringPulseDuration, 0.01f );
+	}
+
 	public void ApplyPieceDefinition( PieceDefinition piece )
 	{
 		var selectedPiece = piece ?? PieceCatalog.GetByIdOrDefault( PieceCatalog.DefaultPieceId );
@@ -994,6 +1017,20 @@ public sealed class PlayerToken : Component
 
 		renderer.Set( WalkingParameterName, walking );
 		hasAppliedWalkingAnim = true;
+	}
+
+	private void UpdateCheeringAnim()
+	{
+		if ( !cheeringAnim || Time.Now < cheeringEndsAt )
+			return;
+
+		if ( renderer is null )
+			renderer = GameObject.GetComponentInChildren<SkinnedModelRenderer>();
+
+		if ( renderer is not null && !string.IsNullOrWhiteSpace( CheeringParameterName ) )
+			renderer.Set( CheeringParameterName, false );
+
+		cheeringAnim = false;
 	}
 
 	private void EnsurePlayerMarker()

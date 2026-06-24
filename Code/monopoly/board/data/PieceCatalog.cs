@@ -7,7 +7,7 @@ public sealed class PieceDefinition
 	public string Label { get; init; } = "";
 	public string Description { get; init; } = "";
 	public string ModelPath { get; init; } = "";
-	public string AnimgraphPath { get; init; } = "";
+	public string AnimgraphPath { get; init; } = "animgraphs/cutieguys.vanmgrph";
 	public string RequiredAchievementId { get; init; } = "";
 	public Vector3 LocalVisualScale { get; init; } = Vector3.One;
 	public Vector3 LocalVisualOffset { get; init; } = Vector3.Zero;
@@ -30,7 +30,7 @@ public static class PieceCatalog
 				Label = "Officer (Woman)",
 				Description = "Stylish officer character token.",
 				ModelPath = "models/cutieguys_officer_woman/cutieguys_officer_woman.vmdl",
-				AnimgraphPath = "animgraphs/cutieguys_officer_woman.vanmgrph",
+				//AnimgraphPath = "animgraphs/cutieguys_officer_woman.vanmgrph",
 				LocalVisualScale = new Vector3( 20f, 20f, 20f ),
 				LocalVisualOffset = new Vector3( 0f, 0f, -1.3f ),
 				HeightOffset = 1.25f
@@ -42,7 +42,7 @@ public static class PieceCatalog
 				Description = "Stylish detective character token.",
 				RequiredAchievementId = AchievementIds.FirstWin,
 				ModelPath = "models/cutieguys_detective_man/cutieguys_detective_man.vmdl",
-				AnimgraphPath = "animgraphs/cutieguys_detective_man.vanmgrph",
+				//AnimgraphPath = "animgraphs/cutieguys_detective_man.vanmgrph",
 				LocalVisualScale = new Vector3( 0.2f, 0.2f, 0.2f ),
 				LocalVisualOffset = new Vector3( 0f, 0f, -1.3f ),
 				HeightOffset = 1.25f
@@ -54,7 +54,7 @@ public static class PieceCatalog
 				Description = "Stylish rock character token.",
 				RequiredAchievementId = AchievementIds.FirstWin,
 				ModelPath = "models/cutieguys_rock_woman/cutieguys_rock_woman.vmdl",
-				AnimgraphPath = "animgraphs/cutieguys_rock_woman.vanmgrph",
+				//AnimgraphPath = "animgraphs/cutieguys_rock_woman.vanmgrph",
 				LocalVisualScale = new Vector3( 0.2f, 0.2f, 0.2f ),
 				LocalVisualOffset = new Vector3( 0f, 0f, -1.3f ),
 				HeightOffset = 1.25f
@@ -66,7 +66,7 @@ public static class PieceCatalog
 				Description = "Meet Fred. He is an alcoholic cowboy.",
 				RequiredAchievementId = AchievementIds.FirstWin,
 				ModelPath = "models/cutieguys_cowboy_man/cutieguys_cowboy_man.vmdl",
-				AnimgraphPath = "animgraphs/cutieguys_cowboy_man.vanmgrph",
+				//AnimgraphPath = "animgraphs/cutieguys_cowboy_man.vanmgrph",
 				LocalVisualScale = new Vector3( 0.2f, 0.2f, 0.2f ),
 				LocalVisualOffset = new Vector3( 0f, 0f, -1.3f ),
 				HeightOffset = 1.25f

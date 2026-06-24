@@ -53,6 +53,9 @@ public sealed partial class GameController : Component
 		if ( !Networking.IsHost )
 			return;
 
+		if ( kind == PopupKind.Success )
+			PlayPlayerTokenCheering( player );
+
 		var connection = GetConnectionForPlayer( player );
 		if ( connection is null )
 			return;

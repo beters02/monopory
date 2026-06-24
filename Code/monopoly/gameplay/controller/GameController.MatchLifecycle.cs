@@ -206,6 +206,7 @@ public sealed partial class GameController : Component
 
 		ReportMatchCompletedAchievements();
 		ReportWinnerAchievements();
+		PlayPlayerTokenCheering( winner );
 		SendGlobalPopupToAll( "Game over", $"{winner.PlayerName} won the game.", PopupKind.Success, true, 8f );
 		Log.Info( $"Game force-ended. Winner: {winner.PlayerName}." );
 

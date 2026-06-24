@@ -15,6 +15,15 @@ public sealed partial class GameController : Component
 		SetPlayerTokenWalkingForPlayer( playerIndex, walking );
 	}
 
+	private void PlayPlayerTokenCheering( PlayerState player )
+	{
+		var playerIndex = GetPlayerIndex( player );
+		if ( playerIndex < 0 )
+			return;
+
+		PlayPlayerTokenCheeringForPlayer( playerIndex );
+	}
+
 	private void SnapPlayerTokenToSpace( PlayerState player )
 	{
 		var playerIndex = GetPlayerIndex( player );
@@ -43,6 +52,14 @@ public sealed partial class GameController : Component
         var token = GetPlayerToken( player );
         token?.SetWalkingAnim( walking );
     }
+
+	[Rpc.Broadcast]
+	private void PlayPlayerTokenCheeringForPlayer( int playerIndex )
+	{
+		var player = Players.ElementAtOrDefault( playerIndex );
+		var token = GetPlayerToken( player );
+		token?.PlayCheeringAnim();
+	}
 
     [Rpc.Broadcast]
     private void PlayPlayerTokenStepForPlayer( int playerIndex, Vector3 playerPos )

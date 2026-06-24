@@ -299,7 +299,7 @@
 						enable_scale = false
 						source_filename = "models/cutieguys_officer_woman/cheer/Cheering.fbx"
 						start_frame = -1
-						end_frame = -1
+						end_frame = 44
 						framerate = -1.0
 						take = 0
 						reverse = false
@@ -314,7 +314,7 @@
 		]
 		model_archetype = ""
 		primary_associated_entity = ""
-		anim_graph_name = "animgraphs/cutieguys_officer_woman.vanmgrph"
+		anim_graph_name = "animgraphs/cutieguys.vanmgrph"
 		base_model_name = ""
 	}
 }

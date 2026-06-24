@@ -24,6 +24,7 @@ public sealed partial class GameController : Component
 			return;
 
 		PropertyImprovements[spaceIndex] = count + 1;
+		PlayPlayerTokenCheering( player );
 
 		var spaceName = Board.GetSpaceDef( spaceIndex )?.DisplayName ?? "property";
 		SendGlobalPopupToAll( "Improvement purchased", $"{player.PlayerName} built on {spaceName} for ${cost}.", PopupKind.Success, true, 4f );
@@ -166,6 +167,8 @@ public sealed partial class GameController : Component
 
 			PropertyImprovements[property.Index] = count + 1;
 		}
+
+		PlayPlayerTokenCheering( player );
 
 		var colorSetName = targets.FirstOrDefault()?.ColorGroup.ToString() ?? "color";
 		SendGlobalPopupToAll( "Improvements purchased", $"{player.PlayerName} bought 1 house on each {colorSetName} property set!", PopupKind.Success, true, 4f );
