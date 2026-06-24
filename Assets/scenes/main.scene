@@ -4379,6 +4379,14 @@
               "Type": "GameObject",
               "IdValue": "9d5bd72c-8fab-4abb-8fd8-d65029bec6f4"
             },
+            "Property": "NetworkMode",
+            "Value": 1
+          },
+          {
+            "Target": {
+              "Type": "GameObject",
+              "IdValue": "9d5bd72c-8fab-4abb-8fd8-d65029bec6f4"
+            },
             "Property": "NetworkOrphaned",
             "Value": 1
           },
@@ -4456,6 +4464,14 @@
             },
             "Property": "Rotation",
             "Value": "9.16686258E-06,1.38442301E-05,0.0214194283,0.999770641"
+          },
+          {
+            "Target": {
+              "Type": "GameObject",
+              "IdValue": "9d5bd72c-8fab-4abb-8fd8-d65029bec6f4"
+            },
+            "Property": "NetworkMode",
+            "Value": 1
           },
           {
             "Target": {

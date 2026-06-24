@@ -470,6 +470,7 @@ public sealed partial class GameController : Component
 		ApplyCardDrawPile( communityChestDrawPile, Board?.CommunityChestCards, snapshot.CommunityChestDrawPileCardKeys );
 
 		SpawnTokensForPlayers( GetLobbyPlayers() );
+		EnsureDiceNetworkOwnership( true );
 	}
 
 	private void ApplyPlayerStates( GameSaveSnapshot snapshot, Dictionary<int, LoadedSeatAssignment> assignmentBySeat, float now )

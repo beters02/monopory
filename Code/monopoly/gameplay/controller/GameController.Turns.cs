@@ -999,6 +999,7 @@ public sealed partial class GameController : Component
 
 	private void BeginTurnForCurrentPlayer()
 	{
+		EnsureDiceNetworkOwnership( true );
 		CurrentTurnGetsExtraRoll = false;
 		CurrentTurnConsecutiveDoubles = 0;
 		CurrentTurnDoublesPlayerIndex = CurrentPlayerIndex;

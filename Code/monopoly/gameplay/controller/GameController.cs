@@ -188,6 +188,7 @@ public sealed partial class GameController : Component, Component.INetworkListen
 	private float lastRecoveryAttemptAt;
 	private ResolvedActionOutcome resolvedActionOutcome = ResolvedActionOutcome.StayInTurnEnded;
 	private string lastAppliedLocalDiceSkinId = "";
+	private long lastDiceNetworkOwnerId;
 
 	public static GameController Instance => instance;
 	public IReadOnlyList<GamePopup> Popups => popups;
@@ -260,6 +261,7 @@ public sealed partial class GameController : Component, Component.INetworkListen
 		if ( !Networking.IsHost )
 			return;
 
+		EnsureDiceNetworkOwnership();
 		SyncLobbyConnections();
 		UpdateGambleSessions();
 

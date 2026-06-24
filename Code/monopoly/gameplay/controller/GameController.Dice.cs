@@ -4,6 +4,31 @@ using Sandbox;
 
 public sealed partial class GameController : Component
 {
+	private void EnsureDiceNetworkOwnership( bool force = false )
+	{
+		if ( !Networking.IsHost || !TryGetPhysicalDice( out var dieA, out var dieB ) )
+			return;
+
+		var owner = GetConnectionForPlayer( CurrentPlayer ) ?? Connection.Host;
+		var ownerId = owner?.SteamId ?? 0L;
+		if ( owner is null || (!force && lastDiceNetworkOwnerId == ownerId) )
+			return;
+
+		AssignDiceNetworkOwnership( dieA, owner );
+		AssignDiceNetworkOwnership( dieB, owner );
+		lastDiceNetworkOwnerId = ownerId;
+	}
+
+	private static void AssignDiceNetworkOwnership( DiceComponent die, Connection owner )
+	{
+		if ( die?.GameObject is null || owner is null )
+			return;
+
+		die.GameObject.NetworkMode = NetworkMode.Object;
+		die.GameObject.Network.SetOrphanedMode( NetworkOrphaned.Host );
+		die.GameObject.Network.AssignOwnership( owner );
+	}
+
 	private void ApplyLocalDiceSkin()
 	{
 		if ( LocalPlayer is null )
@@ -127,7 +152,6 @@ public sealed partial class GameController : Component
 		{
 			SetHudIsVisibleAll(false);
 			ThrowPhysicalDice( originA, originB, rotationA, rotationB, velocityA, velocityB, spinA, spinB );
-			PredictPhysicalDice( originA, originB, rotationA, rotationB, velocityA, velocityB, spinA, spinB );
 			var result = await WaitForPhysicalDiceResultAsync();
 			SetHudIsVisibleAll(true);
 			return result;
@@ -213,23 +237,6 @@ public sealed partial class GameController : Component
 	}
 
 	[Rpc.Broadcast]
-	private void PredictPhysicalDice(
-		Vector3 originA,
-		Vector3 originB,
-		Rotation rotationA,
-		Rotation rotationB,
-		Vector3 velocityA,
-		Vector3 velocityB,
-		Vector3 spinA,
-		Vector3 spinB )
-	{
-		if ( Networking.IsHost || !TryGetPhysicalDice( out var dieA, out var dieB ) )
-			return;
-
-		dieA.Throw( originA, rotationA, velocityA, spinA );
-		dieB.Throw( originB, rotationB, velocityB, spinB );
-	}
-
 	private void ThrowPhysicalDice(
 		Vector3 originA,
 		Vector3 originB,
@@ -243,7 +250,9 @@ public sealed partial class GameController : Component
 		if ( !TryGetPhysicalDice( out var dieA, out var dieB ) )
 			return;
 
-		dieA.Throw( originA, rotationA, velocityA, spinA );
-		dieB.Throw( originB, rotationB, velocityB, spinB );
+		if ( dieA.IsNetworkOwner )
+			dieA.Throw( originA, rotationA, velocityA, spinA );
+		if ( dieB.IsNetworkOwner )
+			dieB.Throw( originB, rotationB, velocityB, spinB );
 	}
 }

@@ -26,6 +26,8 @@ public sealed class DiceComponent : Component, Component.ICollisionListener
 	private float stillTime;
 	private float nextCollisionSoundTime;
 
+	public bool IsNetworkOwner => GameObject?.Network.IsOwner == true;
+
 	protected override void OnStart()
 	{
 		startingPosition = GameObject.WorldPosition;
