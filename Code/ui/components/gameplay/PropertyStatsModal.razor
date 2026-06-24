@@ -145,8 +145,14 @@
 				else if ( ActiveTab == AdminTab )
 				{
 					<div class="integrity-list monopory-scroll-y">
-						@foreach ( var row in AdminRows ) { <div class="integrity-row warning"><div class="integrity-row-title">@row.Command</div><div class="integrity-row-meta">Turn @row.TurnNumber - @row.Message</div></div> }
-						@if ( AdminRows.Count == 0 ) { <div class="property-stats-empty">No admin actions recorded.</div> }
+						@foreach ( var row in CommandRows )
+						{
+							<div class="integrity-row @GetCommandRowClass( row )">
+								<div class="command-history-heading"><div class="integrity-row-title">@row.Command</div><div class="command-type-label">@row.CommandType</div></div>
+								<div class="integrity-row-meta">Turn @row.TurnNumber - @row.Message</div>
+							</div>
+						}
+						@if ( CommandRows.Count == 0 ) { <div class="property-stats-empty">No commands recorded yet.</div> }
 					</div>
 				}
 				else
@@ -156,6 +162,8 @@
 						<div class="integrity-row"><div class="integrity-row-title">Commitment Hash</div><div class="integrity-row-meta hash">@GetHashText()</div></div>
 						<div class="integrity-row"><div class="integrity-row-title">Revealed Seed</div><div class="integrity-row-meta hash">@GetSeedText()</div></div>
 						@foreach ( var reason in GetIntegrityReasons() ) { <div class="integrity-row warning"><div class="integrity-row-title">Integrity Notice</div><div class="integrity-row-meta">@reason</div></div> }
+						@foreach ( var row in AdminRows ) { <div class="integrity-row warning"><div class="integrity-row-title">@row.Command</div><div class="integrity-row-meta">Turn @row.TurnNumber - @row.Message</div></div> }
+						@if ( AdminRows.Count == 0 ) { <div class="property-stats-empty">No CheatCmd commands recorded.</div> }
 					</div>
 				}
 			</div>
@@ -183,7 +191,7 @@
 	private readonly record struct StatsTab( string Id, string Label );
 	private readonly record struct PropertyStatsRow( int SpaceIndex, SpaceDef Space, string Name, int Landings, int RentEarned );
 	private readonly record struct PlayerStatsRow( int PlayerIndex, string Name, int Money, int NetLoss, int PropertyCount, int Landings, int RentEarned, bool IsBankrupt, bool IsLocalPlayer );
-	private List<StatsTab> Tabs { get; } = new() { new( PropertyTab, "Property Stats" ), new( DiceTab, "Dice History" ), new( MoveTab, "Move History" ), new( GambleTab, "Gamble History" ), new( AdminTab, "Admin History" ), new( IntegrityTab, "Match Integrity" ) };
+	private List<StatsTab> Tabs { get; } = new() { new( PropertyTab, "Property Stats" ), new( DiceTab, "Dice History" ), new( MoveTab, "Move History" ), new( GambleTab, "Gamble History" ), new( AdminTab, "Command History" ), new( IntegrityTab, "Match Integrity" ) };
 	private int TotalLandings => PropertyRows.Sum( row => row.Landings );
 	private int TotalRentEarned => PropertyRows.Sum( row => row.RentEarned );
 	private List<PropertyStatsRow> PropertyRows => BuildPropertyRows();
@@ -192,6 +200,7 @@
 	private List<PlayerStatsRow> PlayerRows => BuildPlayerRows();
 	private List<DiceHistoryEntry> DiceRows => GameRef?.DiceHistory?.OrderBy( entry => entry.Key ).Select( entry => MatchIntegrityJson.Deserialize<DiceHistoryEntry>( entry.Value ) ).ToList() ?? new();
 	private List<AdminHistoryEntry> AdminRows => GameRef?.AdminHistory?.OrderBy( entry => entry.Key ).Select( entry => MatchIntegrityJson.Deserialize<AdminHistoryEntry>( entry.Value ) ).ToList() ?? new();
+	private List<CommandHistoryEntry> CommandRows => GameRef?.CommandHistory?.OrderBy( entry => entry.Key ).Select( entry => MatchIntegrityJson.Deserialize<CommandHistoryEntry>( entry.Value ) ).ToList() ?? new();
 	private List<MoveHistoryTurn> MoveRows => GameRef?.MoveHistory?.OrderByDescending( entry => entry.Key ).Select( entry => MatchIntegrityJson.Deserialize<MoveHistoryTurn>( entry.Value ) ).ToList() ?? new();
 	private List<GambleHistoryEntry> GambleRows => GameRef?.GambleHistory?.OrderByDescending( entry => entry.Key ).Select( entry => MatchIntegrityJson.Deserialize<GambleHistoryEntry>( entry.Value ) ).ToList() ?? new();
 
@@ -218,14 +227,14 @@
 	private string GetSeedText() => string.IsNullOrWhiteSpace( GameRef?.RevealedSeed ) ? "Hidden until match end" : GameRef.RevealedSeed;
 	private IEnumerable<string> GetIntegrityReasons()
 	{
-		if ( GameRef?.CheatsEnabledEver == true ) yield return "sv_cheats was enabled during this match.";
-		if ( GameRef?.AdminCommandUsedEver == true ) yield return "An admin or power command was used during this match.";
+		if ( GameRef?.AdminCommandUsedEver == true ) yield return "A CheatCmd command was used during this match.";
 		if ( GameRef?.MatchConfigChangedAfterStart == true ) yield return "Match configuration changed after start.";
 		if ( GameRef?.DoesDiceHistoryVerify() != true ) yield return "Dice history cannot currently be verified against the commitment.";
 	}
 	private string GetSnapshotSummary( IReadOnlyList<MoveHistoryPlayerSnapshot> snapshots, string label ) => snapshots is null || snapshots.Count == 0 ? $"{label}: no snapshot" : $"{label}: {string.Join( ", ", snapshots.Select( player => $"{player.PlayerName} ${player.Money}" ) )}";
 	private string GetGambleWagerText( GambleHistoryEntry entry ) => entry.Wager > 0 ? $"Wagered ${entry.Wager} on {entry.ChosenSide}." : $"Free-play flip on {entry.ChosenSide}.";
 	private string GetGambleResultRowClass( GambleHistoryEntry entry ) => entry.Won ? "" : "warning";
+	private string GetCommandRowClass( CommandHistoryEntry entry ) => entry.CommandType switch { "CheatCmd" => "command-cheat", "HostCheatCmd" => "command-host-cheat", "HostCmd" => "command-host", _ => "" };
 
 	private string GetTopRentName() { var row = TopRentRows.FirstOrDefault(); return row.SpaceIndex <= 0 && row.RentEarned <= 0 ? "None yet" : row.Name; }
 	private string GetBiggestLoserName() { var row = PlayerRows.Where( row => row.NetLoss > 0 ).OrderByDescending( row => row.NetLoss ).FirstOrDefault(); return row.PlayerIndex < 0 || row.NetLoss <= 0 ? "None yet" : row.Name; }
@@ -248,7 +257,7 @@
 	private string GetPlayerRowClasses( PlayerStatsRow row ) { var classes = "property-stats-player-row"; if ( row.IsLocalPlayer ) classes += " local-player"; if ( row.IsBankrupt ) classes += " bankrupt"; return classes; }
 	protected override int BuildHash()
 	{
-		var hash = new HashCode(); hash.Add( IsOpen ); hash.Add( ActiveTab ); hash.Add( GameRef?.IsVerifiedMatch ?? false ); hash.Add( GameRef?.DiceHistory?.Count ?? 0 ); hash.Add( GameRef?.AdminHistory?.Count ?? 0 ); hash.Add( GameRef?.MoveHistory?.Count ?? 0 ); hash.Add( GameRef?.GambleHistory?.Count ?? 0 ); hash.Add( GameRef?.RevealedSeed ?? "" ); hash.Add( GameRef?.PropertyOwners?.Count ?? 0 );
+		var hash = new HashCode(); hash.Add( IsOpen ); hash.Add( ActiveTab ); hash.Add( GameRef?.IsVerifiedMatch ?? false ); hash.Add( GameRef?.DiceHistory?.Count ?? 0 ); hash.Add( GameRef?.AdminHistory?.Count ?? 0 ); hash.Add( GameRef?.CommandHistory?.Count ?? 0 ); hash.Add( GameRef?.MoveHistory?.Count ?? 0 ); hash.Add( GameRef?.GambleHistory?.Count ?? 0 ); hash.Add( GameRef?.RevealedSeed ?? "" ); hash.Add( GameRef?.PropertyOwners?.Count ?? 0 );
 		if ( GameRef?.Players is not null ) foreach ( var entry in GameRef.Players.Select( ( player, index ) => new { player, index } ).Where( entry => entry.player is not null && entry.player.IsAssigned ) ) { hash.Add( entry.index ); hash.Add( entry.player.PlayerName ); hash.Add( entry.player.Money ); hash.Add( entry.player.IsBankrupt ); }
 		if ( GameRef?.PropertyLandingCounts is not null ) foreach ( var entry in GameRef.PropertyLandingCounts.OrderBy( entry => entry.Key ) ) { hash.Add( entry.Key ); hash.Add( entry.Value ); }
 		if ( GameRef?.PropertyRentEarned is not null ) foreach ( var entry in GameRef.PropertyRentEarned.OrderBy( entry => entry.Key ) ) { hash.Add( entry.Key ); hash.Add( entry.Value ); }

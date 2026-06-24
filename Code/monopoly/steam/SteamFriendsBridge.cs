@@ -72,8 +72,8 @@ public static class SteamFriendsBridge
 {
 	private const BindingFlags StaticReflectionFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
 	private const BindingFlags InstanceReflectionFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
-	private static readonly IReadOnlyList<SteamFriendListEntry> EditorFriends = new[]
-	{
+	private static readonly IReadOnlyList<SteamFriendListEntry> EditorFriends =
+	[
 		new SteamFriendListEntry
 		{
 			SteamId = 1,
@@ -85,7 +85,7 @@ public static class SteamFriendsBridge
 			IsPlayingAnyGame = true,
 			IsPlayingThisGame = true
 		}
-	};
+	];
 	private static IReadOnlyList<SteamFriendListEntry> cachedFriends = Array.Empty<SteamFriendListEntry>();
 	private static readonly Dictionary<long, Texture> cachedAvatarTextures = new();
 	private static readonly HashSet<long> loadingAvatarTextures = new();

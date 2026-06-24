@@ -271,9 +271,11 @@ public sealed partial class GameController : Component
 			PrivateDiceSeed = CapturePrivateDiceSeed(),
 			NextDiceRollIndex = NextDiceRollIndex,
 			NextAdminHistoryId = NextAdminHistoryId,
+			NextCommandHistoryId = NextCommandHistoryId,
 			NextMoveHistoryTurnNumber = NextMoveHistoryTurnNumber,
 			DiceHistory = CaptureIntStringDictionary( DiceHistory ),
 			AdminHistory = CaptureIntStringDictionary( AdminHistory ),
+			CommandHistory = CaptureIntStringDictionary( CommandHistory ),
 			MoveHistory = CaptureIntStringDictionary( MoveHistory ),
 			GambleHistory = CaptureIntStringDictionary( GambleHistory ),
 			GambleSessions = CaptureIntStringDictionary( GambleSessions ),
@@ -455,9 +457,11 @@ public sealed partial class GameController : Component
 		RevealedSeed = snapshot.RevealedSeed ?? "";
 		NextDiceRollIndex = Math.Max( snapshot.NextDiceRollIndex, 0 );
 		NextAdminHistoryId = Math.Max( snapshot.NextAdminHistoryId, 1 );
+		NextCommandHistoryId = Math.Max( snapshot.NextCommandHistoryId, 1 );
 		NextMoveHistoryTurnNumber = Math.Max( snapshot.NextMoveHistoryTurnNumber, 1 );
 		ApplyIntStringDictionary( DiceHistory, snapshot.DiceHistory );
 		ApplyIntStringDictionary( AdminHistory, snapshot.AdminHistory );
+		ApplyIntStringDictionary( CommandHistory, snapshot.CommandHistory );
 		ApplyIntStringDictionary( MoveHistory, snapshot.MoveHistory );
 		ApplyIntStringDictionary( GambleHistory, snapshot.GambleHistory );
 		ApplyIntStringDictionary( GambleSessions, snapshot.GambleSessions );

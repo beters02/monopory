@@ -26,6 +26,16 @@ public sealed class AdminHistoryEntry
 	public string Message { get; set; } = "";
 }
 
+public sealed class CommandHistoryEntry
+{
+	public int Id { get; set; }
+	public int TurnNumber { get; set; }
+	public string CallerName { get; set; } = "";
+	public string Command { get; set; } = "";
+	public string CommandType { get; set; } = "Unrestricted";
+	public string Message { get; set; } = "";
+}
+
 public sealed class MoveHistoryPlayerSnapshot
 {
 	public int PlayerIndex { get; set; }

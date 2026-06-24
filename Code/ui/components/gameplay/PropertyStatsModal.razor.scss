@@ -481,8 +481,29 @@
 	margin-top: 4px;
 	padding: 7px;
 }
-.integrity-row.warning {
+.integrity-row.warning,
+.integrity-row.command-cheat {
 	border-color: $monopoly-danger;
+}
+.integrity-row.command-host-cheat {
+	border-color: $property-orange;
+}
+.integrity-row.command-host {
+	border-color: $property-yellow;
+}
+.command-history-heading {
+	align-items: center;
+	justify-content: space-between;
+	gap: 10px;
+}
+.command-type-label {
+	flex-shrink: 0;
+	padding: 3px 7px;
+	background-color: $monopoly-board-surface;
+	border-radius: $monopoly-radius-pill;
+	font-size: 9px;
+	font-weight: 900;
+	text-transform: uppercase;
 }
 .integrity-row-title {
 	font-size: 13px;

@@ -260,8 +260,13 @@ public sealed class GameCommandManager : Component
 			return;
 		}
 
-		if ( result?.Ok == true && IsIntegrityPowerCommand( value ) )
-			GameController.Instance?.RecordAdminCommand( caller, commandName, "match" );
+		if ( result?.Ok == true )
+		{
+			var commandType = GetCommandTypeLabel( value );
+			GameController.Instance?.RecordCommand( caller, commandName, commandType );
+			if ( value.CheatType == GameCommandCheatType.Cheats )
+				GameController.Instance?.RecordAdminCommand( caller, commandName, "match" );
+		}
 	}
 
 	public static void RunCommandFromName( Connection caller, string commandName, params string[] args )
@@ -281,15 +286,18 @@ public sealed class GameCommandManager : Component
 		command.Method.Invoke( null, useArgs );
 	}
 
-	private static bool IsIntegrityPowerCommand( GameCommand command )
+	private static string GetCommandTypeLabel( GameCommand command )
 	{
 		if ( command is null )
-			return false;
+			return "Unrestricted";
 
-		if ( command.Name is DisplayStatsLogCommand.Name or HelpCommand.Name or SetCameraModeCommand.Name or RollTwoDiceCommand.Name )
-			return false;
-
-		return command.CheatType != GameCommandCheatType.None;
+		return command.CheatType switch
+		{
+			GameCommandCheatType.Cheats => "CheatCmd",
+			GameCommandCheatType.HostOrCheats => "HostCheatCmd",
+			GameCommandCheatType.Host => "HostCmd",
+			_ => "Unrestricted"
+		};
 	}
 
 	internal static bool CanUseCheatCommand( Connection caller )
@@ -390,9 +398,6 @@ public sealed class GameCommandManager : Component
 
 		if ( !SceneSystemService.IsGameSceneActiveScene(GameScene.Game) )
 			return;
-
-		if ( newValue )
-			GameController.Instance?.MarkCheatsEnabledEver();
 
 		GameController.Instance?.SendTableChatMessage(
 			"Server cheats changed",

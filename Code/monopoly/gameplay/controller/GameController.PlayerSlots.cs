@@ -282,6 +282,7 @@ public sealed partial class GameController : Component
 		StatsLogDiceFaceCounts.Clear();
 		DiceHistory.Clear();
 		AdminHistory.Clear();
+		CommandHistory.Clear();
 		MoveHistory.Clear();
 		GambleHistory.Clear();
 		GambleSessions.Clear();
@@ -294,6 +295,7 @@ public sealed partial class GameController : Component
 		RevealedSeed = "";
 		NextDiceRollIndex = 0;
 		NextAdminHistoryId = 1;
+		NextCommandHistoryId = 1;
 		NextMoveHistoryTurnNumber = 1;
 		RestoreMatchIntegritySeed( "" );
 

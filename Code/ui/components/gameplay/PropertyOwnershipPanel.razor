@@ -305,7 +305,7 @@
 		if ( SelectedPlayerProfile is null )
 			return;
 
-		if ( !SteamFriendsBridge.TryOpenProfile( SelectedPlayerProfile ) )
+		if ( !SteamFriendsBridge.TryOpenProfile( SelectedPlayerProfile, overlayType.ToString() ) )
 			Log.Warning( $"Could not open Steam profile for {SelectedPlayerProfile.Name}." );
 
 		ClosePlayerProfilePopup();

@@ -10,8 +10,7 @@ public sealed partial class GameController : Component
 	private int activeMoveHistoryTurnNumber;
 	private string activeMoveHistoryMoneySignature = "";
 
-	public bool IsVerifiedMatch => !CheatsEnabledEver &&
-		!AdminCommandUsedEver &&
+	public bool IsVerifiedMatch => !AdminCommandUsedEver &&
 		!MatchConfigChangedAfterStart &&
 		DoesDiceHistoryVerify();
 
@@ -23,11 +22,13 @@ public sealed partial class GameController : Component
 		RevealedSeed = "";
 		NextDiceRollIndex = 0;
 		NextAdminHistoryId = 1;
+		NextCommandHistoryId = 1;
 		NextMoveHistoryTurnNumber = 1;
 		privateDiceSeed = CreateSeed();
 		DiceCommitmentHash = ComputeSha256Hex( privateDiceSeed );
 		DiceHistory.Clear();
 		AdminHistory.Clear();
+		CommandHistory.Clear();
 		MoveHistory.Clear();
 		GambleHistory.Clear();
 		NextGambleHistoryId = 1;
@@ -79,6 +80,25 @@ public sealed partial class GameController : Component
 		AdminHistory[entry.Id] = MatchIntegrityJson.Serialize( entry );
 		RecordMoveHistoryEvent( "Admin", "Admin command", entry.Message );
 		SendTableChatMessage( "Admin", entry.Message );
+	}
+
+	public void RecordCommand( Connection caller, string commandName, string commandType )
+	{
+		if ( !HasStarted || string.IsNullOrWhiteSpace( commandName ) )
+			return;
+
+		var callerName = caller?.Name ?? Connection.Local?.Name ?? "Host";
+		var entry = new CommandHistoryEntry
+		{
+			Id = NextCommandHistoryId++,
+			TurnNumber = Math.Max( activeMoveHistoryTurnNumber, 0 ),
+			CallerName = callerName,
+			Command = commandName,
+			CommandType = string.IsNullOrWhiteSpace( commandType ) ? "Unrestricted" : commandType,
+			Message = $"{callerName} used {commandName}"
+		};
+
+		CommandHistory[entry.Id] = MatchIntegrityJson.Serialize( entry );
 	}
 
 	private (int DieA, int DieB) GetSeededDice( int rollIndex )

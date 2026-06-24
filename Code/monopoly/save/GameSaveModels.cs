@@ -67,9 +67,11 @@ public sealed class GameSaveSnapshot
 	public string PrivateDiceSeed { get; set; } = "";
 	public int NextDiceRollIndex { get; set; }
 	public int NextAdminHistoryId { get; set; } = 1;
+	public int NextCommandHistoryId { get; set; } = 1;
 	public int NextMoveHistoryTurnNumber { get; set; } = 1;
 	public List<GameSaveIntStringEntry> DiceHistory { get; set; } = new();
 	public List<GameSaveIntStringEntry> AdminHistory { get; set; } = new();
+	public List<GameSaveIntStringEntry> CommandHistory { get; set; } = new();
 	public List<GameSaveIntStringEntry> MoveHistory { get; set; } = new();
 	public List<GameSaveIntStringEntry> GambleHistory { get; set; } = new();
 	public List<GameSaveIntStringEntry> GambleSessions { get; set; } = new();
