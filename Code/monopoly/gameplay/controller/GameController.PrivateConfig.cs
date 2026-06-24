@@ -33,6 +33,7 @@ public sealed partial class GameController : Component
 	public float DiceMinSpinSpeed { get; set; } = 12f;
 	public float DiceMaxSpinSpeed { get; set; } = 30f;
 	public float DiceSettleTimeout { get; set; } = 5f;
+	private const float DiceOwnershipWaitTimeout = 5f;
 	public bool UsePhysicalDice { get; set; } = true;
 
 	// Host Recovery

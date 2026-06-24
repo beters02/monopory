@@ -93,7 +93,7 @@ public sealed partial class GameController
 		UpdateHostRecoveryStateFlag();
 
 		var pendingRollStale = PendingRollPlayerIndex >= 0 &&
-			(PendingRollStartedAt <= 0f || Time.Now - PendingRollStartedAt > DiceSettleTimeout + ResolvingSpaceRecoveryDelay);
+			(PendingRollStartedAt <= 0f || Time.Now - PendingRollStartedAt > DiceOwnershipWaitTimeout + DiceSettleTimeout + ResolvingSpaceRecoveryDelay);
 
 		if ( pendingRollStale )
 		{
@@ -105,7 +105,7 @@ public sealed partial class GameController
 			return;
 		}
 
-		if ( IsResolvingPhysicalDice && PendingRollPlayerIndex >= 0 && PhysicalDiceStartedAt > 0f && Time.Now - PhysicalDiceStartedAt > DiceSettleTimeout + ResolvingSpaceRecoveryDelay )
+		if ( IsResolvingPhysicalDice && PendingRollPlayerIndex >= 0 && PhysicalDiceStartedAt > 0f && Time.Now - PhysicalDiceStartedAt > DiceOwnershipWaitTimeout + DiceSettleTimeout + ResolvingSpaceRecoveryDelay )
 		{
 			Log.Warning( "Recovering stale physical dice roll." );
 			IsResolvingPhysicalDice = false;
@@ -118,7 +118,7 @@ public sealed partial class GameController
 		if ( Phase != GamePhase.ResolvingSpace )
 			return;
 
-		if ( IsResolvingPhysicalDice && PhysicalDiceStartedAt > 0f && Time.Now - PhysicalDiceStartedAt > DiceSettleTimeout + ResolvingSpaceRecoveryDelay )
+		if ( IsResolvingPhysicalDice && PhysicalDiceStartedAt > 0f && Time.Now - PhysicalDiceStartedAt > DiceOwnershipWaitTimeout + DiceSettleTimeout + ResolvingSpaceRecoveryDelay )
 		{
 			Log.Warning( "Recovering stale physical dice resolution." );
 			IsResolvingPhysicalDice = false;

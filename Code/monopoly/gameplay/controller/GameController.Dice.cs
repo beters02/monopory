@@ -4,6 +4,9 @@ using Sandbox;
 
 public sealed partial class GameController : Component
 {
+	private int awaitingPhysicalDiceRollIndex = -1;
+	private (int DieA, int DieB)? submittedPhysicalDiceResult;
+
 	private void EnsureDiceNetworkOwnership( bool force = false )
 	{
 		if ( !Networking.IsHost || !TryGetPhysicalDice( out var dieA, out var dieB ) )
@@ -150,14 +153,21 @@ public sealed partial class GameController : Component
 
 		try
 		{
+			var diceOwner = GetConnectionForPlayer( CurrentPlayer ) ?? Connection.Host;
+			if ( diceOwner is null )
+				return GetFallbackDiceResult();
+
+			EnsureDiceNetworkOwnership();
+			awaitingPhysicalDiceRollIndex = rollIndex;
+			submittedPhysicalDiceResult = null;
 			SetHudIsVisibleAll(false);
-			ThrowPhysicalDice( originA, originB, rotationA, rotationB, velocityA, velocityB, spinA, spinB );
-			var result = await WaitForPhysicalDiceResultAsync();
-			SetHudIsVisibleAll(true);
-			return result;
+			ThrowPhysicalDice( rollIndex, diceOwner.SteamId, originA, originB, rotationA, rotationB, velocityA, velocityB, spinA, spinB );
+			return await WaitForPhysicalDiceOwnerResultAsync( rollIndex );
 		}
 		finally
 		{
+			awaitingPhysicalDiceRollIndex = -1;
+			submittedPhysicalDiceResult = null;
 			SetHudIsVisibleAll( true );
 			IsResolvingPhysicalDice = false;
 			PhysicalDiceStartedAt = 0f;
@@ -192,23 +202,38 @@ public sealed partial class GameController : Component
 			NextDiceRandomFloat( random, -1f, 1f ) ).Normal;
 	}
 
-	private async Task<(int DieA, int DieB)> WaitForPhysicalDiceResultAsync()
+	private async Task<(int DieA, int DieB)> WaitForPhysicalDiceResultAsync(
+		Vector3? initialPositionA = null,
+		Vector3? initialPositionB = null )
 	{
 		if ( !TryGetPhysicalDice( out var dieA, out var dieB ) )
 			return GetFallbackDiceResult();
 
+		var waitForReplicatedThrow = initialPositionA.HasValue && initialPositionB.HasValue;
+		var observedThrow = !waitForReplicatedThrow;
+		var settled = false;
 		var startedAt = Time.Now;
 		while ( Time.Now - startedAt < DiceSettleTimeout )
 		{
-			if ( dieA.IsSettled() && dieB.IsSettled() )
+			if ( !observedThrow )
+			{
+				var dieAMoved = (dieA.GameObject.WorldPosition - initialPositionA.Value).Length > 0.5f;
+				var dieBMoved = (dieB.GameObject.WorldPosition - initialPositionB.Value).Length > 0.5f;
+				observedThrow = dieAMoved && dieBMoved;
+			}
+
+			if ( observedThrow && dieA.IsSettled() && dieB.IsSettled() )
+			{
+				settled = true;
 				break;
+			}
 
 			await Task.Frame();
 		}
 
 		var dieAValue = dieA.GetTopFaceValue();
 		var dieBValue = dieB.GetTopFaceValue();
-		if ( dieAValue >= 1 && dieAValue <= 6 && dieBValue >= 1 && dieBValue <= 6 )
+		if ( settled && dieAValue >= 1 && dieAValue <= 6 && dieBValue >= 1 && dieBValue <= 6 )
 			return (dieAValue, dieBValue);
 
 		return GetFallbackDiceResult();
@@ -238,6 +263,8 @@ public sealed partial class GameController : Component
 
 	[Rpc.Broadcast]
 	private void ThrowPhysicalDice(
+		int rollIndex,
+		long ownerId,
 		Vector3 originA,
 		Vector3 originB,
 		Rotation rotationA,
@@ -247,12 +274,103 @@ public sealed partial class GameController : Component
 		Vector3 spinA,
 		Vector3 spinB )
 	{
-		if ( !TryGetPhysicalDice( out var dieA, out var dieB ) )
+		if ( Connection.Local?.SteamId != ownerId ||
+			!TryGetPhysicalDice( out var dieA, out var dieB ) )
 			return;
 
-		if ( dieA.IsNetworkOwner )
-			dieA.Throw( originA, rotationA, velocityA, spinA );
-		if ( dieB.IsNetworkOwner )
-			dieB.Throw( originB, rotationB, velocityB, spinB );
+		_ = ThrowPhysicalDiceWhenOwnedAsync(
+			rollIndex,
+			dieA,
+			dieB,
+			originA,
+			originB,
+			rotationA,
+			rotationB,
+			velocityA,
+			velocityB,
+			spinA,
+			spinB );
+	}
+
+	private async Task ThrowPhysicalDiceWhenOwnedAsync(
+		int rollIndex,
+		DiceComponent dieA,
+		DiceComponent dieB,
+		Vector3 originA,
+		Vector3 originB,
+		Rotation rotationA,
+		Rotation rotationB,
+		Vector3 velocityA,
+		Vector3 velocityB,
+		Vector3 spinA,
+		Vector3 spinB )
+	{
+		var ownershipWaitStartedAt = Time.Now;
+		while ( !dieA.IsNetworkOwner || !dieB.IsNetworkOwner )
+		{
+			if ( Time.Now - ownershipWaitStartedAt >= DiceOwnershipWaitTimeout )
+				return;
+
+			await Task.Frame();
+		}
+
+		dieA.Throw( originA, rotationA, velocityA, spinA );
+		dieB.Throw( originB, rotationB, velocityB, spinB );
+		await SubmitPhysicalDiceResultWhenSettledAsync( rollIndex, dieA, dieB );
+	}
+
+	private async Task SubmitPhysicalDiceResultWhenSettledAsync(
+		int rollIndex,
+		DiceComponent dieA,
+		DiceComponent dieB )
+	{
+		var startedAt = Time.Now;
+		while ( Time.Now - startedAt < DiceSettleTimeout )
+		{
+			if ( !dieA.IsNetworkOwner || !dieB.IsNetworkOwner )
+				return;
+
+			if ( dieA.IsSettled() && dieB.IsSettled() )
+			{
+				SubmitPhysicalDiceResult( rollIndex, dieA.GetTopFaceValue(), dieB.GetTopFaceValue() );
+				return;
+			}
+
+			await Task.Frame();
+		}
+	}
+
+	[Rpc.Host]
+	private void SubmitPhysicalDiceResult( int rollIndex, int dieA, int dieB )
+	{
+		if ( rollIndex != awaitingPhysicalDiceRollIndex ||
+			!IsResolvingPhysicalDice ||
+			!IsValidDieValue( dieA ) ||
+			!IsValidDieValue( dieB ) )
+			return;
+
+		var callerPlayer = GetPlayerForCaller( Rpc.Caller );
+		if ( callerPlayer is null || callerPlayer != CurrentPlayer )
+			return;
+
+		submittedPhysicalDiceResult = (dieA, dieB);
+	}
+
+	private async Task<(int DieA, int DieB)> WaitForPhysicalDiceOwnerResultAsync( int rollIndex )
+	{
+		var startedAt = Time.Now;
+		while ( Time.Now - startedAt < DiceOwnershipWaitTimeout + DiceSettleTimeout )
+		{
+			if ( awaitingPhysicalDiceRollIndex != rollIndex )
+				break;
+
+			if ( submittedPhysicalDiceResult.HasValue )
+				return submittedPhysicalDiceResult.Value;
+
+			await Task.Frame();
+		}
+
+		Log.Warning( $"Dice owner did not submit roll {rollIndex} before timeout; using fallback result." );
+		return GetFallbackDiceResult();
 	}
 }
