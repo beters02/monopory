@@ -159,7 +159,7 @@
 				{
 					<div class="integrity-list monopory-scroll-y">
 						<div class="integrity-badge @GetIntegrityBadgeClass()">@GetIntegrityBadgeText()</div>
-						<div class="integrity-badge cheats @GetCheatsEnabledBadgeClass()">Cheats Enabled: @GetCheatsEnabledText()</div>
+						<div class="integrity-badge cheats @GetCheatsEnabledBadgeClass()">@GetCheatsEnabledText()</div>
 						<div class="integrity-row"><div class="integrity-row-title">Commitment Hash</div><div class="integrity-row-meta hash">@GetHashText()</div></div>
 						<div class="integrity-row"><div class="integrity-row-title">Revealed Seed</div><div class="integrity-row-meta hash">@GetSeedText()</div></div>
 						@foreach ( var reason in GetIntegrityReasons() ) { <div class="integrity-row warning"><div class="integrity-row-title">Integrity Notice</div><div class="integrity-row-meta">@reason</div></div> }
@@ -225,7 +225,7 @@
 	private string GetIntegrityBadgeClass() => GameRef?.IsVerifiedMatch == true ? "verified" : "unverified";
 	private string GetIntegrityBadgeText() => GameRef?.IsVerifiedMatch == true ? "Verified Match" : "Unverified Match";
 	private string GetCheatsEnabledBadgeClass() => MonopolyApp.IsCheatsEnabled() ? "unverified" : "verified";
-	private string GetCheatsEnabledText() => MonopolyApp.IsCheatsEnabled() ? "True" : "False";
+	private string GetCheatsEnabledText() => MonopolyApp.IsCheatsEnabled() ? "Cheats Enabled" : "Cheats Disabled";
 	private string GetHashText() => string.IsNullOrWhiteSpace( GameRef?.DiceCommitmentHash ) ? "Not committed" : GameRef.DiceCommitmentHash;
 	private string GetSeedText() => string.IsNullOrWhiteSpace( GameRef?.RevealedSeed ) ? "Hidden until match end" : GameRef.RevealedSeed;
 	private IEnumerable<string> GetIntegrityReasons()

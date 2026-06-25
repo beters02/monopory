@@ -50,8 +50,7 @@ public sealed class PlayerToken : Component
 	private ModelRenderer markerRenderer;
 	private GameObject markerObject;
 	private HighlightOutline markerHighlight;
-	private GameObject pingMarkerObject;
-	private ModelRenderer pingMarkerRenderer;
+	private GameObject pingOutlineHost;
 	private HighlightOutline pingMarkerHighlight;
 	private float pingMarkerExpiresAt;
 	private bool hasOriginalPieceMaterialOverrides;
@@ -1049,57 +1048,52 @@ public sealed class PlayerToken : Component
 	{
 		if ( pingMarkerExpiresAt <= Time.Now )
 		{
-			if ( pingMarkerObject is not null && pingMarkerObject.IsValid() )
-				pingMarkerObject.Enabled = false;
+			if ( pingMarkerHighlight is not null )
+				pingMarkerHighlight.Enabled = false;
 
 			return;
 		}
 
 		EnsurePingMarker();
-		if ( pingMarkerObject is null )
+		if ( pingMarkerHighlight is null )
 			return;
 
-		pingMarkerObject.Enabled = true;
-		var pulse = 1f + 0.22f * MathF.Sin( Time.Now * 10f );
-		pingMarkerObject.LocalScale = new Vector3( 0.22f * pulse, 0.22f * pulse, 0.04f );
-		pingMarkerObject.LocalPosition = new Vector3( 0f, 0f, HeightOffset + 28f );
-
-		if ( pingMarkerRenderer is not null )
-			pingMarkerRenderer.Tint = currentPlayerColor.WithAlpha( 0.35f + 0.25f * pulse );
-
-		if ( pingMarkerHighlight is not null )
-		{
-			pingMarkerHighlight.Color = currentPlayerColor.WithAlpha( 0.95f );
-			pingMarkerHighlight.InsideColor = currentPlayerColor.WithAlpha( 0.35f );
-		}
+		var pulse = 0.5f + 0.5f * MathF.Sin( Time.Now * 12f );
+		pingMarkerHighlight.Enabled = pulse > 0.18f;
+		pingMarkerHighlight.Color = currentPlayerColor.WithAlpha( 0.55f + 0.4f * pulse ).Saturate( 1f );
+		pingMarkerHighlight.InsideColor = currentPlayerColor.WithAlpha( 0.08f + 0.16f * pulse );
 	}
 
 	private void EnsurePingMarker()
 	{
-		if ( pingMarkerObject is not null && pingMarkerObject.IsValid() )
+		var renderHost = GetPieceRenderHost();
+		if ( renderHost is null )
 			return;
 
-		pingMarkerObject = new GameObject( true, "PlayerPingMarker" );
-		pingMarkerObject.SetParent( GameObject );
-		pingMarkerObject.LocalRotation = Rotation.Identity;
+		if ( pingMarkerHighlight is not null && pingOutlineHost == renderHost && pingOutlineHost.IsValid() )
+			return;
 
-		pingMarkerRenderer = pingMarkerObject.Components.Create<ModelRenderer>();
-		pingMarkerRenderer.Model = ResolveMarkerModel();
-		pingMarkerRenderer.Tint = currentPlayerColor.WithAlpha( 0.55f );
+		if ( pingMarkerHighlight is not null )
+			pingMarkerHighlight.Enabled = false;
 
-		pingMarkerHighlight = pingMarkerObject.Components.Create<HighlightOutline>();
-		pingMarkerHighlight.Color = currentPlayerColor.WithAlpha( 0.95f );
-		pingMarkerHighlight.InsideColor = currentPlayerColor.WithAlpha( 0.35f );
+		pingOutlineHost = renderHost;
+		pingMarkerHighlight = pingOutlineHost.Components.Get<HighlightOutline>();
+		if ( pingMarkerHighlight is null )
+			pingMarkerHighlight = pingOutlineHost.Components.Create<HighlightOutline>();
+	}
+
+	private GameObject GetPieceRenderHost()
+	{
+		var visualObject = GameObject.Children.FirstOrDefault( child => string.Equals( child?.Name, "Visual", StringComparison.OrdinalIgnoreCase ) );
+		return visualObject?.Children.FirstOrDefault() ?? visualObject;
 	}
 
 	private void DestroyPingMarker()
 	{
-		if ( pingMarkerObject is null )
-			return;
+		if ( pingMarkerHighlight is not null )
+			pingMarkerHighlight.Enabled = false;
 
-		pingMarkerObject.Destroy();
-		pingMarkerObject = null;
-		pingMarkerRenderer = null;
+		pingOutlineHost = null;
 		pingMarkerHighlight = null;
 		pingMarkerExpiresAt = 0f;
 	}
