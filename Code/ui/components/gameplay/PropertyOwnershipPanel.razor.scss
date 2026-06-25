@@ -48,9 +48,18 @@
 	gap: 6px;
 }
 
+.hud-panel.property-player-panel {
+	width: 130px;
+	min-width: 130px;
+	max-width: 130px;
+	padding: 0px;
+}
+
 .property-player-panel {
 	position: relative;
 	width: 130px;
+	min-width: 130px;
+	max-width: 130px;
 	padding: 0px;
 	min-height: 70px;
 	gap: 0px;
@@ -80,12 +89,13 @@
 }
 
 .property-player-top-row {
-	position: relative;
 	width: 100%;
 	min-width: 0;
 	display: flex;
 	flex-direction: row;
 	align-items: center;
+	justify-content: flex-start;
+	gap: 4px;
 }
 
 .property-player-detail-row {
@@ -196,10 +206,18 @@
 	background-color: $property-none;
 }
 
+.property-player-name-shell {
+	flex: 1;
+	min-width: 0;
+	overflow: hidden;
+	flex-direction: row;
+	align-items: center;
+}
+
 .property-player-name {
 	width: 100%;
 	min-width: 0;
-	padding: 0 12px 0 0;
+	padding: 0;
 	text-align: left;
 	font-size: 13px;
 	font-weight: 800;
@@ -207,26 +225,22 @@
 	white-space: nowrap;
 	text-overflow: ellipsis;
 	overflow: hidden;
-	display: flex;
-	align-items: center;
 }
 
 .property-player-name .label {
-	flex: 1;
 	width: 100%;
 	min-width: 0;
 	text-align: left;
 	white-space: nowrap;
+	word-break: break-all;
 	text-overflow: ellipsis;
 	overflow: hidden;
 }
 
 .property-player-chip {
-	position: absolute;
-	top: 3px;
-	right: 0;
 	width: 10px;
 	height: 10px;
+	min-width: 10px;
 	border-radius: 3px;
 	flex-shrink: 0;
 }

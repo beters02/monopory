@@ -21,8 +21,8 @@
 						<ChildContent>
 							<div class="property-player-card-hit-area" onclick="@(() => TogglePlayerProfilePopup( player ))">
 								<div class="property-player-top-row">
-									<div class="property-player-name">@player.PlayerName</div>
-									<div class="property-player-chip" style="@GetPlayerChipStyle( player )"></div>
+									<span class="property-player-name" title="@player.PlayerName">@player.PlayerName</span>
+									<span class="property-player-chip" style="@GetPlayerChipStyle( player )"></span>
 								</div>
 								<div class="property-player-detail-row">
 									<div class="property-player-avatar">
