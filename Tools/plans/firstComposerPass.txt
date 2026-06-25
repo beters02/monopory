@@ -1,0 +1,19 @@
+i need you to write a concise plan for composer to implement some features. make sure you do the research (relative to project) to implement these properly. the second section of the list are typically bugs and have more involved requirements in order for you to be able to tell composer exactly how to implement a fix. that section tells you what to do in order to write the implementation plan item.
+
+section 1:
+- have notification saying hold tab to show cursor in token camera mode (make it more obvious that you can press tab to display your cursor in token camera mode)
+- add a kick_player command. kick_player {playerName} {forceAbandon = false} this is a HostCmd
+- add a kick player button on the right side of the player card in the lobby that only the host can see/use. this button will not abandon them right away. instead, a new button will pop up in place of the kick button that allows you to abandon them. both buttons display a confirmation popup
+- in the player card player profiles (click to open menu) add a button "ping" which will display some kind of visual indicator on their board piece displaying where they are. also add a command "ping_player {playerName}" which achieves the same thing. anyone can use this command.
+- show a global popup for who won the auction
+- add command "game_phase" which just shows the current game phase. anyone can use this command.
+- add a new "post match stats" page which displays at the end of the match. go crazy with it, make it as detailed as the in-game stats page but add some different fun stats.
+- make the top right player cards a bit taller and display the player's steam avatar in the newfound space. (only display avatar if in standalone to avoid whitelist issues. if not standalone, use a basic question mark svg or GameAsset value. if gameasset, i will assign the image after finished)
+
+
+section 2:
+- verify that the card weight parameter in carddata works like so: weight determines how many of this card will be in the deck. (during playtest, it felt like we were getting the gamble card an awful lot. could be another deck bug as well.) if a fix needs to be implemented, include the full fix solution in the plan for composer.
+
+- there is a bug where widescreen resolutions cause the "Board" camera mode to not show the entire board. this is the same for the dice separation while in default mode (dice go off of screen). please provide the plan a solid fix for this.
+
+- when negotiating trade, it will sometimes automatically select the wrong player (or at least it appears to) please do a thorough review to understand why thats happening, and provide the plan the fix.

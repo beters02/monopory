@@ -1,3 +1,7 @@
 {
-  "mcpServers": {}
+  "mcpServers": {
+    "lean-ctx-project": {
+      "command": "lean-ctx"
+    }
+  }
 }
