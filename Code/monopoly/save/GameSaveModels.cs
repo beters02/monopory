@@ -32,6 +32,7 @@ public sealed class GameSaveFile
 public sealed class GameSaveSnapshot
 {
 	public string MatchConfigSnapshot { get; set; } = "";
+	public string MatchConfigDefaultSnapshot { get; set; } = "";
 	public MatchLifecycleState MatchState { get; set; } = MatchLifecycleState.InGame;
 	public GamePhase Phase { get; set; } = GamePhase.WaitingToRoll;
 	public int WinnerPlayerIndex { get; set; } = -1;

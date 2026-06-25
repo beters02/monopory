@@ -61,9 +61,11 @@ public sealed class GameCommand
 	public MethodDescription Method { get; init; }
 	public ConCmdAttribute Attribute { get; init; }
 	public SourceOverwriteCmdAttribute SourceAttribute { get; init; }
+	public MatchConfigOption MatchConfigOption { get; init; }
 	public GameCommandCheatType CheatType { get; init; }
 	public GameCommandAppType AppType { get; init; }
 	public bool IsSourceOverwrite { get; init; }
+	public bool IsMatchConfigCommand { get; init; }
 
 	public GameCommand( string name, MethodDescription method, ConCmdAttribute attribute, GameCommandCheatType cheatType, GameCommandAppType appType )
 	{
@@ -83,6 +85,16 @@ public sealed class GameCommand
 		CheatType = cheatType;
 		AppType = appType;
 		IsSourceOverwrite = true;
+	}
+
+	public GameCommand( string name, MatchConfigOption option )
+	{
+		Name = name;
+		MatchConfigOption = option;
+		CheatType = option?.GameCommandCheatType ?? GameCommandCheatType.Host;
+		AppType = GameCommandAppType.None;
+		IsSourceOverwrite = true;
+		IsMatchConfigCommand = true;
 	}
 }
 
@@ -167,6 +179,15 @@ public static class GameCommands
 				Commands[name] = new GameCommand( name, method, obj.conCmdAttribute, cheatType, appType );
 			
 		}
+
+		foreach ( var option in MatchConfigSchema.Options )
+		{
+			if ( option is null || string.IsNullOrWhiteSpace( option.CommandId ) )
+				continue;
+
+			var name = $"mn_{option.CommandId.Trim()}";
+			Commands[name] = new GameCommand( name, option );
+		}
 	}
 }
 
@@ -215,7 +236,8 @@ public sealed class GameCommandManager : Component
 	internal static void RunCommand(string commandName, Func<CommandResult> callback, Connection caller = null )
 	{
 
-		if ( caller == null || !Commands.TryGetValue( commandName, out GameCommand value ) )
+		var commands = Commands ?? GameCommands.All;
+		if ( caller == null || !commands.TryGetValue( commandName, out GameCommand value ) )
 		{
 			ExecuteCommand( commandName, callback );
 			return;
@@ -271,9 +293,16 @@ public sealed class GameCommandManager : Component
 
 	public static void RunCommandFromName( Connection caller, string commandName, params string[] args )
 	{
-		if ( !Commands.TryGetValue( commandName, out var command ) )
+		var commands = Commands ?? GameCommands.All;
+		if ( !commands.TryGetValue( commandName, out var command ) )
 		{
 			LogCommandResult(commandName, CommandResult.Fail($"Could not find command {commandName}"));
+			return;
+		}
+
+		if ( command.IsMatchConfigCommand )
+		{
+			RunCommand( commandName, () => RunMatchConfigCommand( command, args ), caller );
 			return;
 		}
 
@@ -284,6 +313,22 @@ public sealed class GameCommandManager : Component
 			useArgs[i + 1] = args[i];
 		
 		command.Method.Invoke( null, useArgs );
+	}
+
+	private static CommandResult RunMatchConfigCommand( GameCommand command, string[] args )
+	{
+		var option = command?.MatchConfigOption;
+		if ( option is null )
+			return CommandResult.Fail( "Match config option is missing." );
+
+		var game = GameController.Instance;
+		if ( game is null )
+			return CommandResult.Fail( "No active game controller." );
+
+		var rawValue = args is null || args.Length == 0 ? null : string.Join( " ", args );
+		return game.TryRunMatchConfigCommand( option, rawValue, out var message )
+			? CommandResult.Success( message )
+			: CommandResult.Fail( message );
 	}
 
 	private static string GetCommandTypeLabel( GameCommand command )
@@ -434,7 +479,8 @@ public sealed class GameCommandManager : Component
 
 	public static bool IsCommandSourceOverwrite( string command )
 	{
-		return Commands.TryGetValue( command, out var gameCommand ) && gameCommand.IsSourceOverwrite;
+		var commands = Commands ?? GameCommands.All;
+		return commands.TryGetValue( command, out var gameCommand ) && gameCommand.IsSourceOverwrite;
 	}
 }
 

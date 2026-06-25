@@ -236,6 +236,7 @@ public sealed partial class GameController : Component
 		return new GameSaveSnapshot
 		{
 			MatchConfigSnapshot = MatchConfigSchema.Serialize( Config ),
+			MatchConfigDefaultSnapshot = string.IsNullOrWhiteSpace( this.MatchConfigDefaultSnapshot ) ? MatchConfigSchema.Serialize( Config ) : this.MatchConfigDefaultSnapshot,
 			MatchState = MatchState,
 			Phase = Phase,
 			WinnerPlayerIndex = WinnerPlayerIndex,
@@ -375,6 +376,9 @@ public sealed partial class GameController : Component
 		ResetGameState( true );
 
 		Config = MatchConfigSchema.Deserialize( snapshot.MatchConfigSnapshot );
+		MatchConfigDefaultSnapshot = string.IsNullOrWhiteSpace( snapshot.MatchConfigDefaultSnapshot )
+			? snapshot.MatchConfigSnapshot ?? ""
+			: snapshot.MatchConfigDefaultSnapshot;
 		PublishGameConfigSnapshot();
 		StartPrivateConfig();
 		PreferredHostOwnerId = snapshot.PreferredHostOwnerId;

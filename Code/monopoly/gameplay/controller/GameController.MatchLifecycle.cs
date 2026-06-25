@@ -38,6 +38,7 @@ public sealed partial class GameController : Component
 			loadedSourceSaveId = "";
 			currentManualSaveId = "";
 			hasLoadedRestorePoint = false;
+			CaptureMatchConfigDefaultSnapshot();
 			ResetGameState( false );
 			InitializeMatchIntegrity();
 			StartingPlayerCount = activePlayers.Count;

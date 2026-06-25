@@ -50,6 +50,7 @@ public sealed partial class GameController : Component, Component.INetworkListen
 	[JsonIgnore] public List<PlayerState> Players { get; set; } = new();
 	public MatchConfig Config { get; set; } = new();
 	[Sync] public string GameConfigSnapshot { get; set; } = "";
+	[Sync] public string MatchConfigDefaultSnapshot { get; set; } = "";
 	[Property] public GameObject TokenPrefab { get; set; }
 	[Property] public MonopolyTheme Theme { get; set; }
 
@@ -231,6 +232,7 @@ public sealed partial class GameController : Component, Component.INetworkListen
 				Config = bootstrap.Config;
 
 			PublishGameConfigSnapshot();
+			CaptureMatchConfigDefaultSnapshot();
 			StartPrivateConfig();
 			EnsurePreferredHostOwnerId();
 			EnsurePlayerSlots();

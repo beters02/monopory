@@ -19,7 +19,10 @@ public sealed class MatchConfigOption
 	public string Group { get; init; }
 	public string Label { get; init; }
 	public string Description { get; init; } = "";
+	public string CommandId { get; init; } = "";
 	public bool IsVisible { get; init; } = true;
+	public GameCommandCheatType GameCommandCheatType { get; init; } = GameCommandCheatType.Host;
+	public bool RequiresRestart { get; init; }
 	public int Order { get; init; }
 	public int Min { get; init; } = int.MinValue;
 	public int Max { get; init; } = int.MaxValue;
@@ -186,7 +189,7 @@ public static class MatchConfigSchema
 		switch ( option.Kind )
 		{
 			case MatchConfigOptionKind.Bool:
-				if ( bool.TryParse( rawValue, out var boolValue ) )
+				if ( GameCommandManager.TryParseBool( rawValue, out var boolValue ) )
 				{
 					parsedValue = boolValue;
 					return true;
@@ -268,7 +271,10 @@ public static class MatchConfigSchema
 			Group = attribute.Group,
 			Label = attribute.Label,
 			Description = attribute.Description,
+			CommandId = attribute.CommandId,
 			IsVisible = attribute.IsVisible,
+			GameCommandCheatType = attribute.GameCommandCheatType,
+			RequiresRestart = attribute.RequiresRestart,
 			Order = attribute.Order,
 			Min = attribute.Min,
 			Max = attribute.Max,
