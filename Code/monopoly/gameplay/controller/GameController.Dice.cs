@@ -34,11 +34,13 @@ public sealed partial class GameController : Component
 
 			if ( child.Name.Contains( "Bg", StringComparison.OrdinalIgnoreCase ) )
 				decal.ColorTint = diceSkin.BackgroundColor;
-			else if (
-				child.Name.Contains( "Dot", StringComparison.OrdinalIgnoreCase ) ||
-				child.Name.Contains( "Pip", StringComparison.OrdinalIgnoreCase ) ||
-				child.Name.Contains( "Fg", StringComparison.OrdinalIgnoreCase ) )
+			else
 				decal.ColorTint = diceSkin.DotColor;
+
+			if ( diceSkin.SkinMaterial != DiceSkinMaterial.Default )
+			{
+				decal.Decals[0].RoughMetalOcclusionTexture = diceSkin.SkinMaterial.Metallic.Texture;
+			}
 		}
 	}
 

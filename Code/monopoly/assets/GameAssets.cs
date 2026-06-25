@@ -41,6 +41,13 @@ public static partial class GameAssets
 	}
 
 	[GameAssetCategory]
+	public static class Textures
+	{
+		public static readonly GameImage DiceMaterialTexture_MetalShiny_Metallic = new ( "textures/dice/new/pbr/metallic_shiny/metal.vtex" );
+		public static readonly GameImage DiceMaterialTexture_MetalShiny_Roughness = new ( "textures/dice/new/pbr/metallic_shiny/roughness.vtex" );
+	}
+
+	[GameAssetCategory]
 	public static class Images
 	{
 		public static readonly GameImage Chance = new ( "textures/Chance.png" );

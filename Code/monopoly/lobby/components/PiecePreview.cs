@@ -286,6 +286,11 @@ public sealed class PiecePreview : Component
 				decal.ColorTint = diceSkin.BackgroundColor;
 			else
 				decal.ColorTint = diceSkin.DotColor;
+
+			if ( diceSkin.SkinMaterial != DiceSkinMaterial.Default )
+			{
+				decal.Decals[0].RoughMetalOcclusionTexture = diceSkin.SkinMaterial.Metallic.Texture;
+			}
 		}
 	}
 

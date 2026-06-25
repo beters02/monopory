@@ -60,6 +60,7 @@ public static class CosmeticCatalog
 				Description = diceSkin.Description,
 				BackgroundColor = diceSkin.BackgroundColor,
 				DotColor = diceSkin.DotColor,
+				SkinMaterial = diceSkin.SkinMaterial,
 				RequiredAchievementId = diceSkin.RequiredAchievementId
 			} );
 		}

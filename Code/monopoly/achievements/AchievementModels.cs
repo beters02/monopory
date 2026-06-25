@@ -120,6 +120,7 @@ public sealed class CosmeticDefinition
 	public ParticleGradient BackgroundColor { get; init; } = Color.White;
 	public ParticleGradient DotColor { get; init; } = Color.Black;
 	public string RequiredAchievementId { get; init; } = "";
+	public DiceSkinMaterial SkinMaterial { get; init; } = DiceSkinMaterial.Default;
 }
 
 public static class AchievementEventTypes

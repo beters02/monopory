@@ -1,0 +1,130 @@
+// dice_decal.vfx
+
+HEADER
+{
+    Description = "Custom PBR Decal Shader for Dynamic Dice Faces";
+}
+
+FEATURES
+{
+    #include "common/features.hlsl"
+}
+
+MODES
+{
+    VrForward();
+    ToolsVis();
+}
+
+COMMON
+{
+    #include "common/shared.hlsl"
+}
+
+struct VertexInput
+{
+    #include "common/vertexinput.hlsl"
+};
+
+struct VertexOutput
+{
+    #include "common/vertexoutput.hlsl"
+};
+
+struct PixelInput
+{
+    #include "common/pixelinput.hlsl"
+};
+
+VS
+{
+    #include "common/vertexshader.hlsl"
+
+    VertexOutput MainVs( VertexInput i )
+    {
+        VertexOutput o = ProcessVertex( i );
+        return o;
+    }
+}
+
+PS
+{
+    // Enable decal blending modes in Source 2
+    #define COMBAT_DECAL 1
+    #include "common/pixelshader.hlsl"
+
+    // Material Textures (Expected as a grid atlas, e.g., 3x2 or 6x1 layout)
+    CreateTexture2DWithoutContext( g_tColor )   < Attribute( "BaseColor" );   TextureFilter( BILINEAR ); >;
+    CreateTexture2DWithoutContext( g_tNormal )  < Attribute( "Normal" );      TextureFilter( BILINEAR ); >;
+    CreateTexture2DWithoutContext( g_tRMA )     < Attribute( "RoughnessMetalAO" ); TextureFilter( BILINEAR ); >;
+
+    // Dice configuration variables passed from C#
+    int g_iDiceFace < Attribute( "g_iDiceFace" ); Default( 1 ); >; // Face value 1 to 6
+    float2 g_vAtlasGrid < Attribute( "g_vAtlasGrid" ); Default2( 3.0, 2.0 ); >; // 3 columns, 2 rows layout
+
+    PixelOutput MainPs( PixelInput i )
+    {
+        PixelOutput o;
+
+        // 1. Calculate the atlas coordinates based on the selected face (0-indexed conversion)
+        int faceIndex = clamp( g_iDiceFace - 1, 0, 5 );
+        
+        float col = float( faceIndex % int( g_vAtlasGrid.x ) );
+        float row = float( faceIndex / int( g_vAtlasGrid.x ) );
+
+        // 2. Scale and offset the base mesh/decal projection UVs
+        float2 faceUV = i.vTextureCoords.xy / g_vAtlasGrid;
+        faceUV += float2( col, row ) / g_vAtlasGrid;
+
+        // 3. Sample maps using mapped UVs
+        float4 colorSample = Tex2D( g_tColor, faceUV );
+        float4 normalSample = Tex2D( g_tNormal, faceUV );
+        float4 rmaSample = Tex2D( g_tRMA, faceUV );
+
+        // 4. Output standard PBR attributes mapped to Source 2 surface outputs
+        o.vColor.rgb = colorSample.rgb;
+        o.vColor.a = colorSample.a; // Alpha channel masks out the decal bounds
+
+        // Transform normal map from tangent space
+        o.vNormal.rgb = TransformNormal( DecodeNormal( normalSample.rgb ), i.vNormalWs, i.vTangentUWs, i.vTangentVWs );
+        
+        // Unpack RMA (Red: Roughness, Green: Metalness, Blue: Ambient Occlusion)
+        o.vRoughness = rmaSample.r;
+        o.vMetalness = rmaSample.g;
+        o.vAo = rmaSample.b;
+
+        return o;
+    }
+}
+
+// DiceDecalManager.cs
+
+using Sandbox;
+
+public sealed class DiceDecalManager : Component
+{
+	[Property] public Material DiceDecalMaterial { get; set; }
+
+	// Layout of your spritesheet (e.g. 3 columns, 2 rows = 6 faces)
+	[Property] public Vector2 AtlasGrid { get; set; } = new Vector2( 3, 2 );
+
+	public void SpawnDiceFaceDecal( Vector3 position, Rotation rotation, int faceValue )
+	{
+		// 1. Create target GameObject
+		var decalObj = Scene.CreateObject();
+		decalObj.Transform.Position = position;
+		decalObj.Transform.Rotation = rotation;
+
+		// 2. Attach and configure the Decal component
+		var decalComponent = decalObj.Components.Create<Decal>();
+		decalComponent.Size = new Vector3( 32, 32, 64 );
+		
+		// Clone material to ensure changes don't bleed into other decals
+		var dynamicMaterial = DiceDecalMaterial.CreateCopy();
+		decalComponent.Material = dynamicMaterial;
+
+		// 3. Set custom shader parameters
+		decalObj.SceneAttributes.Set( "g_iDiceFace", faceValue );
+		decalObj.SceneAttributes.Set( "g_vAtlasGrid", AtlasGrid );
+	}
+}

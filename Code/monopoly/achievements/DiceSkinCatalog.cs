@@ -1,5 +1,20 @@
 using System;
 
+public sealed class DiceSkinMaterial
+{
+	public GameImage Metallic;
+	public GameImage Roughness;
+
+	private DiceSkinMaterial( GameImage metal = null, GameImage rough = null )
+	{
+		Metallic = metal;
+		Roughness = rough;
+	}
+
+	public static readonly DiceSkinMaterial Default = new();
+	public static readonly DiceSkinMaterial ShinyMetal = new( GameAssets.Textures.DiceMaterialTexture_MetalShiny_Metallic, GameAssets.Textures.DiceMaterialTexture_MetalShiny_Roughness );
+}
+
 public sealed class DiceSkinDefinition
 {
 	public string Id { get; init; } = "";
@@ -8,6 +23,7 @@ public sealed class DiceSkinDefinition
 	public string RequiredAchievementId { get; init; } = "";
 	public ParticleGradient BackgroundColor { get; init; } = Color.White;
 	public ParticleGradient DotColor { get; init; } = Color.Black;
+	public DiceSkinMaterial SkinMaterial { get; init; } = DiceSkinMaterial.Default;
 }
 
 public static class DiceSkinCatalog
@@ -27,7 +43,8 @@ public static class DiceSkinCatalog
 			Id = "gold",
 			Label = "Gold Dice",
 			Description = "Unlocked by collecting properties.",
-			BackgroundColor = MonopolyTheme.MonopolyGoldColor
+			BackgroundColor = MonopolyTheme.MonopolyGoldColor,
+			SkinMaterial = DiceSkinMaterial.ShinyMetal,
 		},
 		new()
 		{

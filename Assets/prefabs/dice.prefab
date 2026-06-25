@@ -353,7 +353,7 @@
             "ColorMix": 1,
             "ColorTint": "0,0,0,1",
             "Decals": [
-              "textures/dice/new/dice-four-new.decal"
+              "textures/dice/new/dice-five-new.decal"
             ],
             "Depth": 27.38984,
             "LifeTime": 0,
