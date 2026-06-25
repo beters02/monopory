@@ -20,8 +20,8 @@
 					<Sandbox.ui.components.HudPanel.HudPanel Variant="@GetPropertyPanelClasses( playerIndex )" style="@GetPlayerCardStyle( player )">
 						<ChildContent>
 							<div class="property-player-card-hit-area" onclick="@(() => TogglePlayerProfilePopup( player ))">
-								<div class="property-player-name-row">
-									<div class="property-player-name">@player.PlayerName</div>
+								<div class="property-player-top-row">
+									<div class="property-player-money">$@player.Money</div>
 									<div class="property-player-chip" style="@GetPlayerChipStyle( player )"></div>
 								</div>
 								<div class="property-player-avatar">
@@ -34,7 +34,9 @@
 										<div class="property-player-avatar-placeholder">?</div>
 									}
 								</div>
-								<div class="property-player-money">$@player.Money</div>
+								<div class="property-player-name-row">
+									<div class="property-player-name">@player.PlayerName</div>
+								</div>
 								@if ( player.IsBankrupt )
 								{
 									<div class="property-player-status bankrupt">Bankrupt</div>

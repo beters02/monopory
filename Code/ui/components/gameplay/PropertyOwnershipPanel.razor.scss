@@ -52,7 +52,7 @@
 	position: relative;
 	width: 100px;
 	padding: 0px;
-	min-height: 88px;
+	min-height: 96px;
 	gap: 0px;
 
 	background-color: $monopoly-panel-strong;
@@ -70,16 +70,25 @@
 
 .property-player-card-hit-area {
 	width: 100%;
-	min-height: 88px;
+	min-height: 96px;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 	cursor: pointer;
 }
 
+.property-player-top-row {
+	width: 100%;
+	padding: 8px 10px 0 10px;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	gap: 8px;
+}
+
 .property-player-avatar {
-	width: 28px;
-	height: 28px;
+	width: 34px;
+	height: 34px;
 	margin-top: 4px;
 	border-radius: 6px;
 	overflow: hidden;
@@ -104,7 +113,7 @@
 
 .property-player-name-row {
 	width: 100%;
-	padding: 8px 10px 0 10px;
+	padding: 4px 10px 8px 10px;
 	min-width: 0;
 	display: flex;
 	flex-direction: row;
@@ -196,8 +205,9 @@
 }
 
 .property-player-money {
-	width: 100%;
-	padding: 1px 10px 8px 10px;
+	flex: 1;
+	min-width: 0;
+	padding: 0;
 	text-align: left;
 	font-size: 12px;
 	font-weight: 700;
