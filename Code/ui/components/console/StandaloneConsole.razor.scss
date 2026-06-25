@@ -70,7 +70,9 @@ StandaloneConsole {
 		white-space: normal;
 		display: flex;
 		flex-direction: row;
+		align-items: flex-start;
 		gap: 8px;
+		flex-shrink: 0;
 
 		&.cmd .standalone-console-message {
 			color: $monopoly-board-outline;
@@ -92,8 +94,10 @@ StandaloneConsole {
 	}
 
 	.standalone-console-message {
-		flex: 1;
+		flex: 1 1 0;
 		min-width: 0;
+		white-space: normal;
+		overflow: visible;
 	}
 
 	.standalone-console-toolbar {

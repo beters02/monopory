@@ -24,6 +24,8 @@ public class AppSettingsData
 	public int MusicVolume { get; set; } = 30;
 	public string SelectedPieceId { get; set; } = PieceCatalog.DefaultPieceId;
 	public string SelectedDiceSkinId { get; set; } = DiceSkinCatalog.DefaultDiceSkinId;
+	public string DefaultGameRulePresetId { get; set; } = GameRulePresets.DefaultPresetId;
+	public string DefaultBoardConfigPresetId { get; set; } = BoardNamePresets.DefaultPresetId;
 	public List<AppSettingsKeybind> Keybinds { get; set; } = new();
 }
 
@@ -36,6 +38,9 @@ public class AppSettingsKeybind
 public class AppSettings : Component
 {
 	private const string FileName = "AppSettings.json";
+	private const string LegacyClearAllPopupsAction = "ClearAllPopups";
+	private const string LegacyClearAllPopupsKey = "C";
+	private const string ClearAllPopupsDefaultKey = "X";
 
 	public static AppSettingsData Data { get; private set; } = new();
 
@@ -53,6 +58,7 @@ public class AppSettings : Component
 		if ( FileSystem.Data.FileExists( FileName ) )
 			Data = FileSystem.Data.ReadJson<AppSettingsData>( FileName ) ?? new AppSettingsData();
 
+		MigrateSavedKeybinds();
 		Save();
 	}
 
@@ -88,6 +94,8 @@ public class AppSettings : Component
 			&& MathF.Abs( Data.MotionBlurScale - snapshot.MotionBlurScale ) < 0.001f
 			&& Data.Volume == snapshot.Volume
 			&& Data.MusicVolume == snapshot.MusicVolume
+			&& string.Equals( GetDefaultGameRulePresetId(), NormalizePresetId( snapshot.DefaultGameRulePresetId, GameRulePresets.DefaultPresetId ), StringComparison.Ordinal )
+			&& string.Equals( GetDefaultBoardConfigPresetId(), NormalizePresetId( snapshot.DefaultBoardConfigPresetId, BoardNamePresets.DefaultPresetId ), StringComparison.Ordinal )
 			&& KeybindsMatch( Data.Keybinds, snapshot.Keybinds );
 	}
 
@@ -106,6 +114,8 @@ public class AppSettings : Component
 			MusicVolume = source.MusicVolume,
 			SelectedPieceId = PieceCatalog.GetByIdOrDefault( source.SelectedPieceId ).Id,
 			SelectedDiceSkinId = DiceSkinCatalog.GetByIdOrDefault( source.SelectedDiceSkinId ).Id,
+			DefaultGameRulePresetId = NormalizePresetId( source.DefaultGameRulePresetId, GameRulePresets.DefaultPresetId ),
+			DefaultBoardConfigPresetId = NormalizePresetId( source.DefaultBoardConfigPresetId, BoardNamePresets.DefaultPresetId ),
 			Keybinds = CopyKeybinds( source.Keybinds )
 		};
 	}
@@ -161,6 +171,8 @@ public class AppSettings : Component
 	public static int GetMusicVolume() => Math.Clamp( Data.MusicVolume, 0, 100 );
 	public static string GetSelectedPieceId() => PieceCatalog.GetByIdOrDefault( Data.SelectedPieceId ).Id;
 	public static string GetSelectedDiceSkinId() => DiceSkinCatalog.GetByIdOrDefault( Data.SelectedDiceSkinId ).Id;
+	public static string GetDefaultGameRulePresetId() => NormalizePresetId( Data.DefaultGameRulePresetId, GameRulePresets.DefaultPresetId );
+	public static string GetDefaultBoardConfigPresetId() => NormalizePresetId( Data.DefaultBoardConfigPresetId, BoardNamePresets.DefaultPresetId );
 	public static string GetKeybind( InputAction action )
 	{
 		if ( action is null )
@@ -255,6 +267,22 @@ public class AppSettings : Component
 		return true;
 	}
 
+	public static bool TrySetDefaultGameRulePresetId( string presetId, bool save = true )
+	{
+		Data.DefaultGameRulePresetId = NormalizePresetId( presetId, GameRulePresets.DefaultPresetId );
+		if ( save )
+			Save();
+		return true;
+	}
+
+	public static bool TrySetDefaultBoardConfigPresetId( string presetId, bool save = true )
+	{
+		Data.DefaultBoardConfigPresetId = NormalizePresetId( presetId, BoardNamePresets.DefaultPresetId );
+		if ( save )
+			Save();
+		return true;
+	}
+
 	public static bool TrySetKeybind( InputAction action, string keyboardCode )
 	{
 		if ( action is null || string.IsNullOrWhiteSpace( action.Name ) )
@@ -314,13 +342,19 @@ public class AppSettings : Component
 
 	private static void ApplyKeybinds()
 	{
-		if ( Data.Keybinds is null || Data.Keybinds.Count == 0 )
-			return;
-
 		var gameInstance = IGameInstance.Current;
 		if ( gameInstance is null )
 		{
 			Log.Warning( "Could not apply keybinds because IGameInstance.Current is null." );
+			return;
+		}
+
+		var migratedKeybinds = ApplyLegacyKeybindMigrations( gameInstance );
+		if ( Data.Keybinds is null || Data.Keybinds.Count == 0 )
+		{
+			if ( migratedKeybinds )
+				gameInstance.SaveBinds();
+
 			return;
 		}
 
@@ -334,6 +368,33 @@ public class AppSettings : Component
 		}
 
 		gameInstance.SaveBinds();
+	}
+
+	private static void MigrateSavedKeybinds()
+	{
+		var clearAllPopupsKeybind = GetSavedKeybind( LegacyClearAllPopupsAction );
+		if ( !IsSameKeybindCode( clearAllPopupsKeybind?.KeyboardCode, LegacyClearAllPopupsKey ) )
+			return;
+
+		clearAllPopupsKeybind.KeyboardCode = ClearAllPopupsDefaultKey;
+		Log.Info( $"Migrated keybind '{LegacyClearAllPopupsAction}' from '{LegacyClearAllPopupsKey}' to '{ClearAllPopupsDefaultKey}'." );
+	}
+
+	private static bool ApplyLegacyKeybindMigrations( IGameInstance gameInstance )
+	{
+		if ( gameInstance is null )
+			return false;
+
+		var migrated = false;
+		var clearAllPopupsKey = gameInstance.GetBind( LegacyClearAllPopupsAction, out bool _, out bool _ );
+		if ( IsSameKeybindCode( clearAllPopupsKey, LegacyClearAllPopupsKey ) )
+		{
+			gameInstance.SetBind( LegacyClearAllPopupsAction, ClearAllPopupsDefaultKey );
+			migrated = true;
+			Log.Info( $"Migrated keybind '{LegacyClearAllPopupsAction}' from '{LegacyClearAllPopupsKey}' to '{ClearAllPopupsDefaultKey}'." );
+		}
+
+		return migrated;
 	}
 
 	private static bool KeybindsMatch( List<AppSettingsKeybind> left, List<AppSettingsKeybind> right )
@@ -380,6 +441,16 @@ public class AppSettings : Component
 	private static string NormalizeKeybindCode( string keyboardCode )
 	{
 		return (keyboardCode ?? "").Trim();
+	}
+
+	private static bool IsSameKeybindCode( string left, string right )
+	{
+		return string.Equals( NormalizeKeybindCode( left ), NormalizeKeybindCode( right ), StringComparison.OrdinalIgnoreCase );
+	}
+
+	private static string NormalizePresetId( string presetId, string fallback )
+	{
+		return string.IsNullOrWhiteSpace( presetId ) ? fallback : presetId.Trim();
 	}
 
 	private static InputAction GetKeybindConflict( InputAction targetAction, string keyboardCode )

@@ -40,6 +40,16 @@
 	font-size: 12px;
 	font-weight: 900;
 	text-transform: uppercase;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 5px;
+}
+
+.popup-clear-hint-glyph {
+	width: 18px;
+	height: 18px;
+	color: $monopoly-ink;
 }
 
 .popup-confirmation-overlay {

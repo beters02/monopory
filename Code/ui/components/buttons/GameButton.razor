@@ -7,7 +7,11 @@
 <root class="@RootClasses" title="@Title" onclick="@HandleClick" onrightclick="@HandleRightClick" onmousedown="@HandlePressStart" onmouseup="@HandlePressEnd" onmouseover="@HandleMouseEnter" onmouseout="@HandleMouseLeave">
 	@if ( ShouldShowInputActionIcon )
 	{
-		<div class="monopoly-button-input-action-icon" style="@InputActionIconStyle"></div>
+		<KeybindGlyph
+			CssClass="monopoly-button-input-action-icon"
+			KeyboardInputAction="@KeyboardInputAction"
+			Color="@InputActionIconColor">
+		</KeybindGlyph>
 		<div class="monopoly-button-content">
 			@ChildContent
 		</div>
@@ -123,7 +127,6 @@
 	private bool ShouldShowInputActionIcon => InputActionIcon is not null;
 	private bool UseOutlineInputActionIcon => MonopolyApp.InputActionIconType == InputActionIconType.Outline;
 	private GameIcon InputActionIcon => GetInputActionIcon();
-	private string InputActionIconStyle => GetInputActionIconStyle();
 
 	protected void HandleClick()
 	{
@@ -303,19 +306,6 @@
 	{
 		var code = (keyboardCode ?? "").Trim();
 		return code.StartsWith( "mouse", StringComparison.OrdinalIgnoreCase );
-	}
-
-	private string GetInputActionIconStyle()
-	{
-		var icon = InputActionIcon;
-		if ( icon is null )
-			return "";
-
-		var style = $"mask-image: url({icon.Path});";
-		if ( !string.IsNullOrWhiteSpace( InputActionIconColor ) )
-			style += $" background-color: {InputActionIconColor};";
-
-		return style;
 	}
 
 	private void ShowBlockedActionPopup()

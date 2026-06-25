@@ -44,7 +44,7 @@
       "__version": 2,
       "Flags": 0,
       "Name": "BoardRoot",
-      "Position": "-134.019485,-245.640121,119.096146",
+      "Position": "-134.019485,-245.640121,120.398903",
       "Rotation": "0,0,0,1",
       "Scale": "1,1,1",
       "Tags": "",
@@ -4364,7 +4364,7 @@
               "IdValue": "9d5bd72c-8fab-4abb-8fd8-d65029bec6f4"
             },
             "Property": "Position",
-            "Value": "-141.873535,-232.319962,122.587563"
+            "Value": "-141.873535,-232.319962,123.89032"
           },
           {
             "Target": {
@@ -4455,7 +4455,7 @@
               "IdValue": "9d5bd72c-8fab-4abb-8fd8-d65029bec6f4"
             },
             "Property": "Position",
-            "Value": "-141.873505,-203.500107,122.587563"
+            "Value": "-141.873505,-203.500107,123.89032"
           },
           {
             "Target": {
@@ -5078,14 +5078,14 @@
       "CustomBounds": false
     },
     "GameObjectSystems": {
-      "Sandbox.SelectionSetsSystem": {
-        "Data": {
-          "SelectionSets": []
-        }
-      },
       "Sandbox.Clutter.ClutterGridSystem": {
         "Storage": {
           "$blob": "6516437d-f143-43ab-91e3-16eab14872b6"
+        }
+      },
+      "Sandbox.SelectionSetsSystem": {
+        "Data": {
+          "SelectionSets": []
         }
       }
     }

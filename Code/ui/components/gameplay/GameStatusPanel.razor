@@ -22,7 +22,13 @@
 
 	<Sandbox.ui.components.HudPanel.HudPanel Variant="hud-card actions">
 		<ChildContent>
-			<HudPanelSubtitle>Camera</HudPanelSubtitle>
+			<div class="camera-panel-header">
+				<HudPanelSubtitle>Camera</HudPanelSubtitle>
+				<div class="camera-cycle-hint">
+					<KeybindGlyph CssClass="camera-cycle-hint-glyph" KeyboardInputAction="@GetCycleCameraModeInputAction()"></KeybindGlyph>
+					<span>Cycle</span>
+				</div>
+			</div>
 			<div class="camera-mode-buttons">
 				<div class="camera-mode-button-row">
 					<GameButton Variant="@GetCameraModeButtonClasses( BoardCameraMode.Default )" OnClick="@(() => SetCameraMode( BoardCameraMode.Default ))">Default</GameButton>
@@ -58,9 +64,12 @@
 				<div class="forced-payment-status">
 					<div class="forced-payment-copy">
 						<div class="forced-payment-title">Forced Payment</div>
-						<div class="forced-payment-needed">Need $@ForcedPaymentAmountNeeded more</div>
+						<div class="forced-payment-needed">@PendingForcedPaymentPlayerName needs $@ForcedPaymentAmountNeeded more</div>
 					</div>
-					<GameButton Variant="forced-payment-bankrupt-button" OnClick="@ConfirmDeclareBankruptcy">Bankrupt</GameButton>
+					@if ( IsLocalPlayerPendingForcedPayment )
+					{
+						<GameButton Variant="forced-payment-bankrupt-button" OnClick="@ConfirmDeclareBankruptcy">Bankrupt</GameButton>
+					}
 				</div>
 			}
 
@@ -212,6 +221,23 @@
 		return GetInputAction( "FinishMove", "F" );
 	}
 
+	private InputAction GetCycleCameraModeInputAction()
+	{
+		return GetInputAction( "CycleCameraMode", "C" );
+	}
+
+	private static string GetBoundInputActionCode( InputAction action )
+	{
+		if ( action is null )
+			return "";
+
+		var boundCode = IGameInstance.Current?.GetBind( action.Name, out bool _, out bool _ );
+		if ( !string.IsNullOrWhiteSpace( boundCode ) )
+			return boundCode;
+
+		return action.KeyboardCode ?? "";
+	}
+
 	protected override void OnAfterTreeRender( bool firstTime )
 	{
 		base.OnAfterTreeRender( firstTime );
@@ -346,12 +372,17 @@
 
 	private bool CanFinishActiveMovement =>
 		GameRef?.CanFinishActiveMovement( LocalPlayer ) == true;
+	private PlayerState PendingForcedPaymentPlayer =>
+		GameRef?.Players?.ElementAtOrDefault( GameRef.PendingForcedPaymentPlayerIndex );
+	private string PendingForcedPaymentPlayerName =>
+		PendingForcedPaymentPlayer?.PlayerName ?? "Player";
+	private bool IsLocalPlayerPendingForcedPayment =>
+		GameRef?.HasPendingForcedPayment == true && GameRef.PendingForcedPaymentPlayerIndex == GameRef.LocalPlayerIndex;
 	private bool ShouldShowForcedPaymentStatus =>
 		GameRef?.HasPendingForcedPayment == true &&
-		GameRef.PendingForcedPaymentPlayerIndex == GameRef.LocalPlayerIndex &&
 		ForcedPaymentAmountNeeded > 0;
 	private int ForcedPaymentAmountNeeded =>
-		Math.Max( (GameRef?.PendingForcedPaymentAmount ?? 0) - (LocalPlayer?.Money ?? 0), 0 );
+		Math.Max( (GameRef?.PendingForcedPaymentAmount ?? 0) - (PendingForcedPaymentPlayer?.Money ?? 0), 0 );
 
 	private void SetCameraMode( BoardCameraMode mode )
 	{
@@ -557,6 +588,8 @@
 		hash.Add( GameRef?.HasPendingForcedPayment ?? false );
 		hash.Add( GameRef?.PendingForcedPaymentPlayerIndex ?? -1 );
 		hash.Add( GameRef?.PendingForcedPaymentAmount ?? 0 );
+		hash.Add( PendingForcedPaymentPlayerName );
+		hash.Add( PendingForcedPaymentPlayer?.Money ?? 0 );
 		hash.Add( GameRef?.ActiveMovementPlayerIndex ?? -1 );
 		hash.Add( GameRef?.ActiveMovementRemainingSteps ?? 0 );
 		hash.Add( GameRef?.ActiveMovementTargetSpaceIndex ?? -1 );
@@ -568,6 +601,7 @@
 		hash.Add( CurrentPlayer?.CommunityChestGetOutOfJailFreeCards ?? 0 );
 		hash.Add( CurrentPlayerMustPayForcedJailFine );
 		hash.Add( CurrentCameraMode );
+		hash.Add( GetBoundInputActionCode( GetCycleCameraModeInputAction() ) );
 		hash.Add( CanEndTurn );
 		hash.Add( ShouldShowActionButtons );
 		hash.Add( IsStatsPanelOpen );

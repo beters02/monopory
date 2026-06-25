@@ -32,8 +32,10 @@
 									{
 										<div class="match-config-preset-item">
 											<GameButton Variant="@GetGameRulesPresetButtonClasses( preset )" OnClick="@(() => ApplyGameRulesPreset( preset ))">@preset.Name</GameButton>
+											<GameButton Variant="@GetGameRulesDefaultButtonClasses( preset )" OnClick="@(() => SetDefaultGameRulesPreset( preset ))">@GetDefaultPresetButtonText( IsDefaultGameRulesPreset( preset ) )</GameButton>
 											@if ( !preset.IsPredefined )
 											{
+												<GameButton Variant="options-panel-primary-button match-config-preset-update" CanClick="@CanUpdateGameRulesPreset( preset )" OnClick="@(() => UpdateGameRulesPreset( preset ))">Update</GameButton>
 												<GameButton Variant="options-panel-danger-button match-config-preset-delete" OnClick="@(() => DeleteGameRulesPreset( preset ))">Delete</GameButton>
 											}
 										</div>
@@ -74,8 +76,10 @@
 									{
 										<div class="match-config-preset-item">
 											<GameButton Variant="@GetBoardConfigPresetButtonClasses( preset )" OnClick="@(() => ApplyBoardConfigPreset( preset ))">@preset.Name</GameButton>
+											<GameButton Variant="@GetBoardConfigDefaultButtonClasses( preset )" OnClick="@(() => SetDefaultBoardConfigPreset( preset ))">@GetDefaultPresetButtonText( IsDefaultBoardConfigPreset( preset ) )</GameButton>
 											@if ( !preset.IsPredefined )
 											{
+												<GameButton Variant="options-panel-primary-button match-config-preset-update" CanClick="@CanUpdateBoardConfigPreset( preset )" OnClick="@(() => UpdateBoardConfigPreset( preset ))">Update</GameButton>
 												<GameButton Variant="options-panel-danger-button match-config-preset-delete" OnClick="@(() => DeleteBoardConfigPreset( preset ))">Delete</GameButton>
 											}
 										</div>
@@ -597,7 +601,9 @@
 	private bool IsDiceCustomizePage => string.Equals( ActiveCustomizePage, CustomizePageDice, StringComparison.Ordinal );
 	private bool IsGameRulesCustomSelected => string.Equals( SelectedGameRulePresetId, CustomPresetId, StringComparison.Ordinal );
 	private bool IsBoardConfigCustomSelected => string.Equals( SelectedBoardConfigPresetId, CustomPresetId, StringComparison.Ordinal );
-	private bool CanEditCurrentConfigPage => CanEditConfig && (IsGameRulesConfigPage ? IsGameRulesCustomSelected : IsBoardConfigCustomSelected);
+	private bool CanEditGameRulesDraft => IsGameRulesCustomSelected || GetSelectedGameRulesPreset()?.IsPredefined == false;
+	private bool CanEditBoardConfigDraft => IsBoardConfigCustomSelected || GetSelectedBoardConfigPreset()?.IsPredefined == false;
+	private bool CanEditCurrentConfigPage => CanEditConfig && (IsGameRulesConfigPage ? CanEditGameRulesDraft : CanEditBoardConfigDraft);
 	private IReadOnlyList<MatchSettingsPreset> GameRulePresets => global::GameRulePresets.All.Concat( CustomGameRulePresets ).ToList();
 	private IReadOnlyList<MatchSettingsPreset> BoardConfigPresets => BoardCatalog.GetNamePresets().Concat( CustomBoardConfigPresets ).ToList();
 
@@ -641,6 +647,8 @@
 		hash.Add( IsBoardConfigExplicitlyCustom );
 		hash.Add( SelectedGameRulePresetId );
 		hash.Add( SelectedBoardConfigPresetId );
+		hash.Add( AppSettings.GetDefaultGameRulePresetId() );
+		hash.Add( AppSettings.GetDefaultBoardConfigPresetId() );
 		hash.Add( PreviewPieceId ?? "" );
 		hash.Add( PreviewDiceSkinId ?? "" );
 		hash.Add( SelectedSaveId ?? "" );
@@ -1420,6 +1428,34 @@
 			: "options-panel-secondary-button match-config-preset-button";
 	}
 
+	private string GetGameRulesDefaultButtonClasses( MatchSettingsPreset preset )
+	{
+		return IsDefaultGameRulesPreset( preset )
+			? "options-panel-toggle-button selected match-config-preset-default"
+			: "options-panel-secondary-button match-config-preset-default";
+	}
+
+	private string GetBoardConfigDefaultButtonClasses( MatchSettingsPreset preset )
+	{
+		return IsDefaultBoardConfigPreset( preset )
+			? "options-panel-toggle-button selected match-config-preset-default"
+			: "options-panel-secondary-button match-config-preset-default";
+	}
+
+	private static string GetDefaultPresetButtonText( bool isDefault ) => isDefault ? "Default" : "Set Default";
+
+	private MatchSettingsPreset GetSelectedGameRulesPreset() =>
+		GameRulePresets.FirstOrDefault( preset => string.Equals( preset?.Id, SelectedGameRulePresetId, StringComparison.Ordinal ) );
+
+	private MatchSettingsPreset GetSelectedBoardConfigPreset() =>
+		BoardConfigPresets.FirstOrDefault( preset => string.Equals( preset?.Id, SelectedBoardConfigPresetId, StringComparison.Ordinal ) );
+
+	private bool IsDefaultGameRulesPreset( MatchSettingsPreset preset ) =>
+		preset is not null && string.Equals( AppSettings.GetDefaultGameRulePresetId(), preset.Id, StringComparison.Ordinal );
+
+	private bool IsDefaultBoardConfigPreset( MatchSettingsPreset preset ) =>
+		preset is not null && string.Equals( AppSettings.GetDefaultBoardConfigPresetId(), preset.Id, StringComparison.Ordinal );
+
 	private bool IsGameRulesPresetSelected( MatchSettingsPreset preset )
 	{
 		if ( preset is null )
@@ -1634,6 +1670,59 @@
 		configRevision++;
 	}
 
+	private void SetDefaultGameRulesPreset( MatchSettingsPreset preset )
+	{
+		if ( preset is null )
+			return;
+
+		AppSettings.TrySetDefaultGameRulePresetId( preset.Id );
+		configRevision++;
+	}
+
+	private void SetDefaultBoardConfigPreset( MatchSettingsPreset preset )
+	{
+		if ( preset is null )
+			return;
+
+		AppSettings.TrySetDefaultBoardConfigPresetId( preset.Id );
+		configRevision++;
+	}
+
+	private bool CanUpdateGameRulesPreset( MatchSettingsPreset preset ) =>
+		EditableConfig is not null && CanEditConfig && preset?.IsPredefined == false && IsGameRulesPresetSelected( preset );
+
+	private bool CanUpdateBoardConfigPreset( MatchSettingsPreset preset ) =>
+		EditableConfig is not null && CanEditConfig && preset?.IsPredefined == false && IsBoardConfigPresetSelected( preset );
+
+	private void UpdateGameRulesPreset( MatchSettingsPreset preset )
+	{
+		if ( !CanUpdateGameRulesPreset( preset ) )
+			return;
+
+		CommitConfigIntDraftValues();
+		var customPreset = CustomGameRulePresets.FirstOrDefault( item => string.Equals( item.Id, preset.Id, StringComparison.Ordinal ) );
+		if ( customPreset is null )
+			return;
+
+		customPreset.Snapshot = MatchConfigSchema.Serialize( EditableConfig );
+		SaveCustomPresets( GameRulePresetFileName, CustomGameRulePresets );
+		configRevision++;
+	}
+
+	private void UpdateBoardConfigPreset( MatchSettingsPreset preset )
+	{
+		if ( !CanUpdateBoardConfigPreset( preset ) )
+			return;
+
+		var customPreset = CustomBoardConfigPresets.FirstOrDefault( item => string.Equals( item.Id, preset.Id, StringComparison.Ordinal ) );
+		if ( customPreset is null )
+			return;
+
+		customPreset.Snapshot = EditableConfig.BoardSpaceNamesSnapshot ?? "";
+		SaveCustomPresets( BoardConfigPresetFileName, CustomBoardConfigPresets );
+		configRevision++;
+	}
+
 	private void SaveGameRulesPreset()
 	{
 		if ( EditableConfig is null || !CanEditConfig || !IsGameRulesCustomSelected )
@@ -1695,6 +1784,8 @@
 		CustomGameRulePresets.RemoveAll( item => string.Equals( item.Id, preset.Id, StringComparison.Ordinal ) );
 		if ( string.Equals( SelectedGameRulePresetId, preset.Id, StringComparison.Ordinal ) )
 			SelectedGameRulePresetId = CustomPresetId;
+		if ( IsDefaultGameRulesPreset( preset ) )
+			AppSettings.TrySetDefaultGameRulePresetId( global::GameRulePresets.DefaultPresetId );
 
 		SaveCustomPresets( GameRulePresetFileName, CustomGameRulePresets );
 		configRevision++;
@@ -1708,6 +1799,8 @@
 		CustomBoardConfigPresets.RemoveAll( item => string.Equals( item.Id, preset.Id, StringComparison.Ordinal ) );
 		if ( string.Equals( SelectedBoardConfigPresetId, preset.Id, StringComparison.Ordinal ) )
 			SelectedBoardConfigPresetId = CustomPresetId;
+		if ( IsDefaultBoardConfigPreset( preset ) )
+			AppSettings.TrySetDefaultBoardConfigPresetId( BoardNamePresets.DefaultPresetId );
 
 		SaveCustomPresets( BoardConfigPresetFileName, CustomBoardConfigPresets );
 		configRevision++;

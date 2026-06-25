@@ -35,6 +35,7 @@ public static class MatchSettingsPresetCatalog
 
 public static class GameRulePresets
 {
+	public const string DefaultPresetId = "rules_default";
 	private static IReadOnlyList<MatchSettingsPreset> all;
 
 	public static IReadOnlyList<MatchSettingsPreset> All => all ??= MatchSettingsPresetCatalog.BuildGameRulePresets();

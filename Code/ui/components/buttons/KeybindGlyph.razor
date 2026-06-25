@@ -1,0 +1,78 @@
+@namespace Sandbox.ui.components.buttons
+@using Sandbox;
+@using Sandbox.UI;
+@using System;
+@inherits Panel
+
+@if ( InputActionIcon is not null )
+{
+	<root class="@RootClasses" style="@InputActionIconStyle"></root>
+}
+
+@code
+{
+	[Parameter] public InputAction KeyboardInputAction { get; set; }
+	[Parameter] public string CssClass { get; set; } = "";
+	[Parameter] public string Color { get; set; } = "";
+
+	private bool UseOutlineInputActionIcon => MonopolyApp.InputActionIconType == InputActionIconType.Outline;
+	private GameIcon InputActionIcon => GetInputActionIcon();
+	private string RootClasses => string.IsNullOrWhiteSpace( CssClass )
+		? "keybind-glyph"
+		: $"keybind-glyph {CssClass}";
+
+	protected override int BuildHash()
+	{
+		var hash = new HashCode();
+		hash.Add( GetKeyboardInputActionCode() );
+		hash.Add( Color );
+		hash.Add( CssClass );
+		hash.Add( MonopolyApp.InputActionIconType );
+		return hash.ToHashCode();
+	}
+
+	private GameIcon GetInputActionIcon()
+	{
+		var keyboardCode = GetKeyboardInputActionCode();
+		if ( string.IsNullOrWhiteSpace( keyboardCode ) )
+			return null;
+
+		return IsMouseKeyboardCode( keyboardCode )
+			? GameAssets.MouseIcons.Get( keyboardCode, UseOutlineInputActionIcon )
+			: GameAssets.KeyboardIcons.Get( keyboardCode, UseOutlineInputActionIcon );
+	}
+
+	private string GetKeyboardInputActionCode()
+	{
+		if ( KeyboardInputAction is null )
+			return "";
+
+		var boundCode = IGameInstance.Current?.GetBind( KeyboardInputAction.Name, out bool _, out bool _ );
+		if ( !string.IsNullOrWhiteSpace( boundCode ) )
+			return boundCode;
+
+		return KeyboardInputAction.KeyboardCode ?? "";
+	}
+
+	private static bool IsMouseKeyboardCode( string keyboardCode )
+	{
+		var code = (keyboardCode ?? "").Trim();
+		return code.StartsWith( "mouse", StringComparison.OrdinalIgnoreCase );
+	}
+
+	private string InputActionIconStyle
+	{
+		get
+		{
+			var icon = InputActionIcon;
+			if ( icon is null )
+				return "";
+
+			var style = $"mask-image: url({icon.Path});";
+			if ( !string.IsNullOrWhiteSpace( Color ) )
+				style += $" background-color: {Color};";
+
+			return style;
+		}
+	}
+}

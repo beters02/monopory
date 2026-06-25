@@ -98,7 +98,7 @@
 }
 
 .match-config-preset-item .match-config-preset-button {
-	flex: 1 1 auto;
+	flex: 3 1 0;
 	min-width: 0;
 }
 
@@ -111,16 +111,29 @@
 }
 
 .options-panel .match-config-preset-item .monopoly-button.match-config-preset-button {
-	flex: 1 1 auto;
+	flex: 3 1 0;
+	min-width: 0;
 }
 
+.options-panel .monopoly-button.match-config-preset-default,
+.options-panel .monopoly-button.match-config-preset-update,
 .options-panel .monopoly-button.match-config-preset-delete {
-	width: 70px;
-	flex: 0 0 70px;
-	min-width: 70px;
+	width: 76px;
+	flex: 0 0 76px;
+	min-width: 76px;
+	max-width: 76px;
 	height: 34px;
-	padding: 0 10px;
-	font-size: 12px;
+	padding: 0 8px;
+	font-size: 10px;
+}
+
+.options-panel .monopoly-button.match-config-preset-default,
+.options-panel .monopoly-button.options-panel-secondary-button.match-config-preset-default,
+.options-panel .monopoly-button.options-panel-toggle-button.selected.match-config-preset-default {
+	width: 92px;
+	flex: 0 0 92px;
+	min-width: 92px;
+	max-width: 92px;
 }
 
 .match-config-preset-name-input {

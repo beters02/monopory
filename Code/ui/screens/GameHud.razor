@@ -235,6 +235,11 @@
 		{
 			GameRef?.ClearPopups();
 		}
+
+		if ( Input.Pressed( "CycleCameraMode" ) )
+		{
+			GameCamera.Instance?.CycleMode();
+		}
 			
 	}
 

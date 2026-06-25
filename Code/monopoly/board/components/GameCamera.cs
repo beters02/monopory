@@ -102,6 +102,18 @@ public sealed class GameCamera : Component
 		ApplyMode( mode );
 	}
 
+	public void CycleMode()
+	{
+		SetMode( Mode switch
+		{
+			BoardCameraMode.Default => BoardCameraMode.Board,
+			BoardCameraMode.Board => BoardCameraMode.FreeCam,
+			BoardCameraMode.FreeCam => BoardCameraMode.Token,
+			BoardCameraMode.Token => BoardCameraMode.Default,
+			_ => BoardCameraMode.Default
+		} );
+	}
+
 	private void ApplyMode( BoardCameraMode mode )
 	{
 		if ( Mode == mode )

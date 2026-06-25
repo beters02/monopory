@@ -89,6 +89,11 @@
 	box-shadow: 0 0 0 1px $monopoly-gold-glow;
 }
 
+.property-player-panel.bankrupt {
+	opacity: 0.68;
+	border-color: $monopoly-danger;
+}
+
 .property-square.color-brown {
 	border-color: $monopoly-gold;
 	box-shadow: 0 0 0 1px $monopoly-gold-glow;
@@ -172,6 +177,17 @@
 	color: $monopoly-text-muted;
 }
 
+.property-player-status {
+	width: 100%;
+	padding: 0 10px 7px 10px;
+	color: $monopoly-danger-hover;
+	font-size: 10px;
+	font-weight: 900;
+	line-height: 12px;
+	text-align: left;
+	text-transform: uppercase;
+}
+
 .property-manager-title {
 	font-size: $monopoly-font-kicker;
 	font-weight: 900;
@@ -221,12 +237,36 @@
 	color: $monopoly-gold;
 }
 
+.property-manager-section-title-row {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 6px;
+}
+
 .property-manager-section-title {
+	min-width: 0;
 	font-size: 11px;
 	font-weight: 800;
 	text-transform: uppercase;
 	letter-spacing: 0.6px;
 	color: $monopoly-text-muted;
+}
+
+.property-manager-bankrupt-pill {
+	flex-shrink: 0;
+	padding: 2px 5px;
+	background-color: $monopoly-danger;
+	border-radius: $monopoly-radius-control;
+	color: $monopoly-text;
+	font-size: 8px;
+	font-weight: 900;
+	line-height: 10px;
+	text-transform: uppercase;
+}
+
+.property-manager-section.bankrupt {
+	border-color: $monopoly-danger;
 }
 
 .property-manager-empty {

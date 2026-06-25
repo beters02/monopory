@@ -10,7 +10,11 @@
 	@if ( StandardPopups.Count > 0 )
 	{
 		<div class="popup-stack">
-			<div class="popup-clear-hint">Press C to clear popups</div>
+			<div class="popup-clear-hint">
+				<span>Press</span>
+				<KeybindGlyph CssClass="popup-clear-hint-glyph" KeyboardInputAction="@GetClearAllPopupsInputAction()"></KeybindGlyph>
+				<span>to clear popups</span>
+			</div>
 			@foreach ( var renderedPopup in StandardPopups )
 			{
 				var popup = renderedPopup.Popup;
@@ -83,6 +87,49 @@
 
 	private List<RenderedPopup> ConfirmationPopups =>
 		RenderedPopups.Where( popup => popup.Popup.Kind == PopupKind.Confirmation ).ToList();
+
+	private static InputAction GetClearAllPopupsInputAction()
+	{
+		var action = Input.GetActions().FirstOrDefault( action => string.Equals( action.Name, "ClearAllPopups", StringComparison.Ordinal ) );
+		if ( action is not null )
+			return action;
+
+		Log.Warning( "Could not find ClearAllPopups action. Setting to default X" );
+		return new( "ClearAllPopups", "X" );
+	}
+
+	private static string GetBoundInputActionCode( InputAction action )
+	{
+		if ( action is null )
+			return "";
+
+		var boundCode = IGameInstance.Current?.GetBind( action.Name, out bool _, out bool _ );
+		if ( !string.IsNullOrWhiteSpace( boundCode ) )
+			return boundCode;
+
+		return action.KeyboardCode ?? "";
+	}
+
+	protected override int BuildHash()
+	{
+		var hash = new HashCode();
+		hash.Add( GetBoundInputActionCode( GetClearAllPopupsInputAction() ) );
+
+		foreach ( var popup in Popups ?? new List<GamePopup>() )
+		{
+			hash.Add( popup.Id );
+			hash.Add( popup.Title );
+			hash.Add( popup.Message );
+			hash.Add( popup.Kind );
+			hash.Add( popup.CanDismiss );
+			hash.Add( popup.Lifetime );
+			hash.Add( popup.IsBlocking );
+			hash.Add( popup.ConfirmLabel );
+			hash.Add( popup.CancelLabel );
+		}
+
+		return hash.ToHashCode();
+	}
 
 	private static string GetPopupClasses( RenderedPopup renderedPopup )
 	{

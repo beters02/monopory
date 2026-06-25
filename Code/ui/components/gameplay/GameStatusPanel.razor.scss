@@ -69,6 +69,32 @@
 	padding-right: 30px;
 }
 
+.camera-panel-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 10px;
+}
+
+.camera-cycle-hint {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	min-height: 22px;
+	padding: 0 2px;
+	color: $monopoly-text;
+	font-family: $monopoly-font-family;
+	font-size: 10px;
+	font-weight: 900;
+	text-transform: uppercase;
+}
+
+.camera-cycle-hint-glyph {
+	width: 18px;
+	height: 18px;
+	color: $monopoly-text;
+}
+
 .camera-mode-buttons {
 	display: flex;
 	flex-direction: column;

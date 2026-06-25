@@ -1,5 +1,6 @@
 using Sandbox;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Tracing;
 using System.Globalization;
@@ -53,7 +54,59 @@ public static class MatchConfigSchema
 
 	public static MatchConfig CreateDefault()
 	{
+		return ApplyUserDefaultPresets( CreateBaseDefault() );
+	}
+
+	private static MatchConfig CreateBaseDefault()
+	{
 		return Normalize( new MatchConfig(), 0 );
+	}
+
+	private static MatchConfig ApplyUserDefaultPresets( MatchConfig config )
+	{
+		config ??= CreateBaseDefault();
+
+		var gameRulesPreset = GetUserDefaultGameRulesPreset();
+		if ( gameRulesPreset is not null )
+		{
+			var presetConfig = Deserialize( gameRulesPreset.Snapshot );
+			foreach ( var option in Options.Where( option =>
+				option.Key != nameof( MatchConfig.BoardSpaceNamesSnapshot ) &&
+				option.Key != nameof( MatchConfig.BoardId ) ) )
+			{
+				SetOptionValue( option, config, GetOptionValue( option, presetConfig ) );
+			}
+		}
+
+		var boardPreset = GetUserDefaultBoardPreset();
+		if ( boardPreset is not null )
+			config.BoardSpaceNamesSnapshot = boardPreset.Snapshot ?? "";
+
+		return Normalize( config, 0 );
+	}
+
+	private static MatchSettingsPreset GetUserDefaultGameRulesPreset()
+	{
+		var presetId = AppSettings.GetDefaultGameRulePresetId();
+		return GameRulePresets.All.Concat( LoadCustomPresets( "match_settings/game_rule_presets.json" ) )
+			.FirstOrDefault( preset => string.Equals( preset?.Id, presetId, StringComparison.Ordinal ) );
+	}
+
+	private static MatchSettingsPreset GetUserDefaultBoardPreset()
+	{
+		var presetId = AppSettings.GetDefaultBoardConfigPresetId();
+		return BoardCatalog.GetNamePresets().Concat( LoadCustomPresets( "match_settings/board_config_presets.json" ) )
+			.FirstOrDefault( preset => string.Equals( preset?.Id, presetId, StringComparison.Ordinal ) );
+	}
+
+	private static List<MatchSettingsPreset> LoadCustomPresets( string path )
+	{
+		if ( !FileSystem.Data.FileExists( path ) )
+			return new();
+
+		return FileSystem.Data.ReadJson<List<MatchSettingsPreset>>( path )?
+			.Where( preset => preset is not null && !preset.IsPredefined && !string.IsNullOrWhiteSpace( preset.Snapshot ) )
+			.ToList() ?? new();
 	}
 
 	public static MatchConfig Clone( MatchConfig config )
@@ -141,7 +194,7 @@ public static class MatchConfigSchema
 
 	public static MatchConfig Deserialize( string snapshot )
 	{
-		var config = CreateDefault();
+		var config = CreateBaseDefault();
 
 		if ( string.IsNullOrWhiteSpace( snapshot ) )
 			return config;

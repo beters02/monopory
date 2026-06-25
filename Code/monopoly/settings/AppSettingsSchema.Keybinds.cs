@@ -10,7 +10,9 @@ public static partial class AppSettingsSchema
 		"EndTurn",
 		"FinishMove",
 		"BuyProperty",
-		"AuctionProperty"
+		"AuctionProperty",
+		"CycleCameraMode",
+		"ClearAllPopups"
 	];
 
     private static List<InputAction> GetEditableKeybinds()

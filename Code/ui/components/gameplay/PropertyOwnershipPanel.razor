@@ -11,7 +11,7 @@
 	{
 		<Sandbox.ui.components.HudPanel.HudPanel Variant="property-hud-card">
 			<ChildContent>
-				<div class="property-player-list">
+				<div class="property-player-list" @ref="PropertyPlayerListPanel">
 				@foreach ( var player in PropertyHudPlayers )
 				{
 					var playerIndex = GameRef.GetPlayerIndex( player );
@@ -24,6 +24,10 @@
 									<div class="property-player-chip" style="@GetPlayerChipStyle( player )"></div>
 								</div>
 								<div class="property-player-money">$@player.Money</div>
+								@if ( player.IsBankrupt )
+								{
+									<div class="property-player-status bankrupt">Bankrupt</div>
+								}
 								@if ( player.IsDisconnected && !player.IsBankrupt )
 								{
 									<div class="property-player-money">Rejoin: @Math.Max( 0, (int)MathF.Ceiling( player.AbandonEndsAt - Time.Now ) )s</div>
@@ -38,6 +42,7 @@
 		@if ( SelectedPlayerProfile is not null )
 		{
 			<SteamProfilePopupCard
+				@ref="PlayerProfilePopupPanel"
 				Entry="@SelectedPlayerProfile"
 				PopupStyle="@PlayerProfilePopupStyle"
 				OnOpenProfile="@OpenSelectedPlayerProfile"
@@ -54,7 +59,13 @@
 						@foreach ( var ownershipGroup in PropertyManagerSections )
 						{
 							<div class="@GetPropertyManagerSectionClasses( ownershipGroup )" style="@GetPropertyManagerSectionStyle( ownershipGroup )">
-								<div class="property-manager-section-title" style="@GetPropertyManagerSectionTitleStyle( ownershipGroup )">@ownershipGroup.Title</div>
+								<div class="property-manager-section-title-row">
+									<div class="property-manager-section-title" style="@GetPropertyManagerSectionTitleStyle( ownershipGroup )">@ownershipGroup.Title</div>
+									@if ( IsPropertyManagerSectionBankrupt( ownershipGroup ) )
+									{
+										<div class="property-manager-bankrupt-pill">Bankrupt</div>
+									}
+								</div>
 								@if ( ownershipGroup.Properties.Count == 0 && ownershipGroup.CardIds.Count == 0 )
 								{
 									<div class="property-manager-empty">None</div>
@@ -106,9 +117,14 @@
 {
 	[Parameter] public GameController GameRef { get; set; }
 	private Panel PropertyManagerContentPanel = null!;
+	private Panel PropertyPlayerListPanel = null!;
+	private SteamProfilePopupCard PlayerProfilePopupPanel = null!;
 	private SteamFriendListEntry SelectedPlayerProfile;
 	private float PlayerProfilePopupTop = 96f;
+	private float PlayerProfileLastHoverTime;
 	private int InitialTurnOrderStartIndex = -1;
+	private const float PlayerProfileHoverCloseDelay = 0.12f;
+	private const float PlayerProfileHoverBridgePadding = 12f;
 
 	private List<PlayerState> PropertyHudPlayers
 	{
@@ -141,6 +157,23 @@
 				} )
 				.ToList();
 		}
+	}
+
+	public override void Tick()
+	{
+		base.Tick();
+
+		if ( SelectedPlayerProfile is null )
+			return;
+
+		if ( IsMouseInsidePlayerProfileUi() )
+		{
+			PlayerProfileLastHoverTime = Time.Now;
+			return;
+		}
+
+		if ( Time.Now - PlayerProfileLastHoverTime > PlayerProfileHoverCloseDelay )
+			ClosePlayerProfilePopup();
 	}
 
 	private int GetTurnOrderStartIndex()
@@ -245,6 +278,9 @@
 		if ( GameRef?.CurrentPlayerIndex == playerIndex )
 			classes += " current-player";
 
+		if ( GameRef?.Players?.ElementAtOrDefault( playerIndex )?.IsBankrupt == true )
+			classes += " bankrupt";
+
 		return classes;
 	}
 
@@ -253,6 +289,9 @@
 		var classes = "property-manager-section";
 		if ( section.PlayerIndex >= 0 && section.PlayerIndex == GameRef?.CurrentPlayerIndex )
 			classes += " current-player";
+
+		if ( IsPropertyManagerSectionBankrupt( section ) )
+			classes += " bankrupt";
 
 		return classes;
 	}
@@ -278,6 +317,9 @@
 		return $"color: {ToCssColor( GetPlayerColor( player ) )};";
 	}
 
+	private bool IsPropertyManagerSectionBankrupt( PropertyManagerSection section ) =>
+		section?.PlayerIndex >= 0 && GameRef?.Players?.ElementAtOrDefault( section.PlayerIndex )?.IsBankrupt == true;
+
 	private string PlayerProfilePopupStyle => $"right: 32px; top: {PlayerProfilePopupTop:0}px;";
 
 	private void TogglePlayerProfilePopup( PlayerState player )
@@ -295,6 +337,7 @@
 		GameAssets.Sounds.ClickAndOpen.Play();
 		SelectedPlayerProfile = SteamFriendsBridge.GetProfileEntry( player.OwnerId, player.PlayerName );
 		PlayerProfilePopupTop = Math.Max( 86f, Mouse.Position.y * (1 / this.ScaleToScreen) + 12f );
+		PlayerProfileLastHoverTime = Time.Now;
 		Mouse.Visibility = MouseVisibility.Visible;
 		StateHasChanged();
 	}
@@ -320,7 +363,42 @@
 	private void ClosePlayerProfilePopup()
 	{
 		SelectedPlayerProfile = null;
+		PlayerProfilePopupPanel = null!;
 		StateHasChanged();
+	}
+
+	private bool IsMouseInsidePlayerProfileUi()
+	{
+		var position = Mouse.Position;
+		return (PropertyPlayerListPanel is not null && IsPointInside( PropertyPlayerListPanel.Box.Rect, position ))
+			|| (PlayerProfilePopupPanel is not null && IsPointInside( PlayerProfilePopupPanel.Box.Rect, position ))
+			|| IsPointInsidePlayerProfileBridge( position );
+	}
+
+	private bool IsPointInsidePlayerProfileBridge( Vector2 point )
+	{
+		if ( SelectedPlayerProfile is null || PropertyPlayerListPanel is null || PlayerProfilePopupPanel is null )
+			return false;
+
+		var listRect = PropertyPlayerListPanel.Box.Rect;
+		var popupRect = PlayerProfilePopupPanel.Box.Rect;
+		var left = MathF.Min( listRect.Left, popupRect.Left ) - PlayerProfileHoverBridgePadding;
+		var right = MathF.Max( listRect.Right, popupRect.Right ) + PlayerProfileHoverBridgePadding;
+		var top = MathF.Min( listRect.Top, popupRect.Top ) - PlayerProfileHoverBridgePadding;
+		var bottom = MathF.Max( listRect.Bottom, popupRect.Bottom ) + PlayerProfileHoverBridgePadding;
+
+		return point.x >= left
+			&& point.x <= right
+			&& point.y >= top
+			&& point.y <= bottom;
+	}
+
+	private static bool IsPointInside( Rect rect, Vector2 point )
+	{
+		return point.x >= rect.Left
+			&& point.x <= rect.Right
+			&& point.y >= rect.Top
+			&& point.y <= rect.Bottom;
 	}
 
 	private string GetPlayerCardStyle( PlayerState player )
@@ -400,6 +478,7 @@
 				hash.Add( player.ChanceGetOutOfJailFreeCards );
 				hash.Add( player.CommunityChestGetOutOfJailFreeCards );
 				hash.Add( player.IsDisconnected );
+				hash.Add( player.IsBankrupt );
 				hash.Add( player.AbandonEndsAt > 0f ? MathF.Ceiling( Math.Max( 0f, player.AbandonEndsAt - Time.Now ) ) : 0f );
 			}
 		}
