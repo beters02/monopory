@@ -3,6 +3,7 @@
 @using Sandbox.UI;
 @using Sandbox.ui.components.buttons
 @using System;
+@using System.Linq;
 @inherits Panel
 
 <root>
@@ -12,9 +13,19 @@
 	@if ( GameRef?.MatchState == MatchLifecycleState.GameOver )
 	{
 		<div class="session-screen game-over-screen">
-			<div class="session-panel">
+			<div class="session-panel post-match-panel">
 				<div class="session-kicker">Game Over</div>
 				<div class="session-title">@WinnerName Wins</div>
+				<div class="post-match-summary-grid">
+					<div class="post-match-summary-card"><div class="post-match-summary-label">Winner</div><div class="post-match-summary-value small">@WinnerName</div></div>
+					<div class="post-match-summary-card"><div class="post-match-summary-label">Richest Finish</div><div class="post-match-summary-value small">@GetRichestPlayerName()</div></div>
+					<div class="post-match-summary-card"><div class="post-match-summary-label">Most Rent Earned</div><div class="post-match-summary-value small">@GetTopRentEarnerName()</div></div>
+					<div class="post-match-summary-card"><div class="post-match-summary-label">Most Landed Property</div><div class="post-match-summary-value small">@GetMostLandedPropertyName()</div></div>
+					<div class="post-match-summary-card"><div class="post-match-summary-label">Biggest Cash Loss</div><div class="post-match-summary-value small">@GetBiggestCashLossName()</div></div>
+					<div class="post-match-summary-card"><div class="post-match-summary-label">Most Properties</div><div class="post-match-summary-value small">@GetMostPropertiesName()</div></div>
+					<div class="post-match-summary-card"><div class="post-match-summary-label">Dice Totals</div><div class="post-match-summary-value small">@GetDiceTotalsSummary()</div></div>
+					<div class="post-match-summary-card"><div class="post-match-summary-label">Gamble Results</div><div class="post-match-summary-value small">@GetGambleSummary()</div></div>
+				</div>
 				@if (CanUseHostControls)
 				{
 					<div class="session-copy">Return your group back to the lobby, or leave lobby.</div>
@@ -115,6 +126,8 @@
 		GameRef?.LocalPlayer?.IsAssigned == true &&
 		GameRef?.LocalPlayer?.IsBankrupt != true;
 
+	private int StartingMoney => Math.Max( GameRef?.Config?.StartingMoney ?? 1500, 0 );
+
 	private void ResumeGame() => OnResumeGame?.Invoke();
 	private void OpenOptions() => OnOpenOptions?.Invoke();
 	private void OpenMatchSettings() => OnOpenMatchSettings?.Invoke();
@@ -126,6 +139,119 @@
 	private void BankruptAndAbandon() => OnDeclareBankruptcy?.Invoke();
 	private void ExitGame() => OnExitGame?.Invoke();
 	private void SaveGame() => OnSaveGame?.Invoke();
+
+	private string GetRichestPlayerName()
+	{
+		var row = GetPlayerRows().OrderByDescending( entry => entry.Money ).FirstOrDefault();
+		return row.PlayerIndex < 0 ? "None" : row.Name;
+	}
+
+	private string GetTopRentEarnerName()
+	{
+		var row = GetPlayerRows().OrderByDescending( entry => entry.RentEarned ).FirstOrDefault();
+		return row.PlayerIndex < 0 || row.RentEarned <= 0 ? "None yet" : row.Name;
+	}
+
+	private string GetMostLandedPropertyName()
+	{
+		var row = GetPropertyRows().OrderByDescending( entry => entry.Landings ).FirstOrDefault();
+		return row.SpaceIndex < 0 || row.Landings <= 0 ? "None yet" : row.Name;
+	}
+
+	private string GetBiggestCashLossName()
+	{
+		var row = GetPlayerRows().Where( entry => entry.NetLoss > 0 ).OrderByDescending( entry => entry.NetLoss ).FirstOrDefault();
+		return row.PlayerIndex < 0 || row.NetLoss <= 0 ? "None yet" : row.Name;
+	}
+
+	private string GetMostPropertiesName()
+	{
+		var row = GetPlayerRows().OrderByDescending( entry => entry.PropertyCount ).FirstOrDefault();
+		return row.PlayerIndex < 0 || row.PropertyCount <= 0 ? "None yet" : row.Name;
+	}
+
+	private string GetDiceTotalsSummary()
+	{
+		if ( GameRef?.StatsLogDiceFaceCounts is null || GameRef.StatsLogDiceFaceCounts.Count == 0 )
+			return "No rolls recorded";
+
+		var total = Enumerable.Range( 1, 6 ).Sum( face =>
+			GameRef.StatsLogDiceFaceCounts.TryGetValue( face, out var count ) ? Math.Max( count, 0 ) : 0 );
+
+		return total <= 0 ? "No rolls recorded" : $"{total} dice rolled";
+	}
+
+	private string GetGambleSummary()
+	{
+		var entries = GameRef?.GambleHistory?
+			.Select( entry => MatchIntegrityJson.Deserialize<GambleHistoryEntry>( entry.Value ) )
+			.Where( entry => entry is not null )
+			.ToList() ?? new();
+
+		if ( entries.Count == 0 )
+			return "No gambles played";
+
+		var wins = entries.Count( entry => entry.Won );
+		return $"{wins}/{entries.Count} won";
+	}
+
+	private List<PlayerStatsRow> GetPlayerRows()
+	{
+		if ( GameRef?.Players is null )
+			return new();
+
+		return GameRef.Players
+			.Select( ( player, index ) => new { player, index } )
+			.Where( entry => entry.player is not null && entry.player.IsAssigned )
+			.Select( entry => new PlayerStatsRow(
+				entry.index,
+				entry.player.PlayerName ?? $"Player {entry.index + 1}",
+				entry.player.Money,
+				Math.Max( StartingMoney - entry.player.Money, 0 ),
+				GameRef.GetOwnedPropertyIndexes( entry.index ).Count,
+				GetTotalLandingsForPlayer( entry.index ),
+				GetTotalRentEarnedForPlayer( entry.index )
+			) )
+			.ToList();
+	}
+
+	private List<PropertyStatsRow> GetPropertyRows()
+	{
+		return GameRef?.Board?.SpaceDefs?
+			.Where( def => def is not null && IsPurchasableSpace( def ) )
+			.Select( def => new PropertyStatsRow(
+				def.Index,
+				def.DisplayName ?? $"Space {def.Index}",
+				GetTotalLandingsForSpace( def.Index ),
+				GetTotalRentEarnedForSpace( def.Index )
+			) )
+			.ToList() ?? new();
+	}
+
+	private int GetTotalLandingsForSpace( int spaceIndex ) =>
+		SumPropertyStatForSpace( GameRef?.PropertyLandingCounts, spaceIndex );
+
+	private int GetTotalRentEarnedForSpace( int spaceIndex ) =>
+		SumPropertyStatForSpace( GameRef?.PropertyRentEarned, spaceIndex );
+
+	private int GetTotalLandingsForPlayer( int playerIndex ) =>
+		SumPropertyStatForPlayer( GameRef?.PropertyLandingCounts, playerIndex );
+
+	private int GetTotalRentEarnedForPlayer( int playerIndex ) =>
+		SumPropertyStatForPlayer( GameRef?.PropertyRentEarned, playerIndex );
+
+	private static int SumPropertyStatForSpace( NetDictionary<int, int> stats, int spaceIndex ) =>
+		stats?.Where( entry => GetStatSpaceIndex( entry.Key ) == spaceIndex ).Sum( entry => Math.Max( entry.Value, 0 ) ) ?? 0;
+
+	private static int SumPropertyStatForPlayer( NetDictionary<int, int> stats, int playerIndex ) =>
+		stats?.Where( entry => GetStatPlayerIndex( entry.Key ) == playerIndex ).Sum( entry => Math.Max( entry.Value, 0 ) ) ?? 0;
+
+	private static int GetStatPlayerIndex( int key ) => key / 1000;
+	private static int GetStatSpaceIndex( int key ) => key % 1000;
+
+	private static bool IsPurchasableSpace( SpaceDef def ) =>
+		def is not null && def.Price > 0 &&
+		(def.Type == SpaceType.Property || def.Type == SpaceType.Railroad || def.Type == SpaceType.Utility);
 
 	protected override int BuildHash()
 	{
@@ -140,6 +266,28 @@
 		hash.Add( IsMatchSettingsMenuOpen );
 		hash.Add( GameRef?.HasLoadedRestorePoint ?? false );
 		hash.Add( GameIdentifier );
+		hash.Add( GetDiceTotalsSummary() );
+		hash.Add( GetGambleSummary() );
+		hash.Add( GetRichestPlayerName() );
+		hash.Add( GetTopRentEarnerName() );
+		hash.Add( GetMostLandedPropertyName() );
+		hash.Add( GetBiggestCashLossName() );
+		hash.Add( GetMostPropertiesName() );
 		return hash.ToHashCode();
 	}
+
+	private readonly record struct PlayerStatsRow(
+		int PlayerIndex,
+		string Name,
+		int Money,
+		int NetLoss,
+		int PropertyCount,
+		int Landings,
+		int RentEarned );
+
+	private readonly record struct PropertyStatsRow(
+		int SpaceIndex,
+		string Name,
+		int Landings,
+		int RentEarned );
 }

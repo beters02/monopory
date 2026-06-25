@@ -52,7 +52,7 @@
 	position: relative;
 	width: 100px;
 	padding: 0px;
-	min-height: 50px;
+	min-height: 88px;
 	gap: 0px;
 
 	background-color: $monopoly-panel-strong;
@@ -70,10 +70,46 @@
 
 .property-player-card-hit-area {
 	width: 100%;
-	min-height: 50px;
+	min-height: 88px;
 	display: flex;
 	flex-direction: column;
+	align-items: center;
 	cursor: pointer;
+}
+
+.property-player-avatar {
+	width: 28px;
+	height: 28px;
+	margin-top: 4px;
+	border-radius: 6px;
+	overflow: hidden;
+	flex-shrink: 0;
+	background-color: $monopoly-surface;
+	border: 1px solid $monopoly-panel-line;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.property-player-avatar-image {
+	width: 100%;
+	height: 100%;
+}
+
+.property-player-avatar-placeholder {
+	color: $monopoly-text-muted;
+	font-size: 14px;
+	font-weight: 900;
+}
+
+.property-player-name-row {
+	width: 100%;
+	padding: 8px 10px 0 10px;
+	min-width: 0;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	gap: 8px;
 }
 
 .property-player-card-hit-area:hover {
@@ -151,14 +187,6 @@
 	overflow: hidden;
 }
 
-.property-player-name-row {
-	width: 100%;
-	padding: 8px 10px 0 10px;
-	display: flex;
-	flex-direction: row;
-	align-items: center;
-	gap: 8px;
-}
 
 .property-player-chip {
 	width: 12px;

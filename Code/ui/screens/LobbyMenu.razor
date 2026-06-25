@@ -335,7 +335,20 @@
 								<div class="lobby-player-name">@player.Name</div>
 								<div class="lobby-player-detail">@GetPlayerDetail( player )</div>
 							</div>
-							<div class="lobby-ready-pill">@GetReadyLabel( player )</div>
+							<div class="lobby-player-side-actions">
+								@if ( CanManageLobbyPlayer( player ) )
+								{
+									@if ( player.IsConnected )
+									{
+										<GameButton Variant="lobby-kick-button" OnClick="@(() => ConfirmKickPlayer( player ))">Kick</GameButton>
+									}
+									else
+									{
+										<GameButton Variant="lobby-abandon-button" OnClick="@(() => ConfirmAbandonPlayer( player ))">Abandon</GameButton>
+									}
+								}
+								<div class="lobby-ready-pill">@GetReadyLabel( player )</div>
+							</div>
 						</div>
 					}
 				</div>
@@ -1983,6 +1996,75 @@
 	private static string GetReadyLabel( LobbyPlayer player )
 	{
 		return player.IsReady ? "Ready" : "Not Ready";
+	}
+
+	private bool CanManageLobbyPlayer( LobbyPlayer player ) =>
+		CanEditConfig &&
+		player is not null &&
+		!player.IsLocal &&
+		!player.IsHost;
+
+	private void ConfirmKickPlayer( LobbyPlayer player )
+	{
+		if ( player is null || PopupGame is null )
+			return;
+
+		PopupGame.ShowLocalConfirmation(
+			"Kick player?",
+			$"Kick {player.Name} from the lobby? They can rejoin until the abandon timer expires.",
+			() => KickLobbyPlayer( player, false ),
+			null,
+			"Kick",
+			"Cancel",
+			false );
+	}
+
+	private void ConfirmAbandonPlayer( LobbyPlayer player )
+	{
+		if ( player is null || PopupGame is null )
+			return;
+
+		PopupGame.ShowLocalConfirmation(
+			"Abandon player?",
+			$"Immediately remove {player.Name} from the lobby?",
+			() => KickLobbyPlayer( player, true ),
+			null,
+			"Abandon",
+			"Cancel",
+			false );
+	}
+
+	private void KickLobbyPlayer( LobbyPlayer player, bool forceAbandon )
+	{
+		if ( player is null || Lobby is null )
+			return;
+
+		if ( GameController.Instance is not null )
+		{
+			var gamePlayer = GameController.Instance.Players.FirstOrDefault( entry =>
+				entry is not null && entry.IsAssigned && entry.OwnerId == player.OwnerId );
+
+			if ( gamePlayer is not null )
+			{
+				if ( Networking.IsHost )
+				{
+					if ( GameController.Instance.TryKickPlayer( gamePlayer, Connection.Local, forceAbandon, out var message ) )
+						ShowLocalPopup( forceAbandon ? "Player abandoned" : "Player kicked", message, PopupKind.Info );
+					else
+						ShowLocalPopup( "Action failed", message, PopupKind.Warning );
+				}
+
+				return;
+			}
+		}
+
+		if ( !Networking.IsHost )
+			return;
+
+		if ( Lobby.TryKickPlayer( player.OwnerId, Connection.Local, forceAbandon, out var lobbyMessage ) )
+			ShowLocalPopup( forceAbandon ? "Player abandoned" : "Player kicked", lobbyMessage, PopupKind.Info );
+		else
+			ShowLocalPopup( "Action failed", lobbyMessage, PopupKind.Warning );
 	}
 
 	

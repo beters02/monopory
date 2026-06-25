@@ -49,6 +49,13 @@
 				<div class="steam-profile-popup-action-icon">C</div>
 				<div>Chat</div>
 			</button>
+			@if ( OnPing is not null )
+			{
+				<button class="steam-profile-popup-action primary" onclick="@HandlePing">
+					<div class="steam-profile-popup-action-icon">!</div>
+					<div>Ping</div>
+				</button>
+			}
 			<button class="steam-profile-popup-action" onclick="@HandleClose">
 				<div class="steam-profile-popup-action-icon">x</div>
 				<div>Close</div>
@@ -67,6 +74,7 @@
 	[Parameter] public Action OnInvite { get; set; }
 	[Parameter] public Action OnJoin { get; set; }
 	[Parameter] public Action OnChat { get; set; }
+	[Parameter] public Action OnPing { get; set; }
 	[Parameter] public Action OnOpenProfile { get; set; }
 	[Parameter] public Action OnClose { get; set; }
 
@@ -83,6 +91,7 @@
 	private void HandleJoin() => OnButtonClicked(OnJoin);
 	private void HandleOpenProfile() => OnButtonClicked(OnOpenProfile);
 	private void HandleOpenChat() => OnButtonClicked(OnChat);
+	private void HandlePing() => OnButtonClicked(OnPing);
 	private void HandleClose() => OnButtonClicked(OnClose, GameAssets.Sounds.ClickAndClose);
 
 	private void OnButtonClicked( Action action, GameSound clickSound = null )
@@ -158,6 +167,7 @@
 		hash.Add( OnInvite is not null );
 		hash.Add( OnJoin is not null );
 		hash.Add( OnOpenProfile is not null );
+		hash.Add( OnPing is not null );
 		return hash.ToHashCode();
 	}
 }

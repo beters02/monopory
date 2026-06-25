@@ -25,7 +25,7 @@ public static class CardData
 			new() { Key = "chance_chairman", Deck = CardDeck.Chance, Title = "Elected chairman", Description = "Pay each player $50.", Action = CardAction.PayEachPlayer, Amount = 50 },
 			new() { Key = "chance_building_loan", Deck = CardDeck.Chance, Title = "Building loan matures", Description = "Collect $150.", Action = CardAction.CollectFromBank, Amount = 150 },
 			new() { Key = "chance_get_out_jail", Deck = CardDeck.Chance, Title = "Get Out of {space_10} Free", Description = "Keep this card until you need to leave {space_10}.", Action = CardAction.GetOutOfJailFree },
-			new() { Key = "chance_gamble_coin_flip", Deck = CardDeck.Chance, Title = "Gamble Card", Description = "You're forced to play in a coinflip for a random amount.", Action = CardAction.Gamble, Amount = 150, Weight = 2 },
+			new() { Key = "chance_gamble_coin_flip", Deck = CardDeck.Chance, Title = "Gamble Card", Description = "You're forced to play in a coinflip for a random amount.", Action = CardAction.Gamble, Amount = 150, Weight = 1 },
 			new() { Key = "chance_jersey_swap", Deck = CardDeck.Chance, Title = "Jersey Swap", Description = "Switch positions with a random player. If one or both of you pass go, collect ${pass_go_money}. You will be jailed without go money if they are in jail.", Action = CardAction.SwapPlayerPosition }
 		};
 	}
@@ -50,7 +50,7 @@ public static class CardData
 			new() { Key = "chest_street_repairs", Deck = CardDeck.CommunityChest, Title = "Street repairs", Description = "Pay $40 per house and $115 per hotel.", Action = CardAction.PayPerImprovement, HouseAmount = 40, HotelAmount = 115 },
 			new() { Key = "chest_beauty_contest", Deck = CardDeck.CommunityChest, Title = "Beauty contest", Description = "Collect $10.", Action = CardAction.CollectFromBank, Amount = 10 },
 			new() { Key = "chest_inherit", Deck = CardDeck.CommunityChest, Title = "Inheritance", Description = "Collect $100.", Action = CardAction.CollectFromBank, Amount = 100 },
-			new() { Key = "chance_gamble_coin_flip", Deck = CardDeck.CommunityChest, Title = "Gamble Card", Description = "You're forced to play in a coinflip for a random amount.", Action = CardAction.Gamble, Amount = 150, Weight = 2 }
+			new() { Key = "chest_gamble_coin_flip", Deck = CardDeck.CommunityChest, Title = "Gamble Card", Description = "You're forced to play in a coinflip for a random amount.", Action = CardAction.Gamble, Amount = 150, Weight = 1 }
 		};
 	}
 

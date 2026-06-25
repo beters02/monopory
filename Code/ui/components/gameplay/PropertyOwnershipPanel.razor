@@ -15,6 +15,7 @@
 				@foreach ( var player in PropertyHudPlayers )
 				{
 					var playerIndex = GameRef.GetPlayerIndex( player );
+					var profileEntry = GetPlayerProfileEntry( player );
 
 					<Sandbox.ui.components.HudPanel.HudPanel Variant="@GetPropertyPanelClasses( playerIndex )" style="@GetPlayerCardStyle( player )">
 						<ChildContent>
@@ -22,6 +23,16 @@
 								<div class="property-player-name-row">
 									<div class="property-player-name">@player.PlayerName</div>
 									<div class="property-player-chip" style="@GetPlayerChipStyle( player )"></div>
+								</div>
+								<div class="property-player-avatar">
+									@if ( MonopolyApp.IsStandalone() && profileEntry?.AvatarTexture is not null )
+									{
+										<Image class="property-player-avatar-image" Texture="@profileEntry.AvatarTexture"></Image>
+									}
+									else
+									{
+										<div class="property-player-avatar-placeholder">?</div>
+									}
 								</div>
 								<div class="property-player-money">$@player.Money</div>
 								@if ( player.IsBankrupt )
@@ -47,6 +58,7 @@
 				PopupStyle="@PlayerProfilePopupStyle"
 				OnOpenProfile="@OpenSelectedPlayerProfile"
 				OnChat="@OpenSelectedPlayerProfileChat"
+				OnPing="@PingSelectedPlayer"
 				OnClose="@ClosePlayerProfilePopup">
 			</SteamProfilePopupCard>
 		}
@@ -359,6 +371,36 @@
 
 	private void OpenSelectedPlayerProfileChat() =>
 		TryOpenSteamFriendsProfile( SteamUserOverlayType.chat );
+
+	private void PingSelectedPlayer()
+	{
+		if ( SelectedPlayerProfile is null || GameRef is null )
+			return;
+
+		var player = GameRef.Players.FirstOrDefault( entry => entry is not null && entry.OwnerId == SelectedPlayerProfile.SteamId );
+		if ( player is null )
+		{
+			Log.Warning( $"Could not find active player for ping target {SelectedPlayerProfile.Name}." );
+			return;
+		}
+
+		if ( Networking.IsHost )
+		{
+			if ( !GameRef.TryPingPlayer( player, out var message ) )
+				Log.Warning( message );
+		}
+		else
+		{
+			var playerIndex = GameRef.GetPlayerIndex( player );
+			if ( playerIndex >= 0 )
+				GameRef.RequestPingPlayer( playerIndex );
+		}
+
+		ClosePlayerProfilePopup();
+	}
+
+	private SteamFriendListEntry GetPlayerProfileEntry( PlayerState player ) =>
+		player is null ? null : SteamFriendsBridge.GetProfileEntry( player.OwnerId, player.PlayerName );
 
 	private void ClosePlayerProfilePopup()
 	{

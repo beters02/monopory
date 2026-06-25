@@ -298,6 +298,35 @@ LobbyMenu {
 		text-align: center;
 		text-transform: uppercase;
 	}
+
+	.lobby-player-side-actions {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+	}
+
+	.monopoly-button.lobby-kick-button,
+	.monopoly-button.lobby-abandon-button {
+		min-width: 72px;
+		height: 34px;
+		margin: 0;
+		padding: 0 10px;
+		border: 2px solid $monopoly-ink;
+		border-radius: $monopoly-radius-control;
+		font-size: 11px;
+		font-weight: 900;
+		text-transform: uppercase;
+	}
+
+	.monopoly-button.lobby-kick-button {
+		background-color: $monopoly-utility;
+		color: $monopoly-board;
+	}
+
+	.monopoly-button.lobby-abandon-button {
+		background-color: $monopoly-danger;
+		color: $monopoly-board;
+	}
 }
 
 

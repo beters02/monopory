@@ -224,5 +224,47 @@
 	color: $monopoly-board;
 }
 
+.post-match-panel {
+	width: 760px;
+	max-width: 92%;
+}
+
+.post-match-summary-grid {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+
+.post-match-summary-card {
+	flex: 1 1 calc( 50% - 8px );
+	min-width: 220px;
+	padding: 10px 12px;
+	background-color: $monopoly-board-surface-strong;
+	border: 2px solid $monopoly-board-surface-line-strong;
+	border-radius: $monopoly-radius-board;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.post-match-summary-label {
+	font-size: 11px;
+	font-weight: 900;
+	text-transform: uppercase;
+	opacity: 0.68;
+}
+
+.post-match-summary-value {
+	font-size: 24px;
+	font-weight: 900;
+	line-height: 28px;
+}
+
+.post-match-summary-value.small {
+	font-size: 18px;
+	line-height: 22px;
+}
+
 
 

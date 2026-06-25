@@ -95,6 +95,27 @@
 	color: $monopoly-text;
 }
 
+.token-camera-hint {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	margin-top: 2px;
+	padding: 4px 6px;
+	background-color: $monopoly-surface-soft;
+	border-radius: $monopoly-radius-control;
+	color: $monopoly-gold;
+	font-family: $monopoly-font-family;
+	font-size: 10px;
+	font-weight: 900;
+	text-transform: uppercase;
+}
+
+.token-camera-hint-glyph {
+	width: 18px;
+	height: 18px;
+	color: $monopoly-gold;
+}
+
 .camera-mode-buttons {
 	display: flex;
 	flex-direction: column;

@@ -322,6 +322,9 @@
 		if ( GameRef is null || ComposerReceiverPlayerIndex < 0 )
 			return;
 
+		if ( !ValidateTradeReceiverBeforeSend() )
+			return;
+
 		var senderImprovedProperties = ComposerSenderPropertyIndexes
 			.Where( propertyIndex => GameRef.GetImprovementCount( propertyIndex ) > 0 )
 			.OrderBy( propertyIndex => propertyIndex )
@@ -388,6 +391,41 @@
 		NegotiatedTradeId = -1;
 		ClearEditedTrade();
 		IsTradeComposerOpen = false;
+	}
+
+	private bool ValidateTradeReceiverBeforeSend()
+	{
+		if ( NegotiatedTradeId >= 0 && GameRef.TryGetTrade( NegotiatedTradeId, out var negotiatedTrade ) )
+		{
+			var expectedReceiver = negotiatedTrade.SenderPlayerIndex == GameRef.LocalPlayerIndex
+				? negotiatedTrade.ReceiverPlayerIndex
+				: negotiatedTrade.SenderPlayerIndex;
+
+			if ( ComposerReceiverPlayerIndex != expectedReceiver )
+			{
+				GameRef.ShowLocalPopup(
+					"Invalid trade target",
+					$"Negotiated trades must be sent to {GetPlayerName( expectedReceiver )}.",
+					PopupKind.Warning
+				);
+				return false;
+			}
+		}
+
+		if ( EditedTradeId >= 0 && GameRef.TryGetTrade( EditedTradeId, out var editedTrade ) )
+		{
+			if ( ComposerReceiverPlayerIndex != editedTrade.ReceiverPlayerIndex )
+			{
+				GameRef.ShowLocalPopup(
+					"Invalid trade target",
+					$"Edited trades must stay with {GetPlayerName( editedTrade.ReceiverPlayerIndex )}.",
+					PopupKind.Warning
+				);
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	private void SellTradeBlockingImprovements( List<int> propertyIndexes )

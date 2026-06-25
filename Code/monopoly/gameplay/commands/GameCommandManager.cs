@@ -1247,3 +1247,129 @@ public static class GetActiveScene
 		}, connection );
 	}
 }
+
+public static class KickPlayerCommand
+{
+	public const string Name = "kick_player";
+
+	[HostCmd]
+	[ConCmd( Name )]
+	public static void Execute( Connection connection, string playerName = "self", string forceAbandon = "false", params string[] playerNameTail )
+	{
+		GameCommandManager.RunCommand( Name, () =>
+		{
+			var resolvedPlayerName = ResolveKickPlayerName( playerName, forceAbandon, playerNameTail, out var shouldForceAbandon, out var parseError );
+			if ( parseError is not null )
+				return CommandResult.Fail( parseError );
+
+			if ( MonopolyApp.TryResolvePlayerReferenceSmart( resolvedPlayerName, out var gamePlayer, out var lobbyPlayer ) )
+			{
+				if ( gamePlayer is not null )
+				{
+					var game = GameController.Instance;
+					if ( game is null )
+						return CommandResult.Fail( "No active game controller." );
+
+					return game.TryKickPlayer( gamePlayer, connection, shouldForceAbandon, out var gameMessage )
+						? CommandResult.Success( gameMessage )
+						: CommandResult.Fail( gameMessage );
+				}
+
+				var lobby = LobbyController.Instance;
+				if ( lobby is null )
+					return CommandResult.Fail( "No active lobby." );
+
+				return lobby.TryKickPlayer( lobbyPlayer.OwnerId, connection, shouldForceAbandon, out var lobbyMessage )
+					? CommandResult.Success( lobbyMessage )
+					: CommandResult.Fail( lobbyMessage );
+			}
+
+			return CommandResult.Fail( $"Could not find player \"{resolvedPlayerName}\"." );
+		}, connection );
+	}
+
+	private static string ResolveKickPlayerName( string playerName, string forceAbandon, string[] playerNameTail, out bool shouldForceAbandon, out string parseError )
+	{
+		shouldForceAbandon = false;
+		parseError = null;
+
+		if ( GameCommandManager.TryParseBool( forceAbandon, out shouldForceAbandon ) )
+			return GameCommandManager.JoinPlayerName( playerName, playerNameTail );
+
+		var nameParts = new List<string> { forceAbandon };
+		if ( playerNameTail is not null )
+			nameParts.AddRange( playerNameTail );
+
+		if ( nameParts.Count > 0 && GameCommandManager.TryParseBool( nameParts[^1], out shouldForceAbandon ) )
+		{
+			nameParts.RemoveAt( nameParts.Count - 1 );
+			return GameCommandManager.JoinPlayerName( playerName, nameParts.ToArray() );
+		}
+
+		var fullName = GameCommandManager.JoinPlayerName( playerName, nameParts.ToArray() );
+		if ( MonopolyApp.TryResolvePlayerReferenceSmart( fullName, out _, out _ ) )
+			return fullName;
+
+		parseError = $"Unable to parse forceAbandon value \"{forceAbandon}\".";
+		return fullName;
+	}
+}
+
+public static class PingPlayerCommand
+{
+	public const string Name = "ping_player";
+
+	[ConCmd( Name )]
+	public static void Execute( Connection connection, string playerName = "self", params string[] playerNameTail )
+	{
+		GameCommandManager.RunCommand( Name, () =>
+		{
+			var resolvedPlayerName = GameCommandManager.JoinPlayerName( playerName, playerNameTail );
+			if ( !MonopolyApp.TryResolvePlayerReferenceSmart( resolvedPlayerName, out var gamePlayer, out var lobbyPlayer ) )
+				return CommandResult.Fail( $"Could not find player \"{resolvedPlayerName}\"." );
+
+			if ( gamePlayer is not null )
+			{
+				var game = GameController.Instance;
+				if ( game is null )
+					return CommandResult.Fail( "No active game controller." );
+
+				return game.TryPingPlayer( gamePlayer, out var message )
+					? CommandResult.Success( message )
+					: CommandResult.Fail( message );
+			}
+
+			var gameController = GameController.Instance;
+			if ( gameController is null )
+				return CommandResult.Fail( "Ping is only available during an active match." );
+
+			var matchedPlayer = gameController.Players.FirstOrDefault( player =>
+				player is not null && player.IsAssigned && player.OwnerId == lobbyPlayer.OwnerId );
+
+			if ( matchedPlayer is null )
+				return CommandResult.Fail( $"Could not find active match player for \"{resolvedPlayerName}\"." );
+
+			return gameController.TryPingPlayer( matchedPlayer, out var gameMessage )
+				? CommandResult.Success( gameMessage )
+				: CommandResult.Fail( gameMessage );
+		}, connection );
+	}
+}
+
+public static class GamePhaseCommand
+{
+	public const string Name = "game_phase";
+
+	[ConCmd( Name )]
+	public static void Execute( Connection connection )
+	{
+		GameCommandManager.RunCommand( Name, () =>
+		{
+			var game = GameController.Instance;
+			if ( game is null )
+				return CommandResult.Fail( "No active game." );
+
+			return CommandResult.Success( game.Phase.ToString() );
+		}, connection );
+	}
+}

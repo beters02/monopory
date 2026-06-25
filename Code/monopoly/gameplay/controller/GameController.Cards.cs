@@ -128,7 +128,12 @@ public sealed partial class GameController : Component
 			return $"{GetDeckDisplayName( deck )} deck is empty.";
 
 		var lines = drawPile
-			.Select( ( card, index ) => $"{index + 1}. {ResolveCardText( card.Title )}: {ResolveCardText( card.Description )}" )
+			.GroupBy( card => string.IsNullOrWhiteSpace( card?.Key ) ? "unknown" : card.Key )
+			.Select( ( group, index ) =>
+			{
+				var card = group.FirstOrDefault();
+				return $"{index + 1}. [{group.Key}] copies={group.Count()} weight={Math.Max( card?.Weight ?? 1, 1 )} - {ResolveCardText( card?.Title ?? "" )}: {ResolveCardText( card?.Description ?? "" )}";
+			} )
 			.ToList();
 
 		return $"{GetDeckDisplayName( deck )} deck ({lines.Count} cards):\n{string.Join( "\n", lines )}";

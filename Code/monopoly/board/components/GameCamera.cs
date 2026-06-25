@@ -36,7 +36,8 @@ public sealed class GameCamera : Component
 	[Property] public float TokenModeLookSensitivity { get; set; } = 1f;
 	[Property] public bool AutoExpsureEnabled { get; set; } = false;
 
-	public float DiceFramingPadding { get; set; } = 30f;
+	public float DiceFramingPadding { get; set; } = 48f;
+	public float BoardFramingPadding { get; set; } = 64f;
 	public float DiceFramingMinDistance { get; set; } = 250f;
 	public float DefaultModeDicePitch { get; set; } = 75f;
 	[Property] public float DiceFollowLerpSpeed = 4f;
@@ -281,7 +282,11 @@ public sealed class GameCamera : Component
 		var yaw = effectiveMode == BoardCameraMode.Default
 			? GetCurrentTokenYaw()
 			: 0f;
-		var distance = effectiveMode == BoardCameraMode.Default ? DefaultModeDistance : Distance;
+		var distance = effectiveMode == BoardCameraMode.Default
+			? DefaultModeDistance
+			: effectiveMode == BoardCameraMode.Board
+				? GetBoardFramingDistance( center, yaw, Pitch )
+				: Distance;
 		float pitch = effectiveMode == BoardCameraMode.Default ? DefaultModePitch : Pitch;
 		var followLerpSpeed = FollowLerpSpeed;
 		var rotLerpSpeed = RotationLerpSpeed;
@@ -453,14 +458,81 @@ public sealed class GameCamera : Component
 	{
 		var rotation = Rotation.From( DefaultModeDicePitch, yaw, 0f );
 		var right = rotation.Right;
-		var up = rotation.Up;
+		var vertical = GetViewVerticalAxis( rotation );
 
 		var localA = dieAPosition - center;
 		var localB = dieBPosition - center;
 
 		var halfWidth = Math.Max( Math.Abs( Vector3.Dot( localA, right ) ), Math.Abs( Vector3.Dot( localB, right ) ) ) + DiceFramingPadding;
-		var halfHeight = Math.Max( Math.Abs( Vector3.Dot( localA, up ) ), Math.Abs( Vector3.Dot( localB, up ) ) ) + DiceFramingPadding;
+		var halfHeight = Math.Max( Math.Abs( Vector3.Dot( localA, vertical ) ), Math.Abs( Vector3.Dot( localB, vertical ) ) ) + DiceFramingPadding;
 
+		return GetFitDistanceForHalfExtents( halfWidth, halfHeight, Math.Max( DefaultModeDistance, DiceFramingMinDistance ) );
+	}
+
+	private float GetBoardFramingDistance( Vector3 center, float yaw, float pitch )
+	{
+		if ( !TryGetBoardTokenBounds( out var min, out var max ) )
+			return Distance;
+
+		var rotation = Rotation.From( pitch, yaw, 0f );
+		var right = rotation.Right;
+		var vertical = GetViewVerticalAxis( rotation );
+		var corners = new[]
+		{
+			new Vector3( min.x, min.y, center.z ),
+			new Vector3( max.x, min.y, center.z ),
+			new Vector3( min.x, max.y, center.z ),
+			new Vector3( max.x, max.y, center.z )
+		};
+
+		var halfWidth = 0f;
+		var halfHeight = 0f;
+		foreach ( var corner in corners )
+		{
+			var local = corner - center;
+			halfWidth = Math.Max( halfWidth, Math.Abs( Vector3.Dot( local, right ) ) );
+			halfHeight = Math.Max( halfHeight, Math.Abs( Vector3.Dot( local, vertical ) ) );
+		}
+
+		halfWidth += BoardFramingPadding;
+		halfHeight += BoardFramingPadding;
+
+		return GetFitDistanceForHalfExtents( halfWidth, halfHeight, Distance );
+	}
+
+	private bool TryGetBoardTokenBounds( out Vector3 min, out Vector3 max )
+	{
+		min = new Vector3( float.MaxValue, float.MaxValue, float.MaxValue );
+		max = new Vector3( float.MinValue, float.MinValue, float.MinValue );
+
+		var board = Board.Instance;
+		if ( board?.Spaces is null || board.Spaces.Count == 0 )
+			return false;
+
+		foreach ( var space in board.Spaces )
+		{
+			if ( space is null )
+				continue;
+
+			var position = space.TokenPosition;
+			min = Vector3.Min( min, position );
+			max = Vector3.Max( max, position );
+		}
+
+		return true;
+	}
+
+	private static Vector3 GetViewVerticalAxis( Rotation rotation )
+	{
+		var vertical = Vector3.Cross( rotation.Right, Vector3.Up );
+		if ( vertical.Length <= 0.001f )
+			return rotation.Up;
+
+		return vertical.Normal;
+	}
+
+	private float GetFitDistanceForHalfExtents( float halfWidth, float halfHeight, float minDistance )
+	{
 		var verticalFovRadians = Fov.DegreeToRadian();
 		var aspect = Math.Max( 0.01f, Screen.Width / (float)Math.Max( 1, Screen.Height ) );
 		var horizontalFovRadians = 2f * MathF.Atan( MathF.Tan( verticalFovRadians * 0.5f ) * aspect );
@@ -469,7 +541,7 @@ public sealed class GameCamera : Component
 		var requiredByWidth = halfWidth / Math.Max( 0.01f, MathF.Tan( horizontalFovRadians * 0.5f ) );
 		var requiredDistance = Math.Max( requiredByWidth, requiredByHeight );
 
-		return Math.Max( Math.Max( DefaultModeDistance, DiceFramingMinDistance ), requiredDistance );
+		return Math.Max( minDistance, requiredDistance );
 	}
 
 	private void ApplyView( Vector3 center, float distance, float yaw, float pitch, float followLerpSpeed, float rotLerpSpeed, bool smooth )

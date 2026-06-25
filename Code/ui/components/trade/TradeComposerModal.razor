@@ -257,7 +257,9 @@
 	private string ReceiverMoneyDraft;
 
 	private int EffectiveReceiverPlayerIndex =>
-		TradeTargetIndexes.Contains( LocalReceiverPlayerIndex ) ? LocalReceiverPlayerIndex : ReceiverPlayerIndex;
+		CanSelectReceiver
+			? (TradeTargetIndexes.Contains( LocalReceiverPlayerIndex ) ? LocalReceiverPlayerIndex : ReceiverPlayerIndex)
+			: ReceiverPlayerIndex;
 
 	private List<int> TradeTargetIndexes =>
 		GameRef?.Players?
@@ -291,6 +293,15 @@
 	private string ReceiverMoneyText =>
 		ReceiverMoneyDraft ?? ReceiverMoney.ToString();
 
+	protected override void OnParametersSet()
+	{
+		if ( !IsOpen )
+			return;
+
+		if ( !CanSelectReceiver || ReceiverPlayerIndex >= 0 )
+			LocalReceiverPlayerIndex = ReceiverPlayerIndex;
+	}
+
 	private void Close()
 	{
 		LocalReceiverPlayerIndex = -1;
@@ -300,6 +311,9 @@
 	}
 	private void SelectTradeTarget( int playerIndex )
 	{
+		if ( !CanSelectReceiver )
+			return;
+
 		LocalReceiverPlayerIndex = playerIndex;
 		ReceiverMoneyDraft = null;
 		OnSelectReceiver?.Invoke( playerIndex );

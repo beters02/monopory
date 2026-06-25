@@ -39,6 +39,14 @@
 					<GameButton Variant="@GetCameraModeButtonClasses( BoardCameraMode.Token )" OnClick="@(() => SetCameraMode( BoardCameraMode.Token ))">Token</GameButton>
 				</div>
 			</div>
+			@if ( IsTokenCameraActive )
+			{
+				<div class="token-camera-hint">
+					<span>Hold</span>
+					<KeybindGlyph CssClass="token-camera-hint-glyph" KeyboardInputAction="@GetScoreInputAction()"></KeybindGlyph>
+					<span>to show cursor.</span>
+				</div>
+			}
 			<HudPanelEmptyLine></HudPanelEmptyLine>
 			<HudPanelSubtitle>Game</HudPanelSubtitle>
 
@@ -225,6 +233,13 @@
 	{
 		return GetInputAction( "CycleCameraMode", "C" );
 	}
+
+	private InputAction GetScoreInputAction()
+	{
+		return GetInputAction( "Score", "tab" );
+	}
+
+	private bool IsTokenCameraActive => GameCamera.Instance?.IsTokenCameraActive == true;
 
 	private static string GetBoundInputActionCode( InputAction action )
 	{
@@ -601,6 +616,8 @@
 		hash.Add( CurrentPlayer?.CommunityChestGetOutOfJailFreeCards ?? 0 );
 		hash.Add( CurrentPlayerMustPayForcedJailFine );
 		hash.Add( CurrentCameraMode );
+		hash.Add( IsTokenCameraActive );
+		hash.Add( GetBoundInputActionCode( GetScoreInputAction() ) );
 		hash.Add( GetBoundInputActionCode( GetCycleCameraModeInputAction() ) );
 		hash.Add( CanEndTurn );
 		hash.Add( ShouldShowActionButtons );
