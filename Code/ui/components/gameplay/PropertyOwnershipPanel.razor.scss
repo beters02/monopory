@@ -40,7 +40,7 @@
 }
 
 .property-player-list {
-	width: 756px;
+	width: 816px;
 	display: flex;
 	flex-direction: row;
 	flex-wrap: wrap;
@@ -50,7 +50,7 @@
 
 .property-player-panel {
 	position: relative;
-	width: 120px;
+	width: 130px;
 	padding: 0px;
 	min-height: 70px;
 	gap: 0px;
@@ -71,7 +71,7 @@
 .property-player-card-hit-area {
 	width: 100%;
 	min-height: 70px;
-	padding: 7px 8px 7px 8px;
+	padding: 7px 6px 7px 6px;
 	display: flex;
 	flex-direction: column;
 	align-items: stretch;
@@ -199,23 +199,26 @@
 .property-player-name {
 	width: 100%;
 	min-width: 0;
-	padding: 0 15px 0 0;
+	padding: 0 12px 0 0;
 	text-align: left;
 	font-size: 13px;
 	font-weight: 800;
 	line-height: 16px;
 	white-space: nowrap;
-	text-overflow: clip;
+	text-overflow: ellipsis;
 	overflow: hidden;
+	display: flex;
+	align-items: center;
 }
 
 .property-player-name .label {
+	flex: 1;
 	width: 100%;
 	min-width: 0;
 	text-align: left;
 	white-space: nowrap;
-	text-overflow: clip;
-	overflow: visible;
+	text-overflow: ellipsis;
+	overflow: hidden;
 }
 
 .property-player-chip {
