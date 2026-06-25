@@ -136,6 +136,33 @@ public sealed class Board : Component
 		return baseBoardSize * ProceduralBoardWorldScale;
 	}
 
+	public bool TryGetBoardWorldCorners( out Vector3[] corners )
+	{
+		corners = null;
+		var halfWidth = Math.Max( HitboxSize.x * 0.5f, 1f );
+		var halfHeight = Math.Max( HitboxSize.y * 0.5f, 1f );
+
+		if ( UseProceduralBoardPanel || ProceduralBoardPanel is not null || BoardWorldPanel is not null )
+		{
+			var halfSize = GetBoardWorldSize() * 0.5f;
+			if ( halfSize > 1f )
+			{
+				halfWidth = halfSize;
+				halfHeight = halfSize;
+			}
+		}
+
+		corners = new[]
+		{
+			GameObject.WorldTransform.PointToWorld( new Vector3( -halfWidth, -halfHeight, ProceduralSpaceZOffset ) ),
+			GameObject.WorldTransform.PointToWorld( new Vector3( halfWidth, -halfHeight, ProceduralSpaceZOffset ) ),
+			GameObject.WorldTransform.PointToWorld( new Vector3( -halfWidth, halfHeight, ProceduralSpaceZOffset ) ),
+			GameObject.WorldTransform.PointToWorld( new Vector3( halfWidth, halfHeight, ProceduralSpaceZOffset ) )
+		};
+
+		return true;
+	}
+
 	private void UpdateSpacesPosAndSize()
 	{
 		foreach ( var space in Spaces )

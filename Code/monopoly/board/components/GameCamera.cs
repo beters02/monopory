@@ -66,7 +66,7 @@ public sealed class GameCamera : Component
 		instance = this;
 		cameraComponent = GetComponentInChildren<CameraComponent>();
 		freeCamDistance = Distance;
-		cameraComponent?.FieldOfView = Fov;
+		ApplyCameraFov( Fov );
 	}
 
 	protected override void OnDestroy()
@@ -171,7 +171,7 @@ public sealed class GameCamera : Component
 
 	private void ApplyGambleView( GambleStation station )
 	{
-		cameraComponent?.FieldOfView = Fov;
+		ApplyCameraFov( Fov );
 		var pitch = MathX.Clamp( station.CameraPitch, -89.9f, 89.9f ).DegreeToRadian();
 		var yaw = station.CameraYaw.DegreeToRadian();
 		var horizontal = MathF.Cos( pitch );
@@ -199,7 +199,7 @@ public sealed class GameCamera : Component
 
 	private void UpdateFreeCam()
 	{
-		cameraComponent?.FieldOfView = Fov;
+		ApplyCameraFov( Fov );
 		if ( !hasFreeCamFocus )
 		{
 			freeCamFocus = GetModeFocus( Mode );
@@ -249,7 +249,7 @@ public sealed class GameCamera : Component
 
 	private void UpdateTokenCamera()
 	{
-		cameraComponent?.FieldOfView = Fov;
+		ApplyCameraFov( Fov );
 		var token = GetLocalPlayerToken();
 		if ( token is null )
 		{
@@ -289,9 +289,7 @@ public sealed class GameCamera : Component
 			: 0f;
 		var distance = effectiveMode == BoardCameraMode.Default
 			? DefaultModeDistance
-			: effectiveMode == BoardCameraMode.Board
-				? GetBoardFramingDistance( center, yaw, Pitch )
-				: Distance;
+			: Distance;
 		float pitch = effectiveMode == BoardCameraMode.Default ? DefaultModePitch : Pitch;
 		var followLerpSpeed = FollowLerpSpeed;
 		var rotLerpSpeed = RotationLerpSpeed;
@@ -309,10 +307,15 @@ public sealed class GameCamera : Component
 			}
 		}
 
-		cameraComponent?.FieldOfView = effectiveMode == BoardCameraMode.Board
-			? GetBoardFramingFov( center, yaw, pitch, distance )
-			: Fov;
+		var targetFov = Fov;
+		if ( effectiveMode == BoardCameraMode.Board )
+		{
+			targetFov = GetBoardFramingFov( center, yaw, pitch, distance );
+			if ( targetFov >= BoardFramingMaxFov - 0.01f )
+				distance = GetBoardFramingDistance( center, yaw, pitch, BoardFramingMaxFov );
+		}
 
+		ApplyCameraFov( targetFov );
 		ApplyView( center, distance, yaw, pitch, followLerpSpeed, rotLerpSpeed, true );
 	}
 
@@ -471,41 +474,46 @@ public sealed class GameCamera : Component
 			rotation,
 			new[] { dieAPosition, dieBPosition },
 			DiceFramingPadding,
-			Math.Max( DefaultModeDistance, DiceFramingMinDistance ) );
+			Math.Max( DefaultModeDistance, DiceFramingMinDistance ),
+			Fov );
 	}
 
-	private float GetBoardFramingDistance( Vector3 center, float yaw, float pitch )
+	private float GetBoardFramingDistance( Vector3 center, float yaw, float pitch, float fov )
 	{
-		if ( !TryGetBoardTokenBounds( out var min, out var max ) )
+		if ( !TryGetBoardFramingPoints( out var points ) )
 			return Distance;
 
-		var rotation = Rotation.From( pitch, yaw, 0f );
-		var corners = new[]
-		{
-			new Vector3( min.x, min.y, center.z ),
-			new Vector3( max.x, min.y, center.z ),
-			new Vector3( min.x, max.y, center.z ),
-			new Vector3( max.x, max.y, center.z )
-		};
-
-		return GetFitDistanceForPoints( center, rotation, corners, BoardFramingPadding, Distance );
+		return GetFitDistanceForPoints( center, Rotation.From( pitch, yaw, 0f ), points, BoardFramingPadding, Distance, fov );
 	}
 
 	private float GetBoardFramingFov( Vector3 center, float yaw, float pitch, float distance )
 	{
-		if ( !TryGetBoardTokenBounds( out var min, out var max ) )
+		if ( !TryGetBoardFramingPoints( out var points ) )
 			return Fov;
 
-		var rotation = Rotation.From( pitch, yaw, 0f );
-		var corners = new[]
-		{
-			new Vector3( min.x, min.y, center.z ),
-			new Vector3( max.x, min.y, center.z ),
-			new Vector3( min.x, max.y, center.z ),
-			new Vector3( max.x, max.y, center.z )
-		};
+		return GetFitFovForPoints( center, Rotation.From( pitch, yaw, 0f ), points, BoardFramingPadding, distance );
+	}
 
-		return GetFitFovForPoints( center, rotation, corners, BoardFramingPadding, distance );
+	private bool TryGetBoardFramingPoints( out IReadOnlyList<Vector3> points )
+	{
+		points = null;
+		if ( Board.Instance?.TryGetBoardWorldCorners( out var boardCorners ) == true )
+		{
+			points = boardCorners;
+			return true;
+		}
+
+		if ( !TryGetBoardTokenBounds( out var min, out var max ) )
+			return false;
+
+		points = new[]
+		{
+			new Vector3( min.x, min.y, min.z ),
+			new Vector3( max.x, min.y, min.z ),
+			new Vector3( min.x, max.y, min.z ),
+			new Vector3( max.x, max.y, min.z )
+		};
+		return true;
 	}
 
 	private bool TryGetBoardTokenBounds( out Vector3 min, out Vector3 max )
@@ -550,9 +558,9 @@ public sealed class GameCamera : Component
 		return MathX.Clamp( requiredFov, Fov, BoardFramingMaxFov );
 	}
 
-	private float GetFitDistanceForPoints( Vector3 center, Rotation rotation, IReadOnlyList<Vector3> points, float padding, float minDistance )
+	private float GetFitDistanceForPoints( Vector3 center, Rotation rotation, IReadOnlyList<Vector3> points, float padding, float minDistance, float fov )
 	{
-		var verticalFovRadians = Fov.DegreeToRadian();
+		var verticalFovRadians = fov.DegreeToRadian();
 		var aspect = Math.Max( 0.01f, Screen.Width / (float)Math.Max( 1, Screen.Height ) );
 		var horizontalFovRadians = 2f * MathF.Atan( MathF.Tan( verticalFovRadians * 0.5f ) * aspect );
 		var verticalTan = Math.Max( 0.01f, MathF.Tan( verticalFovRadians * 0.5f ) );
@@ -571,6 +579,16 @@ public sealed class GameCamera : Component
 		}
 
 		return requiredDistance;
+	}
+
+	private void ApplyCameraFov( float fieldOfView )
+	{
+		cameraComponent ??= GetComponentInChildren<CameraComponent>();
+		if ( cameraComponent is not null )
+			cameraComponent.FieldOfView = fieldOfView;
+
+		if ( Scene?.Camera is not null && Scene.Camera != cameraComponent )
+			Scene.Camera.FieldOfView = fieldOfView;
 	}
 
 	private void ApplyView( Vector3 center, float distance, float yaw, float pitch, float followLerpSpeed, float rotLerpSpeed, bool smooth )
