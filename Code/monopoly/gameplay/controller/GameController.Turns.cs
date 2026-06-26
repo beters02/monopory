@@ -131,6 +131,8 @@ public sealed partial class GameController : Component
 			return;
 		}
 
+		MarkTurnActionAccepted();
+
 		if ( CurrentPlayer.IsInJail )
 		{
 			await TryRollForJailReleaseAsync( amount, throwStrength, specifiedDice );
@@ -159,6 +161,8 @@ public sealed partial class GameController : Component
 		if ( Phase != GamePhase.WaitingToRoll || !CurrentPlayer.IsInJail )
 			return;
 
+		MarkTurnActionAccepted();
+
 		if ( !PayBank( CurrentPlayer, JailFineAmount, true, BankPaymentSource.JailFine ) )
 		{
 			SendPopupToPlayer( CurrentPlayer, "Jail fine", $"Raise ${JailFineAmount} to leave Jail.", PopupKind.Warning );
@@ -183,6 +187,8 @@ public sealed partial class GameController : Component
 
 		if ( Phase != GamePhase.WaitingToRoll || !CurrentPlayer.IsInJail )
 			return;
+
+		MarkTurnActionAccepted();
 
 		if ( IsForcedJailFineDue( CurrentPlayer ) )
 		{
@@ -212,6 +218,8 @@ public sealed partial class GameController : Component
 
 		if ( Phase != GamePhase.WaitingToRoll || !CurrentPlayer.IsInJail )
 			return;
+
+		MarkTurnActionAccepted();
 
 		if ( IsForcedJailFineDue( CurrentPlayer ) )
 		{
@@ -285,10 +293,11 @@ public sealed partial class GameController : Component
 		{
 			if ( Config?.ForceJailFineAfterFailedDoubles != true )
 			{
-				Log.Info( $"{CurrentPlayer.PlayerName} stayed in Jail after their third failed doubles attempt." );
-				SendGlobalPopupToAll( "Turn skipped", $"{CurrentPlayer.PlayerName} stays in Jail and skips their turn.", PopupKind.Warning, true, 4f );
+				ReleasePlayerFromJail( CurrentPlayer );
+				Log.Info( $"{CurrentPlayer.PlayerName} left Jail after their third failed doubles attempt." );
+				SendGlobalPopupToAll( "Jail release", $"{CurrentPlayer.PlayerName} failed their third Jail roll and moves {total}.", PopupKind.Warning, true, 4f );
 				ClearPendingRollState();
-				AdvanceTurnImmediately();
+				await MoveCurrentPlayerAfterRoll( total, RollExecutionKind.JailRelease );
 				return;
 			}
 
@@ -590,6 +599,9 @@ public sealed partial class GameController : Component
 			return;
 
 		BeginActiveMovement( playerIndex, Math.Max( steps, 0 ) );
+		if ( Config?.InstantMoveAlways == true )
+			FinishActiveMovement( player, true );
+
 		await ContinueActiveMovementAsync();
 	}
 
@@ -653,7 +665,7 @@ public sealed partial class GameController : Component
 		}
 	}
 
-	public bool CanFinishActiveMovement( PlayerState player )
+	public bool CanFinishActiveMovement( PlayerState player, bool ignoreUnlock = false )
 	{
 		if ( player is null || MatchState != MatchLifecycleState.InGame )
 			return false;
@@ -665,14 +677,17 @@ public sealed partial class GameController : Component
 		if ( playerIndex < 0 || ActiveMovementPlayerIndex != playerIndex )
 			return false;
 
+		if ( ignoreUnlock )
+			return true;
+
 		var unlockMinutes = Math.Max( Config?.InstantMoveButtonUnlockMinutes ?? 0, 0 );
 		var elapsedSeconds = GameStartedAt <= 0f ? 0f : Math.Max( Time.Now - GameStartedAt, 0f );
 		return elapsedSeconds >= unlockMinutes * 60f;
 	}
 
-	public void FinishActiveMovement( PlayerState player )
+	public void FinishActiveMovement( PlayerState player, bool ignoreUnlock = false )
 	{
-		if ( !Networking.IsHost || !CanFinishActiveMovement( player ) )
+		if ( !Networking.IsHost || !CanFinishActiveMovement( player, ignoreUnlock ) )
 			return;
 
 		var skippedPasses = CountGoPassesDuringMovement( player.SpaceIndex, ActiveMovementRemainingSteps );
@@ -932,6 +947,7 @@ public sealed partial class GameController : Component
 		if ( HasPendingForcedPayment )
 			return;
 
+		MarkTurnActionAccepted();
 		CompleteTurn();
 		Phase = GamePhase.WaitingToRoll;
 		StartTurnTimer();

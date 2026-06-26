@@ -388,17 +388,8 @@
 			return;
 		}
 
-		if ( Networking.IsHost )
-		{
-			if ( !GameRef.TryPingPlayer( player, out var message ) )
-				Log.Warning( message );
-		}
-		else
-		{
-			var playerIndex = GameRef.GetPlayerIndex( player );
-			if ( playerIndex >= 0 )
-				GameRef.RequestPingPlayer( playerIndex );
-		}
+		if ( !GameRef.TryPingPlayer( player, out var message ) )
+			Log.Warning( message );
 
 		ClosePlayerProfilePopup();
 	}

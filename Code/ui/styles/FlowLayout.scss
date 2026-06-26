@@ -302,12 +302,17 @@ LobbyMenu {
 	.lobby-player-side-actions {
 		display: flex;
 		align-items: center;
+		justify-content: flex-end;
 		gap: 8px;
+		flex: 0 0 auto;
 	}
 
 	.monopoly-button.lobby-kick-button,
 	.monopoly-button.lobby-abandon-button {
-		min-width: 72px;
+		width: 76px;
+		min-width: 76px;
+		max-width: 76px;
+		flex: 0 0 76px;
 		height: 34px;
 		margin: 0;
 		padding: 0 10px;

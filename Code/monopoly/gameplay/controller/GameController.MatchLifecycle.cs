@@ -16,6 +16,13 @@ public sealed partial class GameController : Component
 		return MatchState == MatchLifecycleState.InGame && !IsGambleScreenActive;
 	}
 
+	private void MarkTurnActionAccepted( PlayerState player = null )
+	{
+		player ??= CurrentPlayer;
+		if ( player is not null )
+			player.TurnTimeoutCount = 0;
+	}
+
 	public bool TryStartGame( bool requireReady = true )
 	{
 		if ( !Networking.IsHost )

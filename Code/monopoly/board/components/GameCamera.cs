@@ -121,6 +121,9 @@ public sealed class GameCamera : Component
 	{
 		if ( Mode == mode )
 			return;
+
+		if ( Mode == BoardCameraMode.Token && mode != BoardCameraMode.Token )
+			ReleaseTokenMouse();
 	
 		Mode = mode;
 

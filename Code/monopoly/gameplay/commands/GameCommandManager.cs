@@ -967,6 +967,14 @@ public static class ForceReadyUpCommand
 	{
 		GameCommandManager.RunCommand( Name, () =>
 		{
+			var lobby = LobbyController.Instance;
+			if ( lobby is not null )
+			{
+				return lobby.TryForceReadyUp( out var lobbyMessage )
+					? CommandResult.Success( lobbyMessage )
+					: CommandResult.Fail( lobbyMessage );
+			}
+
 			var game = GameController.Instance;
 			if ( game is not null )
 			{
@@ -975,13 +983,7 @@ public static class ForceReadyUpCommand
 					: CommandResult.Fail( gameMessage );
 			}
 
-			var lobby = LobbyController.Instance;
-			if ( lobby is null )
-				return CommandResult.Fail( "No active lobby." );
-
-			return lobby.TryForceReadyUp( out var message )
-				? CommandResult.Success( message )
-				: CommandResult.Fail( message );
+			return CommandResult.Fail( "No active lobby." );
 		}, connection );
 	}
 }

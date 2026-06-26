@@ -3,6 +3,7 @@ using Sandbox;
 using System;
 using System.Collections;
 using System.Reflection;
+using System.Threading.Tasks;
 #endif
 
 public static class SteamInviteBridge
@@ -11,12 +12,15 @@ public static class SteamInviteBridge
 	private static bool isRegistered;
 	private static Scene currentScene;
 	private static Delegate joinRequestedHandler;
+	private static Delegate richPresenceJoinRequestedHandler;
+	private static string lastHandledConnectTarget = "";
 #endif
 
 	public static void Register( Scene scene )
 	{
 #if STANDALONE
 		currentScene = scene;
+		TryHandleLaunchConnectTarget();
 
 		if ( isRegistered )
 			return;
@@ -39,6 +43,7 @@ public static class SteamInviteBridge
 
 			joinRequestedProperty.SetValue( null, combinedHandler );
 			isRegistered = true;
+			TryRegisterRichPresenceJoinCallback( steamFriendsType );
 			Log.Info( "Registered Steam lobby join callback." );
 		}
 		catch ( Exception exception )
@@ -90,6 +95,65 @@ public static class SteamInviteBridge
 			}
 		}
 	}
+
+	private static void TryRegisterRichPresenceJoinCallback( Type steamFriendsType )
+	{
+		try
+		{
+			var joinRequestedProperty = steamFriendsType?.GetProperty( "OnGameRichPresenceJoinRequested", BindingFlags.Public | BindingFlags.Static );
+			var handlerMethod = typeof( SteamInviteBridge ).GetMethod( nameof( OnGameRichPresenceJoinRequested ), BindingFlags.NonPublic | BindingFlags.Static );
+			if ( joinRequestedProperty is null || handlerMethod is null )
+				return;
+
+			richPresenceJoinRequestedHandler = Delegate.CreateDelegate( joinRequestedProperty.PropertyType, handlerMethod );
+			var existingHandler = joinRequestedProperty.GetValue( null ) as Delegate;
+			joinRequestedProperty.SetValue( null, Delegate.Combine( existingHandler, richPresenceJoinRequestedHandler ) );
+			Log.Info( "Registered Steam rich presence join callback." );
+		}
+		catch ( Exception exception )
+		{
+			Log.Warning( $"Failed to register Steam rich presence join callback: {exception.Message}" );
+		}
+	}
+
+	private static void TryHandleLaunchConnectTarget()
+	{
+		var args = Environment.GetCommandLineArgs();
+		for ( var i = 0; i < args.Length; i++ )
+		{
+			if ( !string.Equals( args[i], "+connect_lobby", StringComparison.OrdinalIgnoreCase ) || i + 1 >= args.Length )
+				continue;
+
+			HandleConnectTarget( $"+connect_lobby {args[i + 1]}" );
+			return;
+		}
+	}
+
+	private static async void HandleConnectTarget( string connectTarget )
+	{
+		if ( string.IsNullOrWhiteSpace( connectTarget ) || string.Equals( connectTarget, lastHandledConnectTarget, StringComparison.Ordinal ) )
+			return;
+
+		lastHandledConnectTarget = connectTarget;
+		if ( !TryParseConnectLobbyId( connectTarget, out var lobbyIdValue ) )
+			return;
+
+		var lobbyId = (SteamId)unchecked((long)lobbyIdValue);
+		await JoinLobbyInviteAsync( lobbyId );
+	}
+
+	private static bool TryParseConnectLobbyId( string connectTarget, out ulong lobbyId )
+	{
+		lobbyId = 0;
+		var parts = connectTarget.Split( ' ', StringSplitOptions.RemoveEmptyEntries );
+		for ( var i = 0; i < parts.Length - 1; i++ )
+		{
+			if ( string.Equals( parts[i], "+connect_lobby", StringComparison.OrdinalIgnoreCase ) && ulong.TryParse( parts[i + 1], out lobbyId ) )
+				return lobbyId != 0;
+		}
+
+		return false;
+	}
 	private static Type FindLoadedType( string typeName )
 	{
 		var assemblies = AppDomain.CurrentDomain.GetAssemblies();
@@ -104,7 +168,17 @@ public static class SteamInviteBridge
 		return null;
 	}
 
+	private static void OnGameRichPresenceJoinRequested( object friend, string connectTarget )
+	{
+		HandleConnectTarget( connectTarget );
+	}
+
 	private static async void OnGameLobbyJoinRequested( SteamId lobbyId )
+	{
+		await JoinLobbyInviteAsync( lobbyId );
+	}
+
+	private static async Task JoinLobbyInviteAsync( SteamId lobbyId )
 	{
 		var lobbyIdValue = lobbyId.ValueUnsigned;
 		if ( lobbyIdValue == 0 )

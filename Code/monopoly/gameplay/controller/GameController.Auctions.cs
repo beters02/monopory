@@ -29,6 +29,7 @@ public sealed partial class GameController : Component
 		if ( Phase != GamePhase.WaitingForBuyDecision )
 			return;
 
+		MarkTurnActionAccepted();
 		StartAuction( PendingPurchaseSpaceIndex );
 	}
 
@@ -135,6 +136,7 @@ public sealed partial class GameController : Component
 		if ( bidAmount <= AuctionCurrentBid || bidAmount > bidder.Money )
 			return;
 
+		MarkTurnActionAccepted( bidder );
 		AuctionCurrentBid = bidAmount;
 		AuctionHighBidderIndex = bidderIndex;
 		AuctionEndsAt = MathF.Max( AuctionEndsAt, Time.Now + 7f );

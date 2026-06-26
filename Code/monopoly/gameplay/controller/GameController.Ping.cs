@@ -21,27 +21,13 @@ public sealed partial class GameController : Component
 			return false;
 		}
 
-		if ( Networking.IsHost )
-			BroadcastPlayerPing( playerIndex, Time.Now + PingDurationSeconds );
-		else
-			RequestPingPlayer( playerIndex );
+		ShowLocalPlayerPing( playerIndex, Time.Now + PingDurationSeconds );
 
 		message = $"Pinged {player.PlayerName}.";
 		return true;
 	}
 
-	[Rpc.Host]
-	public void RequestPingPlayer( int playerIndex )
-	{
-		var player = Players.ElementAtOrDefault( playerIndex );
-		if ( player is null || !player.IsAssigned || player.IsBankrupt )
-			return;
-
-		BroadcastPlayerPing( playerIndex, Time.Now + PingDurationSeconds );
-	}
-
-	[Rpc.Broadcast]
-	private void BroadcastPlayerPing( int playerIndex, float expiresAt )
+	private void ShowLocalPlayerPing( int playerIndex, float expiresAt )
 	{
 		var player = Players.ElementAtOrDefault( playerIndex );
 		var token = GetPlayerToken( player );

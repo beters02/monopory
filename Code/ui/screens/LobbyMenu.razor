@@ -33,10 +33,11 @@
 										<div class="match-config-preset-item">
 											<GameButton Variant="@GetGameRulesPresetButtonClasses( preset )" OnClick="@(() => ApplyGameRulesPreset( preset ))">@preset.Name</GameButton>
 											<GameButton Variant="@GetGameRulesDefaultButtonClasses( preset )" OnClick="@(() => SetDefaultGameRulesPreset( preset ))">@GetDefaultPresetButtonText( IsDefaultGameRulesPreset( preset ) )</GameButton>
+											<GameButton Variant="options-panel-secondary-button match-config-preset-duplicate" CanClick="@CanEditConfig" OnClick="@(() => BeginDuplicateGameRulesPreset( preset ))">Duplicate</GameButton>
 											@if ( !preset.IsPredefined )
 											{
 												<GameButton Variant="options-panel-primary-button match-config-preset-update" CanClick="@CanUpdateGameRulesPreset( preset )" OnClick="@(() => UpdateGameRulesPreset( preset ))">Update</GameButton>
-												<GameButton Variant="options-panel-danger-button match-config-preset-delete" OnClick="@(() => DeleteGameRulesPreset( preset ))">Delete</GameButton>
+												<GameButton Variant="options-panel-danger-button match-config-preset-delete" OnClick="@(() => ConfirmDeleteGameRulesPreset( preset ))">Delete</GameButton>
 											}
 										</div>
 									}
@@ -77,10 +78,11 @@
 										<div class="match-config-preset-item">
 											<GameButton Variant="@GetBoardConfigPresetButtonClasses( preset )" OnClick="@(() => ApplyBoardConfigPreset( preset ))">@preset.Name</GameButton>
 											<GameButton Variant="@GetBoardConfigDefaultButtonClasses( preset )" OnClick="@(() => SetDefaultBoardConfigPreset( preset ))">@GetDefaultPresetButtonText( IsDefaultBoardConfigPreset( preset ) )</GameButton>
+											<GameButton Variant="options-panel-secondary-button match-config-preset-duplicate" CanClick="@CanEditConfig" OnClick="@(() => BeginDuplicateBoardConfigPreset( preset ))">Duplicate</GameButton>
 											@if ( !preset.IsPredefined )
 											{
 												<GameButton Variant="options-panel-primary-button match-config-preset-update" CanClick="@CanUpdateBoardConfigPreset( preset )" OnClick="@(() => UpdateBoardConfigPreset( preset ))">Update</GameButton>
-												<GameButton Variant="options-panel-danger-button match-config-preset-delete" OnClick="@(() => DeleteBoardConfigPreset( preset ))">Delete</GameButton>
+												<GameButton Variant="options-panel-danger-button match-config-preset-delete" OnClick="@(() => ConfirmDeleteBoardConfigPreset( preset ))">Delete</GameButton>
 											}
 										</div>
 									}
@@ -106,6 +108,31 @@
 							<GameButton Variant="options-panel-secondary-button" CanClick="@CanEditCurrentConfigPage" ShowBlockedPopup="@(false)" SoundEnabled="@CanEditCurrentConfigPage" OnClick="@ResetConfigMenu">Reset to Defaults</GameButton>
 							<GameButton Variant="options-panel-primary-button" OnClick="@SaveConfigMenu">Save</GameButton>
 						}
+					</Footer>
+				</OptionsPanelBody>
+			</ChildContent>
+		</OptionsPanel>
+		<OptionsPanel
+			IsOpen="@IsDuplicatePresetMenuOpen"
+			Kicker="Match Settings"
+			Title="Duplicate Preset"
+			OnClose="@CancelDuplicatePreset"
+			RootVariant="lobby-options-root"
+			PanelVariant="compact-panel">
+			<ChildContent>
+				<OptionsPanelBody Copy="Name the duplicated preset before saving it as a custom preset.">
+					<ChildContent Context="_">
+						<div class="options-panel-section">
+							<div class="options-panel-section-title">Preset Name</div>
+							<TextEntry class="match-config-preset-duplicate-input"
+								Text="@DuplicatePresetNameDraft"
+								Placeholder="Preset name"
+								OnTextEdited="@((string value) => SetDuplicatePresetNameDraft( value ))" />
+						</div>
+					</ChildContent>
+					<Footer>
+						<GameButton Variant="options-panel-secondary-button" OnClick="@CancelDuplicatePreset">Cancel</GameButton>
+						<GameButton Variant="options-panel-primary-button" OnClick="@ConfirmDuplicatePreset">Create</GameButton>
 					</Footer>
 				</OptionsPanelBody>
 			</ChildContent>
@@ -418,6 +445,9 @@
 	private string ActiveCustomizePage = CustomizePagePieces;
 	private string GameRulePresetNameDraft = "";
 	private string BoardConfigPresetNameDraft = "";
+	private MatchSettingsPreset PendingDuplicatePreset;
+	private bool IsDuplicatingGameRulesPreset;
+	private string DuplicatePresetNameDraft = "";
 	private bool IsGameRulesExplicitlyCustom;
 	private bool IsBoardConfigExplicitlyCustom;
 	private string SelectedGameRulePresetId = CustomPresetId;
@@ -614,6 +644,7 @@
 	private bool IsDiceCustomizePage => string.Equals( ActiveCustomizePage, CustomizePageDice, StringComparison.Ordinal );
 	private bool IsGameRulesCustomSelected => string.Equals( SelectedGameRulePresetId, CustomPresetId, StringComparison.Ordinal );
 	private bool IsBoardConfigCustomSelected => string.Equals( SelectedBoardConfigPresetId, CustomPresetId, StringComparison.Ordinal );
+	private bool IsDuplicatePresetMenuOpen => PendingDuplicatePreset is not null;
 	private bool CanEditGameRulesDraft => IsGameRulesCustomSelected || GetSelectedGameRulesPreset()?.IsPredefined == false;
 	private bool CanEditBoardConfigDraft => IsBoardConfigCustomSelected || GetSelectedBoardConfigPreset()?.IsPredefined == false;
 	private bool CanEditCurrentConfigPage => CanEditConfig && (IsGameRulesConfigPage ? CanEditGameRulesDraft : CanEditBoardConfigDraft);
@@ -656,6 +687,9 @@
 		hash.Add( ActiveCustomizePage );
 		hash.Add( GameRulePresetNameDraft );
 		hash.Add( BoardConfigPresetNameDraft );
+		hash.Add( DuplicatePresetNameDraft );
+		hash.Add( PendingDuplicatePreset?.Id ?? "" );
+		hash.Add( IsDuplicatingGameRulesPreset );
 		hash.Add( IsGameRulesExplicitlyCustom );
 		hash.Add( IsBoardConfigExplicitlyCustom );
 		hash.Add( SelectedGameRulePresetId );
@@ -1362,11 +1396,11 @@
 		}
 
 		PopupGame.ShowLocalConfirmation(
-			"Discard changes?",
-			"You have unsaved match settings. Closing now will discard those changes.",
+			"Exit without saving?",
+			"Exit without saving? Unsaved match settings changes will be discarded.",
 			CloseConfigMenuWithoutConfirmation,
 			null,
-			"Discard",
+			"Exit",
 			"Stay",
 			false );
 	}
@@ -1819,6 +1853,126 @@
 		configRevision++;
 	}
 
+	private void BeginDuplicateGameRulesPreset( MatchSettingsPreset preset )
+	{
+		BeginDuplicatePreset( preset, true );
+	}
+
+	private void BeginDuplicateBoardConfigPreset( MatchSettingsPreset preset )
+	{
+		BeginDuplicatePreset( preset, false );
+	}
+
+	private void BeginDuplicatePreset( MatchSettingsPreset preset, bool gameRulesPreset )
+	{
+		if ( preset is null || !CanEditConfig )
+			return;
+
+		PendingDuplicatePreset = preset;
+		IsDuplicatingGameRulesPreset = gameRulesPreset;
+		DuplicatePresetNameDraft = GetNextDuplicatePresetName(
+			preset.Name,
+			gameRulesPreset ? GameRulePresets : BoardConfigPresets );
+		configRevision++;
+	}
+
+	private static string GetNextDuplicatePresetName( string presetName, IEnumerable<MatchSettingsPreset> presets )
+	{
+		var baseName = string.IsNullOrWhiteSpace( presetName ) ? "Preset" : presetName.Trim();
+		var existingNames = (presets ?? Array.Empty<MatchSettingsPreset>())
+			.Where( preset => preset is not null )
+			.Select( preset => preset.Name ?? "" )
+			.ToHashSet( StringComparer.OrdinalIgnoreCase );
+
+		for ( var number = 1; number < 10000; number++ )
+		{
+			var candidate = $"{baseName} Duplicate {number}";
+			if ( !existingNames.Contains( candidate ) )
+				return candidate;
+		}
+
+		return $"{baseName} Duplicate";
+	}
+
+	private void SetDuplicatePresetNameDraft( string value )
+	{
+		DuplicatePresetNameDraft = value ?? "";
+		configRevision++;
+	}
+
+	private void ConfirmDuplicatePreset()
+	{
+		if ( PendingDuplicatePreset is null || !CanEditConfig )
+			return;
+
+		var presetName = string.IsNullOrWhiteSpace( DuplicatePresetNameDraft )
+			? GetNextDuplicatePresetName( PendingDuplicatePreset.Name, IsDuplicatingGameRulesPreset ? GameRulePresets : BoardConfigPresets )
+			: DuplicatePresetNameDraft.Trim();
+
+		var preset = new MatchSettingsPreset
+		{
+			Id = $"{(IsDuplicatingGameRulesPreset ? "rules" : "board")}_custom_{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}",
+			Name = presetName,
+			Snapshot = PendingDuplicatePreset.Snapshot ?? "",
+			IsPredefined = false
+		};
+
+		if ( IsDuplicatingGameRulesPreset )
+		{
+			CustomGameRulePresets.Add( preset );
+			SelectedGameRulePresetId = preset.Id;
+			IsGameRulesExplicitlyCustom = false;
+			SaveCustomPresets( GameRulePresetFileName, CustomGameRulePresets );
+		}
+		else
+		{
+			CustomBoardConfigPresets.Add( preset );
+			SelectedBoardConfigPresetId = preset.Id;
+			IsBoardConfigExplicitlyCustom = false;
+			SaveCustomPresets( BoardConfigPresetFileName, CustomBoardConfigPresets );
+		}
+
+		CancelDuplicatePreset();
+	}
+
+	private void CancelDuplicatePreset()
+	{
+		PendingDuplicatePreset = null;
+		IsDuplicatingGameRulesPreset = false;
+		DuplicatePresetNameDraft = "";
+		configRevision++;
+	}
+
+	private void ConfirmDeleteGameRulesPreset( MatchSettingsPreset preset )
+	{
+		if ( preset is null || preset.IsPredefined )
+			return;
+
+		PopupGame?.ShowLocalConfirmation(
+			"Delete preset?",
+			$"Delete {preset.Name}? This cannot be undone.",
+			() => DeleteGameRulesPreset( preset ),
+			null,
+			"Delete",
+			"Cancel",
+			false );
+	}
+
+	private void ConfirmDeleteBoardConfigPreset( MatchSettingsPreset preset )
+	{
+		if ( preset is null || preset.IsPredefined )
+			return;
+
+		PopupGame?.ShowLocalConfirmation(
+			"Delete preset?",
+			$"Delete {preset.Name}? This cannot be undone.",
+			() => DeleteBoardConfigPreset( preset ),
+			null,
+			"Delete",
+			"Cancel",
+			false );
+	}
+
 	private void SetGameRulePresetNameDraft( string value )
 	{
 		GameRulePresetNameDraft = value ?? "";
@@ -1904,7 +2058,28 @@
 		configRevision++;
 	}
 
-	private async void SaveConfigMenu()
+	private void SaveConfigMenu()
+	{
+		if ( Lobby is null || EditableConfig is null || !CanEditConfig )
+			return;
+
+		if ( PopupGame is null )
+		{
+			SaveConfigMenuConfirmed();
+			return;
+		}
+
+		PopupGame.ShowLocalConfirmation(
+			"Save match settings?",
+			"Apply these match settings to the lobby?",
+			SaveConfigMenuConfirmed,
+			null,
+			"Save",
+			"Cancel",
+			false );
+	}
+
+	private async void SaveConfigMenuConfirmed()
 	{
 		if ( Lobby is null || EditableConfig is null || !CanEditConfig )
 			return;

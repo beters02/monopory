@@ -142,10 +142,13 @@ public sealed class MatchConfig
 	[MatchConfigOption( "Turn Rules", "Instant Move Button Unlock Minutes", Description = "Elapsed match minutes before the finish-movement button can appear. 0 allows it immediately.", CommandId = "instant_move_button_unlock_minutes", Order = 37, Min = 0, Max = 240, Step = 5 )]
 	public int InstantMoveButtonUnlockMinutes { get; set; } = 0;
 
-	[MatchConfigOption( "Turn Rules", "Auto BHop Enabled", Description = "Allows holding jump to automatically jump again when grounded.", CommandId = "auto_bhop_enabled", Order = 38, IsVisible = false )]
+	[MatchConfigOption( "Turn Rules", "Instant Move Always", Description = "Automatically finishes token movement after dice resolve.", CommandId = "instant_move_always", Order = 38 )]
+	public bool InstantMoveAlways { get; set; } = false;
+
+	[MatchConfigOption( "Turn Rules", "Auto BHop Enabled", Description = "Allows holding jump to automatically jump again when grounded.", CommandId = "auto_bhop_enabled", Order = 39, IsVisible = false )]
 	public bool AutoBHopEnabled { get; set; } = true;
 	
-	[MatchConfigOption( "Turn Rules", "Token Camera Mode Can Always Control", Description = "Allows the local token camera controller to move even during that player's own turn.", CommandId = "token_camera_mode_can_always_control", Order = 39, IsVisible = false )]
+	[MatchConfigOption( "Turn Rules", "Token Camera Mode Can Always Control", Description = "Allows the local token camera controller to move even during that player's own turn.", CommandId = "token_camera_mode_can_always_control", Order = 40, IsVisible = false )]
 	public bool TokenCameraModeCanAlwaysControl { get; set; } = true;
 
 	[MatchConfigOption( "Board Rules", "Vacation Cash", Description = "Awards pooled cash when landing on Free Parking, if enabled.", CommandId = "vacation_cash", Order = 40 )]

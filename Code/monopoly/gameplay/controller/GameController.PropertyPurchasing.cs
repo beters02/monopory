@@ -273,6 +273,7 @@ public sealed partial class GameController : Component
 			return;
 		}
 
+		MarkTurnActionAccepted( player );
 		BuyUnownedPropertyForPlayer( player, def, CurrentPlayerIndex );
 		ShowPropertyBoughtPopup( player, def );
 
@@ -296,6 +297,7 @@ public sealed partial class GameController : Component
 		if ( !CanSkipPendingPropertyDecision() )
 			return;
 
+		MarkTurnActionAccepted();
 		Log.Info( $"{CurrentPlayer?.PlayerName} skipped buying." );
 
 		PendingPurchaseSpaceIndex = -1;

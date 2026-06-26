@@ -96,6 +96,9 @@ public static class SteamFriendsBridge
 #endif
 	private static readonly HashSet<string> avatarLogKeys = new();
 	private static float nextRefreshTime;
+	private static int avatarRevision = 0;
+
+	public static int AvatarRevision => avatarRevision;
 
 	public static IReadOnlyList<SteamFriendListEntry> GetFriends()
 	{
@@ -680,6 +683,7 @@ public static class SteamFriendsBridge
 			if ( avatarTexture is not null )
 			{
 				cachedAvatarTextures[steamId] = avatarTexture;
+				avatarRevision++;
 				LogAvatarOnce( steamId, "success", $"Loaded Steam avatar texture for {steamId}." );
 			}
 			else
