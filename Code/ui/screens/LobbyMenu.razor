@@ -111,31 +111,20 @@
 					</Footer>
 				</OptionsPanelBody>
 			</ChildContent>
-		</OptionsPanel>
-		<OptionsPanel
-			IsOpen="@IsDuplicatePresetMenuOpen"
-			Kicker="Match Settings"
-			Title="Duplicate Preset"
-			OnClose="@CancelDuplicatePreset"
-			RootVariant="lobby-options-root"
-			PanelVariant="compact-panel">
-			<ChildContent>
-				<OptionsPanelBody Copy="Name the duplicated preset before saving it as a custom preset.">
-					<ChildContent Context="_">
-						<div class="options-panel-section">
-							<div class="options-panel-section-title">Preset Name</div>
-							<TextEntry class="match-config-preset-duplicate-input"
-								Text="@DuplicatePresetNameDraft"
-								Placeholder="Preset name"
-								OnTextEdited="@((string value) => SetDuplicatePresetNameDraft( value ))" />
-						</div>
-					</ChildContent>
-					<Footer>
-						<GameButton Variant="options-panel-secondary-button" OnClick="@CancelDuplicatePreset">Cancel</GameButton>
-						<GameButton Variant="options-panel-primary-button" OnClick="@ConfirmDuplicatePreset">Create</GameButton>
-					</Footer>
-				</OptionsPanelBody>
-			</ChildContent>
+		<OverlayContent>
+			<TextPromptDialog
+				IsOpen="@IsDuplicatePresetMenuOpen"
+				Title="Duplicate Preset"
+				Message="Name the duplicated preset before saving it as a custom preset."
+				Text="@DuplicatePresetNameDraft"
+				Placeholder="Preset name"
+				ConfirmLabel="Create"
+				CancelLabel="Cancel"
+				OnTextEdited="@SetDuplicatePresetNameDraft"
+				OnConfirm="@ConfirmDuplicatePreset"
+				OnCancel="@CancelDuplicatePreset">
+			</TextPromptDialog>
+		</OverlayContent>
 		</OptionsPanel>
 		<OptionsPanel
 			IsOpen="@(IsLoadMenuOpen && IsLoadSeatMenuOpen)"

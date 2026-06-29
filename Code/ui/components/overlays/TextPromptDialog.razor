@@ -1,0 +1,71 @@
+@namespace Sandbox.ui.components
+@using Sandbox;
+@using Sandbox.UI;
+@using Sandbox.ui.components.buttons
+@using System;
+@inherits Panel
+
+<root class="@RootClasses">
+	@if ( IsOpen )
+	{
+		<div class="text-prompt-dialog-overlay">
+			<div class="text-prompt-dialog">
+				<div class="text-prompt-dialog-content">
+					@if ( !string.IsNullOrWhiteSpace( Title ) )
+					{
+						<div class="text-prompt-dialog-title">@Title</div>
+					}
+					@if ( !string.IsNullOrWhiteSpace( Message ) )
+					{
+						<div class="text-prompt-dialog-message">@Message</div>
+					}
+					<TextEntry class="text-prompt-dialog-input"
+						Text="@Text"
+						Placeholder="@Placeholder"
+						OnTextEdited="@SetText" />
+				</div>
+				<div class="text-prompt-dialog-actions">
+					<GameButton Variant="text-prompt-dialog-cancel" OnClick="@Cancel" SoundEnabled="@false" IgnoreGlobalPopupBlock="@true">@CancelLabel</GameButton>
+					<GameButton Variant="text-prompt-dialog-confirm" OnClick="@Confirm" SoundEnabled="@false" IgnoreGlobalPopupBlock="@true">@ConfirmLabel</GameButton>
+				</div>
+			</div>
+		</div>
+	}
+</root>
+
+@code
+{
+	[Parameter] public bool IsOpen { get; set; }
+	[Parameter] public string Title { get; set; } = "Enter name";
+	[Parameter] public string Message { get; set; } = "";
+	[Parameter] public string Text { get; set; } = "";
+	[Parameter] public string Placeholder { get; set; } = "";
+	[Parameter] public string ConfirmLabel { get; set; } = "Confirm";
+	[Parameter] public string CancelLabel { get; set; } = "Cancel";
+	[Parameter] public Action<string> OnTextEdited { get; set; }
+	[Parameter] public Action OnConfirm { get; set; }
+	[Parameter] public Action OnCancel { get; set; }
+
+	private string RootClasses => IsOpen ? "text-prompt-dialog-root open" : "text-prompt-dialog-root";
+
+	private void SetText( string value )
+	{
+		Text = value ?? "";
+		OnTextEdited?.Invoke( Text );
+	}
+
+	private void Confirm()
+	{
+		OnConfirm?.Invoke();
+	}
+
+	private void Cancel()
+	{
+		OnCancel?.Invoke();
+	}
+
+	protected override int BuildHash()
+	{
+		return HashCode.Combine( IsOpen, Title, Message, Text, Placeholder, ConfirmLabel, CancelLabel );
+	}
+}

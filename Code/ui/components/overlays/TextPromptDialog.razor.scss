@@ -1,0 +1,158 @@
+@import "../../styles/GameTheme.scss";
+@import "../buttons/GameButton.razor.scss";
+
+.text-prompt-dialog-root {
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	z-index: 100;
+	pointer-events: none;
+}
+
+.text-prompt-dialog-root.open {
+	pointer-events: all;
+}
+
+.text-prompt-dialog-overlay {
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	z-index: 1;
+	padding: 20px;
+
+	background-color: $monopoly-popup-scrim;
+	backdrop-filter: blur( 6px );
+
+	display: flex;
+	align-items: center;
+	justify-content: center;
+
+	pointer-events: all;
+}
+
+.text-prompt-dialog {
+	width: 480px;
+	max-width: 92%;
+	min-height: 220px;
+	padding: 22px 24px 20px 24px;
+
+	background-color: $monopoly-board;
+	border: 3px solid $monopoly-ink;
+	border-left-width: 10px;
+	border-left-color: $monopoly-gold;
+	border-radius: $monopoly-radius-board;
+	box-shadow: $monopoly-panel-shadow;
+
+	color: $monopoly-ink;
+	font-family: $monopoly-font-family;
+
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	justify-content: space-between;
+	gap: 18px;
+}
+
+.text-prompt-dialog-content {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.text-prompt-dialog-title {
+	color: $monopoly-ink;
+	font-size: 20px;
+	font-weight: 900;
+	line-height: 24px;
+}
+
+.text-prompt-dialog-message {
+	color: $monopoly-ink;
+	font-size: 14px;
+	font-weight: 700;
+	line-height: 20px;
+	opacity: 0.72;
+}
+
+.text-prompt-dialog-input {
+	width: 100%;
+	min-width: 0;
+	height: 44px;
+	padding: 0 12px;
+	margin-top: 2px;
+
+	background-color: $monopoly-board-surface-strong;
+	border: 2px solid $monopoly-ink;
+	border-radius: $monopoly-radius-control;
+	color: $monopoly-ink;
+	font-family: $monopoly-font-family;
+	font-size: 14px;
+	font-weight: 900;
+	pointer-events: all;
+}
+
+.text-prompt-dialog-input .placeholder,
+.text-prompt-dialog-input .content-label,
+.text-prompt-dialog-input .label,
+.text-prompt-dialog-input .text {
+	color: $monopoly-ink;
+	font-size: 14px;
+	font-weight: 900;
+	line-height: 20px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.text-prompt-dialog-input .cursor,
+.text-prompt-dialog-input .caret {
+	width: 2px;
+	height: 20px;
+	min-width: 2px;
+	background-color: $monopoly-ink;
+}
+
+.text-prompt-dialog-actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: 12px;
+}
+
+.text-prompt-dialog-actions .monopoly-button {
+	flex: 1;
+	height: 44px;
+	min-width: 120px;
+	margin-top: 0;
+	padding: 0 16px;
+
+	border: 2px solid transparent;
+	border-radius: $monopoly-radius-control;
+	box-shadow: $monopoly-control-shadow;
+
+	font-size: 14px;
+	font-weight: 900;
+	text-transform: uppercase;
+	justify-content: center;
+}
+
+.text-prompt-dialog-actions .text-prompt-dialog-cancel {
+	background-color: $monopoly-blocked-action;
+	color: $monopoly-text;
+}
+
+.text-prompt-dialog-actions .text-prompt-dialog-cancel:hover {
+	background-color: $monopoly-blocked-action-hover;
+}
+
+.text-prompt-dialog-actions .text-prompt-dialog-confirm {
+	background-color: $monopoly-gold;
+	color: $monopoly-ink;
+}
+
+.text-prompt-dialog-actions .text-prompt-dialog-confirm:hover {
+	background-color: $monopoly-gold-hover;
+}
