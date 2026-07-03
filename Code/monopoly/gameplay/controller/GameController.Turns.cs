@@ -64,6 +64,7 @@ public sealed partial class GameController : Component
 		CurrentTurnGetsExtraRoll = false;
 		CurrentTurnConsecutiveDoubles = 0;
 		CurrentTurnDoublesPlayerIndex = -1;
+		CurrentTurnMovementDistance = 0;
 		CurrentTurnEndsAt = 0f;
 
 		if ( skippedPlayer is null || !skippedPlayer.IsAssigned || skippedPlayer.IsBankrupt )
@@ -169,7 +170,7 @@ public sealed partial class GameController : Component
 			return;
 		}
 
-		ReleasePlayerFromJail( CurrentPlayer );
+		ReleasePlayerFromJail( CurrentPlayer, JailReleaseReason.PaidFine );
 		SendTableChatMessage( "Jail fine paid", $"{CurrentPlayer.PlayerName} paid ${JailFineAmount} to leave Jail." );
 		await RollCurrentPlayerAsync( -1, ShouldSuppressDoublesExtraTurnForJailRelease(), RollExecutionKind.JailRelease );
 	}
@@ -273,7 +274,7 @@ public sealed partial class GameController : Component
 
 		if ( rolledDoubles )
 		{
-			ReleasePlayerFromJail( CurrentPlayer );
+			ReleasePlayerFromJail( CurrentPlayer, JailReleaseReason.RolledDoubles );
 			Log.Info( $"{CurrentPlayer.PlayerName} rolled doubles to leave Jail." );
 			if ( Config?.DoublesGoesAgain == true && Config?.DoublesGoAgainOutOfJail == true && ApplyDoublesRule( true ) )
 			{
@@ -293,7 +294,7 @@ public sealed partial class GameController : Component
 		{
 			if ( Config?.ForceJailFineAfterFailedDoubles != true )
 			{
-				ReleasePlayerFromJail( CurrentPlayer );
+				ReleasePlayerFromJail( CurrentPlayer, JailReleaseReason.ThirdFailedRoll );
 				Log.Info( $"{CurrentPlayer.PlayerName} left Jail after their third failed doubles attempt." );
 				SendGlobalPopupToAll( "Jail release", $"{CurrentPlayer.PlayerName} failed their third Jail roll and moves {total}.", PopupKind.Warning, true, 4f );
 				ClearPendingRollState();
@@ -317,7 +318,7 @@ public sealed partial class GameController : Component
 				return;
 			}
 
-			ReleasePlayerFromJail( CurrentPlayer );
+			ReleasePlayerFromJail( CurrentPlayer, JailReleaseReason.ForcedFine );
 			SendTableChatMessage( "Jail fine paid", $"{CurrentPlayer.PlayerName} paid ${JailFineAmount} after three failed Jail rolls." );
 			ClearPendingRollState();
 			await MoveCurrentPlayerAfterRoll( total, RollExecutionKind.JailRelease );
@@ -548,7 +549,7 @@ public sealed partial class GameController : Component
 					5f
 				);
 				SendTableChatMessage( "Three doubles", $"{CurrentPlayer.PlayerName} rolled doubles three times in a row and was sent to Jail." );
-				SendPlayerToJail( CurrentPlayer );
+				SendPlayerToJail( CurrentPlayer, JailSendReason.ThreeDoubles );
 				CurrentTurnConsecutiveDoubles = 0;
 				CurrentTurnDoublesPlayerIndex = -1;
 				CurrentPlayer.ConsecutiveDoubles = 0;
@@ -599,6 +600,7 @@ public sealed partial class GameController : Component
 			return;
 
 		BeginActiveMovement( playerIndex, Math.Max( steps, 0 ) );
+		AddTurnMovementDistance( player, Math.Max( steps, 0 ), "Dice movement" );
 		if ( Config?.InstantMoveAlways == true )
 			FinishActiveMovement( player, true );
 
@@ -775,7 +777,10 @@ public sealed partial class GameController : Component
 		PendingLandingResolved = false;
 	}
 
-	public void SendPlayerToJail( PlayerState player )
+	public void SendPlayerToJail( PlayerState player ) =>
+		SendPlayerToJail( player, JailSendReason.Command );
+
+	private void SendPlayerToJail( PlayerState player, JailSendReason reason )
 	{
 		if ( player is null )
 			return;
@@ -788,10 +793,21 @@ public sealed partial class GameController : Component
 		CurrentTurnGetsExtraRoll = false;
 		CurrentTurnConsecutiveDoubles = 0;
 		CurrentTurnDoublesPlayerIndex = -1;
-
-		Log.Info( $"{player.PlayerName} was sent to Jail." );
+		var reasonText = GetJailSendReasonText( reason );
+		SendGlobalPopupToAll( "Jailed", $"{player.PlayerName} was sent to Jail: {reasonText}.", PopupKind.Danger, true, 5f );
+		RecordMoveHistoryEvent( "Jail", "Player jailed", $"{player.PlayerName} was jailed: {reasonText}." );
+		Log.Info( $"{player.PlayerName} was sent to Jail ({reasonText})." );
 		ReportAchievementEvent( player, AchievementEventTypes.SentToJail );
 	}
+
+	private static string GetJailSendReasonText( JailSendReason reason ) => reason switch
+	{
+		JailSendReason.GoToJailSpace => "landed on Go To Jail",
+		JailSendReason.Card => "drew a Jail card",
+		JailSendReason.ThreeDoubles => "rolled doubles three times in a row",
+		JailSendReason.SwapCard => "swapped with a jailed player",
+		_ => "sent by host command"
+	};
 
 	public bool IsForcedJailFineDue( PlayerState player )
 	{
@@ -801,7 +817,7 @@ public sealed partial class GameController : Component
 			Config?.ForceJailFineAfterFailedDoubles == true;
 	}
 
-	private void ReleasePlayerFromJail( PlayerState player )
+	private void ReleasePlayerFromJail( PlayerState player, JailReleaseReason reason = JailReleaseReason.PaidFine )
 	{
 		if ( player is null )
 			return;
@@ -810,6 +826,29 @@ public sealed partial class GameController : Component
 		player.JailTurnsRemaining = 0;
 		player.ConsecutiveDoubles = 0;
 		CurrentTurnGetsExtraRoll = false;
+		var reasonText = GetJailReleaseReasonText( reason );
+		SendGlobalPopupToAll( "Released from Jail", $"{player.PlayerName} left Jail: {reasonText}.", PopupKind.Success, true, 5f );
+		RecordMoveHistoryEvent( "Jail", "Player released", $"{player.PlayerName} left Jail: {reasonText}." );
+	}
+
+	private static string GetJailReleaseReasonText( JailReleaseReason reason ) => reason switch
+	{
+		JailReleaseReason.PaidFine => "paid the fine",
+		JailReleaseReason.UsedCard => "used a Get Out of Jail Free card",
+		JailReleaseReason.RolledDoubles => "rolled doubles",
+		JailReleaseReason.ThirdFailedRoll => "failed the final Jail roll",
+		JailReleaseReason.ForcedFine => "paid after three failed Jail rolls",
+		JailReleaseReason.SwapCard => "swapped out by a card",
+		_ => "released"
+	};
+
+	private void AddTurnMovementDistance( PlayerState player, int distance, string reason )
+	{
+		if ( player is null || GetPlayerIndex( player ) != CurrentPlayerIndex || distance <= 0 )
+			return;
+
+		CurrentTurnMovementDistance += distance;
+		RecordMoveHistoryEvent( "Movement", reason, $"{player.PlayerName} moved {distance} space(s); turn total {CurrentTurnMovementDistance}." );
 	}
 
 	private bool TryUseGetOutOfJailFreeCard( PlayerState player )
@@ -832,7 +871,7 @@ public sealed partial class GameController : Component
 			return false;
 		}
 
-		ReleasePlayerFromJail( player );
+		ReleasePlayerFromJail( player, JailReleaseReason.UsedCard );
 		SendPopupToPlayer( player, "Get Out of Jail Free", "You used a Get Out of Jail Free card.", PopupKind.Info, true, 4f );
 		SendTableChatMessage( "Get Out of Jail Free", $"{player.PlayerName} used a Get Out of Jail Free card." );
 		return true;

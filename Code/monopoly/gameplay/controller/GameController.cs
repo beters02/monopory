@@ -46,6 +46,33 @@ public sealed partial class GameController : Component, Component.INetworkListen
 		ChanceOrCommunityChest,
 		JailFine
 	}
+	private enum JailSendReason
+	{
+		GoToJailSpace,
+		Card,
+		ThreeDoubles,
+		SwapCard,
+		Command
+	}
+
+	private enum JailReleaseReason
+	{
+		PaidFine,
+		UsedCard,
+		RolledDoubles,
+		ThirdFailedRoll,
+		ForcedFine,
+		SwapCard
+	}
+
+	private enum TradeRemovalReason
+	{
+		PlayerDeleted,
+		PlayerBankrupt,
+		PlayerDeletedTrade,
+		InvalidatedByGame,
+		GameReset
+	}
 
 	[JsonIgnore] public List<PlayerState> Players { get; set; } = new();
 	public MatchConfig Config { get; set; } = new();
@@ -129,6 +156,7 @@ public sealed partial class GameController : Component, Component.INetworkListen
 	[Sync] public bool CurrentTurnGetsExtraRoll { get; set; }
 	[Sync] public int CurrentTurnConsecutiveDoubles { get; set; }
 	[Sync] public int CurrentTurnDoublesPlayerIndex { get; set; } = -1;
+	[Sync] public int CurrentTurnMovementDistance { get; set; }
 	[Sync] public float CurrentTurnEndsAt { get; set; }
 	[Sync] public int CurrentTurnReminderSoundsPlayed { get; set; } = 0;
 	[Sync] public int PendingForcedPaymentPlayerIndex { get; set; } = -1;

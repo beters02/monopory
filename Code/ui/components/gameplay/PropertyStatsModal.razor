@@ -106,6 +106,11 @@
 				}
 				else if ( ActiveTab == MoveTab )
 				{
+					<div class="move-history-pager">
+						<GameButton Variant="options-panel-secondary-button" CanClick="@CanPageMoveHistoryBack" OnClick="@PageMoveHistoryBack">Previous</GameButton>
+						<div class="move-history-page-label">Page @(MoveHistoryPage + 1) / @MoveHistoryPageCount - @MoveHistoryTotalCount turns</div>
+						<GameButton Variant="options-panel-secondary-button" CanClick="@CanPageMoveHistoryForward" OnClick="@PageMoveHistoryForward">Next</GameButton>
+					</div>
 					<div class="integrity-list monopory-scroll-y">
 						@foreach ( var turn in MoveRows )
 						{
@@ -187,6 +192,7 @@
 	private const string IntegrityTab = "integrity";
 	private string ActiveTab = PropertyTab;
 	private string lastInitialTab = "";
+	private int MoveHistoryPage;
 	private Panel PropertyTablePanel = null!;
 	private Panel PlayerListPanel = null!;
 	private readonly record struct StatsTab( string Id, string Label );
@@ -202,7 +208,12 @@
 	private List<DiceHistoryEntry> DiceRows => GameRef?.DiceHistory?.OrderBy( entry => entry.Key ).Select( entry => MatchIntegrityJson.Deserialize<DiceHistoryEntry>( entry.Value ) ).ToList() ?? new();
 	private List<AdminHistoryEntry> AdminRows => GameRef?.AdminHistory?.OrderBy( entry => entry.Key ).Select( entry => MatchIntegrityJson.Deserialize<AdminHistoryEntry>( entry.Value ) ).ToList() ?? new();
 	private List<CommandHistoryEntry> CommandRows => GameRef?.CommandHistory?.OrderBy( entry => entry.Key ).Select( entry => MatchIntegrityJson.Deserialize<CommandHistoryEntry>( entry.Value ) ).ToList() ?? new();
-	private List<MoveHistoryTurn> MoveRows => GameRef?.MoveHistory?.OrderByDescending( entry => entry.Key ).Select( entry => MatchIntegrityJson.Deserialize<MoveHistoryTurn>( entry.Value ) ).ToList() ?? new();
+	private int MoveHistoryPageSize => Math.Clamp( GameRef?.MoveHistoryPageSize ?? 25, 5, 200 );
+	private int MoveHistoryTotalCount => GameRef?.MoveHistory?.Count ?? 0;
+	private int MoveHistoryPageCount => Math.Max( 1, (int)Math.Ceiling( MoveHistoryTotalCount / (double)MoveHistoryPageSize ) );
+	private bool CanPageMoveHistoryBack => MoveHistoryPage > 0;
+	private bool CanPageMoveHistoryForward => MoveHistoryPage < MoveHistoryPageCount - 1;
+	private List<MoveHistoryTurn> MoveRows => GameRef?.MoveHistory?.OrderByDescending( entry => entry.Key ).Skip( MoveHistoryPage * MoveHistoryPageSize ).Take( MoveHistoryPageSize ).Select( entry => MatchIntegrityJson.Deserialize<MoveHistoryTurn>( entry.Value ) ).ToList() ?? new();
 	private List<GambleHistoryEntry> GambleRows => GameRef?.GambleHistory?.OrderByDescending( entry => entry.Key ).Select( entry => MatchIntegrityJson.Deserialize<GambleHistoryEntry>( entry.Value ) ).ToList() ?? new();
 
 	protected override void OnParametersSet()
@@ -218,6 +229,8 @@
 	private void Close() => OnClose?.Invoke();
 	private void SelectProperty( int spaceIndex ) => GameRef?.SelectSpace( spaceIndex );
 	private void SetActiveTab( string tab ) { ActiveTab = tab; StateHasChanged(); }
+	private void PageMoveHistoryBack() { MoveHistoryPage = Math.Max( MoveHistoryPage - 1, 0 ); StateHasChanged(); }
+	private void PageMoveHistoryForward() { MoveHistoryPage = Math.Min( MoveHistoryPage + 1, MoveHistoryPageCount - 1 ); StateHasChanged(); }
 	private string GetTabButtonClass( string tab ) => ActiveTab == tab ? "integrity-tab active-tab" : "integrity-tab";
 	private string GetKickerText() => ActiveTab == IntegrityTab ? "Verified Match" : "Board Analytics";
 	private string GetTitleText() => Tabs.FirstOrDefault( tab => tab.Id == ActiveTab ).Label ?? "Property Stats";
@@ -239,8 +252,8 @@
 	private string GetGambleResultRowClass( GambleHistoryEntry entry ) => entry.Won ? "" : "warning";
 	private string GetCommandRowClass( CommandHistoryEntry entry ) => entry.CommandType switch { "CheatCmd" => "command-cheat", "HostCheatCmd" => "command-host-cheat", "HostCmd" => "command-host", _ => "" };
 
-	private string GetTopRentName() { var row = TopRentRows.FirstOrDefault(); return row.SpaceIndex <= 0 && row.RentEarned <= 0 ? "None yet" : row.Name; }
-	private string GetBiggestLoserName() { var row = PlayerRows.Where( row => row.NetLoss > 0 ).OrderByDescending( row => row.NetLoss ).FirstOrDefault(); return row.PlayerIndex < 0 || row.NetLoss <= 0 ? "None yet" : row.Name; }
+	private string GetTopRentName() { var row = TopRentRows.FirstOrDefault(); return row.SpaceIndex <= 0 && row.RentEarned <= 0 ? "None yet" : $"{row.Name} (${row.RentEarned})"; }
+	private string GetBiggestLoserName() { var row = PlayerRows.Where( row => row.NetLoss > 0 ).OrderByDescending( row => row.NetLoss ).FirstOrDefault(); return row.PlayerIndex < 0 || row.NetLoss <= 0 ? "None yet" : $"{row.Name} (${row.NetLoss})"; }
 	private List<PropertyStatsRow> BuildPropertyRows() => GameRef?.Board?.SpaceDefs?.Where( def => def is not null && IsPurchasableSpace( def ) ).Select( def => new PropertyStatsRow( def.Index, def, def.DisplayName ?? $"Space {def.Index}", GetTotalLandingsForSpace( def.Index ), GetTotalRentEarnedForSpace( def.Index ) ) ).OrderByDescending( row => row.Landings > 0 || row.RentEarned > 0 ).ThenByDescending( row => row.RentEarned ).ThenByDescending( row => row.Landings ).ThenBy( row => row.SpaceIndex ).ToList() ?? new();
 	private List<PlayerStatsRow> BuildPlayerRows() => GameRef?.Players?.Select( ( player, index ) => new { player, index } ).Where( entry => entry.player is not null && entry.player.IsAssigned ).Select( entry => new PlayerStatsRow( entry.index, entry.player.PlayerName ?? $"Player {entry.index + 1}", entry.player.Money, Math.Max( GetStartingMoney() - entry.player.Money, 0 ), GameRef.GetOwnedPropertyIndexes( entry.index ).Count, GetTotalLandingsForPlayer( entry.index ), GetTotalRentEarnedForPlayer( entry.index ), entry.player.IsBankrupt, entry.index == GameRef.LocalPlayerIndex ) ).OrderByDescending( row => row.RentEarned ).ThenByDescending( row => row.PropertyCount ).ThenByDescending( row => row.Money ).ToList() ?? new();
 	private int GetTotalLandingsForSpace( int spaceIndex ) => SumPropertyStatForSpace( GameRef.PropertyLandingCounts, spaceIndex );
@@ -260,7 +273,7 @@
 	private string GetPlayerRowClasses( PlayerStatsRow row ) { var classes = "property-stats-player-row"; if ( row.IsLocalPlayer ) classes += " local-player"; if ( row.IsBankrupt ) classes += " bankrupt"; return classes; }
 	protected override int BuildHash()
 	{
-		var hash = new HashCode(); hash.Add( IsOpen ); hash.Add( ActiveTab ); hash.Add( GameRef?.IsVerifiedMatch ?? false ); hash.Add( MonopolyApp.IsCheatsEnabled() ); hash.Add( GameRef?.DiceHistory?.Count ?? 0 ); hash.Add( GameRef?.AdminHistory?.Count ?? 0 ); hash.Add( GameRef?.CommandHistory?.Count ?? 0 ); hash.Add( GameRef?.MoveHistory?.Count ?? 0 ); hash.Add( GameRef?.GambleHistory?.Count ?? 0 ); hash.Add( GameRef?.RevealedSeed ?? "" ); hash.Add( GameRef?.PropertyOwners?.Count ?? 0 );
+		var hash = new HashCode(); hash.Add( IsOpen ); hash.Add( ActiveTab ); hash.Add( GameRef?.IsVerifiedMatch ?? false ); hash.Add( MonopolyApp.IsCheatsEnabled() ); hash.Add( GameRef?.DiceHistory?.Count ?? 0 ); hash.Add( GameRef?.AdminHistory?.Count ?? 0 ); hash.Add( GameRef?.CommandHistory?.Count ?? 0 ); hash.Add( GameRef?.MoveHistory?.Count ?? 0 ); hash.Add( MoveHistoryPage ); hash.Add( MoveHistoryPageSize ); hash.Add( GameRef?.GambleHistory?.Count ?? 0 ); hash.Add( GameRef?.RevealedSeed ?? "" ); hash.Add( GameRef?.PropertyOwners?.Count ?? 0 );
 		if ( GameRef?.Players is not null ) foreach ( var entry in GameRef.Players.Select( ( player, index ) => new { player, index } ).Where( entry => entry.player is not null && entry.player.IsAssigned ) ) { hash.Add( entry.index ); hash.Add( entry.player.PlayerName ); hash.Add( entry.player.Money ); hash.Add( entry.player.IsBankrupt ); }
 		if ( GameRef?.PropertyLandingCounts is not null ) foreach ( var entry in GameRef.PropertyLandingCounts.OrderBy( entry => entry.Key ) ) { hash.Add( entry.Key ); hash.Add( entry.Value ); }
 		if ( GameRef?.PropertyRentEarned is not null ) foreach ( var entry in GameRef.PropertyRentEarned.OrderBy( entry => entry.Key ) ) { hash.Add( entry.Key ); hash.Add( entry.Value ); }

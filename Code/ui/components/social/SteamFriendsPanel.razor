@@ -156,7 +156,7 @@
 			return;
 
 		LoadingState.Show( "Joining lobby", $"Connecting to {SelectedFriend.Name}'s lobby." );
-		if ( !await SteamFriendsBridge.TryJoinFriend( SelectedFriend, null ) )
+		if ( !await SteamFriendsBridge.TryJoinFriend( SelectedFriend, Scene ) )
 		{
 			LoadingState.Hide();
 			Log.Warning( $"Could not join Steam friend {SelectedFriend.Name}." );

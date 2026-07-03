@@ -512,9 +512,23 @@
 	};
 
 	private bool UsesGrandCasinoChanceImage =>
-		BoardSpaceNameConfig.IsPreset(
-			ActiveGame?.Config?.BoardSpaceNamesSnapshot,
-			BoardNamePresets.GrandCasinoPresetId );
+		IsGrandCasinoChanceSnapshot( ActiveGame?.Config );
+
+	private static bool IsGrandCasinoChanceSnapshot( MatchConfig config )
+	{
+		var preset = BoardCatalog.GetNamePresetById( BoardNamePresets.GrandCasinoPresetId );
+		if ( preset is null || config is null )
+			return false;
+
+		var boardId = string.IsNullOrWhiteSpace( config.BoardId ) ? BoardCatalog.DefaultBoardId : config.BoardId;
+		var current = BoardSpaceNameConfig.SerializeNames(
+			BoardSpaceNameConfig.DeserializeNames( config.BoardSpaceNamesSnapshot, boardId ),
+			boardId );
+		var grandCasino = BoardSpaceNameConfig.SerializeNames(
+			BoardSpaceNameConfig.DeserializeNames( preset.Snapshot, boardId ),
+			boardId );
+		return string.Equals( current, grandCasino, StringComparison.Ordinal );
+	}
 
 	private enum IconType
 	{
@@ -726,16 +740,17 @@
 	protected override int BuildHash()
 	{
 		var board = Board.Instance;
-		return HashCode.Combine(
-			board?.UseProceduralBoardPanel ?? true,
-			board?.SpaceDefs?.Count ?? 0,
-			GetBoardDefsHash(),
-			CornerSizePercent,
-			TrackDepthPercent,
-			GetWeightsHash(),
-			GetStyleHash(),
-			GetGameplayHash()
-		);
+		var hash = new HashCode();
+		hash.Add( board?.UseProceduralBoardPanel ?? true );
+		hash.Add( board?.SpaceDefs?.Count ?? 0 );
+		hash.Add( GetBoardDefsHash() );
+		hash.Add( UsesGrandCasinoChanceImage );
+		hash.Add( CornerSizePercent );
+		hash.Add( TrackDepthPercent );
+		hash.Add( GetWeightsHash() );
+		hash.Add( GetStyleHash() );
+		hash.Add( GetGameplayHash() );
+		return hash.ToHashCode();
 	}
 
 	private int GetBoardDefsHash()
@@ -748,6 +763,7 @@
 			hash.Add( space.DisplayName );
 		}
 
+		hash.Add( UsesGrandCasinoChanceImage );
 		return hash.ToHashCode();
 	}
 

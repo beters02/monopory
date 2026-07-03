@@ -256,6 +256,7 @@ public sealed partial class GameController : Component
 		CurrentTurnGetsExtraRoll = false;
 		CurrentTurnConsecutiveDoubles = 0;
 		CurrentTurnDoublesPlayerIndex = -1;
+		CurrentTurnMovementDistance = 0;
 		CurrentTurnEndsAt = 0f;
 		LastTimeCurrentTurnReminderPlayed = 0;
 		CurrentTurnReminderSoundsPlayed = 0;
@@ -394,11 +395,6 @@ public sealed partial class GameController : Component
 		foreach ( var trade in GetTrades() )
 		{
 			if ( trade.SenderPlayerIndex == playerIndex || trade.ReceiverPlayerIndex == playerIndex )
-			{
-				PendingTrades.Remove( trade.Id );
-				TradeViewers.Remove( trade.Id );
-				TradeEditors.Remove( trade.Id );
-			}
+				RemoveTradeWithReason( trade, TradeRemovalReason.PlayerDeleted, "A player in this trade left or was removed." );
 		}
-	}
-}
+	}}

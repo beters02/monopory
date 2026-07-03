@@ -6,6 +6,7 @@ public sealed partial class GameController : Component
 
 	private void StartPrivateConfig()
 	{
+		MoveHistoryPageSize = Math.Clamp( MoveHistoryPageSize, 5, 200 );
 		double div = Config.TurnTimeLimitSeconds / MaxTurnReminders;
 		SecondsBetweenTurnReminders = (int) Math.Ceiling(div);
 		BankruptedPieceMaterial?.Preload();
@@ -64,6 +65,7 @@ public sealed partial class GameController : Component
 	// Turns
 	private int MaxTurnReminders { get; set; } = 4;
 	private int SecondsBetweenTurnReminders { get; set; }
+	public int MoveHistoryPageSize { get; set; } = 25;
 
 	// Popups
 	public int MaxVisiblePopups { get; set; } = 3;

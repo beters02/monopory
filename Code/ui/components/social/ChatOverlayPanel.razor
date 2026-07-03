@@ -214,6 +214,7 @@
 			ChatInput.Text = "";
 		}
 		Touch();
+		RequestScrollToBottom();
 		StateHasChanged();
 	}
 
@@ -269,7 +270,12 @@
 	private void HandleInputRowClick()
 	{
 		if ( !IsComposing )
+		{
 			BeginCompose();
+			return;
+		}
+
+		RequestScrollToBottom();
 	}
 
 	private void CancelCompose()
@@ -282,6 +288,7 @@
 		}
 		ChatInput?.Blur();
 		Touch();
+		RequestScrollToBottom();
 		StateHasChanged();
 	}
 
@@ -509,6 +516,7 @@
 	{
 		// Give layout a couple of frames to settle so we hit the true final bottom.
 		ScrollToBottomFramesRemaining = 3;
+		MessagesPanel?.TryScrollToBottom();
 	}
 
 	private bool IsVisible()

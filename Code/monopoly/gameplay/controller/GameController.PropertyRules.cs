@@ -215,6 +215,31 @@ public sealed partial class GameController : Component
 		return GetMortgageValue( spaceIndex ) > 0;
 	}
 
+	public bool CanReleaseProperty( int playerIndex, int spaceIndex )
+	{
+		var def = Board?.GetSpaceDef( spaceIndex );
+		var player = Players.ElementAtOrDefault( playerIndex );
+
+		if ( Config?.CanReleaseProperties != true || player is null || def is null || !IsPurchasableSpace( def ) )
+			return false;
+
+		if ( !CanPlayerManageProperties( playerIndex ) )
+			return false;
+
+		if ( GetOwnerIndexForSpace( spaceIndex ) != playerIndex )
+			return false;
+
+		if ( IsMortgaged( spaceIndex ) )
+			return false;
+
+		if ( GetImprovementCount( spaceIndex ) > 0 )
+			return false;
+
+		if ( def.Type == SpaceType.Property && ColorGroupHasImprovements( def.ColorGroup ) )
+			return false;
+
+		return GetMortgageValue( spaceIndex ) > 0;
+	}
 	public bool CanUnmortgageProperty( int playerIndex, int spaceIndex )
 	{
 		var def = Board?.GetSpaceDef( spaceIndex );

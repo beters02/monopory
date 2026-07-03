@@ -5,7 +5,7 @@ public sealed partial class LobbyController
 	private void ApplyHostedConfig()
 	{
 		var bootstrap = MatchBootstrap.Current;
-		if ( bootstrap?.HasConfig == true )
+		if ( bootstrap?.HasConfig == true && bootstrap.AutoStartGame != true && bootstrap.HasLoadedGame != true )
 			Config = MatchConfigSchema.Clone( bootstrap.Config );
 		else
 			Config ??= MatchConfigSchema.CreateDefault();

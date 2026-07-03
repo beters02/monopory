@@ -103,9 +103,9 @@
 						}
 					</ChildContent>
 					<Footer>
+						<GameButton Variant="options-panel-secondary-button" OnClick="@CloseConfigMenu">Back</GameButton>
 						@if ( CanEditConfig )
 						{
-							<GameButton Variant="options-panel-secondary-button" CanClick="@CanEditCurrentConfigPage" ShowBlockedPopup="@(false)" SoundEnabled="@CanEditCurrentConfigPage" OnClick="@ResetConfigMenu">Reset to Defaults</GameButton>
 							<GameButton Variant="options-panel-primary-button" OnClick="@SaveConfigMenu">Save</GameButton>
 						}
 					</Footer>
@@ -320,7 +320,8 @@
 					</div>
 				</div>
 				<div class="piece-customize-footer">
-					<GameButton Variant="options-panel-secondary-button" OnClick="@CloseCustomizeMenu">Done</GameButton>
+					<GameButton Variant="options-panel-secondary-button" OnClick="@CloseCustomizeMenu">Back</GameButton>
+					<GameButton Variant="options-panel-primary-button" OnClick="@CloseCustomizeMenu">Done</GameButton>
 				</div>
 			</ChildContent>
 		</OptionsPanel>

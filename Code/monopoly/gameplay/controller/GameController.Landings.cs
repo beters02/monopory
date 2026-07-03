@@ -72,7 +72,7 @@ public sealed partial class GameController : Component
 					break;
 
 				case SpaceType.GoToJail:
-					SendPlayerToJail( player );
+					SendPlayerToJail( player, JailSendReason.GoToJailSpace );
 					MarkResolvedActionToAdvanceImmediately();
 					result = "Sent to Jail";
 					break;

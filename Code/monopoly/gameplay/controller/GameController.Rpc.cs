@@ -260,6 +260,24 @@ public sealed partial class GameController : Component
 		NetworkSession.LeaveCurrentLobbyWithRejoinWindow( Scene, lobbyId, connectTarget, rejoinExpiresAt );
 	}
 
+	[Rpc.Host]
+	public void RequestPlayDiceImpactSound( float volume )
+	{
+		if ( !IsResolvingPhysicalDice )
+			return;
+
+		PlayDiceImpactSoundLocal( Math.Clamp( volume, 0.05f, 1f ) );
+	}
+
+	[Rpc.Broadcast]
+	private void PlayDiceImpactSoundLocal( float volume )
+	{
+		if ( GameAssets.Sounds.DiceImpact?.IsAssigned != true )
+			return;
+
+		var handle = GameAssets.Sounds.DiceImpact.PlayWithHandle();
+		handle.Volume *= Math.Clamp( volume, 0.05f, 1f );
+	}
 	private void PlaySoundToConnection( Connection connection, GameSound sound, float delaySec = 0f )
 	{
 		if ( !Networking.IsHost || connection is null || sound is null || !sound.IsAssigned )

@@ -327,7 +327,7 @@ public sealed partial class GameController : Component
 				return $"Moved {card.RelativeSpaces} spaces";
 
 			case CardAction.GoToJail:
-				SendPlayerToJail( player );
+				SendPlayerToJail( player, JailSendReason.Card );
 				MarkResolvedActionToAdvanceImmediately();
 				return "Sent to Jail";
 
@@ -419,8 +419,8 @@ public sealed partial class GameController : Component
 		if ( swapPlayer.IsInJail )
 		{
 			// release player automatically cancels extra turn for current player which is great
-			ReleasePlayerFromJail( swapPlayer );
-			SendPlayerToJail( player );
+			ReleasePlayerFromJail( swapPlayer, JailReleaseReason.SwapCard );
+			SendPlayerToJail( player, JailSendReason.SwapCard );
 			MovePlayerToCardDestination( swapPlayer, playerStartSpaceIndex, true, false );
 			return;
 		}
@@ -477,6 +477,16 @@ public sealed partial class GameController : Component
 		}
 
 		ApplyGoMovementPayout( player, goPassCount, targetSpaceIndex == (Board?.GoSpaceIndex ?? 0) );
+	}
+
+	private int GetForwardMovementDistance( int startSpaceIndex, int targetSpaceIndex )
+	{
+		startSpaceIndex = NormalizeSpaceIndex( startSpaceIndex );
+		targetSpaceIndex = NormalizeSpaceIndex( targetSpaceIndex );
+		var spaceCount = Math.Max( Board?.SpaceCount ?? BoardCatalog.GetDefaultSpaceCount(), 1 );
+		return targetSpaceIndex >= startSpaceIndex
+			? targetSpaceIndex - startSpaceIndex
+			: spaceCount - startSpaceIndex + targetSpaceIndex;
 	}
 
 	private int GetGoPassCountForAbsoluteMove( int startSpaceIndex, int targetSpaceIndex, bool collectGo )

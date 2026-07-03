@@ -95,6 +95,9 @@ public sealed class MatchConfig
 	[MatchConfigOption( "Property Rules", "Can Skip Unowned", Description = "Allows players to ignore an unowned property instead of buying or auctioning it.", CommandId = "can_skip_unowned", Order = 12 )]
 	public bool CanSkipUnowned { get; set; } = false;
 
+	[MatchConfigOption( "Property Rules", "Can Release Properties", Description = "Allows players to return an owned unmortgaged property to the bank for its mortgage value.", CommandId = "can_release_properties", Order = 13 )]
+	public bool CanReleaseProperties { get; set; } = false;
+
 	[MatchConfigOption( "Economy", "Starting Money", Description = "Cash each player begins the game with.", CommandId = "starting_money", Order = 20, Min = 0, Max = 10000, Step = 100 )]
 	public int StartingMoney { get; set; } = 1500;
 
@@ -162,6 +165,9 @@ public sealed class MatchConfig
 
 	[MatchConfigOption( "Board Rules", "Even Build", Description = "Requires houses to be built evenly across a color set.", CommandId = "even_build", Order = 43 )]
 	public bool EvenBuild { get; set; } = true;
+
+	[MatchConfigOption( "Board Rules", "Buffed Utilities", Description = "Utility rent uses the total spaces moved during the turn instead of only the dice roll.", CommandId = "buffed_utilities", Order = 44 )]
+	public bool BuffedUtilities { get; set; } = false;
 
 }
 

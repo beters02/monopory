@@ -105,9 +105,7 @@ public sealed partial class GameController : Component
 
 		if ( !IsTradeValid( trade ) )
 		{
-			PendingTrades.Remove( tradeId );
-			TradeViewers.Remove( tradeId );
-			TradeEditors.Remove( tradeId );
+			RemoveTradeWithReason( trade, TradeRemovalReason.InvalidatedByGame, "The trade is no longer valid." );
 			return;
 		}
 
@@ -173,9 +171,11 @@ public sealed partial class GameController : Component
 			ShowTradeDeniedNotification( trade, callerIndex );
 			RecordTradeHistory( trade, TradeHistoryEntry.Denied );
 		}
-		PendingTrades.Remove( tradeId );
-		TradeViewers.Remove( tradeId );
-		TradeEditors.Remove( tradeId );
+		RemoveTradeWithReason(
+			trade,
+			TradeRemovalReason.PlayerDeletedTrade,
+			callerIndex == trade.SenderPlayerIndex ? "The sender deleted the trade." : "The receiver deleted the trade.",
+			notify: callerIndex == trade.SenderPlayerIndex );
 		TryAutosaveStablePoint( "Trade removed" );
 	}
 
@@ -355,13 +355,41 @@ public sealed partial class GameController : Component
 		foreach ( var trade in GetTrades() )
 		{
 			if ( !IsTradeValid( trade ) )
-			{
-				PendingTrades.Remove( trade.Id );
-				TradeViewers.Remove( trade.Id );
-				TradeEditors.Remove( trade.Id );
-			}
+				RemoveTradeWithReason( trade, TradeRemovalReason.InvalidatedByGame, "The trade is no longer valid." );
 		}
 	}
+
+	private void RemoveTradeWithReason( TradeRequest trade, TradeRemovalReason reason, string detail, bool notify = true )
+	{
+		if ( trade is null )
+			return;
+
+		PendingTrades.Remove( trade.Id );
+		TradeViewers.Remove( trade.Id );
+		TradeEditors.Remove( trade.Id );
+
+		if ( !notify )
+			return;
+
+		var message = string.IsNullOrWhiteSpace( detail ) ? GetTradeRemovalReasonText( reason ) : detail;
+		foreach ( var playerIndex in new[] { trade.SenderPlayerIndex, trade.ReceiverPlayerIndex }.Distinct() )
+		{
+			var player = Players.ElementAtOrDefault( playerIndex );
+			if ( player is null || !player.IsAssigned || player.IsBankrupt )
+				continue;
+
+			SendPopupToPlayer( player, "Trade deleted", message, PopupKind.Warning, true, 4f );
+		}
+	}
+
+	private static string GetTradeRemovalReasonText( TradeRemovalReason reason ) => reason switch
+	{
+		TradeRemovalReason.PlayerDeleted => "A player left or was removed from the game.",
+		TradeRemovalReason.PlayerBankrupt => "A player in the trade went bankrupt.",
+		TradeRemovalReason.PlayerDeletedTrade => "A player deleted the trade.",
+		TradeRemovalReason.GameReset => "The game reset and cleared pending trades.",
+		_ => "The trade is no longer valid."
+	};
 
 	private int CountPendingSentTrades( int playerIndex )
 	{

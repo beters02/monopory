@@ -21,6 +21,7 @@ public sealed partial class LobbyController : Component
 	[Sync] public string StagedLoadedGameIdentifier { get; set; } = "";
 	private string lastAppliedHostedConfigSnapshot = "";
 	private float lastPreferredHostRestoreAttemptAt;
+	private bool hasInitializedLobbySoundState;
 
 	public int MinPlayers => Math.Max( Config?.MinPlayers ?? 1, 1 );
 	public int MaxPlayers => Math.Max( Config?.MaxPlayers ?? MinPlayers, MinPlayers );
@@ -78,6 +79,22 @@ public sealed partial class LobbyController : Component
 			return;
 	}
 
+	private void PlayLobbySound( GameSound sound )
+	{
+		if ( !Networking.IsHost || sound is null || !sound.IsAssigned )
+			return;
+
+		PlayLobbySoundLocal( sound.Path );
+	}
+
+	[Rpc.Broadcast]
+	private void PlayLobbySoundLocal( string soundPath )
+	{
+		if ( string.IsNullOrWhiteSpace( soundPath ) )
+			return;
+
+		new GameSound( soundPath ).Play();
+	}
 	private void TryRestorePreferredHost()
 	{
 		if ( PreferredHostOwnerId == 0 || Connection.Local?.SteamId == PreferredHostOwnerId )

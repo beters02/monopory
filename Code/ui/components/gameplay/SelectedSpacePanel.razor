@@ -117,6 +117,10 @@
 						}
 						<div class="space-buttons mortgage-buttons">
 							<GameButton Variant="@GetMortgageButtonClasses( selection )" OnClick="@Mortgage">@selection.MortgageActionLabel</GameButton>
+							@if ( selection.CanShowRelease )
+							{
+								<GameButton Variant="@GetReleaseButtonClasses( selection )" CanClick="@selection.CanRelease" OnClick="@ReleaseProperty">@selection.ReleaseActionLabel</GameButton>
+							}
 						</div>
 					</div>
 				</div>
@@ -232,6 +236,8 @@
 			CanSellImprovement = CanSellSelectedImprovement,
 			CanMortgage = CanMortgageSelectedSpace,
 			CanUnmortgage = CanUnmortgageSelectedSpace,
+			CanShowRelease = CanShowReleaseSelectedSpace,
+			CanRelease = CanReleaseSelectedSpace,
 			CanShowColorSetMenu = CanShowColorSetMenu,
 			CanBuildColorSetImprovement = CanBuildColorSetImprovement,
 			CanSellColorSetImprovement = CanSellColorSetImprovement,
@@ -246,6 +252,7 @@
 			SellColorSetImprovementPriceLabel = SellColorSetImprovementPriceLabel,
 			MortgageColorSetPriceLabel = MortgageColorSetPriceLabel,
 			MortgageActionLabel = MortgageActionLabel,
+			ReleaseActionLabel = ReleaseActionLabel,
 			CannotAffordBuyMessage = CannotAffordBuyMessage,
 			CloseBlockedMessage = SelectedSpaceCloseBlockedMessage
 		};
@@ -315,7 +322,12 @@
 		return selection.CanMortgage || selection.CanUnmortgage ? "mortgage-action" : "mortgage-action disabled";
 	}
 
-	private static string GetColorSetMenuButtonClasses( bool canClick )
+	
+	private static string GetReleaseButtonClasses( RenderedSelectedSpace selection )
+	{
+		return selection.CanRelease ? "mortgage-action" : "mortgage-action disabled";
+	}
+private static string GetColorSetMenuButtonClasses( bool canClick )
 	{
 		return canClick ? "color-set-menu-action" : "color-set-menu-action disabled";
 	}
@@ -494,6 +506,15 @@
 		GameRef is not null &&
 		GameRef.LocalPlayerIndex >= 0 &&
 		GameRef.CanUnmortgageProperty( GameRef.LocalPlayerIndex, SelectedSpaceIndex );
+	private bool CanShowReleaseSelectedSpace =>
+		GameRef?.Config?.CanReleaseProperties == true &&
+		IsOwnedByLocalPlayer &&
+		!IsSelectedSpaceMortgaged;
+
+	private bool CanReleaseSelectedSpace =>
+		GameRef is not null &&
+		GameRef.LocalPlayerIndex >= 0 &&
+		GameRef.CanReleaseProperty( GameRef.LocalPlayerIndex, SelectedSpaceIndex );
 
 	private bool CanMortgageColorSet =>
 		GetSelectedColorSetProperties().Any( property => GameRef?.CanMortgageProperty( GameRef.LocalPlayerIndex, property.Index ) == true );
@@ -507,6 +528,9 @@
 		IsSelectedSpaceMortgaged
 			? $"Unmortgage -${SelectedUnmortgageCost}"
 			: $"Mortgage +${SelectedMortgageValue}";
+
+	private string ReleaseActionLabel =>
+		$"Release +${SelectedMortgageValue}";
 
 	private string BuildColorSetImprovementPriceLabel =>
 		BuildColorSetImprovementCost > 0 ? $"-${BuildColorSetImprovementCost}" : "-";
@@ -656,6 +680,20 @@
 		);
 	}
 
+	private void ReleaseProperty()
+	{
+		if ( SelectedSpaceIndex < 0 || !CanReleaseSelectedSpace || GameRef?.HasBlockingPopup == true )
+			return;
+
+		var spaceName = SelectedSpace?.DisplayName ?? "this property";
+		GameRef?.ShowLocalConfirmation(
+			"Confirm release",
+			$"Release {spaceName} to the bank for ${SelectedMortgageValue}?",
+			() => GameRef?.RequestReleaseProperty( SelectedSpaceIndex ),
+			confirmLabel: "Release"
+		);
+	}
+
 	private void MortgageColorSet()
 	{
 		if ( SelectedSpaceIndex < 0 || !CanMortgageColorSet || GameRef?.HasBlockingPopup == true )
@@ -690,6 +728,7 @@
 		hash.Add( GameRef?.FreeParkingBank ?? 0 );
 		hash.Add( GameRef?.Config?.VacationCash ?? false );
 		hash.Add( GameRef?.Config?.CanSkipUnowned ?? false );
+		hash.Add( GameRef?.Config?.CanReleaseProperties ?? false );
 		hash.Add( GameRef?.ShowSelectedSpaceCardOnGo ?? false );
 		hash.Add( GameRef?.ShowSelectedSpaceCardOnTax ?? false );
 		hash.Add( GameRef?.ShowSelectedSpaceCardOnJail ?? false );
@@ -728,6 +767,8 @@
 		public bool CanSellImprovement { get; set; }
 		public bool CanMortgage { get; set; }
 		public bool CanUnmortgage { get; set; }
+		public bool CanShowRelease { get; set; }
+		public bool CanRelease { get; set; }
 		public bool CanShowColorSetMenu { get; set; }
 		public bool CanBuildColorSetImprovement { get; set; }
 		public bool CanSellColorSetImprovement { get; set; }
@@ -742,6 +783,7 @@
 		public string SellColorSetImprovementPriceLabel { get; set; } = "";
 		public string MortgageColorSetPriceLabel { get; set; } = "";
 		public string MortgageActionLabel { get; set; } = "";
+		public string ReleaseActionLabel { get; set; } = "";
 		public string CannotAffordBuyMessage { get; set; } = "";
 		public string CloseBlockedMessage { get; set; } = "";
 		public bool IsClosing { get; set; }

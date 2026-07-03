@@ -119,6 +119,30 @@ public sealed partial class GameController : Component
 	}
 
 	[Rpc.Host]
+	public void RequestReleaseProperty( int spaceIndex )
+	{
+		if ( !CanAcceptGameplayInput() )
+			return;
+
+		var playerIndex = GetPlayerIndexForCaller( Rpc.Caller );
+		if ( !CanReleaseProperty( playerIndex, spaceIndex ) )
+			return;
+
+		var player = Players[playerIndex];
+		var value = GetMortgageValue( spaceIndex );
+		var spaceName = Board.GetSpaceDef( spaceIndex )?.DisplayName ?? "property";
+
+		PropertyOwners.Remove( spaceIndex );
+		MortgagedProperties.Remove( spaceIndex );
+		player.Money += value;
+		TrySettlePendingForcedPaymentForPlayer( playerIndex );
+		RemoveInvalidTrades();
+
+		SendPopupToPlayer( player, "Property released", $"You released {spaceName} for ${value}.", PopupKind.Warning, true, 4f );
+		SendTableChatMessage( "Property released", $"{player.PlayerName} released {spaceName} to the bank for ${value}." );
+		Log.Info( $"{player.PlayerName} released {spaceName} for ${value}." );
+		TryAutosaveStablePoint( "Property released" );
+	}
 	public void RequestUnmortgageProperty( int spaceIndex )
 	{
 		if ( !CanAcceptGameplayInput() )

@@ -100,12 +100,12 @@ public static class SteamFriendsBridge
 
 	public static int AvatarRevision => avatarRevision;
 
-	public static IReadOnlyList<SteamFriendListEntry> GetFriends()
+	public static IReadOnlyList<SteamFriendListEntry> GetFriends( bool forceRefresh = false )
 	{
 		if ( !MonopolyApp.IsStandalone() )
 			return Application.IsEditor ? EditorFriends : Array.Empty<SteamFriendListEntry>();
 
-		if ( Time.Now < nextRefreshTime )
+		if ( !forceRefresh && Time.Now < nextRefreshTime )
 		{
 			HydrateCachedAvatarTextures( cachedFriends );
 			HydrateCachedGameNames( cachedFriends );
@@ -152,6 +152,13 @@ public static class SteamFriendsBridge
 		return entry;
 	}
 
+	private static SteamFriendListEntry GetFreshFriendEntry( SteamFriendListEntry friend )
+	{
+		if ( friend is null || friend.SteamId == 0 )
+			return friend;
+
+		return GetFriends( true ).FirstOrDefault( candidate => candidate is not null && candidate.SteamId == friend.SteamId ) ?? friend;
+	}
 	public static bool TryInviteFriend( SteamFriendListEntry friend )
 	{
 		if ( friend is null || friend.SteamId == 0 || !MonopolyApp.IsStandalone() )
@@ -215,10 +222,10 @@ public static class SteamFriendsBridge
 
 	public static async Task<bool> TryJoinFriend( SteamFriendListEntry friend, Scene scene )
 	{
+		friend = GetFreshFriendEntry( friend );
 		if ( friend is null || !friend.CanJoinLobby || !MonopolyApp.IsStandalone() )
 			return false;
 
-#if STANDALONE
 		try
 		{
 			if ( Networking.IsActive )
@@ -226,10 +233,9 @@ public static class SteamFriendsBridge
 
 			var connected = false;
 			if ( friend.JoinLobbyId != 0 )
-			{
 				connected = await Networking.TryConnectSteamId( friend.JoinLobbyId, 3 );
-			}
-			else if ( !string.IsNullOrWhiteSpace( friend.JoinConnectTarget ) )
+
+			if ( !connected && !string.IsNullOrWhiteSpace( friend.JoinConnectTarget ) )
 			{
 				Networking.Connect( friend.JoinConnectTarget );
 				connected = await WaitForConnectionAsync( 6f );
@@ -245,7 +251,6 @@ public static class SteamFriendsBridge
 		{
 			Log.Warning( $"Failed to join Steam friend {friend.SteamId}: {exception.Message}" );
 		}
-#endif
 
 		return false;
 	}
@@ -878,6 +883,14 @@ public static class SteamFriendsBridge
 		}
 
 		return null;
+	}
+#endif
+
+#if !STANDALONE
+	private static async Task<bool> WaitForConnectionAsync( float timeoutSeconds )
+	{
+		await Task.Delay( 1 );
+		return Networking.IsActive;
 	}
 #endif
 }

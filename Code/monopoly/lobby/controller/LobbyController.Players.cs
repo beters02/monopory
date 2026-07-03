@@ -152,6 +152,37 @@ public sealed partial class LobbyController
 		return players.OrderByDescending( player => player.IsHost ).ThenBy( player => player.Name ).ToList();
 	}
 
+	private void UpdateLobbyPlayerEventSounds( IReadOnlyList<LobbyPlayer> previousPlayers, IReadOnlyList<LobbyPlayer> currentPlayers )
+	{
+		previousPlayers ??= Array.Empty<LobbyPlayer>();
+		currentPlayers ??= Array.Empty<LobbyPlayer>();
+
+		if ( !hasInitializedLobbySoundState )
+		{
+			hasInitializedLobbySoundState = true;
+			return;
+		}
+
+		var previousByOwner = previousPlayers.Where( player => player is not null ).ToDictionary( player => player.OwnerId, player => player );
+		var currentByOwner = currentPlayers.Where( player => player is not null ).ToDictionary( player => player.OwnerId, player => player );
+
+		foreach ( var player in currentPlayers.Where( player => player is not null ) )
+		{
+			if ( !previousByOwner.TryGetValue( player.OwnerId, out var previous ) )
+			{
+				PlayLobbySound( GameAssets.Sounds.LobbyPlayerJoined );
+				continue;
+			}
+
+			if ( !previous.IsConnected && player.IsConnected )
+				PlayLobbySound( GameAssets.Sounds.LobbyPlayerRejoined );
+			else if ( previous.IsConnected && !player.IsConnected )
+				PlayLobbySound( GameAssets.Sounds.LobbyPlayerLeft );
+		}
+
+		foreach ( var previous in previousPlayers.Where( player => player is not null && !currentByOwner.ContainsKey( player.OwnerId ) ) )
+			PlayLobbySound( previous.IsConnected ? GameAssets.Sounds.LobbyPlayerKicked : GameAssets.Sounds.LobbyPlayerAbandoned );
+	}
 	private LobbyPlayer GetLocalPlayer()
 	{
 		var localSteamId = GetLocalSteamId();
