@@ -106,23 +106,36 @@
 				}
 				else if ( ActiveTab == MoveTab )
 				{
-					<div class="move-history-pager">
-						<GameButton Variant="options-panel-secondary-button" CanClick="@CanPageMoveHistoryBack" OnClick="@PageMoveHistoryBack">Previous</GameButton>
-						<div class="move-history-page-label">Page @(MoveHistoryPage + 1) / @MoveHistoryPageCount - @MoveHistoryTotalCount turns</div>
-						<GameButton Variant="options-panel-secondary-button" CanClick="@CanPageMoveHistoryForward" OnClick="@PageMoveHistoryForward">Next</GameButton>
-					</div>
-					<div class="integrity-list monopory-scroll-y">
-						@foreach ( var turn in MoveRows )
-						{
-							<div class="move-history-card">
-								<div class="integrity-row-title">Turn @turn.TurnNumber - @turn.PlayerName</div>
-								<div class="integrity-row-meta">@GetSnapshotSummary( turn.StartPlayers, "Start" )</div>
-								@foreach ( var ev in turn.Events ) { <div class="integrity-row nested"><div class="integrity-row-title">@ev.Title</div><div class="integrity-row-meta">@ev.Message</div></div> }
-								@foreach ( var delta in turn.MoneyDeltas ) { <div class="integrity-row money"><div class="integrity-row-title">@delta.PlayerName @(delta.Delta >= 0 ? "+" : "")@delta.Delta</div><div class="integrity-row-meta">$@delta.BeforeMoney to $@delta.AfterMoney - @delta.Reason</div></div> }
-								<div class="integrity-row-meta">@GetSnapshotSummary( turn.EndPlayers, turn.IsFinalized ? "End" : "Current" )</div>
-							</div>
-						}
-						@if ( MoveRows.Count == 0 ) { <div class="property-stats-empty">No move history recorded yet.</div> }
+					<div class="move-history-layout">
+						<div class="integrity-list move-history-list monopory-scroll-y">
+							@foreach ( var turn in MoveRows )
+							{
+								<div class="move-history-card">
+									<div class="integrity-row-title">Turn @turn.TurnNumber - @turn.PlayerName</div>
+									<div class="integrity-row-meta">@GetSnapshotSummary( turn.StartPlayers, "Start" )</div>
+									@foreach ( var ev in turn.Events ) { <div class="integrity-row nested"><div class="integrity-row-title">@ev.Title</div><div class="integrity-row-meta">@ev.Message</div></div> }
+									@foreach ( var delta in turn.MoneyDeltas ) { <div class="integrity-row money"><div class="integrity-row-title">@delta.PlayerName @(delta.Delta >= 0 ? "+" : "")@delta.Delta</div><div class="integrity-row-meta">$@delta.BeforeMoney to $@delta.AfterMoney - @delta.Reason</div></div> }
+									<div class="integrity-row-meta">@GetSnapshotSummary( turn.EndPlayers, turn.IsFinalized ? "End" : "Current" )</div>
+								</div>
+							}
+							@if ( MoveRows.Count == 0 ) { <div class="property-stats-empty">No move history recorded yet.</div> }
+						</div>
+						<div class="move-history-pager">
+							<GameButton Variant="move-history-page-button" CanClick="@CanPageMoveHistoryBack" OnClick="@PageMoveHistoryBack">Prev</GameButton>
+							@foreach ( var page in MoveHistoryPageButtons )
+							{
+								@if ( page < 0 )
+								{
+									<div class="move-history-page-ellipsis">...</div>
+								}
+								else
+								{
+									<GameButton Variant="@GetMoveHistoryPageButtonClass( page )" OnClick="@(() => SetMoveHistoryPage( page ))">@(page + 1)</GameButton>
+								}
+							}
+							<GameButton Variant="move-history-page-button" CanClick="@CanPageMoveHistoryForward" OnClick="@PageMoveHistoryForward">Next</GameButton>
+						</div>
+						<div class="move-history-page-label">@MoveHistoryTotalCount turns</div>
 					</div>
 				}
 				else if ( ActiveTab == GambleTab )
@@ -213,6 +226,7 @@
 	private int MoveHistoryPageCount => Math.Max( 1, (int)Math.Ceiling( MoveHistoryTotalCount / (double)MoveHistoryPageSize ) );
 	private bool CanPageMoveHistoryBack => MoveHistoryPage > 0;
 	private bool CanPageMoveHistoryForward => MoveHistoryPage < MoveHistoryPageCount - 1;
+	private List<int> MoveHistoryPageButtons => GetMoveHistoryPageButtons();
 	private List<MoveHistoryTurn> MoveRows => GameRef?.MoveHistory?.OrderByDescending( entry => entry.Key ).Skip( MoveHistoryPage * MoveHistoryPageSize ).Take( MoveHistoryPageSize ).Select( entry => MatchIntegrityJson.Deserialize<MoveHistoryTurn>( entry.Value ) ).ToList() ?? new();
 	private List<GambleHistoryEntry> GambleRows => GameRef?.GambleHistory?.OrderByDescending( entry => entry.Key ).Select( entry => MatchIntegrityJson.Deserialize<GambleHistoryEntry>( entry.Value ) ).ToList() ?? new();
 
@@ -228,9 +242,42 @@
 
 	private void Close() => OnClose?.Invoke();
 	private void SelectProperty( int spaceIndex ) => GameRef?.SelectSpace( spaceIndex );
-	private void SetActiveTab( string tab ) { ActiveTab = tab; StateHasChanged(); }
-	private void PageMoveHistoryBack() { MoveHistoryPage = Math.Max( MoveHistoryPage - 1, 0 ); StateHasChanged(); }
-	private void PageMoveHistoryForward() { MoveHistoryPage = Math.Min( MoveHistoryPage + 1, MoveHistoryPageCount - 1 ); StateHasChanged(); }
+	private void SetActiveTab( string tab ) { ActiveTab = tab; MoveHistoryPage = Math.Min( MoveHistoryPage, MoveHistoryPageCount - 1 ); StateHasChanged(); }
+	private void PageMoveHistoryBack() { SetMoveHistoryPage( MoveHistoryPage - 1 ); }
+	private void PageMoveHistoryForward() { SetMoveHistoryPage( MoveHistoryPage + 1 ); }
+	private void SetMoveHistoryPage( int page ) { MoveHistoryPage = Math.Clamp( page, 0, MoveHistoryPageCount - 1 ); StateHasChanged(); }
+	private string GetMoveHistoryPageButtonClass( int page ) => page == MoveHistoryPage ? "move-history-page-button active-page" : "move-history-page-button";
+	private List<int> GetMoveHistoryPageButtons()
+	{
+		var pages = new List<int>();
+		var count = MoveHistoryPageCount;
+		if ( count <= 7 )
+		{
+			for ( var i = 0; i < count; i++ )
+				pages.Add( i );
+			return pages;
+		}
+
+		void AddPage( int page )
+		{
+			if ( page >= 0 && page < count && !pages.Contains( page ) )
+				pages.Add( page );
+		}
+
+		AddPage( 0 );
+		for ( var page = MoveHistoryPage - 1; page <= MoveHistoryPage + 1; page++ )
+			AddPage( page );
+		AddPage( count - 1 );
+		pages.Sort();
+
+		for ( var i = pages.Count - 1; i > 0; i-- )
+		{
+			if ( pages[i] - pages[i - 1] > 1 )
+				pages.Insert( i, -1 );
+		}
+
+		return pages;
+	}
 	private string GetTabButtonClass( string tab ) => ActiveTab == tab ? "integrity-tab active-tab" : "integrity-tab";
 	private string GetKickerText() => ActiveTab == IntegrityTab ? "Verified Match" : "Board Analytics";
 	private string GetTitleText() => Tabs.FirstOrDefault( tab => tab.Id == ActiveTab ).Label ?? "Property Stats";

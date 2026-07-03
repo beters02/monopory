@@ -534,3 +534,77 @@
 .integrity-badge.unverified {
 	background-color: $monopoly-danger;
 }
+
+.move-history-layout {
+	flex: 1;
+	min-height: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.move-history-list {
+	flex: 1;
+	min-height: 0;
+}
+
+.move-history-pager {
+	flex-shrink: 0;
+	min-height: 34px;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+}
+
+.move-history-page-label {
+	flex-shrink: 0;
+	min-height: 16px;
+	align-items: center;
+	justify-content: center;
+	color: $monopoly-ink-soft;
+	font-size: 10px;
+	font-weight: 800;
+	text-align: center;
+}
+
+.move-history-page-ellipsis {
+	width: 24px;
+	min-width: 24px;
+	height: 28px;
+	align-items: center;
+	justify-content: center;
+	color: $monopoly-ink-soft;
+	font-size: 13px;
+	font-weight: 900;
+}
+
+.monopoly-button.move-history-page-button {
+	width: 34px;
+	min-width: 34px;
+	height: 30px;
+	min-height: 30px;
+	padding: 0 8px;
+	margin: 0;
+	border: 2px solid $monopoly-gold;
+	border-radius: $monopoly-radius-control;
+	background-color: $monopoly-gold;
+	color: $monopoly-ink;
+	font-size: 11px;
+	font-weight: 900;
+	align-items: center;
+	justify-content: center;
+	box-shadow: none;
+}
+
+.monopoly-button.move-history-page-button:hover {
+	background-color: $monopoly-gold-hover;
+	border-color: $monopoly-gold-hover;
+}
+
+.monopoly-button.move-history-page-button.active-page {
+	background-color: $monopoly-ink;
+	border-color: $monopoly-ink;
+	color: $monopoly-board;
+}
