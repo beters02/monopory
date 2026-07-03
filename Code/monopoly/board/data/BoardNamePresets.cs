@@ -8,7 +8,7 @@ public static class BoardNamePresets
 	public const string ClassicPresetId = "board_classic";
 	public const string GrandCasinoPresetId = "board_grand_casino";
 
-	[BoardSpaceNamePreset( DefaultPresetId, "Default Names", 0 )]
+	[BoardSpaceNamePreset( DefaultPresetId, "Rent Rush", 0 )]
 	public static class DefaultNames
 	{
 		[BoardSpaceNameModifier( "go" )]

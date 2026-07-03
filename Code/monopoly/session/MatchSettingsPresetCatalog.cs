@@ -40,7 +40,7 @@ public static class GameRulePresets
 
 	public static IReadOnlyList<MatchSettingsPreset> All => all ??= MatchSettingsPresetCatalog.BuildGameRulePresets();
 
-	[MatchConfigPreset( "rules_default", "Default Rules", 0 )]
+	[MatchConfigPreset( "rules_default", "Rent Rush", 0 )]
 	public static class DefaultRules
 	{
 	}

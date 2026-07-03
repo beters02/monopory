@@ -94,8 +94,8 @@ public class AppSettings : Component
 			&& MathF.Abs( Data.MotionBlurScale - snapshot.MotionBlurScale ) < 0.001f
 			&& Data.Volume == snapshot.Volume
 			&& Data.MusicVolume == snapshot.MusicVolume
-			&& string.Equals( GetDefaultGameRulePresetId(), NormalizePresetId( snapshot.DefaultGameRulePresetId, GameRulePresets.DefaultPresetId ), StringComparison.Ordinal )
-			&& string.Equals( GetDefaultBoardConfigPresetId(), NormalizePresetId( snapshot.DefaultBoardConfigPresetId, BoardNamePresets.DefaultPresetId ), StringComparison.Ordinal )
+			&& string.Equals( GetDefaultGameRulePresetId(), NormalizeGameRulePresetId( snapshot.DefaultGameRulePresetId ), StringComparison.Ordinal )
+			&& string.Equals( GetDefaultBoardConfigPresetId(), NormalizeBoardConfigPresetId( snapshot.DefaultBoardConfigPresetId ), StringComparison.Ordinal )
 			&& KeybindsMatch( Data.Keybinds, snapshot.Keybinds );
 	}
 
@@ -114,8 +114,8 @@ public class AppSettings : Component
 			MusicVolume = source.MusicVolume,
 			SelectedPieceId = PieceCatalog.GetByIdOrDefault( source.SelectedPieceId ).Id,
 			SelectedDiceSkinId = DiceSkinCatalog.GetByIdOrDefault( source.SelectedDiceSkinId ).Id,
-			DefaultGameRulePresetId = NormalizePresetId( source.DefaultGameRulePresetId, GameRulePresets.DefaultPresetId ),
-			DefaultBoardConfigPresetId = NormalizePresetId( source.DefaultBoardConfigPresetId, BoardNamePresets.DefaultPresetId ),
+			DefaultGameRulePresetId = NormalizeGameRulePresetId( source.DefaultGameRulePresetId ),
+			DefaultBoardConfigPresetId = NormalizeBoardConfigPresetId( source.DefaultBoardConfigPresetId ),
 			Keybinds = CopyKeybinds( source.Keybinds )
 		};
 	}
@@ -171,8 +171,8 @@ public class AppSettings : Component
 	public static int GetMusicVolume() => Math.Clamp( Data.MusicVolume, 0, 100 );
 	public static string GetSelectedPieceId() => PieceCatalog.GetByIdOrDefault( Data.SelectedPieceId ).Id;
 	public static string GetSelectedDiceSkinId() => DiceSkinCatalog.GetByIdOrDefault( Data.SelectedDiceSkinId ).Id;
-	public static string GetDefaultGameRulePresetId() => NormalizePresetId( Data.DefaultGameRulePresetId, GameRulePresets.DefaultPresetId );
-	public static string GetDefaultBoardConfigPresetId() => NormalizePresetId( Data.DefaultBoardConfigPresetId, BoardNamePresets.DefaultPresetId );
+	public static string GetDefaultGameRulePresetId() => NormalizeGameRulePresetId( Data.DefaultGameRulePresetId );
+	public static string GetDefaultBoardConfigPresetId() => NormalizeBoardConfigPresetId( Data.DefaultBoardConfigPresetId );
 	public static string GetKeybind( InputAction action )
 	{
 		if ( action is null )
@@ -269,7 +269,7 @@ public class AppSettings : Component
 
 	public static bool TrySetDefaultGameRulePresetId( string presetId, bool save = true )
 	{
-		Data.DefaultGameRulePresetId = NormalizePresetId( presetId, GameRulePresets.DefaultPresetId );
+		Data.DefaultGameRulePresetId = NormalizeGameRulePresetId( presetId );
 		if ( save )
 			Save();
 		return true;
@@ -277,7 +277,7 @@ public class AppSettings : Component
 
 	public static bool TrySetDefaultBoardConfigPresetId( string presetId, bool save = true )
 	{
-		Data.DefaultBoardConfigPresetId = NormalizePresetId( presetId, BoardNamePresets.DefaultPresetId );
+		Data.DefaultBoardConfigPresetId = NormalizeBoardConfigPresetId( presetId );
 		if ( save )
 			Save();
 		return true;
@@ -451,6 +451,37 @@ public class AppSettings : Component
 	private static string NormalizePresetId( string presetId, string fallback )
 	{
 		return string.IsNullOrWhiteSpace( presetId ) ? fallback : presetId.Trim();
+	}
+
+	private static string NormalizeGameRulePresetId( string presetId )
+	{
+		var normalized = NormalizePresetId( presetId, GameRulePresets.DefaultPresetId );
+		return PresetExists( normalized, GameRulePresets.All, "match_settings/game_rule_presets.json" )
+			? normalized
+			: GameRulePresets.DefaultPresetId;
+	}
+
+	private static string NormalizeBoardConfigPresetId( string presetId )
+	{
+		var normalized = NormalizePresetId( presetId, BoardNamePresets.DefaultPresetId );
+		return PresetExists( normalized, BoardCatalog.GetNamePresets(), "match_settings/board_config_presets.json" )
+			? normalized
+			: BoardNamePresets.DefaultPresetId;
+	}
+
+	private static bool PresetExists( string presetId, IEnumerable<MatchSettingsPreset> predefinedPresets, string customPresetPath )
+	{
+		if ( string.IsNullOrWhiteSpace( presetId ) )
+			return false;
+
+		if ( predefinedPresets?.Any( preset => string.Equals( preset?.Id, presetId, StringComparison.Ordinal ) ) == true )
+			return true;
+
+		if ( !FileSystem.Data.FileExists( customPresetPath ) )
+			return false;
+
+		return FileSystem.Data.ReadJson<List<MatchSettingsPreset>>( customPresetPath )?
+			.Any( preset => preset is not null && !preset.IsPredefined && string.Equals( preset.Id, presetId, StringComparison.Ordinal ) ) == true;
 	}
 
 	private static InputAction GetKeybindConflict( InputAction targetAction, string keyboardCode )

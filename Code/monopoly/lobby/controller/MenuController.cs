@@ -23,6 +23,7 @@ public sealed class MenuController : Component
 		//if ( Networking.IsActive )
 		//	Networking.Disconnect();
 
+		Config = MatchConfigSchema.CreateDefault();
 		var hostedConfig = MatchBootstrap.CloneConfig( Config );
 		MatchBootstrap.PrepareLobby( hostedConfig );
 
