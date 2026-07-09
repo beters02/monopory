@@ -117,11 +117,13 @@
 						}
 						<div class="space-buttons mortgage-buttons">
 							<GameButton Variant="@GetMortgageButtonClasses( selection )" OnClick="@Mortgage">@selection.MortgageActionLabel</GameButton>
-							@if ( selection.CanShowRelease )
-							{
-								<GameButton Variant="@GetReleaseButtonClasses( selection )" CanClick="@selection.CanRelease" OnClick="@ReleaseProperty">@selection.ReleaseActionLabel</GameButton>
-							}
 						</div>
+						@if ( selection.CanShowRelease )
+						{
+							<div class="space-buttons mortgage-buttons release-buttons">
+								<GameButton Variant="@GetReleaseButtonClasses( selection )" CanClick="@selection.CanRelease" OnClick="@ReleaseProperty">@selection.ReleaseActionLabel</GameButton>
+							</div>
+						}
 					</div>
 				</div>
 			}
@@ -327,7 +329,8 @@
 	{
 		return selection.CanRelease ? "mortgage-action" : "mortgage-action disabled";
 	}
-private static string GetColorSetMenuButtonClasses( bool canClick )
+
+	private static string GetColorSetMenuButtonClasses( bool canClick )
 	{
 		return canClick ? "color-set-menu-action" : "color-set-menu-action disabled";
 	}

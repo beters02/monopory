@@ -1018,6 +1018,7 @@ public static class ChangeVacationCashCommand
 {
 	public const string Name = "change_vacation_cash";
 
+	[CheatCmd]
 	[ConCmd( Name )]
 	public static void Execute( Connection connection, int amount )
 	{
@@ -1041,6 +1042,7 @@ public static class ForceEndGameWinCommand
 {
 	public const string Name = "force_end_game_win";
 
+	[CheatCmd]
 	[ConCmd( Name )]
 	public static void Execute( Connection connection, string playerName = "self", params string[] playerNameTail )
 	{
@@ -1069,6 +1071,7 @@ public static class JailPlayerCommand
 {
 	public const string Name = "jail_player";
 
+	[CheatCmd]
 	[ConCmd( Name )]
 	public static void Execute( Connection connection, string playerName = "self" )
 	{
