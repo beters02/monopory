@@ -1,3 +1,4 @@
+project_root = "/mnt/c/Users/Bryce/Documents/s&box projects/monopory"
 extra_ignore_patterns = ["node_modules", ".git", "dist", "build", "logs", "docs/internal"]
 content_defined_chunking = true
 
