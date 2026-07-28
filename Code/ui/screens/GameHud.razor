@@ -99,9 +99,16 @@
 				<GambleScreen GameRef="@GameRef" IsMenuOpen="@IsAnyMenuOpen"></GambleScreen>
 
 				<div class="@HudUi.BuildHideableHudClass( GameRef )">
-					<GameStatusPanel GameRef="@GameRef"></GameStatusPanel>
+					<GameStatusPanel GameRef="@GameRef" OnOpenStats="@OpenStatsPanel"></GameStatusPanel>
 					<AuctionModal GameRef="@GameRef"></AuctionModal>
 				</div>
+
+				<PropertyStatsModal
+					GameRef="@GameRef"
+					IsOpen="@IsStatsPanelOpen"
+					InitialTab="@StatsPanelInitialTab"
+					OnClose="@CloseStatsPanel">
+				</PropertyStatsModal>
 				
 				<div class="@HudUi.BuildTranslucentHideableHudClass( GameRef )">
 					<PropertyOwnershipPanel GameRef="@GameRef"></PropertyOwnershipPanel>
@@ -135,6 +142,8 @@
 	private bool IsMatchSettingsMenuOpen;
 	private bool IsManualSaveNameMenuOpen;
 	private string ManualSaveNameDraft = "";
+	private bool IsStatsPanelOpen;
+	private PropertyStatsTab StatsPanelInitialTab = PropertyStatsTab.Property;
 	public static bool IsMenuBlockingHud { get; private set; }
 
 	private bool IsHudVisible() => GameRef?.IsGameHudVisible() == true;
@@ -166,6 +175,7 @@
 			IsOptionsMenuOpen = false;
 			IsMatchSettingsMenuOpen = false;
 			IsManualSaveNameMenuOpen = false;
+			IsStatsPanelOpen = false;
 			IsMenuBlockingHud = false;
 			if ( GameRef is null )
 				return;
@@ -190,12 +200,13 @@
 			IsOptionsMenuOpen = false;
 			IsMatchSettingsMenuOpen = false;
 			IsManualSaveNameMenuOpen = false;
+			IsStatsPanelOpen = false;
 			IsMenuBlockingHud = false;
 			Mouse.Visibility = MouseVisibility.Visible;
 			return;
 		}
 
-		if ( IsEscapeMenuOpen || IsOptionsMenuOpen || IsMatchSettingsMenuOpen || IsManualSaveNameMenuOpen )
+		if ( IsEscapeMenuOpen || IsOptionsMenuOpen || IsMatchSettingsMenuOpen || IsManualSaveNameMenuOpen || IsStatsPanelOpen )
 			Mouse.Visibility = MouseVisibility.Visible;
 
 		if ( StandaloneConsole.IsConsoleOpen )
@@ -205,6 +216,7 @@
 			IsOptionsMenuOpen = false;
 			IsMatchSettingsMenuOpen = false;
 			IsManualSaveNameMenuOpen = false;
+			IsStatsPanelOpen = false;
 			IsMenuBlockingHud = false;
 			return;
 		}
@@ -269,6 +281,11 @@
 
 	private void ToggleEscapeMenu()
 	{
+		if ( IsStatsPanelOpen )
+		{
+			CloseStatsPanel();
+			return;
+		}
 		if ( IsOptionsMenuOpen )
 		{
 			IsOptionsMenuOpen = false;
@@ -318,6 +335,22 @@
 		IsOptionsMenuOpen = false;
 		IsMatchSettingsMenuOpen = false;
 		IsManualSaveNameMenuOpen = false;
+	}
+
+	private void OpenStatsPanel( PropertyStatsTab tab )
+	{
+		if ( GameRef is null )
+			return;
+
+		StatsPanelInitialTab = tab;
+		IsStatsPanelOpen = true;
+		StateHasChanged();
+	}
+
+	private void CloseStatsPanel()
+	{
+		IsStatsPanelOpen = false;
+		StateHasChanged();
 	}
 
 	private void ResumeGame()
@@ -589,6 +622,8 @@
 		hash.Add( IsMatchSettingsMenuOpen );
 		hash.Add( IsManualSaveNameMenuOpen );
 		hash.Add( ManualSaveNameDraft );
+		hash.Add( IsStatsPanelOpen );
+		hash.Add( StatsPanelInitialTab );
 		hash.Add( IsGambleScreenActive );
 		hash.Add( IsHudVisible() );
 		hash.Add( GameRef?.ForceHiddenUiVisible ?? false );

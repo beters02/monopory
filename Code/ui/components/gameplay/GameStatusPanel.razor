@@ -168,12 +168,12 @@
 			</ChildContent>
 		</Sandbox.ui.components.HudPanel.HudPanel>		
 	}
-	<PropertyStatsModal GameRef="@GameRef" IsOpen="@IsStatsPanelOpen" InitialTab="@StatsPanelInitialTab" OnClose="@CloseStatsPanel"></PropertyStatsModal>
 </root>
 
 @code
 {
     [Parameter] public GameController GameRef { get; set; }
+	[Parameter] public Action<PropertyStatsTab> OnOpenStats { get; set; }
 
 	private GameButton ActionRollButton = null!;
 	private GameButton ActionJailRollButton = null!;
@@ -182,8 +182,6 @@
 	private GameButton StatusJailRollButton = null!;
 	private GameButton StatusEndTurnButton = null!;
 	private GameButton KeyboardRollButton;
-	private bool IsStatsPanelOpen;
-	private string StatsPanelInitialTab = "property";
 
     private PlayerState CurrentPlayer => GameRef?.CurrentPlayer;
     private PlayerState LocalPlayer => GameRef?.LocalPlayer;
@@ -549,9 +547,7 @@
 		if ( GameRef is null )
 			return;
 
-		StatsPanelInitialTab = "property";
-		IsStatsPanelOpen = true;
-		StateHasChanged();
+		OnOpenStats?.Invoke( PropertyStatsTab.Property );
 	}
 
 	private void ShowIntegrityLog()
@@ -559,15 +555,7 @@
 		if ( GameRef is null )
 			return;
 
-		StatsPanelInitialTab = "integrity";
-		IsStatsPanelOpen = true;
-		StateHasChanged();
-	}
-
-	private void CloseStatsPanel()
-	{
-		IsStatsPanelOpen = false;
-		StateHasChanged();
+		OnOpenStats?.Invoke( PropertyStatsTab.Integrity );
 	}
 
 	private string GetEndTurnBlockedMessage()
@@ -621,8 +609,6 @@
 		hash.Add( GetBoundInputActionCode( GetCycleCameraModeInputAction() ) );
 		hash.Add( CanEndTurn );
 		hash.Add( ShouldShowActionButtons );
-		hash.Add( IsStatsPanelOpen );
-		hash.Add( StatsPanelInitialTab );
 		hash.Add( GetPropertyStatsHash() );
 		return hash.ToHashCode();
 	}

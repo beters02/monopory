@@ -271,6 +271,7 @@ public sealed partial class GameController : Component
 			RevealedSeed = RevealedSeed,
 			PrivateDiceSeed = CapturePrivateDiceSeed(),
 			NextDiceRollIndex = NextDiceRollIndex,
+			NextLifetimeStatsEventId = NextLifetimeStatsEventId,
 			NextAdminHistoryId = NextAdminHistoryId,
 			NextCommandHistoryId = NextCommandHistoryId,
 			NextMoveHistoryTurnNumber = NextMoveHistoryTurnNumber,
@@ -460,6 +461,7 @@ public sealed partial class GameController : Component
 		DiceCommitmentHash = snapshot.DiceCommitmentHash ?? "";
 		RevealedSeed = snapshot.RevealedSeed ?? "";
 		NextDiceRollIndex = Math.Max( snapshot.NextDiceRollIndex, 0 );
+		NextLifetimeStatsEventId = Math.Max( snapshot.NextLifetimeStatsEventId, 1 );
 		NextAdminHistoryId = Math.Max( snapshot.NextAdminHistoryId, 1 );
 		NextCommandHistoryId = Math.Max( snapshot.NextCommandHistoryId, 1 );
 		NextMoveHistoryTurnNumber = Math.Max( snapshot.NextMoveHistoryTurnNumber, 1 );

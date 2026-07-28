@@ -67,6 +67,7 @@ public sealed class GameSaveSnapshot
 	public string RevealedSeed { get; set; } = "";
 	public string PrivateDiceSeed { get; set; } = "";
 	public int NextDiceRollIndex { get; set; }
+	public int NextLifetimeStatsEventId { get; set; } = 1;
 	public int NextAdminHistoryId { get; set; } = 1;
 	public int NextCommandHistoryId { get; set; } = 1;
 	public int NextMoveHistoryTurnNumber { get; set; } = 1;

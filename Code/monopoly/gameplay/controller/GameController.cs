@@ -124,6 +124,7 @@ public sealed partial class GameController : Component, Component.INetworkListen
 	[Sync] public string DiceCommitmentHash { get; set; } = "";
 	[Sync] public string RevealedSeed { get; set; } = "";
 	[Sync] public int NextDiceRollIndex { get; set; }
+	[Sync] public int NextLifetimeStatsEventId { get; set; } = 1;
 	[Sync] public int NextAdminHistoryId { get; set; } = 1;
 	[Sync] public int NextCommandHistoryId { get; set; } = 1;
 	[Sync] public int NextMoveHistoryTurnNumber { get; set; } = 1;

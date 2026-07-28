@@ -21,6 +21,7 @@ public sealed partial class GameController : Component
 		MatchConfigChangedAfterStart = false;
 		RevealedSeed = "";
 		NextDiceRollIndex = 0;
+		NextLifetimeStatsEventId = 1;
 		NextAdminHistoryId = 1;
 		NextCommandHistoryId = 1;
 		NextMoveHistoryTurnNumber = 1;
@@ -131,6 +132,7 @@ public sealed partial class GameController : Component
 
 		DiceHistory[rollIndex] = MatchIntegrityJson.Serialize( entry );
 		RecordMoveHistoryEvent( "Dice", "Dice rolled", $"{entry.PlayerName} rolled {dieA} + {dieB} = {entry.Total}." );
+		BroadcastLifetimeDiceRoll( dieA, dieB );
 	}
 
 	public bool DoesDiceHistoryVerify()

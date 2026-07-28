@@ -608,3 +608,19 @@
 	border-color: $monopoly-ink;
 	color: $monopoly-board;
 }
+
+
+.monopoly-button.move-history-nav-button {
+	width: auto;
+	min-width: 64px;
+	padding: 0 12px;
+}
+
+.monopoly-button.move-history-nav-button.disabled,
+.monopoly-button.move-history-nav-button.disabled:hover {
+	border-color: $monopoly-board-surface-line;
+	background-color: $monopoly-board-surface-strong;
+	color: $monopoly-ink-soft;
+	cursor: default;
+	opacity: 0.62;
+}

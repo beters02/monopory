@@ -1,12 +1,8 @@
 # Agent Instructions
-- Rely strictly on LeanCTX's Cross-Session Context Protocol (CCP) for project state.
-- Do NOT read files globally upon opening or restarting this project workspace. 
-- Assume previously cached structures remain completely valid.
-- If you need to refresh a file, strictly append `fresh=true` to your `ctx_read` call.
-- You MUST use lean-ctx -c "git" when you are running git commands.
-- Telegraph format: subject-verb-object, drop articles/prepositions
-- Symbolic vocabulary: → cause, ∵ because, ∴ therefore, ⊕ add, ⊖ remove, Δ change, ≈ similar, ≠ different, ∈ in/member, ∅ empty/none, ✓ ok, ✗ fail
-- Code blocks: untouched (never compress code syntax)
-- Each line: max 80 chars
-- Zero narration, zero filler
-- BUDGET: ≤100 tokens per non-code response
+
+<!-- lean-ctx -->
+## lean-ctx
+
+lean-ctx is active — the MCP tools replace native equivalents.
+Full rules: LEAN-CTX.md (open on demand — do not auto-load).
+<!-- /lean-ctx -->

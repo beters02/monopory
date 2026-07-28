@@ -1,60 +1,78 @@
 <!-- lean-ctx-owned: PROJECT-LEAN-CTX.md v1 -->
-# lean-ctx — Context Engineering Layer
-<!-- lean-ctx-rules-v11 -->
+<!-- lean-ctx-rules -->
+<!-- version: 8 -->
 
-## Tool Mapping (MANDATORY — use instead of native equivalents)
-| Instead of | Use | Example |
-|------------|-----|---------|
-| Read/cat/head/tail | `ctx_read(path, mode)` | `ctx_read("src/main.rs", "full")` |
-| Grep/rg/find | `ctx_search(pattern, path)` | `ctx_search("fn handle", "src/")` |
-| Shell/bash | `ctx_shell(command)` | `ctx_shell("cargo test")` |
-| Edit (when Read unavailable) | `ctx_edit(path, old, new)` | `ctx_edit("f.rs", "old", "new")` |
+CRITICAL: ALWAYS use lean-ctx ctx_* tools instead of native equivalents. This is NOT optional.
 
-## Tool Bypass
-If you cannot read an image file that is sent in the current request, you may bypass lean-ctx to read the image. Return back to tool mapping after retrieval.
+ACTUALLY EMIT the ctx_* tool call (ctx_compose first) — describing a tool is not calling it.
 
-## ctx_read Mode Selection
-| Goal | Mode | When |
-|------|------|------|
-| Edit this file | `full` | Before any edit ( ONLY IF NOT PROVIDED ENOUGH CONTEXT VIA SIGNATURES + LINES COMBINATION ) |
-| Understand API | `signatures` | Context-only, won't edit |
-| Re-read after edit | `diff` | Post-edit verification |
-| Large file overview | `map` | >500 lines, won't edit |
-| Specific region | `lines:N-M` | Know exact location |
-| Unsure | `auto` | System selects optimal mode |
+MANDATORY MAPPING:
+• Read/cat -> ctx_read(path, mode)
+• Grep -> ctx_search(pattern, path)
+• Shell/bash -> ctx_shell(command)
+• Glob/find -> ctx_glob(pattern)
+• ls/find -> ctx_tree(path, depth)
 
-## Workflow (follow this order)
-1. **Orient:** `ctx_overview(task)` or `ctx_compose(task, path)` for unfamiliar tasks
-2. **Locate:** `ctx_search(pattern, path)` for exact text; `ctx_semantic_search(query)` for concepts
-3. **Read:** `ctx_read(path, mode)` with appropriate mode from table above
-4. **Edit:** `ctx_edit(path, old_string, new_string)` or native Edit if available
-5. **Verify:** `ctx_read(path, "diff")` + `ctx_shell("test command")`
-6. **Record:** `ctx_knowledge(action="remember", content="...")` for non-obvious findings
+NEVER use native Read/Grep/Shell/Glob when a ctx_* equivalent exists. SELF-CORRECT: the moment you reach for one, stop and call the ctx_* tool instead.
 
-## Proactive (use without being asked)
-- `ctx_overview(task)` — at session start for orientation
-- `ctx_compress` — when context grows large (at phase boundaries)
-- `ctx_knowledge(action="wakeup")` — at session start to surface prior findings
+Tool selection by intent:
+• Orient / understand code (call FIRST) -> ctx_compose
+• Read a file -> ctx_read(path, mode=signatures|map|full); edit after reading -> ctx_patch
+• Exact symbol -> ctx_search(action=symbol); pattern -> ctx_search; by meaning -> ctx_search(action=semantic)
+• Files by glob -> ctx_glob; structure -> ctx_tree; callers/impact -> ctx_callgraph
+• Verify after edits -> ctx_shell(test/build); memory -> ctx_session / ctx_knowledge
+Semantic questions -> search tools, not whole-file reads: reading more ≠ understanding more.
 
-## Compression Bypass (ONLY when compressed output hides needed detail)
-`ctx_read(path, "lines:N-M")` → `ctx_read(path, "full")` → `ctx_shell(cmd, raw=true)`
-Return to compressed defaults after one expanded retrieval. ALWAYS try to use compressed shell, even when its code output. Only bypass if that is the only way to expose the needed detail.
+AGENT LOOP (phase -> tool):
+• Orient — understand before acting -> ctx_compose
+• Find — exact symbol by name -> ctx_search(action=symbol)
+• Read — a file, structurally -> ctx_read(mode=signatures|map)
+• Locate — a pattern across files -> ctx_search
+• Trace — callers / callees / blast radius -> ctx_callgraph
+• Verify — after an edit -> ctx_shell(test/build) + native lints
 
-## Risk Gate (before high-impact edits)
-Before editing exported symbols, auth, DB schemas, or 3+ files: run `ctx_impact(action="analyze")`
-and `ctx_callgraph(action="callers")` to confirm blast radius.
+Anti-patterns — do NOT:
+• Chain ctx_search -> ctx_read -> ctx_search(action=symbol) — one ctx_compose replaces all three
+• Use ctx_read(mode=full) for orientation — use mode=signatures
+• Use ctx_callgraph/ctx_graph for const/static/variable refs — they track call edges and file deps only; use ctx_search instead
 
-## Session
-- **Start:** `ctx_session(action="status")` + `ctx_knowledge(action="wakeup")`
-- **End:** `ctx_session(action="decision", content="what was done + next steps")`
-- **On [CHECKPOINT]:** `ctx_session(action="task", value="current status")`
+NAVIGATION PARADOX: reading more ≠ understanding more.
+• Semantic question ("where/how is X handled?") -> ctx_search (BM25) + ctx_search(action=semantic) (meaning), not whole-file reads
+• Hidden architectural deps (who calls this, what breaks) -> ctx_callgraph / ctx_graph — for these only
+• Navigate structure (signatures, symbols) before reading entire files
 
-### SYSTEM GUARDRAILS (CRITICAL)
-1. NEVER run raw search utilities (`rg`, `grep`, `find`) inside `ctx_shell`. You must exclusively use `ctx_search` or `ctx_read` for traversing codebase files.
-2. If searching inside compiled binaries (.dll, .exe, .so, .bin), you are forbidden from utilizing flags that force text formatting (e.g., `rg -a`). You must read offsets programmatically or use targeted binary dump commands.
-3. Always pipe unexpected or potentially large terminal outputs to `head -n 50`.
-4. NEVER use native Read/Grep/Shell when ctx_* equivalents are available.
+PARALLEL: fire independent tool calls in the SAME turn — ctx_compose bundles multiple lookups into one call.
 
-## S&box
-Use the S&box mcp server for unknown solutions for S&box related requests
-<!-- /lean-ctx -->
+Auto: preload/dedup/compress run in background. ctx_session=memory, ctx_knowledge=facts, ctx_shell raw=true=uncompressed. Full guide: LEAN-CTX.md
+
+RECOVER: compressed output is reversible — never re-read line-by-line. Need full/exact? Read the shown file path with any tool (no MCP), or ctx_read(mode=full|raw=true); [Archived]/tee/firewall → ctx_expand(id=...).
+
+CEP v1: 1.ACT FIRST 2.DELTA ONLY (Fn refs) 3.STRUCTURED (+/-/~) 4.ONE LINE PER ACTION 5.QUALITY ANCHOR
+
+OUTPUT: never echo tool output, no narration comments, show only changed code.
+
+TOOL PREFERENCE (END): ctx_compose>chain ctx_read>Read ctx_shell>Shell ctx_search>Grep ctx_glob>Glob ctx_tree>ls | Edit/Write/Delete=native
+
+Advanced tools not in your profile are available via ctx_call(tool=<name>) gateway.
+
+<!-- lean-ctx-compression -->
+OUTPUT STYLE: expert-terse
+- Telegraph format: subject-verb-object, drop articles/prepositions
+- Symbolic vocabulary: → cause, ∵ because, ∴ therefore, ⊕ add, ⊖ remove, Δ change, ≈ similar, ≠ different, ∈ in/member, ∅ empty/none, ✓ ok, ✗ fail
+- Code blocks: untouched (never compress code syntax)
+- Each line: max 80 chars
+- Zero narration, zero filler
+- BUDGET: ≤100 tokens per non-code response
+<!-- /lean-ctx-compression -->
+<!-- lean-ctx-agent-utilization -->
+# AGENT UTILIZATION:
+Plan mode: Always follow # Agent Utilization Rule List, and include which agent will be doing what in the generated plan.
+Normal mode: Ask the user if you should use the utilization rule list (include what agents will be assigned to the request when you ask), or if you should use the current selected model.
+
+# Agent Utilization Rule List
+- GPT 5.6-Sol Extra High - Complete API rewrites, extremely large architectural changes, implementations regarding user security. You will rarely ever use this model, typically, prefer extra high.
+- GPT 5.6-Sol High - Complex, intensely intelligence-required, architectural, api changing implementations.
+- GPT 5.6-Sol Medium - Non architectural, but still slightly complex, somewhat intelligence-required implementations. Probably will be used most of the time.
+- GPT 5-6-Sol Low - Quick changes that require minimal intelligence.
+<!-- /lean-ctx-agent-utilization -->
+<!-- /lean-ctx-rules -->

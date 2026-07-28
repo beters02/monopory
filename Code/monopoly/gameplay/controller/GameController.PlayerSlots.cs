@@ -295,6 +295,7 @@ public sealed partial class GameController : Component
 		DiceCommitmentHash = "";
 		RevealedSeed = "";
 		NextDiceRollIndex = 0;
+		NextLifetimeStatsEventId = 1;
 		NextAdminHistoryId = 1;
 		NextCommandHistoryId = 1;
 		NextMoveHistoryTurnNumber = 1;

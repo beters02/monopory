@@ -44,6 +44,7 @@ public sealed partial class GameController : Component
 
 			Log.Info( $"{player.PlayerName} landed on {spaceDef.DisplayName}" );
 			RecordPropertyLandingForStats( player, spaceDef );
+			BroadcastLifetimeSpaceLanding( spaceDef );
 
 			//if (spaceDef.Type != SpaceType.Go && spaceDef.Type )
 			ShowCardForPlayerWhoLanded(player);
@@ -194,7 +195,7 @@ public sealed partial class GameController : Component
 		if ( payout > 0 )
 		{
 			player.Money += payout;
-			ShowMoneyReceivedPopup( player, payout, "Free Parking" );
+			SendGlobalPopupToAll( "Free Parking payout", $"{player.PlayerName} collected ${payout} from Free Parking.", PopupKind.Success, true, 4f );
 		}
 
 		if ( CurrentTurnGetsExtraRoll )

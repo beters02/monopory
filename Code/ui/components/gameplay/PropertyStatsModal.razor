@@ -121,7 +121,7 @@
 							@if ( MoveRows.Count == 0 ) { <div class="property-stats-empty">No move history recorded yet.</div> }
 						</div>
 						<div class="move-history-pager">
-							<GameButton Variant="move-history-page-button" CanClick="@CanPageMoveHistoryBack" OnClick="@PageMoveHistoryBack">Prev</GameButton>
+							<GameButton Variant="@GetMoveHistoryNavigationButtonClass( CanPageMoveHistoryBack )" Disabled="@(!CanPageMoveHistoryBack)" OnClick="@PageMoveHistoryBack">Prev</GameButton>
 							@foreach ( var page in MoveHistoryPageButtons )
 							{
 								@if ( page < 0 )
@@ -133,7 +133,7 @@
 									<GameButton Variant="@GetMoveHistoryPageButtonClass( page )" OnClick="@(() => SetMoveHistoryPage( page ))">@(page + 1)</GameButton>
 								}
 							}
-							<GameButton Variant="move-history-page-button" CanClick="@CanPageMoveHistoryForward" OnClick="@PageMoveHistoryForward">Next</GameButton>
+							<GameButton Variant="@GetMoveHistoryNavigationButtonClass( CanPageMoveHistoryForward )" Disabled="@(!CanPageMoveHistoryForward)" OnClick="@PageMoveHistoryForward">Next</GameButton>
 						</div>
 						<div class="move-history-page-label">@MoveHistoryTotalCount turns</div>
 					</div>
@@ -194,7 +194,7 @@
 {
 	[Parameter] public GameController GameRef { get; set; }
 	[Parameter] public bool IsOpen { get; set; }
-	[Parameter] public string InitialTab { get; set; } = PropertyTab;
+	[Parameter] public PropertyStatsTab InitialTab { get; set; } = PropertyStatsTab.Property;
 	[Parameter] public Action OnClose { get; set; }
 
 	private const string PropertyTab = "property";
@@ -204,7 +204,7 @@
 	private const string AdminTab = "admin";
 	private const string IntegrityTab = "integrity";
 	private string ActiveTab = PropertyTab;
-	private string lastInitialTab = "";
+	private bool wasOpen;
 	private int MoveHistoryPage;
 	private Panel PropertyTablePanel = null!;
 	private Panel PlayerListPanel = null!;
@@ -232,13 +232,24 @@
 
 	protected override void OnParametersSet()
 	{
-		if ( string.Equals( lastInitialTab, InitialTab, StringComparison.Ordinal ) )
+		var isOpening = IsOpen && !wasOpen;
+		wasOpen = IsOpen;
+		if ( !isOpening )
 			return;
 
-		lastInitialTab = InitialTab;
-		if ( Tabs.Any( tab => string.Equals( tab.Id, InitialTab, StringComparison.Ordinal ) ) )
-			ActiveTab = InitialTab;
+		ActiveTab = GetInitialTabId( InitialTab );
+		MoveHistoryPage = Math.Min( MoveHistoryPage, MoveHistoryPageCount - 1 );
 	}
+
+	private static string GetInitialTabId( PropertyStatsTab tab ) => tab switch
+	{
+		PropertyStatsTab.Dice => DiceTab,
+		PropertyStatsTab.Move => MoveTab,
+		PropertyStatsTab.Gamble => GambleTab,
+		PropertyStatsTab.Admin => AdminTab,
+		PropertyStatsTab.Integrity => IntegrityTab,
+		_ => PropertyTab
+	};
 
 	private void Close() => OnClose?.Invoke();
 	private void SelectProperty( int spaceIndex ) => GameRef?.SelectSpace( spaceIndex );
@@ -247,6 +258,9 @@
 	private void PageMoveHistoryForward() { SetMoveHistoryPage( MoveHistoryPage + 1 ); }
 	private void SetMoveHistoryPage( int page ) { MoveHistoryPage = Math.Clamp( page, 0, MoveHistoryPageCount - 1 ); StateHasChanged(); }
 	private string GetMoveHistoryPageButtonClass( int page ) => page == MoveHistoryPage ? "move-history-page-button active-page" : "move-history-page-button";
+	private static string GetMoveHistoryNavigationButtonClass( bool canPage ) => canPage
+		? "move-history-page-button move-history-nav-button"
+		: "move-history-page-button move-history-nav-button disabled";
 	private List<int> GetMoveHistoryPageButtons()
 	{
 		var pages = new List<int>();
