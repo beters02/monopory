@@ -10,7 +10,7 @@ public enum InputActionIconType
 public partial class MonopolyApp : Component
 {
 
-    public static readonly string GameVersion = "0.0.953";
+    public static readonly string GameVersion = "0.0.954";
     public static readonly ulong AppId = 4745090;
     
     private static bool Standalone = false;
