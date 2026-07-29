@@ -66,8 +66,12 @@ OUTPUT STYLE: expert-terse
 <!-- /lean-ctx-compression -->
 <!-- lean-ctx-agent-utilization -->
 # AGENT UTILIZATION:
-Plan mode: Always follow # Agent Utilization Rule List, and include which agent will be doing what in the generated plan.
-Normal mode: Ask the user if you should use the utilization rule list (include what agents will be assigned to the request when you ask), or if you should use the current selected model.
+
+- Plan mode: Always follow # Agent Utilization Rule List. Include which model will implement each task in the generated plan.
+-- Readonly Planning Phase: GPT 5.6-Sol High handles this phase. Do NOT use multiple agents to perform this phase.
+-- Implementation Phase: Use multiple agents to complete the tasks. Use the models you assigned to the plan during the readonly phase.
+
+- Normal mode: Ask the user if you should use the utilization rule list (include what agents will be assigned to the request when you ask), or if you should use the current selected model.
 
 # Agent Utilization Rule List
 - GPT 5.6-Sol Extra High - Complete API rewrites, extremely large architectural changes, implementations regarding user security. You will rarely ever use this model, typically, prefer extra high.

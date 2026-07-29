@@ -588,6 +588,12 @@ public sealed class Board : Component
 	{
 		EnsureGameControllerRef();
 
+		if ( Input.Pressed( "Attack2" ) )
+		{
+			ShowLocalSpaceInfo();
+			return;
+		}
+
 		if ( !Input.Pressed( "Attack1" ) )
 			return;
 
@@ -617,6 +623,49 @@ public sealed class Board : Component
 			return;
 		}
 		GameRef.SelectSpace( space.Index );
+	}
+
+
+	private void ShowLocalSpaceInfo()
+	{
+		if ( GameRef is null || IsPlayerTokenTopHit() )
+			return;
+
+		var traceResult = GetSelectionMouseTraceResult();
+		if ( !traceResult.HasValue )
+			return;
+
+		HandleTraceResult( traceResult.Value, out _, out var def );
+		if ( def is null ||
+			def.Price <= 0 ||
+			def.Type is not (SpaceType.Property or SpaceType.Railroad or SpaceType.Utility) )
+			return;
+
+		GameRef.ShowBoardSpaceInfoPopup( def );
+	}
+
+	private bool IsPlayerTokenTopHit()
+	{
+		var camera = Scene?.Camera;
+		if ( camera is null )
+			return false;
+
+		var ray = camera.ScreenPixelToRay( Mouse.Position );
+		var traceResult = Scene.Trace.Ray( ray, 5000f )
+			.UseHitboxes()
+			.HitTriggers()
+			.Run();
+
+		if ( !traceResult.Hit || traceResult.GameObject is null )
+			return false;
+
+		for ( var current = traceResult.GameObject; current is not null; current = current.Parent )
+		{
+			if ( current.GetComponent<PlayerToken>() is not null )
+				return true;
+		}
+
+		return false;
 	}
 
 	private SceneTraceResult? GetSelectionMouseTraceResult()

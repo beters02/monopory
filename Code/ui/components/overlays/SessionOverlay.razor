@@ -142,32 +142,56 @@
 
 	private string GetRichestPlayerName()
 	{
-		var row = GetPlayerRows().OrderByDescending( entry => entry.Money ).FirstOrDefault();
-		return row.PlayerIndex < 0 ? "None" : row.Name;
+		var rows = GetPlayerRows();
+		if ( rows.Count == 0 )
+			return "None";
+
+		var row = rows.OrderByDescending( entry => entry.Money ).First();
+		return $"{row.Name} ${row.Money}";
 	}
 
 	private string GetTopRentEarnerName()
 	{
-		var row = GetPlayerRows().OrderByDescending( entry => entry.RentEarned ).FirstOrDefault();
-		return row.PlayerIndex < 0 || row.RentEarned <= 0 ? "None yet" : row.Name;
+		var rows = GetPlayerRows();
+		if ( rows.Count == 0 )
+			return "None";
+
+		var row = rows.OrderByDescending( entry => entry.RentEarned ).First();
+		return row.RentEarned <= 0 ? "None yet" : $"{row.Name} +${row.RentEarned}";
 	}
 
 	private string GetMostLandedPropertyName()
 	{
-		var row = GetPropertyRows().OrderByDescending( entry => entry.Landings ).FirstOrDefault();
-		return row.SpaceIndex < 0 || row.Landings <= 0 ? "None yet" : row.Name;
+		var rows = GetPropertyRows();
+		if ( rows.Count == 0 )
+			return "None";
+
+		var row = rows.OrderByDescending( entry => entry.Landings ).First();
+		return row.Landings <= 0
+			? "None yet"
+			: $"{row.Name} {row.Landings} {(row.Landings == 1 ? "visit" : "visits")}";
 	}
 
 	private string GetBiggestCashLossName()
 	{
-		var row = GetPlayerRows().Where( entry => entry.NetLoss > 0 ).OrderByDescending( entry => entry.NetLoss ).FirstOrDefault();
-		return row.PlayerIndex < 0 || row.NetLoss <= 0 ? "None yet" : row.Name;
+		var rows = GetPlayerRows();
+		if ( rows.Count == 0 )
+			return "None";
+
+		var row = rows.OrderByDescending( entry => entry.NetLoss ).First();
+		return row.NetLoss <= 0 ? "None yet" : $"{row.Name} -${row.NetLoss}";
 	}
 
 	private string GetMostPropertiesName()
 	{
-		var row = GetPlayerRows().OrderByDescending( entry => entry.PropertyCount ).FirstOrDefault();
-		return row.PlayerIndex < 0 || row.PropertyCount <= 0 ? "None yet" : row.Name;
+		var rows = GetPlayerRows();
+		if ( rows.Count == 0 )
+			return "None";
+
+		var row = rows.OrderByDescending( entry => entry.PropertyCount ).First();
+		return row.PropertyCount <= 0
+			? "None yet"
+			: $"{row.Name} {row.PropertyCount} {(row.PropertyCount == 1 ? "property" : "properties")}";
 	}
 
 	private string GetDiceTotalsSummary()

@@ -266,6 +266,10 @@ public sealed partial class GameController : Component
 		if ( !IsResolvingPhysicalDice )
 			return;
 
+		var callerPlayer = GetPlayerForCaller( Rpc.Caller );
+		if ( callerPlayer is null || callerPlayer != CurrentPlayer )
+			return;
+
 		PlayDiceImpactSoundLocal( Math.Clamp( volume, 0.05f, 1f ) );
 	}
 
@@ -276,6 +280,8 @@ public sealed partial class GameController : Component
 			return;
 
 		var handle = GameAssets.Sounds.DiceImpact.PlayWithHandle();
+		if ( handle is null )
+			return;
 		handle.Volume *= Math.Clamp( volume, 0.05f, 1f );
 	}
 	private void PlaySoundToConnection( Connection connection, GameSound sound, float delaySec = 0f )

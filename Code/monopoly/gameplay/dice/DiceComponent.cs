@@ -54,7 +54,7 @@ public sealed class DiceComponent : Component, Component.ICollisionListener
 
 	void Component.ICollisionListener.OnCollisionStart( Collision collision )
 	{
-		if ( !EnableCollisionAudio || !CollisionSound.IsAssigned )
+		if ( !EnableCollisionAudio || !IsNetworkOwner || CollisionSound?.IsAssigned != true )
 			return;
 
 		if ( Time.Now < nextCollisionSoundTime )
@@ -68,8 +68,11 @@ public sealed class DiceComponent : Component, Component.ICollisionListener
 			return;
 		
 		var mult = Math.Clamp(impactSpeed / CollisionSoundVolumeMaxSpeed, 0.2f, 1f);
-		SoundHandle handle = CollisionSound.PlayWithHandle();
-		handle.Volume *= mult;
+		var controller = Scene?.GetAllComponents<GameController>().FirstOrDefault();
+		if ( controller is null )
+			return;
+
+		controller.RequestPlayDiceImpactSound( mult );
 		nextCollisionSoundTime = Time.Now + CollisionSoundCooldown;
 	}
 

@@ -75,9 +75,10 @@ public sealed partial class GameController : Component
 			if ( decal is null )
 				continue;
 
-			if ( child.Name.Contains( "Bg", StringComparison.OrdinalIgnoreCase ) )
+			if ( child.Name.Contains( "_Bg", StringComparison.OrdinalIgnoreCase ) )
 				decal.ColorTint = diceSkin.BackgroundColor;
 			else if (
+				child.Name.Contains( "Side_", StringComparison.OrdinalIgnoreCase ) ||
 				child.Name.Contains( "Dot", StringComparison.OrdinalIgnoreCase ) ||
 				child.Name.Contains( "Pip", StringComparison.OrdinalIgnoreCase ) ||
 				child.Name.Contains( "Fg", StringComparison.OrdinalIgnoreCase ) )
