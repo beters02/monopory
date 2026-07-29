@@ -877,6 +877,20 @@
 	overflow: hidden;
 }
 
+.game-stats-property-name.color-brown { color: $property-brown; }
+.game-stats-property-name.color-light_blue { color: $property-light-blue; }
+.game-stats-property-name.color-pink { color: $property-pink; }
+.game-stats-property-name.color-orange { color: $property-orange; }
+.game-stats-property-name.color-red { color: $property-red; }
+.game-stats-property-name.color-yellow { color: $property-yellow; }
+.game-stats-property-name.color-green { color: $property-green; }
+.game-stats-property-name.color-dark_blue { color: $property-dark-blue; }
+.game-stats-property-name.color-chance { color: $property-chance; }
+.game-stats-property-name.color-chest { color: $property-chest; }
+.game-stats-property-name.color-railroad,
+.game-stats-property-name.color-utility,
+.game-stats-property-name.color-none { color: $monopoly-ink; }
+
 .game-stats-property-amount {
 	flex-shrink: 0;
 }

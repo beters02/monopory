@@ -29,4 +29,7 @@ code/Properties/*
 Exports/
 
 # AI stuff
-Tools/plans/*
+Tools/agents/*
+AGENTS.md
+LEAN-CTX.md
+.lean-ctx.toml
