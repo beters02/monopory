@@ -37,6 +37,7 @@
 					<div class="game-stats-leaderboard monopory-scroll-y">
 						@foreach ( var row in GameLeaderboardRows )
 						{
+							var avatarTexture = GetGameLeaderboardAvatarTexture( row );
 							<div class="@GetGameLeaderboardRowClass( row )">
 								<div class="game-stats-card-accent"></div>
 								<div class="game-stats-card-header">
@@ -44,7 +45,16 @@
 										<div class="game-stats-rank-key">Place</div>
 										<div class="game-stats-rank">#@row.Rank</div>
 									</div>
-									<div class="game-stats-player-avatar">@GetPlayerInitial( row.Name )</div>
+									<div class="game-stats-player-avatar">
+										@if ( avatarTexture is not null )
+										{
+											<Image class="game-stats-player-avatar-image" Texture="@avatarTexture"></Image>
+										}
+										else
+										{
+											<div class="game-stats-player-avatar-initial">@GetPlayerInitial( row.Name )</div>
+										}
+									</div>
 									<div class="game-stats-player">
 										<div class="game-stats-player-name">@row.Name</div>
 										<div class="game-stats-player-status">@(row.IsWinner ? "Winner" : row.IsBankrupt ? "Bankrupt" : "In game")</div>
@@ -449,6 +459,19 @@
 	private static string FormatDuration( int seconds ) => $"{Math.Max( seconds, 0 ) / 3600:00}:{Math.Max( seconds, 0 ) / 60 % 60:00}:{Math.Max( seconds, 0 ) % 60:00}";
 	private string GetGameLeaderboardRowClass( GameLeaderboardRow row ) => $"game-stats-card{(row.IsWinner ? " winner" : "")}{(row.IsBankrupt ? " bankrupt" : "")}";
 	private static string GetPlayerInitial( string playerName ) => string.IsNullOrWhiteSpace( playerName ) ? "?" : char.ToUpperInvariant( playerName.Trim()[0] ).ToString();
+
+	private Texture GetGameLeaderboardAvatarTexture( GameLeaderboardRow row )
+	{
+		if ( !MonopolyApp.IsStandalone() )
+			return null;
+
+		var player = GameRef?.Players?.ElementAtOrDefault( row.PlayerIndex );
+		if ( player is null )
+			return null;
+
+		var steamId = player.SteamId != 0 ? player.SteamId : player.OwnerId;
+		return SteamFriendsBridge.GetProfileEntry( steamId, row.Name )?.AvatarTexture;
+	}
 	private string GetModalClass() => IsPostMatch ? "post-match-stats-modal" : "";
 	private int GetTotalLandingsForSpace( int spaceIndex ) => SumPropertyStatForSpace( GameRef.PropertyLandingCounts, spaceIndex );
 	private int GetTotalRentEarnedForSpace( int spaceIndex ) => SumPropertyStatForSpace( GameRef.PropertyRentEarned, spaceIndex );
@@ -471,8 +494,8 @@
 	private string GetPlayerRowClasses( PlayerStatsRow row ) { var classes = "property-stats-player-row"; if ( row.IsLocalPlayer ) classes += " local-player"; if ( row.IsBankrupt ) classes += " bankrupt"; return classes; }
 	protected override int BuildHash()
 	{
-		var hash = new HashCode(); hash.Add( IsOpen ); hash.Add( IsPostMatch ); hash.Add( CanUseHostControls ); hash.Add( ActiveTab ); hash.Add( GameRef?.MatchState ?? 0 ); hash.Add( GameRef?.WinnerPlayerIndex ?? -1 ); hash.Add( GameRef?.Config?.LeaderboardStatPropertiesProfitType ?? PropertyProfitStatType.EverOwned ); hash.Add( GameRef?.IsVerifiedMatch ?? false ); hash.Add( MonopolyApp.IsCheatsEnabled() ); hash.Add( GameRef?.DiceHistory?.Count ?? 0 ); hash.Add( GameRef?.AdminHistory?.Count ?? 0 ); hash.Add( GameRef?.CommandHistory?.Count ?? 0 ); hash.Add( GameRef?.MoveHistory?.Count ?? 0 ); hash.Add( MoveHistoryPage ); hash.Add( MoveHistoryPageSize ); hash.Add( GameRef?.GambleHistory?.Count ?? 0 ); hash.Add( GameRef?.RevealedSeed ?? "" ); hash.Add( GameRef?.PropertyOwners?.Count ?? 0 );
-		if ( GameRef?.Players is not null ) foreach ( var entry in GameRef.Players.Select( ( player, index ) => new { player, index } ).Where( entry => entry.player is not null && entry.player.IsAssigned ) ) { hash.Add( entry.index ); hash.Add( entry.player.PlayerName ); hash.Add( entry.player.Money ); hash.Add( entry.player.IsBankrupt ); }
+		var hash = new HashCode(); hash.Add( IsOpen ); hash.Add( IsPostMatch ); hash.Add( CanUseHostControls ); hash.Add( ActiveTab ); hash.Add( GameRef?.MatchState ?? 0 ); hash.Add( GameRef?.WinnerPlayerIndex ?? -1 ); hash.Add( GameRef?.Config?.LeaderboardStatPropertiesProfitType ?? PropertyProfitStatType.EverOwned ); hash.Add( GameRef?.IsVerifiedMatch ?? false ); hash.Add( MonopolyApp.IsCheatsEnabled() ); hash.Add( MonopolyApp.IsStandalone() ); if ( MonopolyApp.IsStandalone() ) hash.Add( SteamFriendsBridge.AvatarRevision ); hash.Add( GameRef?.DiceHistory?.Count ?? 0 ); hash.Add( GameRef?.AdminHistory?.Count ?? 0 ); hash.Add( GameRef?.CommandHistory?.Count ?? 0 ); hash.Add( GameRef?.MoveHistory?.Count ?? 0 ); hash.Add( MoveHistoryPage ); hash.Add( MoveHistoryPageSize ); hash.Add( GameRef?.GambleHistory?.Count ?? 0 ); hash.Add( GameRef?.RevealedSeed ?? "" ); hash.Add( GameRef?.PropertyOwners?.Count ?? 0 );
+		if ( GameRef?.Players is not null ) foreach ( var entry in GameRef.Players.Select( ( player, index ) => new { player, index } ).Where( entry => entry.player is not null && entry.player.IsAssigned ) ) { hash.Add( entry.index ); hash.Add( entry.player.SteamId ); hash.Add( entry.player.PlayerName ); hash.Add( entry.player.Money ); hash.Add( entry.player.IsBankrupt ); }
 		if ( GameRef?.PropertyOwners is not null ) foreach ( var entry in GameRef.PropertyOwners.OrderBy( entry => entry.Key ) ) { hash.Add( entry.Key ); hash.Add( entry.Value ); }
 		if ( GameRef?.PropertyLandingCounts is not null ) foreach ( var entry in GameRef.PropertyLandingCounts.OrderBy( entry => entry.Key ) ) { hash.Add( entry.Key ); hash.Add( entry.Value ); }
 		if ( GameRef?.PropertyRentEarned is not null ) foreach ( var entry in GameRef.PropertyRentEarned.OrderBy( entry => entry.Key ) ) { hash.Add( entry.Key ); hash.Add( entry.Value ); }

@@ -149,6 +149,11 @@ public static class SteamFriendsBridge
 		if ( cachedAvatarTextures.TryGetValue( steamId, out var texture ) )
 			entry.AvatarTexture = texture;
 
+#if STANDALONE
+		if ( entry.AvatarTexture is null )
+			entry.AvatarTexture = GetAvatarTexture( steamId, null );
+#endif
+
 		return entry;
 	}
 
