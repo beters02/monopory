@@ -122,12 +122,14 @@ public sealed partial class GameController : Component
 		foreach ( var spaceIndex in trade.SenderPropertyIndexes )
 		{
 			PropertyOwners[spaceIndex] = trade.ReceiverPlayerIndex;
+			RecordPropertyOwnershipForStats( trade.ReceiverPlayerIndex, spaceIndex );
 			ReportPropertyAcquiredAchievements( trade.ReceiverPlayerIndex, Board?.GetSpaceDef( spaceIndex ) );
 		}
 
 		foreach ( var spaceIndex in trade.ReceiverPropertyIndexes )
 		{
 			PropertyOwners[spaceIndex] = trade.SenderPlayerIndex;
+			RecordPropertyOwnershipForStats( trade.SenderPlayerIndex, spaceIndex );
 			ReportPropertyAcquiredAchievements( trade.SenderPlayerIndex, Board?.GetSpaceDef( spaceIndex ) );
 		}
 

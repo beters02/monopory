@@ -48,6 +48,66 @@ public sealed partial class GameController : Component
 		return total;
 	}
 
+	private int GetElapsedMatchSeconds()
+	{
+		return GameStartedAt <= 0f ? 0 : Math.Max( (int)MathF.Floor( Time.Now - GameStartedAt ), 0 );
+	}
+
+	private int GetPlayerRentAccumulatedForStats( int playerIndex )
+	{
+		if ( playerIndex < 0 )
+			return 0;
+
+		return PropertyRentEarned
+			.Where( entry => entry.Key / 1000 == playerIndex )
+			.Sum( entry => Math.Max( entry.Value, 0 ) );
+	}
+
+	private List<int> GetLiveLeaderboardPlayerIndexes()
+	{
+		var assigned = Players
+			.Select( ( player, index ) => new { player, index } )
+			.Where( entry => entry.player is not null && entry.player.IsAssigned )
+			.ToList();
+
+		var active = assigned
+			.Where( entry => !entry.player.IsBankrupt )
+			.OrderByDescending( entry => GetPlayerLiquidAssetTotal( entry.index ) )
+			.ThenByDescending( entry => GetPlayerRentAccumulatedForStats( entry.index ) )
+			.ThenByDescending( entry => entry.player.Money )
+			.ThenBy( entry => entry.index )
+			.Select( entry => entry.index );
+
+		var eliminated = assigned
+			.Where( entry => entry.player.IsBankrupt )
+			.OrderBy( entry => PlayerFinishPlacements.TryGetValue( entry.index, out var placement ) && placement > 0 ? placement : int.MaxValue )
+			.ThenBy( entry => entry.index )
+			.Select( entry => entry.index );
+
+		return active.Concat( eliminated ).ToList();
+	}
+
+	private void FinalizePlayerGameStats()
+	{
+		var rankedPlayers = GetLiveLeaderboardPlayerIndexes();
+		if ( WinnerPlayerIndex >= 0 && rankedPlayers.Contains( WinnerPlayerIndex ) )
+		{
+			rankedPlayers.Remove( WinnerPlayerIndex );
+			rankedPlayers.Insert( 0, WinnerPlayerIndex );
+		}
+
+		PlayerFinishPlacements.Clear();
+		for ( var i = 0; i < rankedPlayers.Count; i++ )
+			PlayerFinishPlacements[rankedPlayers[i]] = i + 1;
+
+		var elapsedSeconds = GetElapsedMatchSeconds();
+		foreach ( var playerIndex in rankedPlayers )
+		{
+			if ( !PlayerTimeLastedSeconds.TryGetValue( playerIndex, out var lastedSeconds ) || lastedSeconds < 0 )
+				PlayerTimeLastedSeconds[playerIndex] = elapsedSeconds;
+		}
+	}
+
 	private void BankruptPlayer( int playerIndex, PlayerState creditor, bool advanceTurnIfCurrent = false, int debtAmount = 0 )
 	{
 		if ( playerIndex < 0 )
@@ -58,6 +118,9 @@ public sealed partial class GameController : Component
 			return;
 
 		var creditorIndex = creditor is null ? -1 : GetPlayerIndex( creditor );
+		var activePlayerCount = Players.Count( entry => entry is not null && entry.IsAssigned && !entry.IsBankrupt );
+		PlayerFinishPlacements[playerIndex] = Math.Max( activePlayerCount, 1 );
+		PlayerTimeLastedSeconds[playerIndex] = GetElapsedMatchSeconds();
 
 		player.IsBankrupt = true;
 		player.IsInJail = false;
@@ -142,6 +205,7 @@ public sealed partial class GameController : Component
 			soldImprovementValue += GetImprovementCount( spaceIndex ) * GetImprovementSellValue( spaceIndex );
 			PropertyImprovements.Remove( spaceIndex );
 			PropertyOwners[spaceIndex] = creditorIndex;
+			RecordPropertyOwnershipForStats( creditorIndex, spaceIndex );
 			ReportPropertyAcquiredAchievements( creditorIndex, Board?.GetSpaceDef( spaceIndex ) );
 		}
 
@@ -245,6 +309,7 @@ public sealed partial class GameController : Component
 			return;
 
 		WinnerPlayerIndex = remaining.Count == 1 ? remaining[0].index : -1;
+		FinalizePlayerGameStats();
 		CurrentTurnEndsAt = 0f;
 		ClearAuction();
 		ClearPendingForcedPayment();

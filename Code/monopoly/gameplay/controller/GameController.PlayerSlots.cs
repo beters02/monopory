@@ -275,6 +275,12 @@ public sealed partial class GameController : Component
 		PropertyOwners.Clear();
 		PropertyImprovements.Clear();
 		MortgagedProperties.Clear();
+		PropertyLandingCounts.Clear();
+		PropertyRentEarned.Clear();
+		PropertyRentPaid.Clear();
+		PropertyOwnershipHistory.Clear();
+		PlayerFinishPlacements.Clear();
+		PlayerTimeLastedSeconds.Clear();
 		PendingTrades.Clear();
 		TradeHistory.Clear();
 		TradeViewers.Clear();

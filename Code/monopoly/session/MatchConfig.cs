@@ -27,6 +27,12 @@ public enum PlayerBankruptedPlayerMode
 	MakePropertiesUnowned
 }
 
+public enum PropertyProfitStatType
+{
+	EverOwned,
+	CurrentlyOwned
+}
+
 public sealed class MatchConfigOptionAttribute : Attribute
 {
 	private object standaloneValue;
@@ -118,6 +124,9 @@ public sealed class MatchConfig
 
 	[MatchConfigOption( "Economy", "Can Gamble Monopoly Money", Description = "Can gamble your in-game money in non-card gamble games.", CommandId = "can_gamble_monopoly_money", Order = 26 )]
 	public bool CanGambleMonopolyMoney { get; set; } = true;
+
+	[MatchConfigOption( "Leaderboard Stats", "Property Profit Scope", Description = "Choose whether property-profit leaderboard stats include every property a player has ever owned or only their current properties.", CommandId = "leaderboard_stat_properties_profit_type", Order = 50 )]
+	public PropertyProfitStatType LeaderboardStatPropertiesProfitType { get; set; } = PropertyProfitStatType.EverOwned;
 	[MatchConfigOption( "Economy", "Can Turn Player Gamble", Description = "Can the current turn player play non-card gamble games.", CommandId = "can_turn_player_gamble_non_card", Order = 27, IsVisible = false )]
 	public bool CanTurnPlayerGambleNonCard { get; set; } = false;
 

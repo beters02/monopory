@@ -70,6 +70,7 @@ OUTPUT STYLE: expert-terse
 - Plan mode: Always follow # Agent Utilization Rule List. Include which model will implement each task in the generated plan.
 -- Readonly Planning Phase: GPT 5.6-Sol High handles this phase. Do NOT use multiple agents to perform this phase.
 -- Implementation Phase: Use multiple agents to complete the tasks. Use the models you assigned to the plan during the readonly phase.
+-- Post Implementation Phase: Return to using the user's currently selected model in Codex. Do not use the rule list for this unless explicity asked.
 
 - Normal mode: Ask the user if you should use the utilization rule list (include what agents will be assigned to the request when you ask), or if you should use the current selected model.
 

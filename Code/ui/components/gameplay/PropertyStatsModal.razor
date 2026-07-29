@@ -9,8 +9,11 @@
 	@if ( IsOpen && GameRef is not null )
 	{
 		<div class="property-stats-backdrop">
-			<div class="property-stats-modal">
-				<CloseButton Variant="property-stats-close" Title="Close" OnClick="@Close"></CloseButton>
+			<div class="property-stats-modal @GetModalClass()">
+				@if ( !IsPostMatch )
+				{
+					<CloseButton Variant="property-stats-close" Title="Close" OnClick="@Close"></CloseButton>
+				}
 
 				<div class="property-stats-header">
 					<div class="property-stats-heading">
@@ -29,7 +32,25 @@
 					}
 				</div>
 
-				@if ( ActiveTab == PropertyTab )
+				@if ( ActiveTab == GameTab )
+				{
+					<div class="game-stats-leaderboard monopory-scroll-y">
+						@foreach ( var row in GameLeaderboardRows )
+						{
+							<div class="@GetGameLeaderboardRowClass( row )">
+								<div class="game-stats-rank">#@row.Rank</div>
+								<div class="game-stats-player"><div class="game-stats-player-name">@row.Name</div><div class="game-stats-player-meta">@(row.IsWinner ? "Winner" : row.IsBankrupt ? "Bankrupt" : "In game")</div></div>
+								<div class="game-stats-metric"><label>Rent accumulated</label><span>$@row.RentEarned</span></div>
+								<div class="game-stats-metric"><label>Rent paid</label><span>$@row.RentPaid</span></div>
+								<div class="game-stats-property"><label>Most profitable</label><span>@GetPropertyProfitText( row.MostProfitableProperty )</span></div>
+								<div class="game-stats-property"><label>Least profitable</label><span>@GetPropertyProfitText( row.LeastProfitableProperty )</span></div>
+								@if ( IsGameOver ) { <div class="game-stats-duration"><label>Time lasted</label><span>@FormatDuration( row.TimeLastedSeconds )</span></div> }
+							</div>
+						}
+						@if ( GameLeaderboardRows.Count == 0 ) { <div class="property-stats-empty">No players are assigned to this match.</div> }
+					</div>
+				}
+				else if ( ActiveTab == PropertyTab )
 				{
 					<div class="property-stats-summary-grid">
 						<div class="property-stats-summary-card"><div class="property-stats-summary-label">Property Landings</div><div class="property-stats-summary-value">@TotalLandings</div></div>
@@ -185,6 +206,21 @@
 						@if ( AdminRows.Count == 0 ) { <div class="property-stats-empty">No CheatCmd commands recorded.</div> }
 					</div>
 				}
+				@if ( IsPostMatch )
+				{
+					<div class="post-match-footer">
+						@if ( CanUseHostControls )
+						{
+							<div class="post-match-footer-copy">Return your group to the lobby, or leave the lobby.</div>
+							<div class="post-match-footer-actions"><GameButton Variant="post-match-footer-button" OnClick="@ReturnToLobby">Back To Lobby</GameButton><GameButton Variant="post-match-footer-button" OnClick="@LeaveLobby">Leave Lobby</GameButton></div>
+						}
+						else
+						{
+							<div class="post-match-footer-copy">Waiting for the host to return the group to the lobby. You can leave the lobby at any time.</div>
+							<div class="post-match-footer-actions"><GameButton Variant="post-match-footer-button" OnClick="@LeaveLobby">Leave Lobby</GameButton></div>
+						}
+					</div>
+				}
 			</div>
 		</div>
 	}
@@ -194,16 +230,21 @@
 {
 	[Parameter] public GameController GameRef { get; set; }
 	[Parameter] public bool IsOpen { get; set; }
-	[Parameter] public PropertyStatsTab InitialTab { get; set; } = PropertyStatsTab.Property;
+	[Parameter] public PropertyStatsTab InitialTab { get; set; } = PropertyStatsTab.Game;
 	[Parameter] public Action OnClose { get; set; }
+	[Parameter] public bool IsPostMatch { get; set; }
+	[Parameter] public bool CanUseHostControls { get; set; }
+	[Parameter] public Action OnReturnToLobby { get; set; }
+	[Parameter] public Action OnLeaveLobby { get; set; }
 
+	private const string GameTab = "game";
 	private const string PropertyTab = "property";
 	private const string DiceTab = "dice";
 	private const string MoveTab = "move";
 	private const string GambleTab = "gamble";
 	private const string AdminTab = "admin";
 	private const string IntegrityTab = "integrity";
-	private string ActiveTab = PropertyTab;
+	private string ActiveTab = GameTab;
 	private bool wasOpen;
 	private int MoveHistoryPage;
 	private Panel PropertyTablePanel = null!;
@@ -211,13 +252,18 @@
 	private readonly record struct StatsTab( string Id, string Label );
 	private readonly record struct PropertyStatsRow( int SpaceIndex, SpaceDef Space, string Name, int Landings, int RentEarned );
 	private readonly record struct PlayerStatsRow( int PlayerIndex, string Name, int Money, int NetLoss, int PropertyCount, int Landings, int RentEarned, bool IsBankrupt, bool IsLocalPlayer );
-	private List<StatsTab> Tabs { get; } = new() { new( PropertyTab, "Property Stats" ), new( DiceTab, "Dice History" ), new( MoveTab, "Move History" ), new( GambleTab, "Gamble History" ), new( AdminTab, "Command History" ), new( IntegrityTab, "Match Integrity" ) };
+	private readonly record struct PropertyProfitRow( int SpaceIndex, string Name, int RentEarned );
+	private readonly record struct GameLeaderboardSeed( int PlayerIndex, string Name, int Money, int RentEarned, int RentPaid, bool IsBankrupt );
+	private readonly record struct GameLeaderboardRow( int Rank, int PlayerIndex, string Name, int RentEarned, int RentPaid, bool IsBankrupt, bool IsWinner, int TimeLastedSeconds, PropertyProfitRow? MostProfitableProperty, PropertyProfitRow? LeastProfitableProperty );
+	private List<StatsTab> Tabs { get; } = new() { new( GameTab, "Game Stats" ), new( PropertyTab, "Property Stats" ), new( DiceTab, "Dice History" ), new( MoveTab, "Move History" ), new( GambleTab, "Gamble History" ), new( AdminTab, "Command History" ), new( IntegrityTab, "Match Integrity" ) };
 	private int TotalLandings => PropertyRows.Sum( row => row.Landings );
 	private int TotalRentEarned => PropertyRows.Sum( row => row.RentEarned );
 	private List<PropertyStatsRow> PropertyRows => BuildPropertyRows();
 	private List<PropertyStatsRow> TopLandingRows => PropertyRows.Where( row => row.Landings > 0 ).OrderByDescending( row => row.Landings ).ThenByDescending( row => row.RentEarned ).Take( 5 ).ToList();
 	private List<PropertyStatsRow> TopRentRows => PropertyRows.Where( row => row.RentEarned > 0 ).OrderByDescending( row => row.RentEarned ).ThenByDescending( row => row.Landings ).Take( 5 ).ToList();
 	private List<PlayerStatsRow> PlayerRows => BuildPlayerRows();
+	private List<GameLeaderboardRow> GameLeaderboardRows => BuildGameLeaderboardRows();
+	private bool IsGameOver => GameRef?.MatchState == MatchLifecycleState.GameOver;
 	private List<DiceHistoryEntry> DiceRows => GameRef?.DiceHistory?.OrderBy( entry => entry.Key ).Select( entry => MatchIntegrityJson.Deserialize<DiceHistoryEntry>( entry.Value ) ).ToList() ?? new();
 	private List<AdminHistoryEntry> AdminRows => GameRef?.AdminHistory?.OrderBy( entry => entry.Key ).Select( entry => MatchIntegrityJson.Deserialize<AdminHistoryEntry>( entry.Value ) ).ToList() ?? new();
 	private List<CommandHistoryEntry> CommandRows => GameRef?.CommandHistory?.OrderBy( entry => entry.Key ).Select( entry => MatchIntegrityJson.Deserialize<CommandHistoryEntry>( entry.Value ) ).ToList() ?? new();
@@ -243,15 +289,19 @@
 
 	private static string GetInitialTabId( PropertyStatsTab tab ) => tab switch
 	{
+		PropertyStatsTab.Game => GameTab,
+		PropertyStatsTab.Property => PropertyTab,
 		PropertyStatsTab.Dice => DiceTab,
 		PropertyStatsTab.Move => MoveTab,
 		PropertyStatsTab.Gamble => GambleTab,
 		PropertyStatsTab.Admin => AdminTab,
 		PropertyStatsTab.Integrity => IntegrityTab,
-		_ => PropertyTab
+		_ => GameTab
 	};
 
 	private void Close() => OnClose?.Invoke();
+	private void ReturnToLobby() => OnReturnToLobby?.Invoke();
+	private void LeaveLobby() => OnLeaveLobby?.Invoke();
 	private void SelectProperty( int spaceIndex ) => GameRef?.SelectSpace( spaceIndex );
 	private void SetActiveTab( string tab ) { ActiveTab = tab; MoveHistoryPage = Math.Min( MoveHistoryPage, MoveHistoryPageCount - 1 ); StateHasChanged(); }
 	private void PageMoveHistoryBack() { SetMoveHistoryPage( MoveHistoryPage - 1 ); }
@@ -293,8 +343,8 @@
 		return pages;
 	}
 	private string GetTabButtonClass( string tab ) => ActiveTab == tab ? "integrity-tab active-tab" : "integrity-tab";
-	private string GetKickerText() => ActiveTab == IntegrityTab ? "Verified Match" : "Board Analytics";
-	private string GetTitleText() => Tabs.FirstOrDefault( tab => tab.Id == ActiveTab ).Label ?? "Property Stats";
+	private string GetKickerText() => IsPostMatch ? "Game Over" : ActiveTab == IntegrityTab ? "Verified Match" : "Board Analytics";
+	private string GetTitleText() => Tabs.FirstOrDefault( tab => tab.Id == ActiveTab ).Label ?? "Game Stats";
 	private string GetMatchSummary() => $"{GameRef?.Players?.Count( player => player is not null && player.IsAssigned ) ?? 0} players - {GameRef?.PropertyOwners?.Count ?? 0} owned properties";
 	private string GetIntegrityBadgeClass() => GameRef?.IsVerifiedMatch == true ? "verified" : "unverified";
 	private string GetIntegrityBadgeText() => GameRef?.IsVerifiedMatch == true ? "Verified Match" : "Unverified Match";
@@ -317,16 +367,46 @@
 	private string GetBiggestLoserName() { var row = PlayerRows.Where( row => row.NetLoss > 0 ).OrderByDescending( row => row.NetLoss ).FirstOrDefault(); return row.PlayerIndex < 0 || row.NetLoss <= 0 ? "None yet" : $"{row.Name} (${row.NetLoss})"; }
 	private List<PropertyStatsRow> BuildPropertyRows() => GameRef?.Board?.SpaceDefs?.Where( def => def is not null && IsPurchasableSpace( def ) ).Select( def => new PropertyStatsRow( def.Index, def, def.DisplayName ?? $"Space {def.Index}", GetTotalLandingsForSpace( def.Index ), GetTotalRentEarnedForSpace( def.Index ) ) ).OrderByDescending( row => row.Landings > 0 || row.RentEarned > 0 ).ThenByDescending( row => row.RentEarned ).ThenByDescending( row => row.Landings ).ThenBy( row => row.SpaceIndex ).ToList() ?? new();
 	private List<PlayerStatsRow> BuildPlayerRows() => GameRef?.Players?.Select( ( player, index ) => new { player, index } ).Where( entry => entry.player is not null && entry.player.IsAssigned ).Select( entry => new PlayerStatsRow( entry.index, entry.player.PlayerName ?? $"Player {entry.index + 1}", entry.player.Money, Math.Max( GetStartingMoney() - entry.player.Money, 0 ), GameRef.GetOwnedPropertyIndexes( entry.index ).Count, GetTotalLandingsForPlayer( entry.index ), GetTotalRentEarnedForPlayer( entry.index ), entry.player.IsBankrupt, entry.index == GameRef.LocalPlayerIndex ) ).OrderByDescending( row => row.RentEarned ).ThenByDescending( row => row.PropertyCount ).ThenByDescending( row => row.Money ).ToList() ?? new();
+	private List<GameLeaderboardRow> BuildGameLeaderboardRows()
+	{
+		var seeds = GameRef?.Players?.Select( ( player, index ) => new { player, index } ).Where( entry => entry.player is not null && entry.player.IsAssigned ).Select( entry => new GameLeaderboardSeed( entry.index, entry.player.PlayerName ?? $"Player {entry.index + 1}", entry.player.Money, GetTotalRentEarnedForPlayer( entry.index ), GetTotalRentPaidForPlayer( entry.index ), entry.player.IsBankrupt ) ).ToList() ?? new();
+		IEnumerable<GameLeaderboardSeed> ordered = IsGameOver
+			? seeds.OrderBy( row => GetRecordedPlacement( row.PlayerIndex ) ?? int.MaxValue ).ThenBy( row => row.PlayerIndex )
+			: seeds.Where( row => !row.IsBankrupt ).OrderByDescending( row => GameRef.GetPlayerLiquidAssetTotal( row.PlayerIndex ) ).ThenByDescending( row => row.RentEarned ).ThenByDescending( row => row.Money ).ThenBy( row => row.PlayerIndex ).Concat( seeds.Where( row => row.IsBankrupt ).OrderBy( row => GetRecordedPlacement( row.PlayerIndex ) ?? int.MaxValue ).ThenBy( row => row.PlayerIndex ) );
+		return ordered.Select( ( row, index ) =>
+		{
+			var placement = GetRecordedPlacement( row.PlayerIndex );
+			var candidates = GetPropertyProfitCandidates( row.PlayerIndex );
+			var most = candidates.OrderByDescending( candidate => candidate.RentEarned ).ThenBy( candidate => candidate.SpaceIndex ).Cast<PropertyProfitRow?>().FirstOrDefault();
+			var least = candidates.OrderBy( candidate => candidate.RentEarned ).ThenBy( candidate => candidate.SpaceIndex ).Cast<PropertyProfitRow?>().FirstOrDefault();
+			var rank = IsGameOver ? placement ?? index + 1 : row.IsBankrupt && placement.HasValue ? placement.Value : index + 1;
+			return new GameLeaderboardRow( rank, row.PlayerIndex, row.Name, row.RentEarned, row.RentPaid, row.IsBankrupt, IsGameOver && row.PlayerIndex == GameRef.WinnerPlayerIndex, GetPlayerTimeLastedSeconds( row.PlayerIndex ), most, least );
+		} ).ToList();
+	}
+	private int? GetRecordedPlacement( int playerIndex ) => GameRef?.PlayerFinishPlacements?.TryGetValue( playerIndex, out var placement ) == true && placement > 0 ? placement : null;
+	private int GetPlayerTimeLastedSeconds( int playerIndex ) => GameRef?.PlayerTimeLastedSeconds?.TryGetValue( playerIndex, out var seconds ) == true ? Math.Max( seconds, 0 ) : 0;
+	private List<PropertyProfitRow> GetPropertyProfitCandidates( int playerIndex )
+	{
+		IEnumerable<int> indexes = GameRef?.Config?.LeaderboardStatPropertiesProfitType == PropertyProfitStatType.CurrentlyOwned ? GameRef?.GetOwnedPropertyIndexes( playerIndex ) ?? Enumerable.Empty<int>() : GameRef?.PropertyOwnershipHistory?.Where( entry => entry.Value && GetStatPlayerIndex( entry.Key ) == playerIndex ).Select( entry => GetStatSpaceIndex( entry.Key ) ) ?? Enumerable.Empty<int>();
+		return indexes.Distinct().Select( index => GameRef?.Board?.GetSpaceDef( index ) ).Where( IsPropertyStatSpace ).Select( def => new PropertyProfitRow( def.Index, def.DisplayName ?? $"Space {def.Index}", GetTotalRentEarnedForPlayerSpace( playerIndex, def.Index ) ) ).ToList();
+	}
+	private string GetPropertyProfitText( PropertyProfitRow? property ) => property.HasValue ? $"{property.Value.Name} (${property.Value.RentEarned})" : "None";
+	private static string FormatDuration( int seconds ) => $"{Math.Max( seconds, 0 ) / 3600:00}:{Math.Max( seconds, 0 ) / 60 % 60:00}:{Math.Max( seconds, 0 ) % 60:00}";
+	private string GetGameLeaderboardRowClass( GameLeaderboardRow row ) => $"game-stats-card{(row.IsWinner ? " winner" : "")}{(row.IsBankrupt ? " bankrupt" : "")}";
+	private string GetModalClass() => IsPostMatch ? "post-match-stats-modal" : "";
 	private int GetTotalLandingsForSpace( int spaceIndex ) => SumPropertyStatForSpace( GameRef.PropertyLandingCounts, spaceIndex );
 	private int GetTotalRentEarnedForSpace( int spaceIndex ) => SumPropertyStatForSpace( GameRef.PropertyRentEarned, spaceIndex );
 	private int GetTotalLandingsForPlayer( int playerIndex ) => SumPropertyStatForPlayer( GameRef.PropertyLandingCounts, playerIndex );
 	private int GetTotalRentEarnedForPlayer( int playerIndex ) => SumPropertyStatForPlayer( GameRef.PropertyRentEarned, playerIndex );
+	private int GetTotalRentPaidForPlayer( int playerIndex ) => SumPropertyStatForPlayer( GameRef?.PropertyRentPaid, playerIndex );
+	private int GetTotalRentEarnedForPlayerSpace( int playerIndex, int spaceIndex ) => GameRef?.PropertyRentEarned?.Where( entry => GetStatPlayerIndex( entry.Key ) == playerIndex && GetStatSpaceIndex( entry.Key ) == spaceIndex ).Sum( entry => Math.Max( entry.Value, 0 ) ) ?? 0;
 	private int GetStartingMoney() => Math.Max( GameRef?.Config?.StartingMoney ?? 1500, 0 );
 	private static int SumPropertyStatForSpace( NetDictionary<int, int> stats, int spaceIndex ) => stats?.Where( entry => GetStatSpaceIndex( entry.Key ) == spaceIndex ).Sum( entry => Math.Max( entry.Value, 0 ) ) ?? 0;
 	private static int SumPropertyStatForPlayer( NetDictionary<int, int> stats, int playerIndex ) => stats?.Where( entry => GetStatPlayerIndex( entry.Key ) == playerIndex ).Sum( entry => Math.Max( entry.Value, 0 ) ) ?? 0;
 	private static int GetStatPlayerIndex( int key ) => key / 1000;
 	private static int GetStatSpaceIndex( int key ) => key % 1000;
-	private static bool IsPurchasableSpace( SpaceDef def ) => def is not null && def.Price > 0 && (def.Type == SpaceType.Property || def.Type == SpaceType.Railroad || def.Type == SpaceType.Utility);
+	private static bool IsPurchasableSpace( SpaceDef def ) => def is not null && def.Price > 0 && IsPropertyStatSpace( def );
+	private static bool IsPropertyStatSpace( SpaceDef def ) => def is not null && (def.Type == SpaceType.Property || def.Type == SpaceType.Railroad || def.Type == SpaceType.Utility);
 	private string GetOwnerName( int spaceIndex ) { var ownerIndex = GameRef?.GetOwnerIndexForSpace( spaceIndex ) ?? -1; return ownerIndex < 0 ? "Bank" : GameRef?.Players?.ElementAtOrDefault( ownerIndex )?.PlayerName ?? $"Player {ownerIndex + 1}"; }
 	private string GetOwnerText( int spaceIndex ) { var ownerName = GetOwnerName( spaceIndex ); return ownerName == "Bank" ? "Unowned" : $"Owned by {ownerName}"; }
 	private string GetPropertyStatusText( PropertyStatsRow row ) { if ( GameRef?.IsMortgaged( row.SpaceIndex ) == true ) return "Mortgaged"; var improvements = GameRef?.GetImprovementCount( row.SpaceIndex ) ?? 0; if ( improvements == 5 ) return "Hotel"; if ( improvements > 0 ) return $"{improvements} house{(improvements == 1 ? "" : "s")}"; return row.Space.Type.ToString(); }
@@ -334,10 +414,15 @@
 	private string GetPlayerRowClasses( PlayerStatsRow row ) { var classes = "property-stats-player-row"; if ( row.IsLocalPlayer ) classes += " local-player"; if ( row.IsBankrupt ) classes += " bankrupt"; return classes; }
 	protected override int BuildHash()
 	{
-		var hash = new HashCode(); hash.Add( IsOpen ); hash.Add( ActiveTab ); hash.Add( GameRef?.IsVerifiedMatch ?? false ); hash.Add( MonopolyApp.IsCheatsEnabled() ); hash.Add( GameRef?.DiceHistory?.Count ?? 0 ); hash.Add( GameRef?.AdminHistory?.Count ?? 0 ); hash.Add( GameRef?.CommandHistory?.Count ?? 0 ); hash.Add( GameRef?.MoveHistory?.Count ?? 0 ); hash.Add( MoveHistoryPage ); hash.Add( MoveHistoryPageSize ); hash.Add( GameRef?.GambleHistory?.Count ?? 0 ); hash.Add( GameRef?.RevealedSeed ?? "" ); hash.Add( GameRef?.PropertyOwners?.Count ?? 0 );
+		var hash = new HashCode(); hash.Add( IsOpen ); hash.Add( IsPostMatch ); hash.Add( CanUseHostControls ); hash.Add( ActiveTab ); hash.Add( GameRef?.MatchState ?? 0 ); hash.Add( GameRef?.WinnerPlayerIndex ?? -1 ); hash.Add( GameRef?.Config?.LeaderboardStatPropertiesProfitType ?? PropertyProfitStatType.EverOwned ); hash.Add( GameRef?.IsVerifiedMatch ?? false ); hash.Add( MonopolyApp.IsCheatsEnabled() ); hash.Add( GameRef?.DiceHistory?.Count ?? 0 ); hash.Add( GameRef?.AdminHistory?.Count ?? 0 ); hash.Add( GameRef?.CommandHistory?.Count ?? 0 ); hash.Add( GameRef?.MoveHistory?.Count ?? 0 ); hash.Add( MoveHistoryPage ); hash.Add( MoveHistoryPageSize ); hash.Add( GameRef?.GambleHistory?.Count ?? 0 ); hash.Add( GameRef?.RevealedSeed ?? "" ); hash.Add( GameRef?.PropertyOwners?.Count ?? 0 );
 		if ( GameRef?.Players is not null ) foreach ( var entry in GameRef.Players.Select( ( player, index ) => new { player, index } ).Where( entry => entry.player is not null && entry.player.IsAssigned ) ) { hash.Add( entry.index ); hash.Add( entry.player.PlayerName ); hash.Add( entry.player.Money ); hash.Add( entry.player.IsBankrupt ); }
+		if ( GameRef?.PropertyOwners is not null ) foreach ( var entry in GameRef.PropertyOwners.OrderBy( entry => entry.Key ) ) { hash.Add( entry.Key ); hash.Add( entry.Value ); }
 		if ( GameRef?.PropertyLandingCounts is not null ) foreach ( var entry in GameRef.PropertyLandingCounts.OrderBy( entry => entry.Key ) ) { hash.Add( entry.Key ); hash.Add( entry.Value ); }
 		if ( GameRef?.PropertyRentEarned is not null ) foreach ( var entry in GameRef.PropertyRentEarned.OrderBy( entry => entry.Key ) ) { hash.Add( entry.Key ); hash.Add( entry.Value ); }
+		if ( GameRef?.PropertyRentPaid is not null ) foreach ( var entry in GameRef.PropertyRentPaid.OrderBy( entry => entry.Key ) ) { hash.Add( entry.Key ); hash.Add( entry.Value ); }
+		if ( GameRef?.PropertyOwnershipHistory is not null ) foreach ( var entry in GameRef.PropertyOwnershipHistory.OrderBy( entry => entry.Key ) ) { hash.Add( entry.Key ); hash.Add( entry.Value ); }
+		if ( GameRef?.PlayerFinishPlacements is not null ) foreach ( var entry in GameRef.PlayerFinishPlacements.OrderBy( entry => entry.Key ) ) { hash.Add( entry.Key ); hash.Add( entry.Value ); }
+		if ( GameRef?.PlayerTimeLastedSeconds is not null ) foreach ( var entry in GameRef.PlayerTimeLastedSeconds.OrderBy( entry => entry.Key ) ) { hash.Add( entry.Key ); hash.Add( entry.Value ); }
 		return hash.ToHashCode();
 	}
 }

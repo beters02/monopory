@@ -129,9 +129,8 @@ public sealed partial class GameController : Component
 			}
 
 			var rent = GetRentForSpace( def.Index );
-			if ( PayPlayer( player, owner, rent ) )
+			if ( PayPlayer( player, owner, rent, rentSpaceIndex: def.Index ) )
 			{
-				RecordPropertyRentEarnedForStats( ownerIndex, def.Index, rent );
 				Log.Info( $"{player.PlayerName} paid ${rent} rent to {owner.PlayerName}." );
 				return $"Paid ${rent} rent to {owner.PlayerName}";
 			}
@@ -272,6 +271,23 @@ public sealed partial class GameController : Component
 			return;
 
 		IncrementPropertyStat( PropertyRentEarned, BuildPropertyStatKey( ownerIndex, spaceIndex ), amount );
+	}
+
+	private void RecordPropertyRentPaymentForStats( int payerIndex, int ownerIndex, int spaceIndex, int amount )
+	{
+		if ( payerIndex < 0 || ownerIndex < 0 || spaceIndex < 0 || amount <= 0 )
+			return;
+
+		IncrementPropertyStat( PropertyRentPaid, BuildPropertyStatKey( payerIndex, spaceIndex ), amount );
+		RecordPropertyRentEarnedForStats( ownerIndex, spaceIndex, amount );
+	}
+
+	private void RecordPropertyOwnershipForStats( int ownerIndex, int spaceIndex )
+	{
+		if ( ownerIndex < 0 || spaceIndex < 0 )
+			return;
+
+		PropertyOwnershipHistory[BuildPropertyStatKey( ownerIndex, spaceIndex )] = true;
 	}
 
 	private static int BuildPropertyStatKey( int playerIndex, int spaceIndex )

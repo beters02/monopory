@@ -73,6 +73,7 @@ public sealed partial class GameController : Component
 			{
 				var ownedSetsBeforePurchase = CaptureOwnedSetKeys( AuctionHighBidderIndex );
 				PropertyOwners[def.Index] = AuctionHighBidderIndex;
+				RecordPropertyOwnershipForStats( AuctionHighBidderIndex, def.Index );
 				ReportPropertyAcquiredAchievements( AuctionHighBidderIndex, def );
 				SendGlobalPopupToAll( "Auction won", $"{winner.PlayerName} won {def.DisplayName} for ${AuctionCurrentBid}.", PopupKind.Success, true, 5f );
 				SendTableChatMessage( "Auction won", $"{winner.PlayerName} won {def.DisplayName} for ${AuctionCurrentBid}." );

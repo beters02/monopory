@@ -81,6 +81,10 @@ public sealed class GameSaveSnapshot
 	public int NextGambleSessionId { get; set; } = 1;
 	public List<GameSaveIntIntEntry> PropertyLandingCounts { get; set; } = new();
 	public List<GameSaveIntIntEntry> PropertyRentEarned { get; set; } = new();
+	public List<GameSaveIntIntEntry> PropertyRentPaid { get; set; } = new();
+	public List<GameSaveIntBoolEntry> PropertyOwnershipHistory { get; set; } = new();
+	public List<GameSaveIntIntEntry> PlayerFinishPlacements { get; set; } = new();
+	public List<GameSaveIntIntEntry> PlayerTimeLastedSeconds { get; set; } = new();
 	public int PendingPurchaseSpaceIndex { get; set; } = -1;
 	public int AuctionSpaceIndex { get; set; } = -1;
 	public int AuctionCurrentBid { get; set; }
@@ -102,6 +106,7 @@ public sealed class GameSaveSnapshot
 	public bool PendingForcedPaymentAddsToFreeParking { get; set; }
 	public bool PendingForcedPaymentToEachPlayer { get; set; }
 	public int PendingForcedPaymentEachPlayerAmount { get; set; }
+	public int PendingForcedPaymentRentSpaceIndex { get; set; } = -1;
 	public int ActiveMovementPlayerIndex { get; set; } = -1;
 	public int ActiveMovementRemainingSteps { get; set; }
 	public int ActiveMovementGoPassCount { get; set; }

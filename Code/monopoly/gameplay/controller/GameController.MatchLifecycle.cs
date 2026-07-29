@@ -206,6 +206,7 @@ public sealed partial class GameController : Component
 		CurrentTurnDoublesPlayerIndex = -1;
 		Phase = GamePhase.TurnEnded;
 		WinnerPlayerIndex = winnerIndex;
+		FinalizePlayerGameStats();
 		FinalizeMoveHistoryTurn();
 		RevealMatchSeed();
 		MatchState = MatchLifecycleState.GameOver;
@@ -252,6 +253,8 @@ public sealed partial class GameController : Component
 		CurrentTurnDoublesPlayerIndex = -1;
 
 		Phase = GamePhase.TurnEnded;
+		WinnerPlayerIndex = -1;
+		FinalizePlayerGameStats();
 		FinalizeMoveHistoryTurn();
 		RevealMatchSeed();
 		MatchState = MatchLifecycleState.GameOver;

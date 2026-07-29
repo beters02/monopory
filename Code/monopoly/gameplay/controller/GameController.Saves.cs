@@ -285,6 +285,10 @@ public sealed partial class GameController : Component
 			NextGambleSessionId = NextGambleSessionId,
 			PropertyLandingCounts = CaptureIntIntDictionary( PropertyLandingCounts ),
 			PropertyRentEarned = CaptureIntIntDictionary( PropertyRentEarned ),
+			PropertyRentPaid = CaptureIntIntDictionary( PropertyRentPaid ),
+			PropertyOwnershipHistory = CaptureIntBoolDictionary( PropertyOwnershipHistory ),
+			PlayerFinishPlacements = CaptureIntIntDictionary( PlayerFinishPlacements ),
+			PlayerTimeLastedSeconds = CaptureIntIntDictionary( PlayerTimeLastedSeconds ),
 			PendingPurchaseSpaceIndex = PendingPurchaseSpaceIndex,
 			AuctionSpaceIndex = AuctionSpaceIndex,
 			AuctionCurrentBid = AuctionCurrentBid,
@@ -306,6 +310,7 @@ public sealed partial class GameController : Component
 			PendingForcedPaymentAddsToFreeParking = PendingForcedPaymentAddsToFreeParking,
 			PendingForcedPaymentToEachPlayer = PendingForcedPaymentToEachPlayer,
 			PendingForcedPaymentEachPlayerAmount = PendingForcedPaymentEachPlayerAmount,
+			PendingForcedPaymentRentSpaceIndex = PendingForcedPaymentRentSpaceIndex,
 			ActiveMovementPlayerIndex = ActiveMovementPlayerIndex,
 			ActiveMovementRemainingSteps = ActiveMovementRemainingSteps,
 			ActiveMovementGoPassCount = ActiveMovementGoPassCount,
@@ -422,6 +427,7 @@ public sealed partial class GameController : Component
 		PendingForcedPaymentAddsToFreeParking = snapshot.PendingForcedPaymentAddsToFreeParking;
 		PendingForcedPaymentToEachPlayer = snapshot.PendingForcedPaymentToEachPlayer;
 		PendingForcedPaymentEachPlayerAmount = snapshot.PendingForcedPaymentEachPlayerAmount;
+		PendingForcedPaymentRentSpaceIndex = snapshot.PendingForcedPaymentRentSpaceIndex;
 		ActiveMovementPlayerIndex = snapshot.ActiveMovementPlayerIndex;
 		ActiveMovementRemainingSteps = snapshot.ActiveMovementRemainingSteps;
 		ActiveMovementGoPassCount = snapshot.ActiveMovementGoPassCount;
@@ -476,6 +482,13 @@ public sealed partial class GameController : Component
 		RestoreMatchIntegritySeed( snapshot.PrivateDiceSeed );
 		ApplyIntIntDictionary( PropertyLandingCounts, snapshot.PropertyLandingCounts );
 		ApplyIntIntDictionary( PropertyRentEarned, snapshot.PropertyRentEarned );
+		ApplyIntIntDictionary( PropertyRentPaid, snapshot.PropertyRentPaid );
+		ApplyIntBoolDictionary( PropertyOwnershipHistory, snapshot.PropertyOwnershipHistory );
+		ApplyIntIntDictionary( PlayerFinishPlacements, snapshot.PlayerFinishPlacements );
+		ApplyIntIntDictionary( PlayerTimeLastedSeconds, snapshot.PlayerTimeLastedSeconds );
+		ReconstructPropertyOwnershipHistoryIfNeeded();
+		if ( MatchState == MatchLifecycleState.GameOver )
+			FinalizePlayerGameStats();
 		ApplyCardDrawPile( chanceDrawPile, Board?.ChanceCards, snapshot.ChanceDrawPileCardKeys );
 		ApplyCardDrawPile( communityChestDrawPile, Board?.CommunityChestCards, snapshot.CommunityChestDrawPileCardKeys );
 
@@ -539,6 +552,22 @@ public sealed partial class GameController : Component
 				};
 			} )
 			.ToList() ?? new();
+	}
+
+	private void ReconstructPropertyOwnershipHistoryIfNeeded()
+	{
+		if ( PropertyOwnershipHistory.Count > 0 )
+			return;
+
+		foreach ( var entry in PropertyOwners )
+			RecordPropertyOwnershipForStats( entry.Value, entry.Key );
+
+		foreach ( var entry in PropertyRentEarned.Where( entry => entry.Key >= 0 && entry.Value > 0 ) )
+		{
+			var playerIndex = entry.Key / 1000;
+			var spaceIndex = entry.Key % 1000;
+			RecordPropertyOwnershipForStats( playerIndex, spaceIndex );
+		}
 	}
 
 	private static List<GameSaveIntIntEntry> CaptureIntIntDictionary( NetDictionary<int, int> dictionary )
@@ -611,6 +640,11 @@ public sealed partial class GameController : Component
 			MortgagedProperties.Count,
 			PropertyLandingCounts.Sum( entry => entry.Value ),
 			PropertyRentEarned.Sum( entry => entry.Value ),
+			string.Join( ",", PropertyRentPaid.OrderBy( entry => entry.Key ).Select( entry => $"{entry.Key}:{entry.Value}" ) ),
+			string.Join( ",", PropertyOwnershipHistory.Where( entry => entry.Value ).OrderBy( entry => entry.Key ).Select( entry => entry.Key ) ),
+			string.Join( ",", PlayerFinishPlacements.OrderBy( entry => entry.Key ).Select( entry => $"{entry.Key}:{entry.Value}" ) ),
+			string.Join( ",", PlayerTimeLastedSeconds.OrderBy( entry => entry.Key ).Select( entry => $"{entry.Key}:{entry.Value}" ) ),
+			PendingForcedPaymentRentSpaceIndex,
 			FreeParkingBank,
 			NextTradeId,
 			WinnerPlayerIndex );

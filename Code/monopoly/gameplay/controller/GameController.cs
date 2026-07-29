@@ -139,6 +139,10 @@ public sealed partial class GameController : Component, Component.INetworkListen
 	private string lastAppliedGameConfigSnapshot = "";
 	[Sync] public NetDictionary<int, int> PropertyLandingCounts { get; set; } = new();
 	[Sync] public NetDictionary<int, int> PropertyRentEarned { get; set; } = new();
+	[Sync] public NetDictionary<int, int> PropertyRentPaid { get; set; } = new();
+	[Sync] public NetDictionary<int, bool> PropertyOwnershipHistory { get; set; } = new();
+	[Sync] public NetDictionary<int, int> PlayerFinishPlacements { get; set; } = new();
+	[Sync] public NetDictionary<int, int> PlayerTimeLastedSeconds { get; set; } = new();
 	[Property] public Board Board { get; set; }
 
 	public PlayerState CurrentPlayer =>
@@ -167,6 +171,7 @@ public sealed partial class GameController : Component, Component.INetworkListen
 	[Sync] public bool PendingForcedPaymentAddsToFreeParking { get; set; }
 	[Sync] public bool PendingForcedPaymentToEachPlayer { get; set; }
 	[Sync] public int PendingForcedPaymentEachPlayerAmount { get; set; }
+	[Sync] public int PendingForcedPaymentRentSpaceIndex { get; set; } = -1;
 	[Sync] public int ActiveMovementPlayerIndex { get; set; } = -1;
 	[Sync] public int ActiveMovementRemainingSteps { get; set; }
 	[Sync] public int ActiveMovementGoPassCount { get; set; }

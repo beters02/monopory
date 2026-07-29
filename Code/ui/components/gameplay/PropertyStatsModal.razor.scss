@@ -625,3 +625,65 @@
 	cursor: default;
 	opacity: 0.62;
 }
+
+
+.property-stats-modal.post-match-stats-modal {
+	width: 1040px;
+	max-width: 92%;
+}
+
+.game-stats-leaderboard {
+	flex: 1;
+	min-height: 0;
+	padding-right: 12px;
+	overflow-y: scroll;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.game-stats-card {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	min-height: 74px;
+	padding: 10px;
+	background-color: $monopoly-board-surface-strong;
+	border: 2px solid $monopoly-board-surface-line;
+	border-radius: $monopoly-radius-control;
+}
+
+.game-stats-card.winner {
+	border-color: $monopoly-gold;
+	box-shadow: 0 0 0 2px $monopoly-selected-ring-soft;
+}
+
+.game-stats-card.bankrupt { opacity: 0.65; }
+
+.game-stats-rank {
+	width: 42px;
+	flex-shrink: 0;
+	font-size: 20px;
+	font-weight: 900;
+	text-align: center;
+}
+
+.game-stats-player { width: 120px; min-width: 0; }
+.game-stats-player-name { font-size: 14px; font-weight: 900; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
+.game-stats-player-meta, .game-stats-metric label, .game-stats-property label, .game-stats-duration label { color: $monopoly-danger; font-size: 9px; font-weight: 900; text-transform: uppercase; }
+.game-stats-metric { width: 92px; flex-shrink: 0; }
+.game-stats-property { flex: 1; min-width: 100px; }
+.game-stats-duration { width: 78px; flex-shrink: 0; }
+.game-stats-metric span, .game-stats-property span, .game-stats-duration span { font-size: 12px; font-weight: 900; }
+
+.post-match-footer {
+	flex-shrink: 0;
+	padding: 10px;
+	background-color: $monopoly-board-surface;
+	border: 2px solid $monopoly-board-surface-line;
+	border-radius: $monopoly-radius-control;
+}
+
+.post-match-footer-copy { font-size: 12px; font-weight: 800; }
+.post-match-footer-actions { display: flex; gap: 8px; margin-top: 8px; }
+.monopoly-button.post-match-footer-button { flex: 1; }

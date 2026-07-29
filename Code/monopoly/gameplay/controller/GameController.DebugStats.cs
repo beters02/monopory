@@ -43,6 +43,10 @@ public sealed partial class GameController : Component
 		MortgagedProperties.Clear();
 		PropertyLandingCounts.Clear();
 		PropertyRentEarned.Clear();
+		PropertyRentPaid.Clear();
+		PropertyOwnershipHistory.Clear();
+		PlayerFinishPlacements.Clear();
+		PlayerTimeLastedSeconds.Clear();
 
 		ApplyDebugPlayerTotals( assignedPlayers );
 		ApplyDebugPropertyStats( assignedPlayers, purchasableSpaces );
@@ -65,6 +69,8 @@ public sealed partial class GameController : Component
 			var delta = debugMoneyDeltas[i % debugMoneyDeltas.Length] - (i / debugMoneyDeltas.Length * 175);
 			player.Money = Math.Max( startingMoney + delta, 0 );
 			player.IsBankrupt = false;
+			PlayerFinishPlacements[assignedPlayers[i].PlayerIndex] = i + 1;
+			PlayerTimeLastedSeconds[assignedPlayers[i].PlayerIndex] = Math.Max( 1800 - (i * 240), 60 );
 		}
 	}
 
@@ -77,6 +83,12 @@ public sealed partial class GameController : Component
 			var ownerIndex = ownerEntry.PlayerIndex;
 
 			PropertyOwners[space.Index] = ownerIndex;
+			RecordPropertyOwnershipForStats( ownerIndex, space.Index );
+			if ( assignedPlayers.Count > 1 && i % 4 == 0 )
+			{
+				var previousOwnerIndex = assignedPlayers[(i + 1) % assignedPlayers.Count].PlayerIndex;
+				RecordPropertyOwnershipForStats( previousOwnerIndex, space.Index );
+			}
 
 			if ( space.Type == SpaceType.Property && i % 3 != 0 )
 				PropertyImprovements[space.Index] = Math.Clamp( (i % 5) + 1, 1, 5 );
@@ -109,6 +121,8 @@ public sealed partial class GameController : Component
 				rentEarned = 1625;
 
 			PropertyRentEarned[BuildPropertyStatKey( ownerIndex, space.Index )] = rentEarned;
+			var payerIndex = assignedPlayers[(i + 1) % assignedPlayers.Count].PlayerIndex;
+			PropertyRentPaid[BuildPropertyStatKey( payerIndex, space.Index )] = rentEarned;
 		}
 	}
 }
