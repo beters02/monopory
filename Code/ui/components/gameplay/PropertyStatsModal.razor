@@ -38,13 +38,46 @@
 						@foreach ( var row in GameLeaderboardRows )
 						{
 							<div class="@GetGameLeaderboardRowClass( row )">
-								<div class="game-stats-rank">#@row.Rank</div>
-								<div class="game-stats-player"><div class="game-stats-player-name">@row.Name</div><div class="game-stats-player-meta">@(row.IsWinner ? "Winner" : row.IsBankrupt ? "Bankrupt" : "In game")</div></div>
-								<div class="game-stats-metric"><label>Rent accumulated</label><span>$@row.RentEarned</span></div>
-								<div class="game-stats-metric"><label>Rent paid</label><span>$@row.RentPaid</span></div>
-								<div class="game-stats-property"><label>Most profitable</label><span>@GetPropertyProfitText( row.MostProfitableProperty )</span></div>
-								<div class="game-stats-property"><label>Least profitable</label><span>@GetPropertyProfitText( row.LeastProfitableProperty )</span></div>
-								@if ( IsGameOver ) { <div class="game-stats-duration"><label>Time lasted</label><span>@FormatDuration( row.TimeLastedSeconds )</span></div> }
+								<div class="game-stats-card-accent"></div>
+								<div class="game-stats-card-header">
+									<div class="game-stats-rank-block">
+										<div class="game-stats-rank-key">Place</div>
+										<div class="game-stats-rank">#@row.Rank</div>
+									</div>
+									<div class="game-stats-player-avatar">@GetPlayerInitial( row.Name )</div>
+									<div class="game-stats-player">
+										<div class="game-stats-player-name">@row.Name</div>
+										<div class="game-stats-player-status">@(row.IsWinner ? "Winner" : row.IsBankrupt ? "Bankrupt" : "In game")</div>
+									</div>
+									@if ( IsGameOver )
+									{
+										<div class="game-stats-duration"><div class="game-stats-duration-key">Time lasted</div><div class="game-stats-duration-value">@FormatDuration( row.TimeLastedSeconds )</div></div>
+									}
+								</div>
+								<div class="game-stats-stat-row">
+									<div class="game-stats-stat rent-earned-stat"><div class="game-stats-stat-key">Rent accumulated</div><div class="game-stats-stat-value money-value">$@row.RentEarned</div></div>
+									<div class="game-stats-stat rent-paid-stat"><div class="game-stats-stat-key">Rent paid</div><div class="game-stats-stat-value money-value">$@row.RentPaid</div></div>
+									<div class="game-stats-stat property-profit-stat">
+										<div class="game-stats-stat-key">Most profitable property</div>
+										<div class="game-stats-stat-value property-value">
+											<span class="game-stats-property-name">@GetPropertyProfitName( row.MostProfitableProperty )</span>
+											@if ( row.MostProfitableProperty.HasValue )
+											{
+												<span class="game-stats-property-amount">($@row.MostProfitableProperty.Value.RentEarned)</span>
+											}
+										</div>
+									</div>
+									<div class="game-stats-stat property-profit-stat">
+										<div class="game-stats-stat-key">Costliest landing</div>
+										<div class="game-stats-stat-value property-value">
+											<span class="game-stats-property-name">@GetPropertyRentPaidName( row.CostliestLanding )</span>
+											@if ( row.CostliestLanding.HasValue )
+											{
+												<span class="game-stats-property-amount">($@row.CostliestLanding.Value.RentPaid)</span>
+											}
+										</div>
+									</div>
+								</div>
 							</div>
 						}
 						@if ( GameLeaderboardRows.Count == 0 ) { <div class="property-stats-empty">No players are assigned to this match.</div> }
@@ -253,8 +286,9 @@
 	private readonly record struct PropertyStatsRow( int SpaceIndex, SpaceDef Space, string Name, int Landings, int RentEarned );
 	private readonly record struct PlayerStatsRow( int PlayerIndex, string Name, int Money, int NetLoss, int PropertyCount, int Landings, int RentEarned, bool IsBankrupt, bool IsLocalPlayer );
 	private readonly record struct PropertyProfitRow( int SpaceIndex, string Name, int RentEarned );
+	private readonly record struct PropertyRentPaidRow( int SpaceIndex, string Name, int RentPaid );
 	private readonly record struct GameLeaderboardSeed( int PlayerIndex, string Name, int Money, int RentEarned, int RentPaid, bool IsBankrupt );
-	private readonly record struct GameLeaderboardRow( int Rank, int PlayerIndex, string Name, int RentEarned, int RentPaid, bool IsBankrupt, bool IsWinner, int TimeLastedSeconds, PropertyProfitRow? MostProfitableProperty, PropertyProfitRow? LeastProfitableProperty );
+	private readonly record struct GameLeaderboardRow( int Rank, int PlayerIndex, string Name, int RentEarned, int RentPaid, bool IsBankrupt, bool IsWinner, int TimeLastedSeconds, PropertyProfitRow? MostProfitableProperty, PropertyRentPaidRow? CostliestLanding );
 	private List<StatsTab> Tabs { get; } = new() { new( GameTab, "Game Stats" ), new( PropertyTab, "Property Stats" ), new( DiceTab, "Dice History" ), new( MoveTab, "Move History" ), new( GambleTab, "Gamble History" ), new( AdminTab, "Command History" ), new( IntegrityTab, "Match Integrity" ) };
 	private int TotalLandings => PropertyRows.Sum( row => row.Landings );
 	private int TotalRentEarned => PropertyRows.Sum( row => row.RentEarned );
@@ -378,9 +412,9 @@
 			var placement = GetRecordedPlacement( row.PlayerIndex );
 			var candidates = GetPropertyProfitCandidates( row.PlayerIndex );
 			var most = candidates.OrderByDescending( candidate => candidate.RentEarned ).ThenBy( candidate => candidate.SpaceIndex ).Cast<PropertyProfitRow?>().FirstOrDefault();
-			var least = candidates.OrderBy( candidate => candidate.RentEarned ).ThenBy( candidate => candidate.SpaceIndex ).Cast<PropertyProfitRow?>().FirstOrDefault();
+			var costliestLanding = GetPropertyRentPaidCandidates( row.PlayerIndex ).OrderByDescending( candidate => candidate.RentPaid ).ThenBy( candidate => candidate.SpaceIndex ).Cast<PropertyRentPaidRow?>().FirstOrDefault();
 			var rank = IsGameOver ? placement ?? index + 1 : row.IsBankrupt && placement.HasValue ? placement.Value : index + 1;
-			return new GameLeaderboardRow( rank, row.PlayerIndex, row.Name, row.RentEarned, row.RentPaid, row.IsBankrupt, IsGameOver && row.PlayerIndex == GameRef.WinnerPlayerIndex, GetPlayerTimeLastedSeconds( row.PlayerIndex ), most, least );
+			return new GameLeaderboardRow( rank, row.PlayerIndex, row.Name, row.RentEarned, row.RentPaid, row.IsBankrupt, IsGameOver && row.PlayerIndex == GameRef.WinnerPlayerIndex, GetPlayerTimeLastedSeconds( row.PlayerIndex ), most, costliestLanding );
 		} ).ToList();
 	}
 	private int? GetRecordedPlacement( int playerIndex ) => GameRef?.PlayerFinishPlacements?.TryGetValue( playerIndex, out var placement ) == true && placement > 0 ? placement : null;
@@ -390,9 +424,17 @@
 		IEnumerable<int> indexes = GameRef?.Config?.LeaderboardStatPropertiesProfitType == PropertyProfitStatType.CurrentlyOwned ? GameRef?.GetOwnedPropertyIndexes( playerIndex ) ?? Enumerable.Empty<int>() : GameRef?.PropertyOwnershipHistory?.Where( entry => entry.Value && GetStatPlayerIndex( entry.Key ) == playerIndex ).Select( entry => GetStatSpaceIndex( entry.Key ) ) ?? Enumerable.Empty<int>();
 		return indexes.Distinct().Select( index => GameRef?.Board?.GetSpaceDef( index ) ).Where( IsPropertyStatSpace ).Select( def => new PropertyProfitRow( def.Index, def.DisplayName ?? $"Space {def.Index}", GetTotalRentEarnedForPlayerSpace( playerIndex, def.Index ) ) ).ToList();
 	}
-	private string GetPropertyProfitText( PropertyProfitRow? property ) => property.HasValue ? $"{property.Value.Name} (${property.Value.RentEarned})" : "None";
+
+	private List<PropertyRentPaidRow> GetPropertyRentPaidCandidates( int playerIndex ) => GameRef?.Board?.SpaceDefs?
+		.Where( IsPropertyStatSpace )
+		.Select( def => new PropertyRentPaidRow( def.Index, def.DisplayName ?? $"Space {def.Index}", GetTotalRentPaidForPlayerSpace( playerIndex, def.Index ) ) )
+		.Where( row => row.RentPaid > 0 )
+		.ToList() ?? new();
+	private string GetPropertyProfitName( PropertyProfitRow? property ) => property.HasValue ? property.Value.Name : "None";
+	private string GetPropertyRentPaidName( PropertyRentPaidRow? property ) => property.HasValue ? property.Value.Name : "None";
 	private static string FormatDuration( int seconds ) => $"{Math.Max( seconds, 0 ) / 3600:00}:{Math.Max( seconds, 0 ) / 60 % 60:00}:{Math.Max( seconds, 0 ) % 60:00}";
 	private string GetGameLeaderboardRowClass( GameLeaderboardRow row ) => $"game-stats-card{(row.IsWinner ? " winner" : "")}{(row.IsBankrupt ? " bankrupt" : "")}";
+	private static string GetPlayerInitial( string playerName ) => string.IsNullOrWhiteSpace( playerName ) ? "?" : char.ToUpperInvariant( playerName.Trim()[0] ).ToString();
 	private string GetModalClass() => IsPostMatch ? "post-match-stats-modal" : "";
 	private int GetTotalLandingsForSpace( int spaceIndex ) => SumPropertyStatForSpace( GameRef.PropertyLandingCounts, spaceIndex );
 	private int GetTotalRentEarnedForSpace( int spaceIndex ) => SumPropertyStatForSpace( GameRef.PropertyRentEarned, spaceIndex );
@@ -400,6 +442,7 @@
 	private int GetTotalRentEarnedForPlayer( int playerIndex ) => SumPropertyStatForPlayer( GameRef.PropertyRentEarned, playerIndex );
 	private int GetTotalRentPaidForPlayer( int playerIndex ) => SumPropertyStatForPlayer( GameRef?.PropertyRentPaid, playerIndex );
 	private int GetTotalRentEarnedForPlayerSpace( int playerIndex, int spaceIndex ) => GameRef?.PropertyRentEarned?.Where( entry => GetStatPlayerIndex( entry.Key ) == playerIndex && GetStatSpaceIndex( entry.Key ) == spaceIndex ).Sum( entry => Math.Max( entry.Value, 0 ) ) ?? 0;
+	private int GetTotalRentPaidForPlayerSpace( int playerIndex, int spaceIndex ) => GameRef?.PropertyRentPaid?.Where( entry => GetStatPlayerIndex( entry.Key ) == playerIndex && GetStatSpaceIndex( entry.Key ) == spaceIndex ).Sum( entry => Math.Max( entry.Value, 0 ) ) ?? 0;
 	private int GetStartingMoney() => Math.Max( GameRef?.Config?.StartingMoney ?? 1500, 0 );
 	private static int SumPropertyStatForSpace( NetDictionary<int, int> stats, int spaceIndex ) => stats?.Where( entry => GetStatSpaceIndex( entry.Key ) == spaceIndex ).Sum( entry => Math.Max( entry.Value, 0 ) ) ?? 0;
 	private static int SumPropertyStatForPlayer( NetDictionary<int, int> stats, int playerIndex ) => stats?.Where( entry => GetStatPlayerIndex( entry.Key ) == playerIndex ).Sum( entry => Math.Max( entry.Value, 0 ) ) ?? 0;

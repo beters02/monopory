@@ -51,7 +51,6 @@
 			<HudPanelSubtitle>Game</HudPanelSubtitle>
 
 			<GameButton Variant="stats-log-button" OnClick="@ShowStatsLog">Stats</GameButton>
-			<GameButton Variant="stats-log-button" OnClick="@ShowIntegrityLog">Integrity</GameButton>
 			@if ( GameRef.Config?.GambleGamesEnabledNonCard == true )
 			{
 				<GameButton Variant="stats-log-button gamble-hub-button"
@@ -557,7 +556,6 @@
 
 		OnOpenStats?.Invoke( PropertyStatsTab.Integrity );
 	}
-
 	private string GetEndTurnBlockedMessage()
 	{
 		if ( GameRef?.HasPendingForcedPayment == true )

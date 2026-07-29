@@ -886,6 +886,27 @@ public static class DebugStatsModalCommand
 	}
 }
 
+public static class DebugLeaderboardCommand
+{
+	public const string Name = "debug_leaderboard";
+
+	[CheatCmd]
+	[ConCmd( Name )]
+	public static void Execute( Connection connection )
+	{
+		GameCommandManager.RunCommand( Name, () =>
+		{
+			var game = GameController.Instance;
+			if ( game is null )
+				return CommandResult.Fail( "No active game." );
+
+			return game.TryApplyDebugLeaderboardData( out var message )
+				? CommandResult.Success( message )
+				: CommandResult.Fail( message );
+		}, connection );
+	}
+}
+
 public static class ViewDeckCommand
 {
 	public const string Name = "view_deck";
