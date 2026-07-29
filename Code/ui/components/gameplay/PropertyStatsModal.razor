@@ -60,7 +60,7 @@
 									<div class="game-stats-stat property-profit-stat">
 										<div class="game-stats-stat-key">Most profitable property</div>
 										<div class="game-stats-stat-value property-value">
-											<span class="game-stats-property-name">@GetPropertyProfitName( row.MostProfitableProperty )</span>
+											<span class="@GetGameStatsPropertyNameClass( row.MostProfitableProperty?.SpaceIndex )">@GetPropertyProfitName( row.MostProfitableProperty )</span>
 											@if ( row.MostProfitableProperty.HasValue )
 											{
 												<span class="game-stats-property-amount">($@row.MostProfitableProperty.Value.RentEarned)</span>
@@ -70,7 +70,7 @@
 									<div class="game-stats-stat property-profit-stat">
 										<div class="game-stats-stat-key">Costliest landing</div>
 										<div class="game-stats-stat-value property-value">
-											<span class="game-stats-property-name">@GetPropertyRentPaidName( row.CostliestLanding )</span>
+											<span class="@GetGameStatsPropertyNameClass( row.CostliestLanding?.SpaceIndex )">@GetPropertyRentPaidName( row.CostliestLanding )</span>
 											@if ( row.CostliestLanding.HasValue )
 											{
 												<span class="game-stats-property-amount">($@row.CostliestLanding.Value.RentPaid)</span>
@@ -432,6 +432,18 @@
 		.ToList() ?? new();
 	private string GetPropertyProfitName( PropertyProfitRow? property ) => property.HasValue ? property.Value.Name : "None";
 	private string GetPropertyRentPaidName( PropertyRentPaidRow? property ) => property.HasValue ? property.Value.Name : "None";
+
+	private string GetGameStatsPropertyNameClass( int? spaceIndex )
+	{
+		var def = spaceIndex.HasValue ? GameRef?.Board?.GetSpaceDef( spaceIndex.Value ) : null;
+		var colorClass = def?.Type switch
+		{
+			SpaceType.Chance => "chance",
+			SpaceType.CommunityChest => "chest",
+			_ => HudUi.GetPropertyColorClass( def )
+		};
+		return $"game-stats-property-name color-{colorClass}";
+	}
 	private static string FormatDuration( int seconds ) => $"{Math.Max( seconds, 0 ) / 3600:00}:{Math.Max( seconds, 0 ) / 60 % 60:00}:{Math.Max( seconds, 0 ) % 60:00}";
 	private string GetGameLeaderboardRowClass( GameLeaderboardRow row ) => $"game-stats-card{(row.IsWinner ? " winner" : "")}{(row.IsBankrupt ? " bankrupt" : "")}";
 	private static string GetPlayerInitial( string playerName ) => string.IsNullOrWhiteSpace( playerName ) ? "?" : char.ToUpperInvariant( playerName.Trim()[0] ).ToString();
