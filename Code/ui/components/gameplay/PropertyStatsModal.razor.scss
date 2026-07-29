@@ -877,19 +877,18 @@
 	overflow: hidden;
 }
 
-.game-stats-property-name.color-brown { color: $property-brown; }
-.game-stats-property-name.color-light_blue { color: $property-light-blue; }
-.game-stats-property-name.color-pink { color: $property-pink; }
-.game-stats-property-name.color-orange { color: $property-orange; }
-.game-stats-property-name.color-red { color: $property-red; }
-.game-stats-property-name.color-yellow { color: $property-yellow; }
-.game-stats-property-name.color-green { color: $property-green; }
-.game-stats-property-name.color-dark_blue { color: $property-dark-blue; }
-.game-stats-property-name.color-chance { color: $property-chance; }
-.game-stats-property-name.color-chest { color: $property-chest; }
-.game-stats-property-name.color-railroad,
-.game-stats-property-name.color-utility,
-.game-stats-property-name.color-none { color: $monopoly-ink; }
+.game-stats-stat.property-profit-stat.color-brown { border-left-color: $property-brown; }
+.game-stats-stat.property-profit-stat.color-light_blue { border-left-color: $property-light-blue; }
+.game-stats-stat.property-profit-stat.color-pink { border-left-color: $property-pink; }
+.game-stats-stat.property-profit-stat.color-orange { border-left-color: $property-orange; }
+.game-stats-stat.property-profit-stat.color-red { border-left-color: $property-red; }
+.game-stats-stat.property-profit-stat.color-yellow { border-left-color: $property-yellow; }
+.game-stats-stat.property-profit-stat.color-green { border-left-color: $property-green; }
+.game-stats-stat.property-profit-stat.color-dark_blue { border-left-color: $property-dark-blue; }
+.game-stats-stat.property-profit-stat.color-chance { border-left-color: $property-chance; }
+.game-stats-stat.property-profit-stat.color-chest { border-left-color: $property-chest; }
+.game-stats-stat.property-profit-stat.color-railroad { border-left-color: $property-color-swatch-railroad; }
+.game-stats-stat.property-profit-stat.color-utility { border-left-color: $property-color-swatch-utility; }
 
 .game-stats-property-amount {
 	flex-shrink: 0;
