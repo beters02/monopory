@@ -1,0 +1,17 @@
+- Added new configurable match options:
+-- Vacation Cash Behavior: PayoutOnly, LoseExtraRoll, SkipNextTurn. Default SkipNextTurn
+-- Get Out of Jail Fine: Default 50
+-- Jail Roll Attempts: Default 3
+-- DoublesPenalty: GoToJail, EndTurn, None. Default GoToJail
+-- Auction Initial Duration: Default 15 seconds
+-- Auction Anti-Snipe Duration Extension: Default 7 seconds
+-- Auction Starting Bid: Default 0
+-- Property Management Timing: CurrentTurnOnly, AnyTurn, BetweenTurnsOnly. Default CurrentTurnOnly
+-- Minimum Gambling Wager: Default 1
+-- Maximum Wager Type: PlayerMoney, PercentagePlayerMoney, SetAmount. Default PlayerMoney
+-- Maximum Wager Bank Percentage: Default 80%
+-- Maximum Wager Set Amount: Default 420
+-- Gambling Payout Multiplier: Default 2
+-- Sent Trade Limit: Default 3
+-- Allow Improved Property Trades: Default false
+-- Allow Mortgaged Property Trades: Default true

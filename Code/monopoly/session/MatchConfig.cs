@@ -128,10 +128,10 @@ public sealed class MatchConfig
 	[MatchConfigOption( "Lobby", "Max Players", Description = "Maximum seats allowed in the hosted lobby.", CommandId = "max_players", Order = 1, Min = 1, Max = 24, Step = 1 )]
 	public int MaxPlayers { get; set; } = 8;
 
-	[MatchConfigOption( "Lobby", "Only Host Starts Game", Description = "If enabled, only the host can launch the match.", CommandId = "only_host_starts_game", Order = 2 )]
+	[MatchConfigOption( "Lobby", "Only Host Starts Game", Description = "If enabled, only the host can launch the match.", CommandId = "only_host_starts_game", IsVisible = false, Order = 2 )]
 	public bool OnlyHostStartsGame { get; set; } = true;
 
-	[MatchConfigOption( "Lobby", "Abandon Timeout Seconds", Description = "How long disconnected players can rejoin before they are abandoned and removed.", CommandId = "abandon_timeout_seconds", Order = 3, Min = 15, Max = 1800, Step = 15 )]
+	[MatchConfigOption( "Lobby", "Abandon Timeout Seconds", Description = "How long disconnected players can rejoin before they are abandoned and removed.", CommandId = "abandon_timeout_seconds", Order = 3, Min = 15, Max = 1800, IsVisible = false, Step = 15 )]
 	public int AbandonTimeoutSeconds { get; set; } = 180;
 
 	[MatchConfigOption( "Lobby", "Autosave Enabled", Description = "Automatically saves the match at stable recovery points.", CommandId = "autosave_enabled", Order = 4, IsVisible = false )]
@@ -191,10 +191,10 @@ public sealed class MatchConfig
 	[MatchConfigDependsOn( nameof( MaximumWagerType ), nameof( MaximumWagerType.SetAmount ) )]
 	public int MaximumWagerSetAmount { get; set; } = 420;
 
-	[MatchConfigOption( "Gambling", "Gamble Payout Multiplier", Description = "Gross return multiplier applied to a winning money wager.", CommandId = "gamble_payout_multiplier", Order = 31, Min = 1, Max = 20, Step = 1 )]
+	[MatchConfigOption( "Gambling", "Gamble Payout Multiplier", Description = "Gross return multiplier applied to a winning money wager. (Bet amount * multiplier)", CommandId = "gamble_payout_multiplier", Order = 31, Min = 1, Max = 20, Step = 1 )]
 	public int GamblePayoutMultiplier { get; set; } = 2;
 
-	[MatchConfigOption( "Leaderboard Stats", "Property Profit Scope", Description = "Choose whether property-profit leaderboard stats include every property a player has ever owned or only their current properties.", CommandId = "leaderboard_stat_properties_profit_type", Order = 50 )]
+	[MatchConfigOption( "Leaderboard Stats", "Property Profit Scope", Description = "Choose whether property-profit leaderboard stats include every property a player has ever owned or only their current properties.", CommandId = "leaderboard_stat_properties_profit_type", IsVisible = false, Order = 50 )]
 	public PropertyProfitStatType LeaderboardStatPropertiesProfitType { get; set; } = PropertyProfitStatType.EverOwned;
 	[MatchConfigOption( "Economy", "Can Turn Player Gamble", Description = "Can the current turn player play non-card gamble games.", CommandId = "can_turn_player_gamble_non_card", Order = 27, IsVisible = false )]
 	[MatchConfigDependsOn( nameof( GambleGamesEnabledNonCard ) )]
@@ -233,7 +233,7 @@ public sealed class MatchConfig
 	[MatchConfigOption( "Turn Rules", "Force Jail Fine After Failed Doubles", Description = "After the final failed jail roll, automatically pay the fine to leave jail.", CommandId = "force_jail_fine_after_failed_doubles", Order = 38 )]
 	public bool ForceJailFineAfterFailedDoubles { get; set; } = false;
 
-	[MatchConfigOption( "Turn Rules", "Turn Time Limit Seconds", Description = "How long each turn can last before timeout handling kicks in.", CommandId = "turn_time_limit_seconds", Order = 39, Min = 15, Max = 900, Step = 15 )]
+	[MatchConfigOption( "Turn Rules", "Turn Time Limit Seconds", Description = "How long each turn can last before timeout handling kicks in.", CommandId = "turn_time_limit_seconds", Order = 39, Min = 15, Max = 900, Step = 15, IsVisible = false)]
 	public int TurnTimeLimitSeconds { get; set; } = 180;
 
 	[MatchConfigOption( "Turn Rules", "Instant Move Button Unlock Minutes", Description = "Elapsed match minutes before the finish-movement button can appear. 0 allows it immediately.", CommandId = "instant_move_button_unlock_minutes", Order = 40, Min = 0, Max = 240, Step = 5 )]
