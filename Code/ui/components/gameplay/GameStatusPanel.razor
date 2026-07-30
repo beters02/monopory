@@ -595,7 +595,7 @@
 		hash.Add( GameRef?.ActiveMovementRemainingSteps ?? 0 );
 		hash.Add( GameRef?.ActiveMovementTargetSpaceIndex ?? -1 );
 		hash.Add( GameRef?.GameStartedAt ?? 0f );
-		hash.Add( GameRef?.Config?.InstantMoveButtonUnlockMinutes ?? 0 );
+		hash.Add( GameRef?.Config?.InstantMoveUnlockSeconds ?? 0 );
 		hash.Add( CurrentPlayer?.IsInJail ?? false );
 		hash.Add( CurrentPlayer?.JailTurnsRemaining ?? 0 );
 		hash.Add( CurrentPlayer?.ChanceGetOutOfJailFreeCards ?? 0 );

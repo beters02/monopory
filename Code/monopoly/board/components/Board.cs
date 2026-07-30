@@ -641,7 +641,18 @@ public sealed class Board : Component
 			def.Type is not (SpaceType.Property or SpaceType.Railroad or SpaceType.Utility) )
 			return;
 
-		GameRef.ShowBoardSpaceInfoPopup( def );
+		var spaceCount = SpaceCount;
+		if ( GameRef.LocalPlayer is null || spaceCount <= 0 )
+			return;
+
+		var distance = ((def.Index - GameRef.LocalPlayer.SpaceIndex) % spaceCount + spaceCount) % spaceCount;
+		var message = distance == 1 ? "1 space away" : $"{distance} spaces away";
+		Sandbox.ui.components.TooltipService.Toggle(
+			"board-space-info",
+			def.DisplayName,
+			message,
+			Mouse.Position
+		);
 	}
 
 	private bool IsPlayerTokenTopHit()

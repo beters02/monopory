@@ -122,20 +122,34 @@ public sealed partial class GameController : Component
 			if ( owner is null || owner == player )
 				return owner is null ? "Property owner missing" : "Landed on own property";
 
-			if ( Config?.DontCollectRentWhileInPrison == true && owner.IsInJail )
+			var fullRent = GetRentForSpace( def.Index );
+			var rentPercentage = owner.IsInJail
+				? Math.Clamp( Config?.RentInPrisonPercentage ?? 100, 0, 100 )
+				: 100;
+			var ownerShare = (int)((long)fullRent * rentPercentage / 100L);
+			var leftover = Math.Max( fullRent - ownerShare, 0 );
+			var vacationCashShare =
+				owner.IsInJail &&
+				Config?.VacationCash == true &&
+				Config?.RentInPrisonLeftoverMoneyGoesToVacationCash == true
+					? leftover
+					: 0;
+			var amountDue = ownerShare + vacationCashShare;
+
+			if ( amountDue <= 0 )
 			{
-				Log.Info( $"{owner.PlayerName} is in Jail and cannot collect rent from {player.PlayerName}." );
-				return $"{owner.PlayerName} is in Jail; rent skipped";
+				Log.Info( $"{owner.PlayerName} is in Jail and receives no rent from {player.PlayerName}." );
+				return $"{owner.PlayerName} is in Jail; no rent due";
 			}
 
-			var rent = GetRentForSpace( def.Index );
-			if ( PayPlayer( player, owner, rent, rentSpaceIndex: def.Index ) )
+			if ( PayPlayer( player, owner, amountDue, rentSpaceIndex: def.Index, vacationCashAmount: vacationCashShare ) )
 			{
-				Log.Info( $"{player.PlayerName} paid ${rent} rent to {owner.PlayerName}." );
-				return $"Paid ${rent} rent to {owner.PlayerName}";
+				var vacationCashText = vacationCashShare > 0 ? $" and ${vacationCashShare} to Vacation Cash" : "";
+				Log.Info( $"{player.PlayerName} paid ${ownerShare} rent to {owner.PlayerName}{vacationCashText}." );
+				return $"Paid ${ownerShare} rent to {owner.PlayerName}{vacationCashText}";
 			}
 
-			return $"Rent payment unresolved for ${rent} to {owner.PlayerName}";
+			return $"Rent payment unresolved for ${amountDue} (${ownerShare} to {owner.PlayerName}, ${vacationCashShare} to Vacation Cash)";
 		}
 
 		return "Property ownership lookup failed";
@@ -173,8 +187,7 @@ public sealed partial class GameController : Component
 				: UnownedLandingAction.PendingDecision;
 		}
 
-		var canSkip = Config?.CanSkipUnowned == true;
-		return (Config?.LandedUnownedCantAffordMode == UnownedUnaffordableLandingMode.Decision && canSkip)
+		return Config?.CanSkipUnowned == true
 			? UnownedLandingAction.PendingDecision
 			: UnownedLandingAction.ForceAuction;
 	}
@@ -313,13 +326,16 @@ public sealed partial class GameController : Component
 		IncrementPropertyStat( PropertyRentEarned, BuildPropertyStatKey( ownerIndex, spaceIndex ), amount );
 	}
 
-	private void RecordPropertyRentPaymentForStats( int payerIndex, int ownerIndex, int spaceIndex, int amount )
+	private void RecordPropertyRentPaymentForStats( int payerIndex, int ownerIndex, int spaceIndex, int paidAmount, int ownerEarnedAmount = -1 )
 	{
-		if ( payerIndex < 0 || ownerIndex < 0 || spaceIndex < 0 || amount <= 0 )
+		if ( payerIndex < 0 || ownerIndex < 0 || spaceIndex < 0 || paidAmount <= 0 )
 			return;
 
-		IncrementPropertyStat( PropertyRentPaid, BuildPropertyStatKey( payerIndex, spaceIndex ), amount );
-		RecordPropertyRentEarnedForStats( ownerIndex, spaceIndex, amount );
+		IncrementPropertyStat( PropertyRentPaid, BuildPropertyStatKey( payerIndex, spaceIndex ), paidAmount );
+		RecordPropertyRentEarnedForStats(
+			ownerIndex,
+			spaceIndex,
+			ownerEarnedAmount >= 0 ? ownerEarnedAmount : paidAmount );
 	}
 
 	private void RecordPropertyOwnershipForStats( int ownerIndex, int spaceIndex )

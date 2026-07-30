@@ -21,6 +21,8 @@
 @import "../components/gameplay/SelectedSpacePanel.razor.scss";
 @import "../components/console/StandaloneConsole.razor.scss";
 @import "../components/social/SteamProfilePopupCard.razor.scss";
+@import "../components/tooltips/Tooltip.razor.scss";
+@import "../components/tooltips/TooltipLayer.razor.scss";
 
 GameHud {
 	position: absolute;

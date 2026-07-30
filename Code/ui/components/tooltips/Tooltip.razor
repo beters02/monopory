@@ -1,0 +1,86 @@
+@namespace Sandbox.ui.components
+@using Sandbox;
+@using Sandbox.UI;
+@using System;
+@using System.Linq;
+@inherits Panel
+
+<root class="@RootClasses" onmouseover="@HandleMouseEnter" onmouseout="@HandleMouseLeave">
+	@ChildContent
+</root>
+
+@code
+{
+	[Parameter] public string RequestKey { get; set; } = "";
+	[Parameter] public string Title { get; set; } = "";
+	[Parameter] public string Message { get; set; } = "";
+	[Parameter] public TooltipTriggerMode TriggerMode { get; set; } = TooltipTriggerMode.Hover;
+	[Parameter] public string InputAction { get; set; } = "";
+	[Parameter] public float HoverDelay { get; set; } = 0.25f;
+	[Parameter] public string Variant { get; set; } = "";
+	[Parameter] public bool Enabled { get; set; } = true;
+	[Parameter] public new RenderFragment ChildContent { get; set; }
+
+	private bool IsHovered;
+	private float ShowAt;
+
+	private string EffectiveKey => string.IsNullOrWhiteSpace( RequestKey )
+		? $"tooltip-{GetHashCode()}"
+		: RequestKey;
+
+	private string RootClasses => string.Join(
+		" ",
+		new[] { "tooltip-target", Variant }
+			.Where( value => !string.IsNullOrWhiteSpace( value ) )
+	);
+
+	public override void Tick()
+	{
+		base.Tick();
+
+		if ( !Enabled )
+		{
+			IsHovered = false;
+			ShowAt = 0f;
+			TooltipService.Dismiss( EffectiveKey );
+			return;
+		}
+
+		if ( TriggerMode == TooltipTriggerMode.Hover )
+		{
+			if ( IsHovered && ShowAt > 0f && Time.Now >= ShowAt )
+			{
+				ShowAt = 0f;
+				TooltipService.Show( EffectiveKey, Title, Message, Mouse.Position );
+			}
+
+			return;
+		}
+
+		if ( IsHovered &&
+			!string.IsNullOrWhiteSpace( InputAction ) &&
+			Input.Pressed( InputAction ) )
+		{
+			TooltipService.Toggle( EffectiveKey, Title, Message, Mouse.Position );
+		}
+	}
+
+	private void HandleMouseEnter()
+	{
+		if ( !Enabled )
+			return;
+		IsHovered = true;
+
+		if ( TriggerMode == TooltipTriggerMode.Hover )
+			ShowAt = Time.Now + Math.Max( 0f, HoverDelay );
+	}
+
+	private void HandleMouseLeave()
+	{
+		if ( !Enabled )
+			return;
+		IsHovered = false;
+		ShowAt = 0f;
+		TooltipService.Dismiss( EffectiveKey );
+	}
+}

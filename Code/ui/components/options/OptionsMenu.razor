@@ -342,6 +342,13 @@
 			AppSettings.Data.VSync != openingSettingsSnapshot.VSync ||
 			AppSettings.Data.UpscalerMode != openingSettingsSnapshot.UpscalerMode ||
 			AppSettings.Data.Fsr3Quality != openingSettingsSnapshot.Fsr3Quality ||
+			AppSettings.Data.TextureQuality != openingSettingsSnapshot.TextureQuality ||
+			AppSettings.Data.ShadowQuality != openingSettingsSnapshot.ShadowQuality ||
+			AppSettings.Data.PostProcessQuality != openingSettingsSnapshot.PostProcessQuality ||
+			AppSettings.Data.AntiAliasQuality != openingSettingsSnapshot.AntiAliasQuality ||
+			AppSettings.Data.FrameRateLimit != openingSettingsSnapshot.FrameRateLimit ||
+			AppSettings.Data.VolumetricFogEnabled != openingSettingsSnapshot.VolumetricFogEnabled ||
+			AppSettings.Data.VolumetricFogQuality != openingSettingsSnapshot.VolumetricFogQuality ||
 			MathF.Abs( AppSettings.Data.MotionBlurScale - openingSettingsSnapshot.MotionBlurScale ) >= 0.001f
 		);
 

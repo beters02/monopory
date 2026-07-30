@@ -5,7 +5,6 @@ using Sandbox;
 
 public sealed partial class GameController : Component
 {
-	private const int BoardSpaceInfoPopupId = -1_000_000_001;
 
 	private void UpdatePopups()
 	{
@@ -110,37 +109,6 @@ public sealed partial class GameController : Component
 	}
 
 
-	public void ShowBoardSpaceInfoPopup( SpaceDef def )
-	{
-		if ( def is null ||
-			string.IsNullOrWhiteSpace( def.DisplayName ) ||
-			def.Price <= 0 ||
-			def.Type is not (SpaceType.Property or SpaceType.Railroad or SpaceType.Utility) )
-		{
-			return;
-		}
-
-		var localPlayer = LocalPlayer;
-		var spaceCount = Board?.SpaceCount ?? global::Board.Instance?.SpaceCount ?? 0;
-		if ( localPlayer is null || spaceCount <= 0 )
-			return;
-
-		var distance = ((def.Index - localPlayer.SpaceIndex) % spaceCount + spaceCount) % spaceCount;
-		var message = distance == 1 ? "1 space away" : $"{distance} spaces away";
-
-		ShowPopupLocal(
-			BoardSpaceInfoPopupId,
-			def.DisplayName,
-			message,
-			PopupKind.Info,
-			true,
-			0f,
-			false,
-			"Confirm",
-			"Cancel",
-			false
-		);
-	}
 
 	public int ShowLocalConfirmation( string title, string message, Action onConfirm, Action onCancel = null, string confirmLabel = "Confirm", string cancelLabel = "Cancel", bool soundEnabled = true )
 	{

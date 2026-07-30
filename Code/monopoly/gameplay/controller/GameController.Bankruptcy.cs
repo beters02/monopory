@@ -274,7 +274,7 @@ public sealed partial class GameController : Component
 			return false;
 
 		var creditor = GetPendingForcedPaymentCreditorForPlayer( playerIndex );
-		var debtAmount = HasPendingForcedPaymentForPlayer( playerIndex ) ? PendingForcedPaymentAmount : 0;
+		var debtAmount = HasPendingForcedPaymentForPlayer( playerIndex ) ? Math.Max( PendingForcedPaymentAmount - PendingForcedPaymentVacationCashAmount, 0 ) : 0;
 		player.IsDisconnected = false;
 		player.AbandonEndsAt = 0f;
 		BankruptPlayer( playerIndex, creditor, true, debtAmount );
@@ -286,7 +286,7 @@ public sealed partial class GameController : Component
 		if ( !HasPendingForcedPaymentForPlayer( playerIndex ) )
 			return null;
 
-		if ( PendingForcedPaymentToBank || PendingForcedPaymentToEachPlayer )
+		if ( PendingForcedPaymentToBank || PendingForcedPaymentToEachPlayer || PendingForcedPaymentAmount <= PendingForcedPaymentVacationCashAmount )
 			return null;
 
 		return Players.ElementAtOrDefault( PendingForcedPaymentReceiverIndex );

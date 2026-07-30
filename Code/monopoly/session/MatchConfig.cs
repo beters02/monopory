@@ -9,27 +9,45 @@ public sealed class MatchSettingsPreset
 		public bool IsPredefined { get; set; }
 	}
 
-public enum UnownedAffordableLandingMode
+[AttributeUsage( AttributeTargets.Field )]
+public sealed class MatchConfigEnumDescriptionAttribute : Attribute
 {
-	ForceBuy,
-	Decision
+	public string Description { get; }
+
+	public MatchConfigEnumDescriptionAttribute( string description )
+	{
+		Description = description ?? "";
+	}
 }
 
-public enum UnownedUnaffordableLandingMode
+public enum MatchConfigDependencyComparison
 {
-	ForceAuction,
+	Equal,
+	LessThan,
+	OneOf
+}
+
+public enum UnownedAffordableLandingMode
+{
+	[MatchConfigEnumDescription( "The player automatically buys an affordable unowned property." )]
+	ForceBuy,
+	[MatchConfigEnumDescription( "The player chooses whether to buy the property or auction or skip it." )]
 	Decision
 }
 
 public enum PlayerBankruptedPlayerMode
 {
+	[MatchConfigEnumDescription( "The creditor receives the bankrupt player's remaining properties." )]
 	GivePropertiesToBankrupter,
+	[MatchConfigEnumDescription( "The bankrupt player's properties return to the bank unowned." )]
 	MakePropertiesUnowned
 }
 
 public enum PropertyProfitStatType
 {
+	[MatchConfigEnumDescription( "Profit includes every property the player owned during the match." )]
 	EverOwned,
+	[MatchConfigEnumDescription( "Profit includes only properties the player owns when the match ends." )]
 	CurrentlyOwned
 }
 
@@ -38,6 +56,7 @@ public sealed class MatchConfigDependsOnAttribute : Attribute
 {
 	public string OptionKey { get; }
 	public string ExpectedValue { get; }
+	public MatchConfigDependencyComparison Comparison { get; set; } = MatchConfigDependencyComparison.Equal;
 
 	public MatchConfigDependsOnAttribute( string optionKey, string expectedValue = "true" )
 	{
@@ -48,37 +67,68 @@ public sealed class MatchConfigDependsOnAttribute : Attribute
 
 public enum VacationCashBehavior
 {
+	[MatchConfigEnumDescription( "Collect Vacation Cash without a turn penalty." )]
 	PayoutOnly,
+	[MatchConfigEnumDescription( "Collect Vacation Cash but lose any pending doubles reroll." )]
 	LoseExtraRoll,
+	[MatchConfigEnumDescription( "Collect Vacation Cash and skip the next rotation turn." )]
 	SkipNextTurn
 }
 
 public enum VacationCashSkipNextTurnDoublesBehavior
 {
+	[MatchConfigEnumDescription( "Keep the doubles reroll now and skip the next rotation turn." )]
 	UseRerollSkipNext,
+	[MatchConfigEnumDescription( "Consume the doubles reroll without adding another skipped turn." )]
 	ConsumeRerollOnly,
+	[MatchConfigEnumDescription( "Cancel the doubles reroll and skip the next rotation turn." )]
 	CancelAndSkipTurn
 }
 
 public enum DoublesPenalty
 {
+	[MatchConfigEnumDescription( "Send the player to Jail after three consecutive doubles rolls." )]
 	GoToJail,
+	[MatchConfigEnumDescription( "End the player's turn after three consecutive doubles rolls." )]
 	EndTurn,
+	[MatchConfigEnumDescription( "Apply no penalty for three consecutive doubles rolls." )]
 	None
 }
 
 public enum PropertyManagementTiming
 {
+	[MatchConfigEnumDescription( "Players may manage properties only during their own turn." )]
 	CurrentTurnOnly,
+	[MatchConfigEnumDescription( "Players may manage properties during any player's turn." )]
 	AnyTurn,
+	[MatchConfigEnumDescription( "Players may manage properties only between active turns." )]
 	BetweenTurnsOnly
 }
 
 public enum MaximumWagerType
 {
+	[MatchConfigEnumDescription( "The player's current cash is the maximum wager." )]
 	PlayerMoney,
+	[MatchConfigEnumDescription( "A percentage of the player's current cash is the maximum wager." )]
 	PercentagePlayerMoney,
+	[MatchConfigEnumDescription( "A configured fixed amount is the maximum wager." )]
 	SetAmount
+}
+
+public enum InstantMoveBehavior
+{
+	[MatchConfigEnumDescription( "Token movement must play normally; no finish-movement button appears." )]
+	NotAllowed,
+	[MatchConfigEnumDescription( "Players may finish token movement immediately at any time." )]
+	Allowed,
+	[MatchConfigEnumDescription( "Players may finish token movement after the configured unlock time." )]
+	AllowedAfterUnlock,
+	[MatchConfigEnumDescription( "Every new token movement completes immediately." )]
+	Forced,
+	[MatchConfigEnumDescription( "The finish button is available before unlock; new movements are forced after unlock." )]
+	AllowedUntilForcedAfterUnlock,
+	[MatchConfigEnumDescription( "Movement plays normally before unlock; new movements are forced after unlock." )]
+	NotAllowedUntilForcedAfterUnlock
 }
 
 public sealed class MatchConfigOptionAttribute : Attribute
@@ -143,8 +193,6 @@ public sealed class MatchConfig
 	[MatchConfigOption( "Property Rules", "Affordable Unowned Landing", Description = "What happens when a player can afford an unowned property.", CommandId = "affordable_unowned_landing", Order = 10 )]
 	public UnownedAffordableLandingMode LandedUnownedCanAffordMode { get; set; } = UnownedAffordableLandingMode.Decision;
 
-	[MatchConfigOption( "Property Rules", "Unaffordable Unowned Landing", Description = "What happens when a player cannot afford an unowned property.", CommandId = "unaffordable_unowned_landing", Order = 11 )]
-	public UnownedUnaffordableLandingMode LandedUnownedCantAffordMode { get; set; } = UnownedUnaffordableLandingMode.ForceAuction;
 
 	[MatchConfigOption( "Property Rules", "Can Skip Unowned", Description = "Allows players to ignore an unowned property instead of buying or auctioning it.", CommandId = "can_skip_unowned", Order = 12 )]
 	public bool CanSkipUnowned { get; set; } = false;
@@ -236,11 +284,12 @@ public sealed class MatchConfig
 	[MatchConfigOption( "Turn Rules", "Turn Time Limit Seconds", Description = "How long each turn can last before timeout handling kicks in.", CommandId = "turn_time_limit_seconds", Order = 39, Min = 15, Max = 900, Step = 15, IsVisible = false)]
 	public int TurnTimeLimitSeconds { get; set; } = 180;
 
-	[MatchConfigOption( "Turn Rules", "Instant Move Button Unlock Minutes", Description = "Elapsed match minutes before the finish-movement button can appear. 0 allows it immediately.", CommandId = "instant_move_button_unlock_minutes", Order = 40, Min = 0, Max = 240, Step = 5 )]
-	public int InstantMoveButtonUnlockMinutes { get; set; } = 0;
+	[MatchConfigOption( "Turn Rules", "Instant Move Behavior", Description = "Controls whether players may or must finish token movement immediately.", CommandId = "instant_move_behavior", Order = 40 )]
+	public InstantMoveBehavior InstantMoveBehavior { get; set; } = InstantMoveBehavior.Allowed;
 
-	[MatchConfigOption( "Turn Rules", "Instant Move Always", Description = "Automatically finishes token movement after dice resolve.", CommandId = "instant_move_always", Order = 41 )]
-	public bool InstantMoveAlways { get; set; } = false;
+	[MatchConfigOption( "Turn Rules", "Instant Move Unlock Seconds", Description = "Elapsed match seconds before after-unlock instant movement becomes available or forced. 0 unlocks it immediately.", CommandId = "instant_move_unlock_seconds", Order = 41, Min = 0, Max = 14400, Step = 5 )]
+	[MatchConfigDependsOn( nameof( InstantMoveBehavior ), "AllowedAfterUnlock|AllowedUntilForcedAfterUnlock|NotAllowedUntilForcedAfterUnlock", Comparison = MatchConfigDependencyComparison.OneOf )]
+	public int InstantMoveUnlockSeconds { get; set; } = 0;
 
 	[MatchConfigOption( "Turn Rules", "Auto BHop Enabled", Description = "Allows holding jump to automatically jump again when grounded.", CommandId = "auto_bhop_enabled", Order = 42, IsVisible = false )]
 	public bool AutoBHopEnabled { get; set; } = true;
@@ -265,13 +314,18 @@ public sealed class MatchConfig
 	[MatchConfigDependsOn( nameof( DoublesGoesAgain ) )]
 	public VacationCashSkipNextTurnDoublesBehavior VacationCashSkipNextTurnDoublesBehavior { get; set; } = VacationCashSkipNextTurnDoublesBehavior.ConsumeRerollOnly;
 
-	[MatchConfigOption( "Board Rules", "No Rent While In Prison", Description = "Prevents jailed players from collecting rent.", CommandId = "dont_collect_rent_while_in_prison", Order = 44 )]
-	public bool DontCollectRentWhileInPrison { get; set; } = false;
+	[MatchConfigOption( "Board Rules", "Rent In Prison Percentage", Description = "Percentage of normal rent paid to a property owner while they are in Jail.", CommandId = "rent_in_prison_percentage", Order = 44, Min = 0, Max = 100, Step = 1 )]
+	public int RentInPrisonPercentage { get; set; } = 100;
 
-	[MatchConfigOption( "Board Rules", "Even Build", Description = "Requires houses to be built evenly across a color set.", CommandId = "even_build", Order = 45 )]
+	[MatchConfigOption( "Board Rules", "Rent In Prison Leftover Money Goes To Vacation Cash", Description = "Charges full rent and adds the jailed owner's unpaid share to Vacation Cash.", CommandId = "rent_in_prison_leftover_money_goes_to_vacation_cash", Order = 45 )]
+	[MatchConfigDependsOn( nameof( VacationCash ) )]
+	[MatchConfigDependsOn( nameof( RentInPrisonPercentage ), "100", Comparison = MatchConfigDependencyComparison.LessThan )]
+	public bool RentInPrisonLeftoverMoneyGoesToVacationCash { get; set; } = false;
+
+	[MatchConfigOption( "Board Rules", "Even Build", Description = "Requires houses to be built evenly across a color set.", CommandId = "even_build", Order = 46 )]
 	public bool EvenBuild { get; set; } = true;
 
-	[MatchConfigOption( "Board Rules", "Buffed Utilities", Description = "Utility rent uses the total spaces moved during the turn instead of only the dice roll.", CommandId = "buffed_utilities", Order = 46 )]
+	[MatchConfigOption( "Board Rules", "Buffed Utilities", Description = "Utility rent uses the total spaces moved during the turn instead of only the dice roll.", CommandId = "buffed_utilities", Order = 47 )]
 	public bool BuffedUtilities { get; set; } = false;
 
 	[MatchConfigOption( "Auctions", "Auction Initial Duration Seconds", Description = "Initial time available for bidding when an auction starts.", CommandId = "auction_initial_duration_seconds", Order = 60, Min = 1, Max = 300, Step = 1 )]

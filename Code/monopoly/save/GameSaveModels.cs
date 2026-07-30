@@ -107,11 +107,13 @@ public sealed class GameSaveSnapshot
 	public bool PendingForcedPaymentToEachPlayer { get; set; }
 	public int PendingForcedPaymentEachPlayerAmount { get; set; }
 	public int PendingForcedPaymentRentSpaceIndex { get; set; } = -1;
+	public int PendingForcedPaymentVacationCashAmount { get; set; }
 	public int ActiveMovementPlayerIndex { get; set; } = -1;
 	public int ActiveMovementRemainingSteps { get; set; }
 	public int ActiveMovementGoPassCount { get; set; }
 	public int ActiveMovementTargetSpaceIndex { get; set; } = -1;
 	public float ActiveMovementElapsedSeconds { get; set; }
+	public bool ActiveMovementShouldFinishInstantly { get; set; }
 	public int PendingLandingPlayerIndex { get; set; } = -1;
 	public int PendingLandingSpaceIndex { get; set; } = -1;
 	public int PendingLandingGoPassCount { get; set; }

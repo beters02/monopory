@@ -5,6 +5,8 @@
 @import "../components/buttons/CloseButton.razor.scss";
 @import "../components/options/OptionsPanel.razor.scss";
 @import "../components/overlays/TextPromptDialog.razor.scss";
+@import "../components/tooltips/Tooltip.razor.scss";
+@import "../components/tooltips/TooltipLayer.razor.scss";
 
 .lobby-panel .flow-actions {
 	flex-direction: column;

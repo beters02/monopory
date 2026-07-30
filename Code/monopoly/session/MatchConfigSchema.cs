@@ -18,6 +18,7 @@ public sealed class MatchConfigDependency
 {
 	public string OptionKey { get; init; }
 	public string ExpectedValue { get; init; }
+	public MatchConfigDependencyComparison Comparison { get; init; }
 }
 
 public sealed class MatchConfigOption
@@ -38,22 +39,26 @@ public sealed class MatchConfigOption
 	public object StandaloneValue { get; init; }
 	public MatchConfigOptionKind Kind { get; init; }
 	public Type ValueType { get; init; }
-	public Func<MatchConfig, object> Getter { get; init; }
-	public Action<MatchConfig, object> Setter { get; init; }
 	public string[] EnumNames { get; init; } = Array.Empty<string>();
+	public IReadOnlyDictionary<string, string> EnumDescriptions { get; init; } = new Dictionary<string, string>();
 	public IReadOnlyList<MatchConfigDependency> Dependencies { get; init; } = Array.Empty<MatchConfigDependency>();
 }
 
 public static class MatchConfigSchema
 {
 	private static IReadOnlyList<MatchConfigOption> options;
+	private static object optionsTypeIdentity;
 
 	public static IReadOnlyList<MatchConfigOption> Options
 	{
 		get
 		{
-			if ( options is null || options.Count == 0 )
-				options = BuildOptions();
+			var configType = Game.TypeLibrary.GetType<MatchConfig>();
+			if ( options is null || options.Count == 0 || !ReferenceEquals( optionsTypeIdentity, configType ) )
+			{
+				options = BuildOptions( configType );
+				optionsTypeIdentity = configType;
+			}
 
 			return options;
 		}
@@ -206,6 +211,7 @@ public static class MatchConfigSchema
 		if ( string.IsNullOrWhiteSpace( snapshot ) )
 			return config;
 
+		var rawValues = new Dictionary<string, string>( StringComparer.Ordinal );
 		var pairs = snapshot.Split( '|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries );
 		foreach ( var pair in pairs )
 		{
@@ -213,21 +219,55 @@ public static class MatchConfigSchema
 			if ( separatorIndex <= 0 || separatorIndex >= pair.Length - 1 )
 				continue;
 
-			var key = pair[..separatorIndex];
-			var rawValue = pair[(separatorIndex + 1)..];
-			var option = Options.FirstOrDefault( x => string.Equals( x.Key, key, StringComparison.Ordinal ) );
-			if ( option is null )
-				continue;
+			rawValues[pair[..separatorIndex]] = pair[(separatorIndex + 1)..];
+		}
 
-			if ( !TryParseValue( option, rawValue, out var parsedValue ) )
+		foreach ( var option in Options )
+		{
+			if ( !rawValues.TryGetValue( option.Key, out var rawValue ) ||
+				!TryParseValue( option, rawValue, out var parsedValue ) )
 				continue;
 
 			TrySetOptionValue( option, config, parsedValue );
 		}
 
+		if ( !rawValues.ContainsKey( nameof( MatchConfig.RentInPrisonPercentage ) ) &&
+			rawValues.TryGetValue( "DontCollectRentWhileInPrison", out var legacyNoRent ) &&
+			GameCommandManager.TryParseBool( legacyNoRent, out var noRentWhileInPrison ) )
+		{
+			config.RentInPrisonPercentage = noRentWhileInPrison ? 0 : 100;
+		}
+
+		if ( !rawValues.ContainsKey( nameof( MatchConfig.InstantMoveUnlockSeconds ) ) &&
+			rawValues.TryGetValue( "InstantMoveButtonUnlockMinutes", out var legacyUnlockMinutes ) &&
+			int.TryParse( legacyUnlockMinutes, NumberStyles.Integer, CultureInfo.InvariantCulture, out var unlockMinutes ) )
+		{
+			config.InstantMoveUnlockSeconds = Math.Clamp( unlockMinutes, 0, 240 ) * 60;
+		}
+
+		if ( !rawValues.ContainsKey( nameof( MatchConfig.InstantMoveBehavior ) ) &&
+			rawValues.TryGetValue( "InstantMoveAlways", out var legacyInstantMove ) &&
+			GameCommandManager.TryParseBool( legacyInstantMove, out var instantMoveAlways ) )
+		{
+			config.InstantMoveBehavior = instantMoveAlways
+				? InstantMoveBehavior.Forced
+				: config.InstantMoveUnlockSeconds > 0
+					? InstantMoveBehavior.AllowedAfterUnlock
+					: InstantMoveBehavior.Allowed;
+		}
+
 		return Normalize( config, 0 );
 	}
 
+	public static string GetEnumValueDescription( MatchConfigOption option, string value )
+	{
+		if ( option?.Kind != MatchConfigOptionKind.Enum || string.IsNullOrWhiteSpace( value ) )
+			return "";
+
+		return option.EnumDescriptions.TryGetValue( value, out var description )
+			? description ?? ""
+			: "";
+	}
 	public static string FormatValue( MatchConfigOption option, object value )
 	{
 		if ( option.Kind == MatchConfigOptionKind.Bool )
@@ -317,11 +357,20 @@ public static class MatchConfigSchema
 				if ( !IsOptionApplicable( dependencyOption, config, evaluationStack ) )
 					return false;
 
-				if ( !TryParseDependencyValue( dependencyOption, dependency.ExpectedValue, out var expectedValue ) )
-					return false;
-
 				var actualValue = GetOptionValueOrDefault( dependencyOption, config );
-				if ( !Equals( actualValue, expectedValue ) )
+				var matches = dependency.Comparison == MatchConfigDependencyComparison.OneOf
+					? dependency.ExpectedValue
+						.Split( '|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries )
+						.Any( rawValue => TryParseDependencyValue( dependencyOption, rawValue, out var expectedValue ) && Equals( actualValue, expectedValue ) )
+					: TryParseDependencyValue( dependencyOption, dependency.ExpectedValue, out var expectedValue ) &&
+						(dependency.Comparison switch
+						{
+							MatchConfigDependencyComparison.Equal => Equals( actualValue, expectedValue ),
+							MatchConfigDependencyComparison.LessThan => actualValue is int actualInt && expectedValue is int expectedInt && actualInt < expectedInt,
+							_ => false
+						});
+
+				if ( !matches )
 					return false;
 			}
 
@@ -333,9 +382,8 @@ public static class MatchConfigSchema
 		}
 	}
 
-	private static IReadOnlyList<MatchConfigOption> BuildOptions()
+	private static IReadOnlyList<MatchConfigOption> BuildOptions( TypeDescription configType )
 	{
-		var configType = Game.TypeLibrary.GetType<MatchConfig>();
 		if ( configType is null )
 			return Array.Empty<MatchConfigOption>();
 
@@ -384,17 +432,31 @@ public static class MatchConfigSchema
 			Kind = kind,
 			ValueType = propertyType,
 			EnumNames = propertyType.IsEnum ? Enum.GetNames( propertyType ) : Array.Empty<string>(),
+			EnumDescriptions = BuildEnumDescriptions( propertyType ),
 			Dependencies = property.Attributes
 				.OfType<MatchConfigDependsOnAttribute>()
 				.Select( dependency => new MatchConfigDependency
 				{
 					OptionKey = dependency.OptionKey,
-					ExpectedValue = dependency.ExpectedValue
+					ExpectedValue = dependency.ExpectedValue,
+					Comparison = dependency.Comparison
 				} )
-				.ToList(),
-			Getter = config => property.GetValue( config ),
-			Setter = ( config, value ) => property.SetValue( config, ConvertOptionValue( propertyType, value ) )
+				.ToList()
 		};
+	}
+
+	private static IReadOnlyDictionary<string, string> BuildEnumDescriptions( Type valueType )
+	{
+		if ( valueType?.IsEnum != true )
+			return new Dictionary<string, string>();
+
+		return Enum.GetNames( valueType ).ToDictionary(
+			name => name,
+			name => valueType.GetField( name )?
+				.GetCustomAttributes( typeof( MatchConfigEnumDescriptionAttribute ), false )
+				.OfType<MatchConfigEnumDescriptionAttribute>()
+				.FirstOrDefault()?.Description ?? "",
+			StringComparer.Ordinal );
 	}
 
 	private static void ValidateDependencies( IReadOnlyList<MatchConfigOption> builtOptions )
@@ -410,7 +472,13 @@ public static class MatchConfigSchema
 				if ( string.Equals( option.Key, dependency.OptionKey, StringComparison.Ordinal ) )
 					throw new InvalidOperationException( $"MatchConfig option '{option.Key}' cannot depend on itself." );
 
-				if ( !TryParseDependencyValue( dependencyOption, dependency.ExpectedValue, out _ ) )
+				if ( dependency.Comparison == MatchConfigDependencyComparison.LessThan && dependencyOption.Kind != MatchConfigOptionKind.Int )
+					throw new InvalidOperationException( $"MatchConfig option '{option.Key}' uses a less-than dependency on non-integer option '{dependency.OptionKey}'." );
+
+				var expectedValues = dependency.Comparison == MatchConfigDependencyComparison.OneOf
+					? dependency.ExpectedValue.Split( '|', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries )
+					: new[] { dependency.ExpectedValue };
+				if ( expectedValues.Length == 0 || expectedValues.Any( rawValue => !TryParseDependencyValue( dependencyOption, rawValue, out _ ) ) )
 					throw new InvalidOperationException( $"MatchConfig option '{option.Key}' has invalid dependency value '{dependency.ExpectedValue}' for '{dependency.OptionKey}'." );
 			}
 		}
@@ -494,13 +562,13 @@ public static class MatchConfigSchema
 	private static bool TryGetOptionValue( MatchConfigOption option, MatchConfig config, out object value )
 	{
 		value = null;
-
-		if ( option?.Getter is null || config is null )
+		var property = FindCurrentProperty( option );
+		if ( property is null || config is null )
 			return false;
 
 		try
 		{
-			value = option.Getter( config );
+			value = property.GetValue( config );
 			return true;
 		}
 		catch ( Exception ex )
@@ -512,12 +580,13 @@ public static class MatchConfigSchema
 
 	private static bool TrySetOptionValue( MatchConfigOption option, MatchConfig config, object value )
 	{
-		if ( option?.Setter is null || config is null )
+		var property = FindCurrentProperty( option );
+		if ( property is null || config is null )
 			return false;
 
 		try
 		{
-			option.Setter( config, value );
+			property.SetValue( config, ConvertOptionValue( property.PropertyType, value ) );
 			return true;
 		}
 		catch ( Exception ex )
@@ -525,6 +594,16 @@ public static class MatchConfigSchema
 			Log.Error( $"Failed to write MatchConfig option '{option.Key}': {ex.Message}" );
 			return false;
 		}
+	}
+
+	private static PropertyDescription FindCurrentProperty( MatchConfigOption option )
+	{
+		if ( option is null || string.IsNullOrWhiteSpace( option.Key ) )
+			return null;
+
+		return Game.TypeLibrary.GetType<MatchConfig>()?.Members
+			.OfType<PropertyDescription>()
+			.FirstOrDefault( property => string.Equals( property.Name, option.Key, StringComparison.Ordinal ) );
 	}
 
 	private static object GetOptionValueOrDefault( MatchConfigOption option, MatchConfig config )

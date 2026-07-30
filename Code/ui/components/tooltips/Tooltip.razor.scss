@@ -1,0 +1,13 @@
+@import "../../styles/GameTheme.scss";
+
+.tooltip-target {
+	position: relative;
+	pointer-events: all;
+}
+
+.tooltip-target.dropdown-item-tooltip {
+	width: 100%;
+	min-width: 0;
+	flex-shrink: 0;
+	align-items: center;
+}

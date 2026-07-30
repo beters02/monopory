@@ -1,6 +1,8 @@
 @using Sandbox;
 @using Sandbox.UI;
 @using System;
+@using System.Collections.Generic;
+@using System.Linq;
 @inherits Panel
 
 <root class="@RootClasses" onmouseup="@EndInteractions" onmouseleave="@HandleRootMouseLeave">
@@ -32,6 +34,9 @@
 	private bool HoldDown;
 	private float NextHoldTickAt;
 	private bool IsInteracting => Dragging || HoldUp || HoldDown;
+	private float LastScrollSizeY = -1f;
+	private float LastObservedOffsetY;
+	private readonly List<(string Key, float Top)> AnchorCandidates = new();
 
 	private string RootClasses
 	{
@@ -65,11 +70,75 @@
 			return;
 		}
 
+		var previousScrollSizeY = LastScrollSizeY;
+		var currentScrollSizeY = Math.Max( 0f, Target.ScrollSize.y );
+		var currentOffsetY = Target.ScrollOffset.y;
+		var contentChanged = previousScrollSizeY >= 0f &&
+			MathF.Abs( currentScrollSizeY - previousScrollSizeY ) > 0.5f;
+		var externallyScrolled = MathF.Abs( currentOffsetY - LastObservedOffsetY ) > 0.5f;
+
 		ViewportHeight = Math.Max( 1f, Target.Box.RectInner.Height );
-		MaxOffsetY = Math.Max( 0f, Target.ScrollSize.y );
-		OffsetY = Target.ScrollOffset.y;
+		MaxOffsetY = currentScrollSizeY;
+		OffsetY = currentOffsetY;
 		HasOverflow = MaxOffsetY > 0.5f;
+
+		if ( contentChanged && !IsInteracting && !externallyScrolled )
+			RestoreVisibleAnchor();
+
+		CaptureVisibleAnchors();
+		LastScrollSizeY = currentScrollSizeY;
+		LastObservedOffsetY = Target.ScrollOffset.y;
 		StateHasChanged();
+	}
+
+	private void RestoreVisibleAnchor()
+	{
+		if ( Target is null || AnchorCandidates.Count == 0 )
+			return;
+
+		var rows = EnumerateRows( Target )
+			.Where( row => !string.IsNullOrWhiteSpace( row.AnchorKey ) )
+			.ToDictionary( row => row.AnchorKey, StringComparer.Ordinal );
+
+		foreach ( var candidate in AnchorCandidates )
+		{
+			if ( !rows.TryGetValue( candidate.Key, out var row ) )
+				continue;
+
+			var delta = row.Box.Rect.Top - candidate.Top;
+			var nextY = Math.Clamp( Target.ScrollOffset.y + delta, 0f, MaxOffsetY );
+			Target.ScrollOffset = new Vector2( 0f, nextY );
+			OffsetY = nextY;
+			return;
+		}
+	}
+
+	private void CaptureVisibleAnchors()
+	{
+		AnchorCandidates.Clear();
+		if ( Target is null || IsInteracting )
+			return;
+
+		var viewport = Target.Box.RectInner;
+		foreach ( var row in EnumerateRows( Target )
+			.Where( row => !string.IsNullOrWhiteSpace( row.AnchorKey ) )
+			.Where( row => row.Box.Rect.Bottom >= viewport.Top )
+			.OrderBy( row => row.Box.Rect.Top ) )
+		{
+			AnchorCandidates.Add( (row.AnchorKey, row.Box.Rect.Top) );
+		}
+	}
+
+	private static IEnumerable<OptionsPanelRow> EnumerateRows( Panel panel )
+	{
+		foreach ( var child in panel.Children )
+		{
+			if ( child is OptionsPanelRow row )
+				yield return row;
+
+			foreach ( var descendant in EnumerateRows( child ) )
+				yield return descendant;
+		}
 	}
 
 	private void ScrollUp()

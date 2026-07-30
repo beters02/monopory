@@ -9,7 +9,7 @@
 <root class="match-settings-page match-settings-board-configuration-page">
 	<div class="@RootClasses">
 		<div class="options-panel-section-title">Board Layout</div>
-		<OptionsPanelRow Title="Board Layout" Value="@SelectedBoardDisplayName">
+		<OptionsPanelRow AnchorKey="board-layout" Title="Board Layout" Value="@SelectedBoardDisplayName">
 			<ChildContent>
 				<DropdownButton
 					Value="@SelectedBoardId"
@@ -24,7 +24,7 @@
 		<div class="board-space-name-list">
 			@foreach ( var space in BoardConfigSpaces )
 			{
-				<OptionsPanelRow Title="@GetBoardSpaceTitle( space )" Value="@GetBoardSpaceDescription( space )">
+				<OptionsPanelRow AnchorKey="@($"board-space:{space.Index}")" Title="@GetBoardSpaceTitle( space )" Value="@GetBoardSpaceDescription( space )">
 					<ChildContent>
 						@if ( CanEdit )
 						{

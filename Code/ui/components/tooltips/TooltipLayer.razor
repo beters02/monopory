@@ -1,0 +1,91 @@
+@namespace Sandbox.ui.components
+@using Sandbox;
+@using Sandbox.UI;
+@using System;
+@inherits Panel
+
+<root class="tooltip-layer">
+	@if ( Request is not null )
+	{
+		<div class="tooltip-card" style="@TooltipStyle" @ref="TooltipPanel">
+			@if ( !string.IsNullOrWhiteSpace( Request.Title ) )
+			{
+				<div class="tooltip-title">@Request.Title</div>
+			}
+			@if ( !string.IsNullOrWhiteSpace( Request.Message ) )
+			{
+				<div class="tooltip-message">@Request.Message</div>
+			}
+		</div>
+	}
+</root>
+
+@code
+{
+	private const float CursorOffset = 12f;
+	private const float ViewportPadding = 8f;
+
+	private Panel TooltipPanel = null!;
+	private int SeenRevision = -1;
+
+	private TooltipRequest Request => TooltipService.Active;
+
+	private string TooltipStyle
+	{
+		get
+		{
+			if ( Request is null )
+				return "";
+
+			var inverseScale = 1f / Math.Max( ScaleToScreen, 0.001f );
+			var position = Request.ScreenPosition * inverseScale;
+			var viewportWidth = Math.Max( Box.RectInner.Width, 1f );
+			var viewportHeight = Math.Max( Box.RectInner.Height, 1f );
+			var tooltipWidth = Math.Max( TooltipPanel?.Box.Rect.Width ?? 0f, 280f );
+			var tooltipHeight = Math.Max( TooltipPanel?.Box.Rect.Height ?? 0f, 60f );
+			var left = Math.Clamp(
+				position.x + CursorOffset,
+				ViewportPadding,
+				Math.Max( ViewportPadding, viewportWidth - tooltipWidth - ViewportPadding )
+			);
+			var top = Math.Clamp(
+				position.y + CursorOffset,
+				ViewportPadding,
+				Math.Max( ViewportPadding, viewportHeight - tooltipHeight - ViewportPadding )
+			);
+
+			return $"left: {left:0.###}px; top: {top:0.###}px;";
+		}
+	}
+
+	public override void Tick()
+	{
+		base.Tick();
+
+		if ( Request is not null &&
+			Time.Now - TooltipService.ActivatedAt > 0.1f &&
+			(Input.EscapePressed ||
+				Input.Pressed( "Attack1" ) ||
+				Input.Pressed( "Attack2" )) )
+		{
+			TooltipService.Dismiss();
+		}
+
+		if ( SeenRevision != TooltipService.Revision )
+		{
+			SeenRevision = TooltipService.Revision;
+			StateHasChanged();
+		}
+	}
+
+	protected override int BuildHash()
+	{
+		var hash = new HashCode();
+		hash.Add( TooltipService.Revision );
+		hash.Add( Request?.Key ?? "" );
+		hash.Add( Request?.Title ?? "" );
+		hash.Add( Request?.Message ?? "" );
+		hash.Add( TooltipStyle );
+		return hash.ToHashCode();
+	}
+}

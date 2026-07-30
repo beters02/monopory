@@ -172,11 +172,13 @@ public sealed partial class GameController : Component, Component.INetworkListen
 	[Sync] public bool PendingForcedPaymentToEachPlayer { get; set; }
 	[Sync] public int PendingForcedPaymentEachPlayerAmount { get; set; }
 	[Sync] public int PendingForcedPaymentRentSpaceIndex { get; set; } = -1;
+	[Sync] public int PendingForcedPaymentVacationCashAmount { get; set; }
 	[Sync] public int ActiveMovementPlayerIndex { get; set; } = -1;
 	[Sync] public int ActiveMovementRemainingSteps { get; set; }
 	[Sync] public int ActiveMovementGoPassCount { get; set; }
 	[Sync] public int ActiveMovementTargetSpaceIndex { get; set; } = -1;
 	[Sync] public float ActiveMovementLastProgressAt { get; set; }
+	[Sync] public bool ActiveMovementShouldFinishInstantly { get; set; }
 	[Sync] public int PendingLandingPlayerIndex { get; set; } = -1;
 	[Sync] public int PendingLandingSpaceIndex { get; set; } = -1;
 	[Sync] public int PendingLandingGoPassCount { get; set; }

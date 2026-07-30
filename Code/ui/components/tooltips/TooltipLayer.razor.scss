@@ -1,0 +1,46 @@
+@import "../../styles/GameTheme.scss";
+
+.tooltip-layer {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	z-index: 2000;
+	pointer-events: none;
+	overflow: hidden;
+}
+
+.tooltip-card {
+	position: absolute;
+	width: 280px;
+	max-width: 360px;
+	padding: 10px 12px;
+	gap: 4px;
+	flex-direction: column;
+
+	background-color: rgba( 12, 22, 30, 0.98 );
+	border: 1px solid $monopoly-gold-glow;
+	border-radius: $monopoly-radius-control;
+	box-shadow: $monopoly-panel-shadow-strong;
+
+	color: $monopoly-text;
+	font-family: $monopoly-font-family;
+	pointer-events: none;
+}
+
+.tooltip-title {
+	color: $monopoly-gold;
+	font-size: 13px;
+	font-weight: 900;
+	line-height: 16px;
+	text-transform: uppercase;
+}
+
+.tooltip-message {
+	color: $monopoly-text;
+	font-size: 12px;
+	font-weight: 700;
+	line-height: 16px;
+	white-space: normal;
+}

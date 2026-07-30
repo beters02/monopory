@@ -131,6 +131,11 @@
 	margin-right: 18px;
 }
 
+.dropdown-menu.scrollable .tooltip-target.dropdown-item-tooltip {
+	width: calc(100% - 6px);
+	margin-right: 6px;
+}
+
 .dropdown-dismiss-layer {
 	position: absolute;
 	left: -4096px;
@@ -168,6 +173,10 @@
 	flex-shrink: 0;
 	pointer-events: all;
 	z-index: 1004;
+}
+
+.tooltip-target.dropdown-item-tooltip .monopoly-button.dropdown-item {
+	width: 95%;
 }
 
 .dropdown-item-label {

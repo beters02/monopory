@@ -6,7 +6,7 @@ using Sandbox;
 public sealed partial class GameController : Component
 {
 
-	private bool TryMakeForcedPayment( PlayerState player, int amount, int receiverIndex, bool toBank, bool showForcedPaymentPopup = true, bool addToFreeParking = false, int rentSpaceIndex = -1 )
+	private bool TryMakeForcedPayment( PlayerState player, int amount, int receiverIndex, bool toBank, bool showForcedPaymentPopup = true, bool addToFreeParking = false, int rentSpaceIndex = -1, int vacationCashAmount = 0 )
 	{
 		if ( player is null || amount <= 0 )
 			return true;
@@ -18,32 +18,36 @@ public sealed partial class GameController : Component
 		if ( playerIndex < 0 )
 			return false;
 
+		vacationCashAmount = Math.Clamp( vacationCashAmount, 0, amount );
 		if ( HasPendingForcedPayment )
 			return TrySettlePendingForcedPayment();
 
 		if ( player.Money >= amount )
 		{
-			CompleteForcedPayment( playerIndex, amount, receiverIndex, toBank, showForcedPaymentPopup, addToFreeParking, rentSpaceIndex );
+			CompleteForcedPayment( playerIndex, amount, receiverIndex, toBank, showForcedPaymentPopup, addToFreeParking, rentSpaceIndex, vacationCashAmount );
 			return true;
 		}
 
 		var totalAssets = GetPlayerLiquidAssetTotal( playerIndex );
 		if ( totalAssets < amount )
 		{
-			BankruptPlayer( playerIndex, Players.ElementAtOrDefault( receiverIndex ), true, amount );
+			var creditorAmount = Math.Max( amount - vacationCashAmount, 0 );
+			var creditor = creditorAmount > 0 ? Players.ElementAtOrDefault( receiverIndex ) : null;
+			BankruptPlayer( playerIndex, creditor, true, creditorAmount );
 			return false;
 		}
 
-		BeginPendingForcedPayment( playerIndex, amount, receiverIndex, toBank, addToFreeParking, rentSpaceIndex );
+		BeginPendingForcedPayment( playerIndex, amount, receiverIndex, toBank, addToFreeParking, rentSpaceIndex, vacationCashAmount );
 		return false;
 	}
 
-	private void CompleteForcedPayment( int playerIndex, int amount, int receiverIndex, bool toBank, bool showForcedPaymentPopup = true, bool addToFreeParking = false, int rentSpaceIndex = -1 )
+	private void CompleteForcedPayment( int playerIndex, int amount, int receiverIndex, bool toBank, bool showForcedPaymentPopup = true, bool addToFreeParking = false, int rentSpaceIndex = -1, int vacationCashAmount = 0 )
 	{
 		var player = Players.ElementAtOrDefault( playerIndex );
 		if ( player is null || amount <= 0 )
 			return;
 
+		vacationCashAmount = Math.Clamp( vacationCashAmount, 0, amount );
 		player.Money -= amount;
 
 		if ( toBank )
@@ -56,15 +60,20 @@ public sealed partial class GameController : Component
 			return;
 		}
 
+		var receiverAmount = Math.Max( amount - vacationCashAmount, 0 );
 		var receiver = Players.ElementAtOrDefault( receiverIndex );
-		if ( receiver is not null )
+		if ( receiver is not null && receiverAmount > 0 )
 		{
-			receiver.Money += amount;
-			RecordPropertyRentPaymentForStats( playerIndex, receiverIndex, rentSpaceIndex, amount );
-			ShowMoneyReceivedPopup( receiver, amount, player.PlayerName );
+			receiver.Money += receiverAmount;
+			ShowMoneyReceivedPopup( receiver, receiverAmount, player.PlayerName );
 			if ( showForcedPaymentPopup )
-				ShowForcedPaymentPopupToPlayers( player, receiver, amount );
+				ShowForcedPaymentPopupToPlayers( player, receiver, receiverAmount );
 		}
+
+		RecordPropertyRentPaymentForStats( playerIndex, receiverIndex, rentSpaceIndex, amount, receiverAmount );
+
+		if ( vacationCashAmount > 0 )
+			AddToVacationCashBank( vacationCashAmount );
 	}
 
 	private void CompleteForcedPaymentToEachPlayer( int playerIndex, int amountPerPlayer )
@@ -94,7 +103,7 @@ public sealed partial class GameController : Component
 		Log.Info( $"{player.PlayerName} paid ${amountPerPlayer} to each player." );
 	}
 
-	private void BeginPendingForcedPayment( int playerIndex, int amount, int receiverIndex, bool toBank, bool addToFreeParking, int rentSpaceIndex = -1 )
+	private void BeginPendingForcedPayment( int playerIndex, int amount, int receiverIndex, bool toBank, bool addToFreeParking, int rentSpaceIndex = -1, int vacationCashAmount = 0 )
 	{
 		PendingForcedPaymentPlayerIndex = playerIndex;
 		PendingForcedPaymentAmount = amount;
@@ -104,6 +113,7 @@ public sealed partial class GameController : Component
 		PendingForcedPaymentToEachPlayer = false;
 		PendingForcedPaymentEachPlayerAmount = 0;
 		PendingForcedPaymentRentSpaceIndex = rentSpaceIndex;
+		PendingForcedPaymentVacationCashAmount = Math.Clamp( vacationCashAmount, 0, amount );
 
 		var player = Players.ElementAtOrDefault( playerIndex );
 		if ( player is not null )
@@ -129,6 +139,7 @@ public sealed partial class GameController : Component
 		PendingForcedPaymentToEachPlayer = true;
 		PendingForcedPaymentEachPlayerAmount = amountPerPlayer;
 		PendingForcedPaymentRentSpaceIndex = -1;
+		PendingForcedPaymentVacationCashAmount = 0;
 
 		var player = Players.ElementAtOrDefault( playerIndex );
 		if ( player is not null )
@@ -169,11 +180,12 @@ public sealed partial class GameController : Component
 		var toEachPlayer = PendingForcedPaymentToEachPlayer;
 		var eachPlayerAmount = PendingForcedPaymentEachPlayerAmount;
 		var rentSpaceIndex = PendingForcedPaymentRentSpaceIndex;
+		var vacationCashAmount = PendingForcedPaymentVacationCashAmount;
 
 		if ( toEachPlayer )
 			CompleteForcedPaymentToEachPlayer( PendingForcedPaymentPlayerIndex, eachPlayerAmount );
 		else
-			CompleteForcedPayment( PendingForcedPaymentPlayerIndex, amount, receiverIndex, toBank, true, addToFreeParking, rentSpaceIndex );
+			CompleteForcedPayment( PendingForcedPaymentPlayerIndex, amount, receiverIndex, toBank, true, addToFreeParking, rentSpaceIndex, vacationCashAmount );
 
 		ClearPendingForcedPayment();
 
@@ -195,5 +207,6 @@ public sealed partial class GameController : Component
 		PendingForcedPaymentToEachPlayer = false;
 		PendingForcedPaymentEachPlayerAmount = 0;
 		PendingForcedPaymentRentSpaceIndex = -1;
+		PendingForcedPaymentVacationCashAmount = 0;
 	}
 }

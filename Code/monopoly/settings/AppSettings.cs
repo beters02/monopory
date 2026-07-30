@@ -13,13 +13,33 @@ public enum FullscreenMode
 	Windowed
 }
 
+public enum FrameRateLimit
+{
+	Unlimited = 0,
+	Fps30 = 30,
+	Fps60 = 60,
+	Fps90 = 90,
+	Fps120 = 120,
+	Fps144 = 144,
+	Fps165 = 165,
+	Fps240 = 240
+}
+
 public class AppSettingsData
 {
+	public int SchemaVersion { get; set; }
 	public FullscreenMode FullscreenMode { get; set; } = FullscreenMode.FullscreenExclusive;
 	public bool VSync { get; set; } = false;
 	public UpscalerMode UpscalerMode { get; set; } = UpscalerMode.Off;
 	public Fsr3UpscalerQuality Fsr3Quality { get; set; } = Fsr3UpscalerQuality.Performance;
 	public float MotionBlurScale { get; set; } = 0f;
+	public TextureQuality TextureQuality { get; set; } = TextureQuality.High;
+	public ShadowQuality ShadowQuality { get; set; } = ShadowQuality.High;
+	public PostProcessQuality PostProcessQuality { get; set; } = PostProcessQuality.High;
+	public MultisampleAmount AntiAliasQuality { get; set; } = MultisampleAmount.MultisampleScreen;
+	public FrameRateLimit FrameRateLimit { get; set; } = FrameRateLimit.Unlimited;
+	public bool VolumetricFogEnabled { get; set; } = true;
+	public VolumetricFogQuality VolumetricFogQuality { get; set; } = VolumetricFogQuality.High;
 	public int Volume { get; set; } = 100;
 	public int MusicVolume { get; set; } = 30;
 	public string SelectedPieceId { get; set; } = PieceCatalog.DefaultPieceId;
@@ -38,25 +58,45 @@ public class AppSettingsKeybind
 public class AppSettings : Component
 {
 	private const string FileName = "AppSettings.json";
+	private const int CurrentSchemaVersion = 2;
 	private const string LegacyClearAllPopupsAction = "ClearAllPopups";
 	private const string LegacyClearAllPopupsKey = "C";
 	private const string ClearAllPopupsDefaultKey = "X";
 
 	public static AppSettingsData Data { get; private set; } = new();
+	private static AppSettings instance;
+	private static readonly Dictionary<VolumetricFogVolume, bool> fogVolumeEnabledStates = new();
 
 	public static RenderSettings Settings => Application.RenderSettings;
 	public static bool SettingsAvailable => Settings is not null;
 
 	protected override void OnStart()
 	{
+		instance = this;
 		Load();
 		Apply();
+	}
+
+	protected override void OnUpdate()
+	{
+		if ( !Data.VolumetricFogEnabled )
+			ApplyVolumetricFogEnabled();
+	}
+
+	protected override void OnDestroy()
+	{
+		if ( ReferenceEquals( instance, this ) )
+			instance = null;
+
+		base.OnDestroy();
 	}
 
 	public static void Load()
 	{
 		if ( FileSystem.Data.FileExists( FileName ) )
 			Data = FileSystem.Data.ReadJson<AppSettingsData>( FileName ) ?? new AppSettingsData();
+
+		MigrateVideoSettings();
 
 		MigrateSavedKeybinds();
 		Save();
@@ -92,6 +132,13 @@ public class AppSettings : Component
 			&& Data.UpscalerMode == snapshot.UpscalerMode
 			&& Data.Fsr3Quality == snapshot.Fsr3Quality
 			&& MathF.Abs( Data.MotionBlurScale - snapshot.MotionBlurScale ) < 0.001f
+			&& Data.TextureQuality == snapshot.TextureQuality
+			&& Data.ShadowQuality == snapshot.ShadowQuality
+			&& Data.PostProcessQuality == snapshot.PostProcessQuality
+			&& Data.AntiAliasQuality == snapshot.AntiAliasQuality
+			&& Data.FrameRateLimit == snapshot.FrameRateLimit
+			&& Data.VolumetricFogEnabled == snapshot.VolumetricFogEnabled
+			&& Data.VolumetricFogQuality == snapshot.VolumetricFogQuality
 			&& Data.Volume == snapshot.Volume
 			&& Data.MusicVolume == snapshot.MusicVolume
 			&& string.Equals( GetDefaultGameRulePresetId(), NormalizeGameRulePresetId( snapshot.DefaultGameRulePresetId ), StringComparison.Ordinal )
@@ -105,11 +152,19 @@ public class AppSettings : Component
 
 		return new AppSettingsData
 		{
+			SchemaVersion = source.SchemaVersion,
 			FullscreenMode = source.FullscreenMode,
 			VSync = source.VSync,
 			UpscalerMode = source.UpscalerMode,
 			Fsr3Quality = source.Fsr3Quality,
 			MotionBlurScale = source.MotionBlurScale,
+			TextureQuality = source.TextureQuality,
+			ShadowQuality = source.ShadowQuality,
+			PostProcessQuality = source.PostProcessQuality,
+			AntiAliasQuality = source.AntiAliasQuality,
+			FrameRateLimit = source.FrameRateLimit,
+			VolumetricFogEnabled = source.VolumetricFogEnabled,
+			VolumetricFogQuality = source.VolumetricFogQuality,
 			Volume = source.Volume,
 			MusicVolume = source.MusicVolume,
 			SelectedPieceId = PieceCatalog.GetByIdOrDefault( source.SelectedPieceId ).Id,
@@ -124,6 +179,7 @@ public class AppSettings : Component
 	{
 		ApplyAudio();
 		ApplyKeybinds();
+		ApplyVolumetricFogEnabled();
 
 		if (Settings is null)
 			return;
@@ -141,6 +197,12 @@ public class AppSettings : Component
 		Settings.MotionBlurScale = Data.MotionBlurScale;
 		Settings.UpscalerMode = Data.UpscalerMode;
 		Settings.Fsr3UpscalerQuality = Data.Fsr3Quality;
+		Settings.TextureQuality = Data.TextureQuality;
+		Settings.ShadowQuality = Data.ShadowQuality;
+		Settings.PostProcessQuality = Data.PostProcessQuality;
+		Settings.AntiAliasQuality = Data.AntiAliasQuality;
+		Settings.MaxFrameRate = (int)Data.FrameRateLimit;
+		Settings.VolumetricFogQuality = Data.VolumetricFogQuality;
 
 		Settings.Fullscreen = Data.FullscreenMode != FullscreenMode.Windowed && Data.FullscreenMode != FullscreenMode.FullscreenBorderless;
 		Settings.Borderless = Data.FullscreenMode == FullscreenMode.FullscreenBorderless;
@@ -167,6 +229,13 @@ public class AppSettings : Component
 	public static bool GetMotionBlurEnabled() => Data.MotionBlurScale == 0f ? false : true;
 	public static Fsr3UpscalerQuality GetFsr3Quality() => Data.Fsr3Quality;
 	public static UpscalerMode GetUpscaler() => Data.UpscalerMode; 
+	public static TextureQuality GetTextureQuality() => Data.TextureQuality;
+	public static ShadowQuality GetShadowQuality() => Data.ShadowQuality;
+	public static PostProcessQuality GetPostProcessQuality() => Data.PostProcessQuality;
+	public static MultisampleAmount GetAntiAliasQuality() => Data.AntiAliasQuality;
+	public static FrameRateLimit GetFrameRateLimit() => Data.FrameRateLimit;
+	public static bool GetVolumetricFogEnabled() => Data.VolumetricFogEnabled;
+	public static VolumetricFogQuality GetVolumetricFogQuality() => Data.VolumetricFogQuality;
 	public static int GetVolume() => Math.Clamp( Data.Volume, 0, 100 );
 	public static int GetMusicVolume() => Math.Clamp( Data.MusicVolume, 0, 100 );
 	public static string GetSelectedPieceId() => PieceCatalog.GetByIdOrDefault( Data.SelectedPieceId ).Id;
@@ -234,6 +303,14 @@ public class AppSettings : Component
 		Data.UpscalerMode = mode;
 		return true;
 	}
+
+	public static bool TrySetTextureQuality( TextureQuality value ) { Data.TextureQuality = value; return true; }
+	public static bool TrySetShadowQuality( ShadowQuality value ) { Data.ShadowQuality = value; return true; }
+	public static bool TrySetPostProcessQuality( PostProcessQuality value ) { Data.PostProcessQuality = value; return true; }
+	public static bool TrySetAntiAliasQuality( MultisampleAmount value ) { Data.AntiAliasQuality = value; return true; }
+	public static bool TrySetFrameRateLimit( FrameRateLimit value ) { Data.FrameRateLimit = value; return true; }
+	public static bool TrySetVolumetricFogEnabled( bool value ) { Data.VolumetricFogEnabled = value; return true; }
+	public static bool TrySetVolumetricFogQuality( VolumetricFogQuality value ) { Data.VolumetricFogQuality = value; return true; }
 
 	public static bool TrySetVolume( int volume )
 	{
@@ -368,6 +445,56 @@ public class AppSettings : Component
 		}
 
 		gameInstance.SaveBinds();
+	}
+
+	private static void MigrateVideoSettings()
+	{
+		if ( Data.SchemaVersion >= CurrentSchemaVersion )
+			return;
+
+		if ( Settings is not null )
+		{
+			Data.TextureQuality = Settings.TextureQuality;
+			Data.ShadowQuality = Settings.ShadowQuality;
+			Data.PostProcessQuality = Settings.PostProcessQuality;
+			Data.AntiAliasQuality = Settings.AntiAliasQuality;
+			Data.FrameRateLimit = Enum.IsDefined( typeof( FrameRateLimit ), Settings.MaxFrameRate )
+				? (FrameRateLimit)Settings.MaxFrameRate
+				: FrameRateLimit.Unlimited;
+			Data.VolumetricFogQuality = Settings.VolumetricFogQuality;
+			Data.SchemaVersion = CurrentSchemaVersion;
+		}
+
+	}
+
+	private static void ApplyVolumetricFogEnabled()
+	{
+		var scene = instance?.Scene;
+		if ( scene is null )
+			return;
+
+		if ( Data.VolumetricFogEnabled )
+		{
+			foreach ( var pair in fogVolumeEnabledStates.ToList() )
+			{
+				if ( pair.Key is not null )
+					pair.Key.Enabled = pair.Value;
+			}
+
+			fogVolumeEnabledStates.Clear();
+			return;
+		}
+
+		foreach ( var volume in scene.GetAllComponents<VolumetricFogVolume>() )
+		{
+			if ( volume is null )
+				continue;
+
+			if ( !fogVolumeEnabledStates.ContainsKey( volume ) )
+				fogVolumeEnabledStates[volume] = volume.Enabled;
+
+			volume.Enabled = false;
+		}
 	}
 
 	private static void MigrateSavedKeybinds()

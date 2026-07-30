@@ -311,11 +311,13 @@ public sealed partial class GameController : Component
 			PendingForcedPaymentToEachPlayer = PendingForcedPaymentToEachPlayer,
 			PendingForcedPaymentEachPlayerAmount = PendingForcedPaymentEachPlayerAmount,
 			PendingForcedPaymentRentSpaceIndex = PendingForcedPaymentRentSpaceIndex,
+			PendingForcedPaymentVacationCashAmount = PendingForcedPaymentVacationCashAmount,
 			ActiveMovementPlayerIndex = ActiveMovementPlayerIndex,
 			ActiveMovementRemainingSteps = ActiveMovementRemainingSteps,
 			ActiveMovementGoPassCount = ActiveMovementGoPassCount,
 			ActiveMovementTargetSpaceIndex = ActiveMovementTargetSpaceIndex,
 			ActiveMovementElapsedSeconds = ActiveMovementLastProgressAt <= 0f ? 0f : Math.Max( 0f, now - ActiveMovementLastProgressAt ),
+			ActiveMovementShouldFinishInstantly = ActiveMovementShouldFinishInstantly,
 			PendingLandingPlayerIndex = PendingLandingPlayerIndex,
 			PendingLandingSpaceIndex = PendingLandingSpaceIndex,
 			PendingLandingGoPassCount = PendingLandingGoPassCount,
@@ -428,11 +430,13 @@ public sealed partial class GameController : Component
 		PendingForcedPaymentToEachPlayer = snapshot.PendingForcedPaymentToEachPlayer;
 		PendingForcedPaymentEachPlayerAmount = snapshot.PendingForcedPaymentEachPlayerAmount;
 		PendingForcedPaymentRentSpaceIndex = snapshot.PendingForcedPaymentRentSpaceIndex;
+		PendingForcedPaymentVacationCashAmount = snapshot.PendingForcedPaymentVacationCashAmount;
 		ActiveMovementPlayerIndex = snapshot.ActiveMovementPlayerIndex;
 		ActiveMovementRemainingSteps = snapshot.ActiveMovementRemainingSteps;
 		ActiveMovementGoPassCount = snapshot.ActiveMovementGoPassCount;
 		ActiveMovementTargetSpaceIndex = snapshot.ActiveMovementTargetSpaceIndex;
 		ActiveMovementLastProgressAt = snapshot.ActiveMovementElapsedSeconds <= 0f ? 0f : now - snapshot.ActiveMovementElapsedSeconds;
+		ActiveMovementShouldFinishInstantly = snapshot.ActiveMovementShouldFinishInstantly;
 		PendingLandingPlayerIndex = snapshot.PendingLandingPlayerIndex;
 		PendingLandingSpaceIndex = snapshot.PendingLandingSpaceIndex;
 		PendingLandingGoPassCount = snapshot.PendingLandingGoPassCount;
@@ -645,6 +649,8 @@ public sealed partial class GameController : Component
 			string.Join( ",", PlayerFinishPlacements.OrderBy( entry => entry.Key ).Select( entry => $"{entry.Key}:{entry.Value}" ) ),
 			string.Join( ",", PlayerTimeLastedSeconds.OrderBy( entry => entry.Key ).Select( entry => $"{entry.Key}:{entry.Value}" ) ),
 			PendingForcedPaymentRentSpaceIndex,
+			PendingForcedPaymentVacationCashAmount,
+			ActiveMovementShouldFinishInstantly,
 			FreeParkingBank,
 			NextTradeId,
 			WinnerPlayerIndex );

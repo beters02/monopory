@@ -8,6 +8,7 @@
 
 <root class="monopoly-flow-ui">
 	<ButtonPopLayer></ButtonPopLayer>
+	<TooltipLayer></TooltipLayer>
 	<PopupStack Popups="@PopupList" OnDismiss="@DismissPopup" OnConfirmDecision="@HandleConfirmationDecision"></PopupStack>
 	<div class="@LobbyScreenClasses">
 		<OptionsMenu IsOpen="@IsOptionsMenuOpen" OnClose="@CloseOptionsMenu"></OptionsMenu>
@@ -347,10 +348,23 @@
 				<div class="lobby-list">
 					@foreach ( var player in Players )
 					{
+						var profile = GetPlayerSteamProfile( player );
 						<div class="@GetPlayerClasses( player )">
-							<div>
-								<div class="lobby-player-name">@player.Name</div>
-								<div class="lobby-player-detail">@GetPlayerDetail( player )</div>
+							<div class="lobby-player-main">
+								<div class="lobby-player-avatar">
+									@if ( profile?.AvatarTexture is not null )
+									{
+										<Image class="lobby-player-avatar-image" Texture="@profile.AvatarTexture"></Image>
+									}
+									else
+									{
+										<div class="lobby-player-avatar-initials">@GetPlayerInitials( player.Name )</div>
+									}
+								</div>
+								<div class="lobby-player-copy">
+									<div class="lobby-player-name">@player.Name</div>
+									<div class="lobby-player-detail">@GetPlayerDetail( player )</div>
+								</div>
 							</div>
 							<div class="lobby-player-side-actions">
 								@if ( CanManageLobbyPlayer( player ) )
@@ -697,6 +711,7 @@
 		hash.Add( AppSettings.GetUpscaler() );
 		hash.Add( AppSettings.GetFsr3Quality() );
 		hash.Add( GetPopupsHash() );
+		hash.Add( SteamFriendsBridge.AvatarRevision );
 		hash.Add( CheatsEnabled );
 
 		foreach ( var player in Players )
@@ -2124,6 +2139,30 @@
 		}
 
 		return hash.ToHashCode();
+	}
+
+	private static SteamFriendListEntry GetPlayerSteamProfile( LobbyPlayer player )
+	{
+		if ( player is null )
+			return null;
+
+		var steamId = (long)player.SteamId;
+		if ( steamId == 0 )
+			steamId = player.OwnerId;
+
+		return SteamFriendsBridge.GetProfileEntry( steamId, player.Name );
+	}
+
+	private static string GetPlayerInitials( string name )
+	{
+		if ( string.IsNullOrWhiteSpace( name ) )
+			return "?";
+
+		var parts = name.Trim().Split( ' ', StringSplitOptions.RemoveEmptyEntries );
+		if ( parts.Length >= 2 )
+			return $"{parts[0][0]}{parts[1][0]}".ToUpperInvariant();
+
+		return parts[0][0].ToString().ToUpperInvariant();
 	}
 
 	private static string GetPlayerClasses( LobbyPlayer player )

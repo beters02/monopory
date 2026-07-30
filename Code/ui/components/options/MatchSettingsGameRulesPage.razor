@@ -11,7 +11,7 @@
 		<ChildContent Context="section">
 		@foreach ( var option in GetConfigOptionsForGroupForDisplay( section.Key ) )
 			{
-				<OptionsPanelRow Title="@option.Label" Value="@option.Description">
+				<OptionsPanelRow AnchorKey="@option.Key" Title="@option.Label" Value="@option.Description">
 					<ChildContent>
 						@if ( option.Kind == MatchConfigOptionKind.Bool )
 						{
@@ -33,7 +33,14 @@
 						{
 							@if ( CanEdit )
 							{
-								<DropdownButton Value="@GetEnumValue( option )" Items="@option.EnumNames" ScrollTarget="@ScrollTarget" OnSelected="@((string value) => SetEnumValue( option, value ))"></DropdownButton>
+								<DropdownButton
+									Value="@GetEnumValue( option )"
+									Items="@option.EnumNames"
+									ScrollTarget="@ScrollTarget"
+									TooltipRequestKey="@($"match-config:{option.Key}")"
+									ItemTooltipProvider="@((string value) => MatchConfigSchema.GetEnumValueDescription( option, value ))"
+									OnSelected="@((string value) => SetEnumValue( option, value ))">
+								</DropdownButton>
 							}
 							else
 							{

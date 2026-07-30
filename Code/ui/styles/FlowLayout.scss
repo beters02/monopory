@@ -241,6 +241,44 @@ LobbyMenu {
 		gap: 14px;
 	}
 
+	.lobby-player-main {
+		min-width: 0;
+		display: flex;
+		align-items: center;
+		gap: 12px;
+	}
+
+	.lobby-player-avatar {
+		width: 42px;
+		height: 42px;
+		min-width: 42px;
+		background-color: $monopoly-ink;
+		border: 2px solid $monopoly-ink;
+		border-radius: 50%;
+		color: $monopoly-board;
+		overflow: hidden;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.lobby-player-avatar-image {
+		width: 100%;
+		height: 100%;
+	}
+
+	.lobby-player-avatar-initials {
+		font-size: 14px;
+		font-weight: 900;
+		text-transform: uppercase;
+	}
+
+	.lobby-player-copy {
+		min-width: 0;
+		display: flex;
+		flex-direction: column;
+	}
+
 	.lobby-player-row.local {
 		border-color: $monopoly-gold;
 	}

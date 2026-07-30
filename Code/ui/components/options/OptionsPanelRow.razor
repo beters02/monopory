@@ -24,6 +24,7 @@
 	[Parameter] public string Title { get; set; } = "";
 	[Parameter] public string Value { get; set; } = "";
 	[Parameter] public string Variant { get; set; } = "";
+	[Parameter] public string AnchorKey { get; set; } = "";
 	[Parameter] public new RenderFragment ChildContent { get; set; }
 
 	private string RowClasses => BuildClass( "options-panel-row", Variant );

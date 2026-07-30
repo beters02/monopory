@@ -117,6 +117,56 @@ public static partial class AppSettingsSchema
 				getter: AppSettings.GetMotionBlurEnabled,
 				setter: enabled => AppSettings.TrySetMotionBlur( enabled ? 1f : 0f )
 			),
+			EnumOption<TextureQuality>(
+				key: "video.texture_quality", category: "video", section: "Quality", label: "Texture Quality",
+				description: "Controls texture detail and memory use.", order: 3,
+				getter: AppSettings.GetTextureQuality, setter: AppSettings.TrySetTextureQuality ),
+			EnumOption<ShadowQuality>(
+				key: "video.shadow_quality", category: "video", section: "Quality", label: "Shadow Quality",
+				description: "Controls shadow resolution and detail.", order: 4,
+				getter: AppSettings.GetShadowQuality, setter: AppSettings.TrySetShadowQuality ),
+			EnumOption<PostProcessQuality>(
+				key: "video.post_process_quality", category: "video", section: "Quality", label: "Post-process Quality",
+				description: "Controls ambient occlusion, depth of field, and other effects.", order: 5,
+				getter: AppSettings.GetPostProcessQuality, setter: AppSettings.TrySetPostProcessQuality ),
+			NamedEnumOption(
+				key: "video.anti_aliasing", category: "video", section: "Quality", label: "Anti-aliasing",
+				description: "Smooths jagged edges using the selected sample count.", order: 6,
+				getter: AppSettings.GetAntiAliasQuality, setter: AppSettings.TrySetAntiAliasQuality,
+				choices: new Dictionary<string, MultisampleAmount>
+				{
+					["Screen Default"] = MultisampleAmount.MultisampleScreen,
+					["Off"] = MultisampleAmount.MultisampleNone,
+					["2x MSAA"] = MultisampleAmount.Multisample2x,
+					["4x MSAA"] = MultisampleAmount.Multisample4x,
+					["6x MSAA"] = MultisampleAmount.Multisample6x,
+					["8x MSAA"] = MultisampleAmount.Multisample8x,
+					["16x MSAA"] = MultisampleAmount.Multisample16x
+				} ),
+			NamedEnumOption(
+				key: "video.frame_rate", category: "video", section: "Performance", label: "Frame-rate Limit",
+				description: "Caps rendered frames per second.", order: 7,
+				getter: AppSettings.GetFrameRateLimit, setter: AppSettings.TrySetFrameRateLimit,
+				choices: new Dictionary<string, FrameRateLimit>
+				{
+					["Unlimited"] = FrameRateLimit.Unlimited,
+					["30 FPS"] = FrameRateLimit.Fps30,
+					["60 FPS"] = FrameRateLimit.Fps60,
+					["90 FPS"] = FrameRateLimit.Fps90,
+					["120 FPS"] = FrameRateLimit.Fps120,
+					["144 FPS"] = FrameRateLimit.Fps144,
+					["165 FPS"] = FrameRateLimit.Fps165,
+					["240 FPS"] = FrameRateLimit.Fps240
+				} ),
+			BoolOption(
+				key: "video.volumetric_fog_enabled", category: "video", section: "Volumetric Fog", label: "Enabled",
+				description: "Enables scene volumetric fog volumes.", order: 8,
+				getter: AppSettings.GetVolumetricFogEnabled, setter: AppSettings.TrySetVolumetricFogEnabled ),
+			EnumOption<VolumetricFogQuality>(
+				key: "video.volumetric_fog_quality", category: "video", section: "Volumetric Fog", label: "Quality",
+				description: "Controls volumetric fog rendering quality.", order: 9,
+				getter: AppSettings.GetVolumetricFogQuality, setter: AppSettings.TrySetVolumetricFogQuality,
+				isVisible: AppSettings.GetVolumetricFogEnabled ),
 			EnumOption<UpscalerMode>(
 				key: "video.upscaler",
 				category: "video",
@@ -237,6 +287,27 @@ public static partial class AppSettingsSchema
 
 				return setter( parsedValue );
 			}
+		};
+	}
+
+	private static AppSettingOption NamedEnumOption<TEnum>(
+		string key, string category, string section, string label, string description, int order,
+		Func<TEnum> getter, Func<TEnum, bool> setter, IReadOnlyDictionary<string, TEnum> choices,
+		Func<bool> isVisible = null ) where TEnum : struct, Enum
+	{
+		return new AppSettingOption
+		{
+			Key = key,
+			Category = category,
+			Section = section,
+			Label = label,
+			Description = description,
+			Order = order,
+			Kind = AppSettingOptionKind.Enum,
+			EnumNames = choices.Keys.ToArray(),
+			IsVisible = isVisible ?? (() => true),
+			GetEnumValue = () => choices.FirstOrDefault( pair => EqualityComparer<TEnum>.Default.Equals( pair.Value, getter() ) ).Key ?? choices.Keys.FirstOrDefault() ?? "",
+			SetEnumValue = rawValue => choices.TryGetValue( rawValue ?? "", out var value ) && setter( value )
 		};
 	}
 

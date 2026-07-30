@@ -27,11 +27,19 @@
 		<div class="@MenuClasses" @ref="MenuPanel">
 			@foreach ( var item in Items )
 			{
-				<GameButton Variant="@GetItemClasses( item )" OnClick="@(() => SelectItem( item ))" SoundEnabled="@SoundEnabled">
+				<Tooltip Variant="dropdown-item-tooltip"
+					Enabled="@(!string.IsNullOrWhiteSpace( GetItemTooltip( item ) ))"
+					RequestKey="@GetItemTooltipKey( item )"
+					Title="@FormatItem( item )"
+					Message="@GetItemTooltip( item )">
 					<ChildContent>
-						<span class="dropdown-item-label">@FormatItem( item )</span>
+						<GameButton Variant="@GetItemClasses( item )" OnClick="@(() => SelectItem( item ))" SoundEnabled="@SoundEnabled">
+							<ChildContent>
+								<span class="dropdown-item-label">@FormatItem( item )</span>
+							</ChildContent>
+						</GameButton>
 					</ChildContent>
-				</GameButton>
+				</Tooltip>
 			}
 		</div>
 		@if ( MenuCanScroll )
@@ -49,6 +57,8 @@
 	[Parameter] public string Value { get; set; } = "";
 	[Parameter] public IReadOnlyList<string> Items { get; set; } = Array.Empty<string>();
 	[Parameter] public Func<string, string> ItemFormatter { get; set; }
+	[Parameter] public Func<string, string> ItemTooltipProvider { get; set; }
+	[Parameter] public string TooltipRequestKey { get; set; } = "";
 	[Parameter] public bool CanClick { get; set; } = true;
 	[Parameter] public bool SoundEnabled { get; set; } = true;
 	[Parameter] public string BlockedPopupTitle { get; set; } = "Action blocked";
@@ -254,6 +264,19 @@
 		return label;
 	}
 
+	private string GetItemTooltip( string item )
+	{
+		return ItemTooltipProvider?.Invoke( item ) ?? "";
+	}
+
+	private string GetItemTooltipKey( string item )
+	{
+		var prefix = string.IsNullOrWhiteSpace( TooltipRequestKey )
+			? $"dropdown-{InstanceId}"
+			: TooltipRequestKey;
+		return $"{prefix}:{item}";
+	}
+
 	private int GetMenuHeight()
 	{
 		var itemCount = Math.Max( Items?.Count ?? 0, 1 );
@@ -275,6 +298,7 @@
 		foreach ( var item in Items )
 		{
 			hash.Add( item ?? "" );
+			hash.Add( GetItemTooltip( item ) );
 			hash.Add( FormatItem( item ) );
 		}
 

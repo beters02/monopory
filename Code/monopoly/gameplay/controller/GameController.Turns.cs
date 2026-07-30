@@ -74,7 +74,11 @@ public sealed partial class GameController : Component
 		}
 
 		if ( HasPendingForcedPaymentForPlayer( skippedPlayerIndex ) )
-			BankruptPlayer( skippedPlayerIndex, Players.ElementAtOrDefault( PendingForcedPaymentReceiverIndex ), debtAmount: PendingForcedPaymentAmount );
+		{
+			var creditor = GetPendingForcedPaymentCreditorForPlayer( skippedPlayerIndex );
+			var creditorAmount = Math.Max( PendingForcedPaymentAmount - PendingForcedPaymentVacationCashAmount, 0 );
+			BankruptPlayer( skippedPlayerIndex, creditor, debtAmount: creditorAmount );
+		}
 
 		skippedPlayer.TurnTimeoutCount = Math.Max( skippedPlayer.TurnTimeoutCount + 1, 1 );
 		ClearSelectedSpaceForPlayer( skippedPlayer );
@@ -641,7 +645,7 @@ public sealed partial class GameController : Component
 
 		BeginActiveMovement( playerIndex, Math.Max( steps, 0 ) );
 		AddTurnMovementDistance( player, Math.Max( steps, 0 ), "Dice movement" );
-		if ( Config?.InstantMoveAlways == true )
+		if ( ActiveMovementShouldFinishInstantly )
 			FinishActiveMovement( player, true );
 
 		await ContinueActiveMovementAsync();
@@ -659,6 +663,7 @@ public sealed partial class GameController : Component
 		ActiveMovementGoPassCount = 0;
 		ActiveMovementTargetSpaceIndex = NormalizeSpaceIndex( player.SpaceIndex + steps );
 		ActiveMovementLastProgressAt = Time.Now;
+		ActiveMovementShouldFinishInstantly = ShouldForceInstantMovementAtStart();
 		PendingLandingPlayerIndex = -1;
 		PendingLandingSpaceIndex = -1;
 		PendingLandingGoPassCount = 0;
@@ -722,9 +727,29 @@ public sealed partial class GameController : Component
 		if ( ignoreUnlock )
 			return true;
 
-		var unlockMinutes = Math.Max( Config?.InstantMoveButtonUnlockMinutes ?? 0, 0 );
+		var behavior = Config?.InstantMoveBehavior ?? InstantMoveBehavior.Allowed;
+		return behavior switch
+		{
+			InstantMoveBehavior.Allowed => true,
+			InstantMoveBehavior.AllowedAfterUnlock => HasInstantMoveUnlockElapsed(),
+			InstantMoveBehavior.AllowedUntilForcedAfterUnlock => !ActiveMovementShouldFinishInstantly,
+			_ => false
+		};
+	}
+
+	private bool HasInstantMoveUnlockElapsed()
+	{
+		var unlockSeconds = Math.Max( Config?.InstantMoveUnlockSeconds ?? 0, 0 );
 		var elapsedSeconds = GameStartedAt <= 0f ? 0f : Math.Max( Time.Now - GameStartedAt, 0f );
-		return elapsedSeconds >= unlockMinutes * 60f;
+		return elapsedSeconds >= unlockSeconds;
+	}
+
+	private bool ShouldForceInstantMovementAtStart()
+	{
+		var behavior = Config?.InstantMoveBehavior ?? InstantMoveBehavior.Allowed;
+		return behavior == InstantMoveBehavior.Forced ||
+			(HasInstantMoveUnlockElapsed() &&
+				behavior is InstantMoveBehavior.AllowedUntilForcedAfterUnlock or InstantMoveBehavior.NotAllowedUntilForcedAfterUnlock);
 	}
 
 	public void FinishActiveMovement( PlayerState player, bool ignoreUnlock = false )
@@ -811,6 +836,7 @@ public sealed partial class GameController : Component
 		ActiveMovementGoPassCount = 0;
 		ActiveMovementTargetSpaceIndex = -1;
 		ActiveMovementLastProgressAt = 0f;
+		ActiveMovementShouldFinishInstantly = false;
 		PendingLandingPlayerIndex = -1;
 		PendingLandingSpaceIndex = -1;
 		PendingLandingGoPassCount = 0;

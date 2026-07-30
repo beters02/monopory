@@ -100,11 +100,11 @@ public sealed partial class GameController : Component
 		return true;
 	}
 
-	private bool PayPlayer( PlayerState player, PlayerState receiver, int amount, bool showForcedPaymentPopup = true, int rentSpaceIndex = -1 )
+	private bool PayPlayer( PlayerState player, PlayerState receiver, int amount, bool showForcedPaymentPopup = true, int rentSpaceIndex = -1, int vacationCashAmount = 0 )
 	{
 		if ( player is null || receiver is null || player == receiver || amount <= 0 )
 			return true;
 
-		return TryMakeForcedPayment( player, amount, GetPlayerIndex( receiver ), false, showForcedPaymentPopup, rentSpaceIndex: rentSpaceIndex );
+		return TryMakeForcedPayment( player, amount, GetPlayerIndex( receiver ), false, showForcedPaymentPopup, rentSpaceIndex: rentSpaceIndex, vacationCashAmount: vacationCashAmount );
 	}
 }
