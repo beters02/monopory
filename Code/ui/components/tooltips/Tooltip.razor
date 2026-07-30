@@ -19,6 +19,7 @@
 	[Parameter] public string InputAction { get; set; } = "";
 	[Parameter] public float HoverDelay { get; set; } = 0.25f;
 	[Parameter] public TooltipPlacementMode PlacementMode { get; set; } = TooltipPlacementMode.Cursor;
+	[Parameter] public Panel TargetPanel { get; set; }
 	[Parameter] public string Variant { get; set; } = "";
 	[Parameter] public bool Enabled { get; set; } = true;
 	[Parameter] public new RenderFragment ChildContent { get; set; }
@@ -69,8 +70,8 @@
 
 	private Rect? GetAnchorRect()
 	{
-		return PlacementMode == TooltipPlacementMode.AroundTarget
-			? Box.Rect
+		return PlacementMode == TooltipPlacementMode.AroundTarget && TargetPanel is not null
+			? TargetPanel.Box.Rect
 			: null;
 	}
 

@@ -29,6 +29,7 @@
 			{
 				<Tooltip Variant="dropdown-item-tooltip"
 					PlacementMode="@TooltipPlacementMode.AroundTarget"
+					TargetPanel="@MenuPanel"
 					Enabled="@(!string.IsNullOrWhiteSpace( GetItemTooltip( item ) ))"
 					RequestKey="@GetItemTooltipKey( item )"
 					Title="@FormatItem( item )"
