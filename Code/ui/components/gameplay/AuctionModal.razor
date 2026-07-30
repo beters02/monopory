@@ -14,7 +14,7 @@
 
 				<div class="auction-content">
 					<div class="auction-bid-panel">
-						<div class="auction-label">Current bid</div>
+						<div class="auction-label">@AuctionBidLabel</div>
 						<div class="auction-current-bid">$@GameRef.AuctionCurrentBid</div>
 						<div class="auction-status-row">
 							<div>@AuctionLeaderLabel</div>
@@ -26,13 +26,12 @@
 
 						<div class="auction-label bid-label">I'm bidding...</div>
 						<div class="auction-actions">
-							@foreach ( var increment in AuctionBidIncrements )
+							@foreach ( var bid in AuctionBidOptions )
 							{
-								var bid = GameRef.AuctionCurrentBid + increment;
 								<GameButton Variant="@GetAuctionBidButtonClasses( bid )" OnClick="@(() => BidAuction( bid ))">
 									<ChildContent>
 										<span>$@bid</span>
-										<span>+$@increment</span>
+										<span>@GetAuctionBidChangeLabel( bid )</span>
 									</ChildContent>
 								</GameButton>
 							}
@@ -142,21 +141,48 @@
 	private string AuctionRemainingLabel =>
 		IsAuctionActive ? $"Ends in {AuctionRemainingSeconds}s" : "Preview mode";
 
+	private string AuctionBidLabel =>
+		GameRef?.AuctionHighBidderIndex >= 0 ? "Current bid" : "Starting bid";
+
 	private string AuctionLeaderLabel =>
 		!IsAuctionActive ? "No live auction" :
 		GameRef?.AuctionHighBidderIndex >= 0
 			? $"High bid: {GetPlayerName( GameRef.AuctionHighBidderIndex )}"
 			: "No bids yet";
 
-	private int[] AuctionBidIncrements =>
-		GameRef?.AuctionCurrentBid < 10 ? new[] { 2, 10, 100 } : new[] { 10, 50, 100 };
+	private int[] AuctionBidOptions
+	{
+		get
+		{
+			var currentBid = GameRef?.AuctionCurrentBid ?? 0;
+			if ( GameRef?.AuctionHighBidderIndex < 0 )
+			{
+				var openingIncrement = currentBid < 10 ? 10 : 50;
+				return new[] { currentBid, currentBid + openingIncrement, currentBid + 100 };
+			}
+
+			var increments = currentBid < 10 ? new[] { 2, 10, 100 } : new[] { 10, 50, 100 };
+			return increments.Select( increment => currentBid + increment ).ToArray();
+		}
+	}
+
+	private string GetAuctionBidChangeLabel( int bidAmount )
+	{
+		if ( GameRef?.AuctionHighBidderIndex < 0 && bidAmount == GameRef.AuctionCurrentBid )
+			return "Opening bid";
+
+		return $"+${bidAmount - (GameRef?.AuctionCurrentBid ?? 0)}";
+	}
 
 	private string AuctionProgressStyle
 	{
 		get
 		{
 			var remaining = AuctionRemainingSeconds;
-			var percent = Math.Clamp( remaining / 15f * 100f, 0f, 100f );
+			var initialDuration = GameRef?.EffectiveAuctionInitialDurationSeconds ?? 15;
+			var antiSnipeDuration = GameRef?.EffectiveAuctionAntiSnipeExtensionSeconds ?? 7;
+			var duration = Math.Max( 1, Math.Max( initialDuration, antiSnipeDuration ) );
+			var percent = Math.Clamp( remaining / (float)duration * 100f, 0f, 100f );
 			return $"width: {percent:0}%;";
 		}
 	}
@@ -167,7 +193,11 @@
 			GameRef?.LocalPlayerIndex >= 0 &&
 			GameRef.LocalPlayerIndex != GameRef.AuctionHighBidderIndex &&
 			LocalPlayer is not null &&
-			bidAmount > GameRef.AuctionCurrentBid &&
+			LocalPlayer.IsAssigned &&
+			!LocalPlayer.IsBankrupt &&
+			(GameRef.AuctionHighBidderIndex < 0
+				? bidAmount >= GameRef.AuctionCurrentBid
+				: bidAmount > GameRef.AuctionCurrentBid) &&
 			LocalPlayer.Money >= bidAmount;
 	}
 

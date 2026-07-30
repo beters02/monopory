@@ -6,6 +6,15 @@ using Sandbox;
 public sealed partial class GameController : Component
 {
 
+	public int EffectiveAuctionInitialDurationSeconds =>
+		Math.Clamp( Config?.AuctionInitialDurationSeconds ?? 15, 1, 300 );
+
+	public int EffectiveAuctionAntiSnipeExtensionSeconds =>
+		Math.Clamp( Config?.AuctionAntiSnipeExtensionSeconds ?? 7, 0, 60 );
+
+	public int EffectiveAuctionStartingBid =>
+		Math.Clamp( Config?.AuctionStartingBid ?? 0, 0, 10000 );
+
 	private void UpdateAuction()
 	{
 		if ( Phase != GamePhase.Auctioning )
@@ -48,9 +57,9 @@ public sealed partial class GameController : Component
 
 		PendingPurchaseSpaceIndex = -1;
 		AuctionSpaceIndex = spaceIndex;
-		AuctionCurrentBid = 0;
+		AuctionCurrentBid = EffectiveAuctionStartingBid;
 		AuctionHighBidderIndex = -1;
-		AuctionEndsAt = Time.Now + 15f;
+		AuctionEndsAt = Time.Now + EffectiveAuctionInitialDurationSeconds;
 		PauseTurnTimerForAuction();
 		Phase = GamePhase.Auctioning;
 
@@ -134,13 +143,19 @@ public sealed partial class GameController : Component
 		if ( bidderIndex == AuctionHighBidderIndex )
 			return;
 
-		if ( bidAmount <= AuctionCurrentBid || bidAmount > bidder.Money )
+		var isOpeningBid = AuctionHighBidderIndex < 0;
+		var isValidBid = isOpeningBid
+			? bidAmount >= AuctionCurrentBid
+			: bidAmount > AuctionCurrentBid;
+		if ( !isValidBid || bidAmount > bidder.Money )
 			return;
 
 		MarkTurnActionAccepted( bidder );
 		AuctionCurrentBid = bidAmount;
 		AuctionHighBidderIndex = bidderIndex;
-		AuctionEndsAt = MathF.Max( AuctionEndsAt, Time.Now + 7f );
+		AuctionEndsAt = MathF.Max(
+			AuctionEndsAt,
+			Time.Now + EffectiveAuctionAntiSnipeExtensionSeconds );
 
 		PlayGlobalSound( AuctionBidSound );
 		Log.Info( $"{bidder.PlayerName} bid ${AuctionCurrentBid} on {def.DisplayName}." );

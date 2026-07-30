@@ -1416,7 +1416,9 @@
 			? MatchConfigSchema.Options
 			: MatchConfigSchema.Options.Where( option => option.IsVisible );
 
-		return options.Where( option => option.Kind != MatchConfigOptionKind.String );
+		return options.Where( option =>
+			option.Kind != MatchConfigOptionKind.String &&
+			MatchConfigSchema.IsOptionApplicable( option, EditableConfig ) );
 	}
 
 	private void SetConfigPage( string page )

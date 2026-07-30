@@ -24,6 +24,7 @@ public sealed class GambleSession
 	public CoinFlipSide ChosenSide { get; set; }
 	public CoinFlipSide OutcomeSide { get; set; }
 	public int Wager { get; set; }
+	public int PayoutMultiplier { get; set; } = 2;
 	public float StartedAt { get; set; }
 	public float RevealAt { get; set; }
 	public float EndsAt { get; set; }

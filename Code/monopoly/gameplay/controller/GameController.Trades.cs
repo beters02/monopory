@@ -16,12 +16,13 @@ public sealed partial class GameController : Component
 		if ( senderPlayerIndex < 0 )
 			return;
 
-		if ( MaxPendingSentTradesPerPlayer > 0 && CountPendingSentTrades( senderPlayerIndex ) >= MaxPendingSentTradesPerPlayer )
+		var sentTradeLimit = Math.Max( Config?.SentTradeLimit ?? 3, 0 );
+		if ( sentTradeLimit > 0 && CountPendingSentTrades( senderPlayerIndex ) >= sentTradeLimit )
 		{
 			SendPopupToPlayer(
 				senderPlayerIndex,
 				"Trade limit reached",
-				$"You can only have {MaxPendingSentTradesPerPlayer} sent trade request(s) pending.",
+				$"You can only have {sentTradeLimit} sent trade request(s) pending.",
 				PopupKind.Warning,
 				true,
 				4f
@@ -311,7 +312,7 @@ public sealed partial class GameController : Component
 			if ( GetOwnerIndexForSpace( spaceIndex ) != trade.SenderPlayerIndex )
 				return false;
 
-			if ( GetImprovementCount( spaceIndex ) > 0 )
+			if ( !IsTradePropertyAllowed( spaceIndex ) )
 				return false;
 		}
 
@@ -320,7 +321,7 @@ public sealed partial class GameController : Component
 			if ( GetOwnerIndexForSpace( spaceIndex ) != trade.ReceiverPlayerIndex )
 				return false;
 
-			if ( GetImprovementCount( spaceIndex ) > 0 )
+			if ( !IsTradePropertyAllowed( spaceIndex ) )
 				return false;
 		}
 
@@ -339,6 +340,16 @@ public sealed partial class GameController : Component
 		return true;
 	}
 
+	private bool IsTradePropertyAllowed( int spaceIndex )
+	{
+		if ( Config?.AllowImprovedPropertyTrades != true && GetImprovementCount( spaceIndex ) > 0 )
+			return false;
+
+		if ( Config?.AllowMortgagedPropertyTrades == false && IsMortgaged( spaceIndex ) )
+			return false;
+
+		return true;
+	}
 	public List<int> GetImprovedTradePropertyIndexes( TradeRequest trade )
 	{
 		if ( trade is null )

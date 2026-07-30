@@ -164,14 +164,14 @@ public sealed partial class GameController : Component
 
 		MarkTurnActionAccepted();
 
-		if ( !PayBank( CurrentPlayer, JailFineAmount, true, BankPaymentSource.JailFine ) )
+		if ( !PayBank( CurrentPlayer, GetConfiguredJailFine(), true, BankPaymentSource.JailFine ) )
 		{
-			SendPopupToPlayer( CurrentPlayer, "Jail fine", $"Raise ${JailFineAmount} to leave Jail.", PopupKind.Warning );
+			SendPopupToPlayer( CurrentPlayer, "Jail fine", $"Raise ${GetConfiguredJailFine()} to leave Jail.", PopupKind.Warning );
 			return;
 		}
 
 		ReleasePlayerFromJail( CurrentPlayer, JailReleaseReason.PaidFine );
-		SendTableChatMessage( "Jail fine paid", $"{CurrentPlayer.PlayerName} paid ${JailFineAmount} to leave Jail." );
+		SendTableChatMessage( "Jail fine paid", $"{CurrentPlayer.PlayerName} paid ${GetConfiguredJailFine()} to leave Jail." );
 		await RollCurrentPlayerAsync( -1, ShouldSuppressDoublesExtraTurnForJailRelease(), RollExecutionKind.JailRelease );
 	}
 
@@ -193,7 +193,7 @@ public sealed partial class GameController : Component
 
 		if ( IsForcedJailFineDue( CurrentPlayer ) )
 		{
-			SendPopupToPlayer( CurrentPlayer, "Jail fine", $"Pay the ${JailFineAmount} fine to leave Jail.", PopupKind.Warning );
+			SendPopupToPlayer( CurrentPlayer, "Jail fine", $"Pay the ${GetConfiguredJailFine()} fine to leave Jail.", PopupKind.Warning );
 			return;
 		}
 
@@ -224,7 +224,7 @@ public sealed partial class GameController : Component
 
 		if ( IsForcedJailFineDue( CurrentPlayer ) )
 		{
-			SendPopupToPlayer( CurrentPlayer, "Jail fine", $"Pay the ${JailFineAmount} fine to leave Jail.", PopupKind.Warning );
+			SendPopupToPlayer( CurrentPlayer, "Jail fine", $"Pay the ${GetConfiguredJailFine()} fine to leave Jail.", PopupKind.Warning );
 			return;
 		}
 
@@ -295,14 +295,14 @@ public sealed partial class GameController : Component
 			if ( Config?.ForceJailFineAfterFailedDoubles != true )
 			{
 				ReleasePlayerFromJail( CurrentPlayer, JailReleaseReason.ThirdFailedRoll );
-				Log.Info( $"{CurrentPlayer.PlayerName} left Jail after their third failed doubles attempt." );
-				SendGlobalPopupToAll( "Jail release", $"{CurrentPlayer.PlayerName} failed their third Jail roll and moves {total}.", PopupKind.Warning, true, 4f );
+				Log.Info( $"{CurrentPlayer.PlayerName} left Jail after their final failed doubles attempt." );
+				SendGlobalPopupToAll( "Jail release", $"{CurrentPlayer.PlayerName} failed their final Jail roll and moves {total}.", PopupKind.Warning, true, 4f );
 				ClearPendingRollState();
 				await MoveCurrentPlayerAfterRoll( total, RollExecutionKind.JailRelease );
 				return;
 			}
 
-			if ( !PayBank( CurrentPlayer, JailFineAmount, true, BankPaymentSource.JailFine ) )
+			if ( !PayBank( CurrentPlayer, GetConfiguredJailFine(), true, BankPaymentSource.JailFine ) )
 			{
 				ClearPendingRollState();
 				if ( CurrentPlayer is null || CurrentPlayer.IsBankrupt )
@@ -314,12 +314,12 @@ public sealed partial class GameController : Component
 				Phase = GamePhase.WaitingToRoll;
 				CurrentTurnGetsExtraRoll = false;
 				StartTurnTimer();
-				SendPopupToPlayer( CurrentPlayer, "Jail fine", $"Raise ${JailFineAmount} to leave Jail.", PopupKind.Warning );
+				SendPopupToPlayer( CurrentPlayer, "Jail fine", $"Raise ${GetConfiguredJailFine()} to leave Jail.", PopupKind.Warning );
 				return;
 			}
 
 			ReleasePlayerFromJail( CurrentPlayer, JailReleaseReason.ForcedFine );
-			SendTableChatMessage( "Jail fine paid", $"{CurrentPlayer.PlayerName} paid ${JailFineAmount} after three failed Jail rolls." );
+			SendTableChatMessage( "Jail fine paid", $"{CurrentPlayer.PlayerName} paid ${GetConfiguredJailFine()} after their final failed Jail roll." );
 			ClearPendingRollState();
 			await MoveCurrentPlayerAfterRoll( total, RollExecutionKind.JailRelease );
 			return;
@@ -397,14 +397,14 @@ public sealed partial class GameController : Component
 
 	private bool IsThirdConsecutiveDoublesRoll( bool rolledDoubles )
 	{
-		if ( !rolledDoubles )
+		if ( !rolledDoubles || Config?.DoublesGoesAgain != true )
 			return false;
 
 		var consecutiveBeforeRoll = CurrentTurnDoublesPlayerIndex == CurrentPlayerIndex
 			? CurrentTurnConsecutiveDoubles
 			: 0;
 
-		return consecutiveBeforeRoll >= 2;
+		return consecutiveBeforeRoll == 2;
 	}
 
 	private async Task CompletePendingNormalRollAsync( int total, bool rolledDoubles )
@@ -422,7 +422,11 @@ public sealed partial class GameController : Component
 		ApplySnakeEyesBonus( CurrentPlayer, rolledDoubles );
 		ReportDiceRollAchievements( CurrentPlayer, rolledDoubles );
 
-		if ( !suppressDoublesExtraTurn && Config?.DoublesGoesAgain == true && ApplyDoublesRule( rolledDoubles ) )
+		if ( Config?.DoublesGoesAgain != true )
+		{
+			ResetCurrentPlayerDoublesTracking();
+		}
+		else if ( !suppressDoublesExtraTurn && ApplyDoublesRule( rolledDoubles ) )
 		{
 			ClearVacationCashBreakFlag( player );
 			ClearPendingRollState();
@@ -443,7 +447,7 @@ public sealed partial class GameController : Component
 
 	private bool ShouldSuppressDoublesExtraTurnForJailRelease()
 	{
-		return Config?.DoublesGoAgainOutOfJail != true;
+		return Config?.DoublesGoesAgain != true || Config?.DoublesGoAgainOutOfJail != true;
 	}
 
 	private bool ShouldSuppressDoublesExtraTurnForVacationCashBreak( PlayerState player, RollExecutionKind executionKind )
@@ -451,6 +455,8 @@ public sealed partial class GameController : Component
 		return executionKind != RollExecutionKind.JailRelease &&
 			player?.IsReturningFromVacationCashBreak == true &&
 			Config?.VacationCash == true &&
+			Config?.VacationCashBehavior == VacationCashBehavior.SkipNextTurn &&
+			Config?.DoublesGoesAgain == true &&
 			Config?.DoublesGoAgainOutOfVacationCashBreak != true;
 	}
 
@@ -527,6 +533,12 @@ public sealed partial class GameController : Component
 		if ( CurrentPlayer is null )
 			return false;
 
+		if ( Config?.DoublesGoesAgain != true )
+		{
+			ResetCurrentPlayerDoublesTracking();
+			return false;
+		}
+
 		if ( CurrentTurnDoublesPlayerIndex != CurrentPlayerIndex )
 		{
 			CurrentTurnDoublesPlayerIndex = CurrentPlayerIndex;
@@ -538,24 +550,43 @@ public sealed partial class GameController : Component
 		{
 			CurrentTurnConsecutiveDoubles++;
 			CurrentPlayer.ConsecutiveDoubles = CurrentTurnConsecutiveDoubles;
-			if ( CurrentTurnConsecutiveDoubles >= 3 )
+			if ( CurrentTurnConsecutiveDoubles == 3 )
 			{
-				SendPopupToPlayer(
-					CurrentPlayer,
-					"Three doubles",
-					"You rolled doubles three times in a row and were sent to Jail.",
-					PopupKind.Danger,
-					true,
-					5f
-				);
-				SendTableChatMessage( "Three doubles", $"{CurrentPlayer.PlayerName} rolled doubles three times in a row and was sent to Jail." );
-				SendPlayerToJail( CurrentPlayer, JailSendReason.ThreeDoubles );
-				CurrentTurnConsecutiveDoubles = 0;
-				CurrentTurnDoublesPlayerIndex = -1;
-				CurrentPlayer.ConsecutiveDoubles = 0;
-				Log.Info( $"{CurrentPlayer.PlayerName} rolled three doubles in a row and went to Jail." );
-				AdvanceTurnImmediately();
-				return true;
+				switch ( Config?.DoublesPenalty ?? DoublesPenalty.GoToJail )
+				{
+					case DoublesPenalty.GoToJail:
+						SendPopupToPlayer(
+							CurrentPlayer,
+							"Three doubles",
+							"You rolled doubles three times in a row and were sent to Jail.",
+							PopupKind.Danger,
+							true,
+							5f
+						);
+						SendTableChatMessage( "Three doubles", $"{CurrentPlayer.PlayerName} rolled doubles three times in a row and was sent to Jail." );
+						SendPlayerToJail( CurrentPlayer, JailSendReason.ThreeDoubles );
+						Log.Info( $"{CurrentPlayer.PlayerName} rolled three doubles in a row and went to Jail." );
+						AdvanceTurnImmediately();
+						return true;
+
+					case DoublesPenalty.EndTurn:
+						SendPopupToPlayer(
+							CurrentPlayer,
+							"Three doubles",
+							"You rolled doubles three times in a row, so your turn ends without moving.",
+							PopupKind.Warning,
+							true,
+							5f
+						);
+						SendTableChatMessage( "Three doubles", $"{CurrentPlayer.PlayerName} rolled doubles three times in a row and ended their turn without moving." );
+						Log.Info( $"{CurrentPlayer.PlayerName} rolled three doubles in a row and ended their turn without moving." );
+						ResetCurrentPlayerDoublesTracking();
+						AdvanceTurnImmediately();
+						return true;
+
+					case DoublesPenalty.None:
+						break;
+				}
 			}
 
 			CurrentTurnGetsExtraRoll = true;
@@ -575,6 +606,15 @@ public sealed partial class GameController : Component
 		CurrentTurnDoublesPlayerIndex = CurrentPlayerIndex;
 		CurrentPlayer.ConsecutiveDoubles = 0;
 		return false;
+	}
+
+	private void ResetCurrentPlayerDoublesTracking()
+	{
+		CurrentTurnGetsExtraRoll = false;
+		CurrentTurnConsecutiveDoubles = 0;
+		CurrentTurnDoublesPlayerIndex = -1;
+		if ( CurrentPlayer is not null )
+			CurrentPlayer.ConsecutiveDoubles = 0;
 	}
 
 	private async Task MoveCurrentPlayerAfterRoll( int total, RollExecutionKind executionKind )
@@ -787,7 +827,7 @@ public sealed partial class GameController : Component
 
 		player.SpaceIndex = Board?.JailSpaceIndex ?? 10;
 		player.IsInJail = true;
-		player.JailTurnsRemaining = JailTurnCount;
+		player.JailTurnsRemaining = GetConfiguredJailRollAttempts();
 		player.ConsecutiveDoubles = 0;
 		SnapPlayerTokenToSpace( player );
 		CurrentTurnGetsExtraRoll = false;
@@ -837,10 +877,20 @@ public sealed partial class GameController : Component
 		JailReleaseReason.UsedCard => "used a Get Out of Jail Free card",
 		JailReleaseReason.RolledDoubles => "rolled doubles",
 		JailReleaseReason.ThirdFailedRoll => "failed the final Jail roll",
-		JailReleaseReason.ForcedFine => "paid after three failed Jail rolls",
+		JailReleaseReason.ForcedFine => "paid after their final failed Jail roll",
 		JailReleaseReason.SwapCard => "swapped out by a card",
 		_ => "released"
 	};
+
+	private int GetConfiguredJailFine()
+	{
+		return Math.Max( Config?.GetOutOfJailFine ?? 50, 0 );
+	}
+
+	private int GetConfiguredJailRollAttempts()
+	{
+		return Math.Max( Config?.JailRollAttempts ?? 3, 1 );
+	}
 
 	private void AddTurnMovementDistance( PlayerState player, int distance, string reason )
 	{
@@ -916,7 +966,7 @@ public sealed partial class GameController : Component
 	{
 		FinalizeMoveHistoryTurn();
 
-		if ( CurrentTurnGetsExtraRoll )
+		if ( CurrentTurnGetsExtraRoll && Config?.DoublesGoesAgain == true )
 		{
 			CurrentTurnGetsExtraRoll = false;
 			PlayTurnSound( CurrentPlayer );
@@ -925,6 +975,7 @@ public sealed partial class GameController : Component
 			return;
 		}
 
+		CurrentTurnGetsExtraRoll = false;
 		ClearSelectedSpaceForPlayer( CurrentPlayer );
 		if ( CurrentPlayer is not null )
 		{
@@ -938,6 +989,9 @@ public sealed partial class GameController : Component
 
 	private void SetPostActionPhase()
 	{
+		if ( Config?.DoublesGoesAgain != true )
+			CurrentTurnGetsExtraRoll = false;
+
 		if ( HasPendingForcedPayment )
 		{
 			Phase = GamePhase.TurnEnded;
@@ -945,7 +999,7 @@ public sealed partial class GameController : Component
 			return;
 		}
 
-		if ( CurrentTurnGetsExtraRoll && !HasPendingForcedPayment )
+		if ( CurrentTurnGetsExtraRoll )
 		{
 			//ClearSelectedSpaceForPlayer( CurrentPlayer );
 			PlayTurnSound( CurrentPlayer );
@@ -1017,6 +1071,7 @@ public sealed partial class GameController : Component
 			if ( player.SkipsNextTurn )
 			{
 				player.SkipsNextTurn = false;
+				player.IsReturningFromVacationCashBreak = true;
 				Log.Info( $"{player.PlayerName} skipped their turn." );
 				SendGlobalPopupToAll( "Turn skipped", $"{player.PlayerName} skips this turn after collecting Free Parking.", PopupKind.Warning, true, 4f );
 				continue;
@@ -1057,7 +1112,7 @@ public sealed partial class GameController : Component
 		EnsureDiceNetworkOwnership( true );
 		CurrentTurnGetsExtraRoll = false;
 		CurrentTurnConsecutiveDoubles = 0;
-		CurrentTurnDoublesPlayerIndex = CurrentPlayerIndex;
+		CurrentTurnDoublesPlayerIndex = Config?.DoublesGoesAgain == true ? CurrentPlayerIndex : -1;
 
 		var player = CurrentPlayer;
 		if ( player is not null )

@@ -71,6 +71,53 @@ public sealed partial class GameController
 			.FirstOrDefault( token => token?.IsLocalPlayerToken == true );
 	}
 
+	public int GetMaximumGambleWager( int playerIndex )
+	{
+		return GetMaximumGambleWager( Players.ElementAtOrDefault( playerIndex ) );
+	}
+
+	private int GetMaximumGambleWager( PlayerState player )
+	{
+		var availableCash = Math.Max( player?.Money ?? 0, 0 );
+		if ( availableCash == 0 )
+			return 0;
+
+		return Config?.MaximumWagerType switch
+		{
+			MaximumWagerType.PercentagePlayerMoney => (int)Math.Min(
+				(long)availableCash * Math.Clamp( Config.MaximumWagerBankPercentage, 0, 100 ) / 100L,
+				availableCash ),
+			MaximumWagerType.SetAmount => Math.Min(
+				Math.Max( Config.MaximumWagerSetAmount, 0 ),
+				availableCash ),
+			_ => availableCash
+		};
+	}
+
+	private int GetGamblePayoutMultiplier()
+	{
+		return Math.Max( Config?.GamblePayoutMultiplier ?? 2, 1 );
+	}
+
+	private static int CalculateGambleGrossPayout( int wager, int payoutMultiplier )
+	{
+		var grossPayout = (long)Math.Max( wager, 0 ) * Math.Max( payoutMultiplier, 1 );
+		return (int)Math.Min( grossPayout, int.MaxValue );
+	}
+
+	private static int CalculateGambleNetWinnings( int wager, int payoutMultiplier )
+	{
+		return Math.Max( CalculateGambleGrossPayout( wager, payoutMultiplier ) - Math.Max( wager, 0 ), 0 );
+	}
+
+	private static void CreditGamblePayout( PlayerState player, int grossPayout )
+	{
+		if ( player is null || grossPayout <= 0 )
+			return;
+
+		player.Money = (int)Math.Clamp( (long)player.Money + grossPayout, int.MinValue, int.MaxValue );
+	}
+
 	public bool TryGetLocalGambleCameraTarget( out GambleStation station )
 	{
 		station = null;
@@ -97,9 +144,13 @@ public sealed partial class GameController
 			? (CoinFlipSide)side
 			: CoinFlipSide.Heads;
 		var spendsMoney = Config?.CanGambleMonopolyMoney == true;
-		if ( spendsMoney && (wager < 1 || wager > player.Money) )
+		var maximumWager = GetMaximumGambleWager( player );
+		if ( spendsMoney && (wager < 1 || wager > maximumWager) )
 		{
-			SendPopupToPlayer( player, "Invalid wager", "Choose a wager from $1 up to your available cash.", PopupKind.Warning );
+			var wagerMessage = maximumWager > 0
+				? $"Choose a wager from $1 up to the ${maximumWager} match limit."
+				: "You have no cash available under the current wager limit.";
+			SendPopupToPlayer( player, "Invalid wager", wagerMessage, PopupKind.Warning );
 			return;
 		}
 
@@ -148,6 +199,7 @@ public sealed partial class GameController
 			ChosenSide = chosenSide,
 			OutcomeSide = outcome,
 			Wager = wager,
+			PayoutMultiplier = GetGamblePayoutMultiplier(),
 			StartedAt = now,
 			RevealAt = now + NonCardGambleRevealSeconds,
 			EndsAt = now + NonCardGambleRevealSeconds + NonCardGambleHoldSeconds,
@@ -165,12 +217,12 @@ public sealed partial class GameController
 			return;
 
 		if ( wager > 0 && won )
-			player.Money += wager * 2;
+			CreditGamblePayout( player, CalculateGambleGrossPayout( wager, session.PayoutMultiplier ) );
 
 		current.IsResolved = true;
 		current.ResultMessage = won
 			? wager > 0
-				? $"{outcome}! {player.PlayerName} won ${wager}."
+				? $"{outcome}! {player.PlayerName} won ${CalculateGambleNetWinnings( wager, session.PayoutMultiplier )}."
 				: $"{outcome}! {player.PlayerName} won."
 			: wager > 0
 				? $"{outcome}. {player.PlayerName} lost ${wager}."
@@ -189,12 +241,12 @@ public sealed partial class GameController
 			{
 				var player = Players.ElementAtOrDefault( session.PlayerIndex );
 				if ( player is not null && session.Wager > 0 && session.Won )
-					player.Money += session.Wager * 2;
+					CreditGamblePayout( player, CalculateGambleGrossPayout( session.Wager, session.PayoutMultiplier ) );
 
 				session.IsResolved = true;
 				session.ResultMessage = session.Won
 					? session.Wager > 0
-						? $"{session.OutcomeSide}! {player?.PlayerName ?? "Player"} won ${session.Wager}."
+						? $"{session.OutcomeSide}! {player?.PlayerName ?? "Player"} won ${CalculateGambleNetWinnings( session.Wager, session.PayoutMultiplier )}."
 						: $"{session.OutcomeSide}! {player?.PlayerName ?? "Player"} won."
 					: session.Wager > 0
 						? $"{session.OutcomeSide}. {player?.PlayerName ?? "Player"} lost ${session.Wager}."
@@ -296,6 +348,7 @@ public sealed partial class GameController
 			ChosenSide = CoinFlipSide.Heads,
 			OutcomeSide = won ? CoinFlipSide.Heads : CoinFlipSide.Tails,
 			Wager = wager,
+			PayoutMultiplier = GetGamblePayoutMultiplier(),
 			StartedAt = now,
 			RevealAt = now + GambleRevealDelaySeconds,
 			EndsAt = now + GambleRevealDelaySeconds + GambleResultHoldSeconds,

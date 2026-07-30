@@ -14,6 +14,12 @@ public enum MatchConfigOptionKind
 	String
 }
 
+public sealed class MatchConfigDependency
+{
+	public string OptionKey { get; init; }
+	public string ExpectedValue { get; init; }
+}
+
 public sealed class MatchConfigOption
 {
 	public string Key { get; init; }
@@ -35,6 +41,7 @@ public sealed class MatchConfigOption
 	public Func<MatchConfig, object> Getter { get; init; }
 	public Action<MatchConfig, object> Setter { get; init; }
 	public string[] EnumNames { get; init; } = Array.Empty<string>();
+	public IReadOnlyList<MatchConfigDependency> Dependencies { get; init; } = Array.Empty<MatchConfigDependency>();
 }
 
 public static class MatchConfigSchema
@@ -289,19 +296,59 @@ public static class MatchConfigSchema
 		return TrySetOptionValue( option, config, value );
 	}
 
+	public static bool IsOptionApplicable( MatchConfigOption option, MatchConfig config )
+	{
+		if ( option is null || config is null )
+			return false;
+
+		return IsOptionApplicable( option, config, new HashSet<string>( StringComparer.Ordinal ) );
+	}
+
+	private static bool IsOptionApplicable( MatchConfigOption option, MatchConfig config, HashSet<string> evaluationStack )
+	{
+		if ( !evaluationStack.Add( option.Key ) )
+			throw new InvalidOperationException( $"Circular MatchConfig dependency encountered at '{option.Key}'." );
+
+		try
+		{
+			foreach ( var dependency in option.Dependencies )
+			{
+				var dependencyOption = Options.First( candidate => string.Equals( candidate.Key, dependency.OptionKey, StringComparison.Ordinal ) );
+				if ( !IsOptionApplicable( dependencyOption, config, evaluationStack ) )
+					return false;
+
+				if ( !TryParseDependencyValue( dependencyOption, dependency.ExpectedValue, out var expectedValue ) )
+					return false;
+
+				var actualValue = GetOptionValueOrDefault( dependencyOption, config );
+				if ( !Equals( actualValue, expectedValue ) )
+					return false;
+			}
+
+			return true;
+		}
+		finally
+		{
+			evaluationStack.Remove( option.Key );
+		}
+	}
+
 	private static IReadOnlyList<MatchConfigOption> BuildOptions()
 	{
 		var configType = Game.TypeLibrary.GetType<MatchConfig>();
 		if ( configType is null )
 			return Array.Empty<MatchConfigOption>();
 
-		return configType.Members
+		var builtOptions = configType.Members
 			.OfType<PropertyDescription>()
 			.Select( BuildOption )
 			.Where( option => option is not null )
 			.OrderBy( option => option.Order )
 			.ThenBy( option => option.Label )
 			.ToList();
+
+		ValidateDependencies( builtOptions );
+		return builtOptions;
 	}
 
 	private static MatchConfigOption BuildOption( PropertyDescription property )
@@ -337,9 +384,89 @@ public static class MatchConfigSchema
 			Kind = kind,
 			ValueType = propertyType,
 			EnumNames = propertyType.IsEnum ? Enum.GetNames( propertyType ) : Array.Empty<string>(),
+			Dependencies = property.Attributes
+				.OfType<MatchConfigDependsOnAttribute>()
+				.Select( dependency => new MatchConfigDependency
+				{
+					OptionKey = dependency.OptionKey,
+					ExpectedValue = dependency.ExpectedValue
+				} )
+				.ToList(),
 			Getter = config => property.GetValue( config ),
 			Setter = ( config, value ) => property.SetValue( config, ConvertOptionValue( propertyType, value ) )
 		};
+	}
+
+	private static void ValidateDependencies( IReadOnlyList<MatchConfigOption> builtOptions )
+	{
+		var optionsByKey = builtOptions.ToDictionary( option => option.Key, StringComparer.Ordinal );
+		foreach ( var option in builtOptions )
+		{
+			foreach ( var dependency in option.Dependencies )
+			{
+				if ( string.IsNullOrWhiteSpace( dependency.OptionKey ) || !optionsByKey.TryGetValue( dependency.OptionKey, out var dependencyOption ) )
+					throw new InvalidOperationException( $"MatchConfig option '{option.Key}' depends on unknown option '{dependency.OptionKey}'." );
+
+				if ( string.Equals( option.Key, dependency.OptionKey, StringComparison.Ordinal ) )
+					throw new InvalidOperationException( $"MatchConfig option '{option.Key}' cannot depend on itself." );
+
+				if ( !TryParseDependencyValue( dependencyOption, dependency.ExpectedValue, out _ ) )
+					throw new InvalidOperationException( $"MatchConfig option '{option.Key}' has invalid dependency value '{dependency.ExpectedValue}' for '{dependency.OptionKey}'." );
+			}
+		}
+
+		var visitStates = new Dictionary<string, int>( StringComparer.Ordinal );
+		foreach ( var option in builtOptions )
+			ValidateDependencyGraph( option, optionsByKey, visitStates );
+	}
+
+	private static bool TryParseDependencyValue( MatchConfigOption option, string rawValue, out object parsedValue )
+	{
+		parsedValue = null;
+		if ( option.Kind == MatchConfigOptionKind.Int )
+		{
+			if ( !int.TryParse( rawValue, NumberStyles.Integer, CultureInfo.InvariantCulture, out var intValue ) ||
+				intValue < option.Min || intValue > option.Max )
+				return false;
+
+			parsedValue = intValue;
+			return true;
+		}
+
+		if ( option.Kind == MatchConfigOptionKind.Enum )
+		{
+			try
+			{
+				parsedValue = Enum.Parse( option.ValueType, rawValue, true );
+				return Enum.IsDefined( option.ValueType, parsedValue );
+			}
+			catch
+			{
+				return false;
+			}
+		}
+
+		return TryParseValue( option, rawValue, out parsedValue );
+	}
+
+	private static void ValidateDependencyGraph(
+		MatchConfigOption option,
+		IReadOnlyDictionary<string, MatchConfigOption> optionsByKey,
+		Dictionary<string, int> visitStates )
+	{
+		if ( visitStates.TryGetValue( option.Key, out var state ) )
+		{
+			if ( state == 1 )
+				throw new InvalidOperationException( $"Circular MatchConfig dependency encountered at '{option.Key}'." );
+
+			if ( state == 2 )
+				return;
+		}
+
+		visitStates[option.Key] = 1;
+		foreach ( var dependency in option.Dependencies )
+			ValidateDependencyGraph( optionsByKey[dependency.OptionKey], optionsByKey, visitStates );
+		visitStates[option.Key] = 2;
 	}
 
 	private static object ConvertOptionValue( Type valueType, object value )

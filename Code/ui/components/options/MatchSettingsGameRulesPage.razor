@@ -110,7 +110,9 @@
 			? MatchConfigSchema.Options
 			: MatchConfigSchema.Options.Where( option => option.IsVisible );
 
-		return options.Where( option => option.Kind != MatchConfigOptionKind.String );
+		return options.Where( option =>
+			option.Kind != MatchConfigOptionKind.String &&
+			MatchConfigSchema.IsOptionApplicable( option, Config ) );
 	}
 
 	private bool GetBoolValue( MatchConfigOption option )

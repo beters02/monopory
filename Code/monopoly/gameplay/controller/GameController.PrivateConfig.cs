@@ -12,9 +12,6 @@ public sealed partial class GameController : Component
 		BankruptedPieceMaterial?.Preload();
 	}
     
-    // Jail
-    private const int JailFineAmount = 50;
-	private const int JailTurnCount = 3;
 	private const float TurnSoundDelay = 0.5f;
 
     // Chat
@@ -54,7 +51,6 @@ public sealed partial class GameController : Component
 	public bool ShowTradeAcceptedPopup = true;
 	public bool ShowTradeDeniedPopup = true;
 	public bool ShowTradeNegotiationReceivedPopup = true;
-	public int MaxPendingSentTradesPerPlayer = 3;
 	public GameSound TradeReceivedSound = GameAssets.Sounds.TradeReceived; // retro 8
 	public GameSound TradeAcceptedSound = GameAssets.Sounds.Success; // success
 	public GameSound TradeDeniedSound = GameAssets.Sounds.Warning; // error

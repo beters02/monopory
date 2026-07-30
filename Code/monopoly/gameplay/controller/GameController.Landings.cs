@@ -197,16 +197,56 @@ public sealed partial class GameController : Component
 			SendGlobalPopupToAll( "Free Parking payout", $"{player.PlayerName} collected ${payout} from Free Parking.", PopupKind.Success, true, 4f );
 		}
 
-		if ( CurrentTurnGetsExtraRoll )
+		switch ( Config?.VacationCashBehavior ?? VacationCashBehavior.SkipNextTurn )
 		{
-			CurrentTurnGetsExtraRoll = false;
-			player.IsReturningFromVacationCashBreak = true;
-			Log.Info( $"{player.PlayerName} collected ${payout} from Free Parking and skipped their extra roll." );
-			return $"Collected ${payout} from Free Parking; extra roll skipped";
+			case VacationCashBehavior.PayoutOnly:
+				Log.Info( $"{player.PlayerName} collected ${payout} from Free Parking with no turn penalty." );
+				return $"Collected ${payout} from Free Parking";
+
+			case VacationCashBehavior.LoseExtraRoll:
+				if ( Config?.DoublesGoesAgain == true && CurrentTurnGetsExtraRoll )
+				{
+					CurrentTurnGetsExtraRoll = false;
+					Log.Info( $"{player.PlayerName} collected ${payout} from Free Parking and lost their doubles reroll." );
+					return $"Collected ${payout} from Free Parking; doubles reroll lost";
+				}
+
+				Log.Info( $"{player.PlayerName} collected ${payout} from Free Parking with no pending doubles reroll to lose." );
+				return $"Collected ${payout} from Free Parking";
+
+			case VacationCashBehavior.SkipNextTurn:
+			default:
+				return ApplyVacationCashSkipNextTurnBehavior( player, payout );
+		}
+	}
+
+	private string ApplyVacationCashSkipNextTurnBehavior( PlayerState player, int payout )
+	{
+		var hasDoublesReroll = Config?.DoublesGoesAgain == true && CurrentTurnGetsExtraRoll;
+		if ( hasDoublesReroll )
+		{
+			switch ( Config?.VacationCashSkipNextTurnDoublesBehavior ?? VacationCashSkipNextTurnDoublesBehavior.ConsumeRerollOnly )
+			{
+				case VacationCashSkipNextTurnDoublesBehavior.UseRerollSkipNext:
+					player.SkipsNextTurn = true;
+					Log.Info( $"{player.PlayerName} collected ${payout} from Free Parking, keeps their doubles reroll, and will skip their next rotation turn." );
+					return $"Collected ${payout} from Free Parking; reroll kept and next turn skipped";
+
+				case VacationCashSkipNextTurnDoublesBehavior.CancelAndSkipTurn:
+					CurrentTurnGetsExtraRoll = false;
+					player.SkipsNextTurn = true;
+					Log.Info( $"{player.PlayerName} collected ${payout} from Free Parking, lost their doubles reroll, and will skip their next rotation turn." );
+					return $"Collected ${payout} from Free Parking; reroll lost and next turn skipped";
+
+				case VacationCashSkipNextTurnDoublesBehavior.ConsumeRerollOnly:
+				default:
+					CurrentTurnGetsExtraRoll = false;
+					Log.Info( $"{player.PlayerName} collected ${payout} from Free Parking and lost their doubles reroll." );
+					return $"Collected ${payout} from Free Parking; doubles reroll lost";
+			}
 		}
 
 		player.SkipsNextTurn = true;
-		player.IsReturningFromVacationCashBreak = true;
 		Log.Info( $"{player.PlayerName} collected ${payout} from Free Parking and will skip their next turn." );
 		return $"Collected ${payout} from Free Parking; next turn skipped";
 	}

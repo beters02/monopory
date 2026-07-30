@@ -295,14 +295,46 @@
 
 	private void ToggleSenderProperty( int propertyIndex )
 	{
+		if ( !CanSelectTradeProperty( propertyIndex, ComposerSenderPropertyIndexes, true ) )
+			return;
+
 		if ( !ComposerSenderPropertyIndexes.Add( propertyIndex ) )
 			ComposerSenderPropertyIndexes.Remove( propertyIndex );
 	}
 
 	private void ToggleReceiverProperty( int propertyIndex )
 	{
+		if ( !CanSelectTradeProperty( propertyIndex, ComposerReceiverPropertyIndexes, false ) )
+			return;
+
 		if ( !ComposerReceiverPropertyIndexes.Add( propertyIndex ) )
 			ComposerReceiverPropertyIndexes.Remove( propertyIndex );
+	}
+
+	private bool CanSelectTradeProperty( int propertyIndex, HashSet<int> selectedProperties, bool canSellImprovements )
+	{
+		if ( selectedProperties.Contains( propertyIndex ) )
+			return true;
+
+		if ( GameRef?.Config?.AllowMortgagedPropertyTrades == false && GameRef.IsMortgaged( propertyIndex ) )
+		{
+			GameRef.ShowLocalPopup(
+				"Mortgaged property trades disabled",
+				$"{GetPropertyName( propertyIndex )} cannot be included while mortgaged property trades are disabled.",
+				PopupKind.Warning );
+			return false;
+		}
+
+		if ( !canSellImprovements && GameRef?.Config?.AllowImprovedPropertyTrades != true && GameRef.GetImprovementCount( propertyIndex ) > 0 )
+		{
+			GameRef.ShowLocalPopup(
+				"Improved property trades disabled",
+				$"{GetPropertyName( propertyIndex )} cannot be included until its owner sells its improvements.",
+				PopupKind.Warning );
+			return false;
+		}
+
+		return true;
 	}
 
 	private void ToggleSenderCard( string cardId )
@@ -330,7 +362,7 @@
 			.OrderBy( propertyIndex => propertyIndex )
 			.ToList();
 
-		if ( senderImprovedProperties.Count > 0 )
+		if ( GameRef.Config?.AllowImprovedPropertyTrades != true && senderImprovedProperties.Count > 0 )
 		{
 			var propertyNames = string.Join( ", ", senderImprovedProperties.Select( GetPropertyName ) );
 			GameRef.ShowLocalConfirmation(
@@ -343,11 +375,12 @@
 
 		var isNegotiation = NegotiatedTradeId >= 0;
 		var isEdit = EditedTradeId >= 0;
-		if ( !isEdit && GameRef.MaxPendingSentTradesPerPlayer > 0 && GameRef.GetTrades().Count( trade => trade.SenderPlayerIndex == GameRef.LocalPlayerIndex ) >= GameRef.MaxPendingSentTradesPerPlayer )
+		var sentTradeLimit = Math.Max( GameRef.Config?.SentTradeLimit ?? 3, 0 );
+		if ( !isEdit && sentTradeLimit > 0 && GameRef.GetTrades().Count( trade => trade.SenderPlayerIndex == GameRef.LocalPlayerIndex ) >= sentTradeLimit )
 		{
 			GameRef.ShowLocalPopup(
 				"Trade limit reached",
-				$"You can only have {GameRef.MaxPendingSentTradesPerPlayer} sent trade request(s) pending.",
+				$"You can only have {sentTradeLimit} sent trade request(s) pending.",
 				PopupKind.Warning
 			);
 			return;
@@ -690,6 +723,9 @@
 		hash.Add( EditedTradeId );
 		hash.Add( EditingStatusTradeId );
 		hash.Add( ViewedTradeId );
+		hash.Add( GameRef?.Config?.SentTradeLimit ?? 3 );
+		hash.Add( GameRef?.Config?.AllowImprovedPropertyTrades ?? false );
+		hash.Add( GameRef?.Config?.AllowMortgagedPropertyTrades ?? true );
 
 		foreach ( var index in ComposerSenderPropertyIndexes.OrderBy( x => x ) )
 			hash.Add( index );

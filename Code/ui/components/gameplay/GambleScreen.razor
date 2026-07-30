@@ -43,7 +43,7 @@
 					</div>
 					@if ( UsesMoney )
 					{
-						<div class="gamble-wager-label">Wager ($1–$@AvailableCash)</div>
+						<div class="gamble-wager-label">@WagerLimitText</div>
 						<TextEntry class="gamble-wager-input" Text="@WagerDraft" Placeholder="Wager" OnTextEdited="@SetWagerDraft" />
 					}
 					else
@@ -91,7 +91,8 @@
 	private GambleSession ActiveSession => GameRef?.GetLocalGambleSession();
 	private bool HasAvailableStation => ResolveStationId() >= 0;
 	private bool UsesMoney => GameRef?.Config?.CanGambleMonopolyMoney == true;
-	private int AvailableCash => Math.Max( GameRef?.Players?.ElementAtOrDefault( GameRef.LocalPlayerIndex )?.Money ?? 0, 0 );
+	private int MaximumWager => Math.Max( GameRef?.GetMaximumGambleWager( GameRef.LocalPlayerIndex ) ?? 0, 0 );
+	private string WagerLimitText => MaximumWager > 0 ? $"Wager ($1–${MaximumWager})" : "No wager available under the current limit";
 	private bool CanSubmit => HasAvailableStation && (!UsesMoney || TryGetWager( out _ ));
 	private string AvailabilityText => HasAvailableStation ? "Available" : "All stations busy";
 	private string AvailabilityClass => HasAvailableStation ? "gamble-game-availability available" : "gamble-game-availability busy";
@@ -163,7 +164,7 @@
 
 	private bool TryGetWager( out int wager )
 	{
-		return int.TryParse( WagerDraft, out wager ) && wager >= 1 && wager <= AvailableCash;
+		return int.TryParse( WagerDraft, out wager ) && wager >= 1 && wager <= MaximumWager;
 	}
 
 	private void StartCoinFlip()
@@ -193,6 +194,7 @@
 		hash.Add( GameRef?.LocalPlayerIndex ?? -1 );
 		hash.Add( GameRef?.Config?.GambleGamesEnabledNonCard ?? false );
 		hash.Add( GameRef?.Config?.CanGambleMonopolyMoney ?? false );
+		hash.Add( MaximumWager );
 		foreach ( var value in GameRef?.GambleSessions?.Values ?? Array.Empty<string>() )
 			hash.Add( value );
 		hash.Add( MathF.Round( Time.Now * 10f ) );

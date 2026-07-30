@@ -265,11 +265,23 @@ public sealed partial class GameController : Component
 
 	private bool CanPlayerManageProperties( int playerIndex )
 	{
-		return playerIndex >= 0 &&
-			CanAcceptGameplayInput() &&
-			CurrentPlayerIndex == playerIndex &&
-			Players.ElementAtOrDefault( playerIndex )?.IsBankrupt != true &&
-			(Phase == GamePhase.WaitingToRoll || Phase == GamePhase.TurnEnded);
+		if ( playerIndex < 0 || !CanAcceptGameplayInput() )
+			return false;
+
+		var player = Players.ElementAtOrDefault( playerIndex );
+		if ( player is null || !player.IsAssigned || player.IsBankrupt )
+			return false;
+
+		return (Config?.PropertyManagementTiming ?? PropertyManagementTiming.CurrentTurnOnly) switch
+		{
+			PropertyManagementTiming.AnyTurn =>
+				Phase == GamePhase.WaitingToRoll || Phase == GamePhase.TurnEnded,
+			PropertyManagementTiming.BetweenTurnsOnly =>
+				Phase == GamePhase.TurnEnded,
+			_ =>
+				CurrentPlayerIndex == playerIndex &&
+				(Phase == GamePhase.WaitingToRoll || Phase == GamePhase.TurnEnded)
+		};
 	}
 
 	private bool HasPendingForcedPaymentForPlayer( int playerIndex )
