@@ -11,12 +11,14 @@
 
 @code
 {
+	private const bool debug_enabled = true;
 	[Parameter] public string RequestKey { get; set; } = "";
 	[Parameter] public string Title { get; set; } = "";
 	[Parameter] public string Message { get; set; } = "";
 	[Parameter] public TooltipTriggerMode TriggerMode { get; set; } = TooltipTriggerMode.Hover;
 	[Parameter] public string InputAction { get; set; } = "";
 	[Parameter] public float HoverDelay { get; set; } = 0.25f;
+	[Parameter] public TooltipPlacementMode PlacementMode { get; set; } = TooltipPlacementMode.Cursor;
 	[Parameter] public string Variant { get; set; } = "";
 	[Parameter] public bool Enabled { get; set; } = true;
 	[Parameter] public new RenderFragment ChildContent { get; set; }
@@ -38,7 +40,7 @@
 	{
 		base.Tick();
 
-		if ( !Enabled )
+		if ( !Enabled && !debug_enabled )
 		{
 			IsHovered = false;
 			ShowAt = 0f;
@@ -51,7 +53,7 @@
 			if ( IsHovered && ShowAt > 0f && Time.Now >= ShowAt )
 			{
 				ShowAt = 0f;
-				TooltipService.Show( EffectiveKey, Title, Message, Mouse.Position );
+				TooltipService.Show( EffectiveKey, Title, Message, Mouse.Position, GetAnchorRect(), debug_enabled );
 			}
 
 			return;
@@ -61,13 +63,20 @@
 			!string.IsNullOrWhiteSpace( InputAction ) &&
 			Input.Pressed( InputAction ) )
 		{
-			TooltipService.Toggle( EffectiveKey, Title, Message, Mouse.Position );
+			TooltipService.Toggle( EffectiveKey, Title, Message, Mouse.Position, GetAnchorRect(), debug_enabled );
 		}
+	}
+
+	private Rect? GetAnchorRect()
+	{
+		return PlacementMode == TooltipPlacementMode.AroundTarget
+			? Box.Rect
+			: null;
 	}
 
 	private void HandleMouseEnter()
 	{
-		if ( !Enabled )
+		if ( !Enabled && !debug_enabled )
 			return;
 		IsHovered = true;
 
@@ -77,10 +86,12 @@
 
 	private void HandleMouseLeave()
 	{
-		if ( !Enabled )
+		if ( !Enabled && !debug_enabled )
 			return;
 		IsHovered = false;
 		ShowAt = 0f;
-		TooltipService.Dismiss( EffectiveKey );
+
+		if ( !debug_enabled )
+			TooltipService.Dismiss( EffectiveKey );
 	}
 }

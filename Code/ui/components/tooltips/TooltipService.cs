@@ -9,11 +9,19 @@ public enum TooltipTriggerMode
 	Input
 }
 
+public enum TooltipPlacementMode
+{
+	Cursor,
+	AroundTarget
+}
+
 public sealed record TooltipRequest(
 	string Key,
 	string Title,
 	string Message,
-	Vector2 ScreenPosition
+	Vector2 ScreenPosition,
+	Rect? AnchorRect,
+	bool Persistent
 );
 
 public static class TooltipService
@@ -32,7 +40,9 @@ public static class TooltipService
 		string key,
 		string title,
 		string message,
-		Vector2 screenPosition )
+		Vector2 screenPosition,
+		Rect? anchorRect = null,
+		bool persistent = false )
 	{
 		if ( string.IsNullOrWhiteSpace( key ) ||
 			(string.IsNullOrWhiteSpace( title ) && string.IsNullOrWhiteSpace( message )) )
@@ -42,7 +52,9 @@ public static class TooltipService
 			key,
 			title?.Trim() ?? "",
 			message?.Trim() ?? "",
-			screenPosition
+			screenPosition,
+			anchorRect,
+			persistent
 		);
 		ActivatedAt = Time.Now;
 		Revision++;
@@ -52,15 +64,20 @@ public static class TooltipService
 		string key,
 		string title,
 		string message,
-		Vector2 screenPosition )
+		Vector2 screenPosition,
+		Rect? anchorRect = null,
+		bool persistent = false )
 	{
 		if ( IsActive( key ) )
 		{
+			if ( Active.Persistent || persistent )
+				return;
+
 			Dismiss( key );
 			return;
 		}
 
-		Show( key, title, message, screenPosition );
+		Show( key, title, message, screenPosition, anchorRect, persistent );
 	}
 
 	public static void Dismiss( string key = null )

@@ -6,13 +6,14 @@
 	left: 0;
 	right: 0;
 	bottom: 0;
-	z-index: 2000;
+	z-index: 2147483647;
 	pointer-events: none;
 	overflow: hidden;
 }
 
 .tooltip-card {
 	position: absolute;
+	z-index: 1;
 	width: 280px;
 	max-width: 360px;
 	padding: 10px 12px;

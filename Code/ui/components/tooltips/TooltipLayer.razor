@@ -27,6 +27,8 @@
 
 	private Panel TooltipPanel = null!;
 	private int SeenRevision = -1;
+	private float LastTooltipWidth;
+	private float LastTooltipHeight;
 
 	private TooltipRequest Request => TooltipService.Active;
 
@@ -38,24 +40,89 @@
 				return "";
 
 			var inverseScale = 1f / Math.Max( ScaleToScreen, 0.001f );
-			var position = Request.ScreenPosition * inverseScale;
 			var viewportWidth = Math.Max( Box.RectInner.Width, 1f );
 			var viewportHeight = Math.Max( Box.RectInner.Height, 1f );
 			var tooltipWidth = Math.Max( TooltipPanel?.Box.Rect.Width ?? 0f, 280f );
 			var tooltipHeight = Math.Max( TooltipPanel?.Box.Rect.Height ?? 0f, 60f );
-			var left = Math.Clamp(
-				position.x + CursorOffset,
-				ViewportPadding,
-				Math.Max( ViewportPadding, viewportWidth - tooltipWidth - ViewportPadding )
-			);
-			var top = Math.Clamp(
-				position.y + CursorOffset,
-				ViewportPadding,
-				Math.Max( ViewportPadding, viewportHeight - tooltipHeight - ViewportPadding )
-			);
+			var position = Request.AnchorRect.HasValue
+				? GetAnchoredPosition( Request.AnchorRect.Value, inverseScale, viewportWidth, viewportHeight, tooltipWidth, tooltipHeight )
+				: ClampToViewport(
+					Request.ScreenPosition * inverseScale + new Vector2( CursorOffset, CursorOffset ),
+					viewportWidth,
+					viewportHeight,
+					tooltipWidth,
+					tooltipHeight
+				);
 
-			return $"left: {left:0.###}px; top: {top:0.###}px;";
+			return $"left: {position.x:0.###}px; top: {position.y:0.###}px;";
 		}
+	}
+
+	private static Vector2 GetAnchoredPosition(
+		Rect screenAnchor,
+		float inverseScale,
+		float viewportWidth,
+		float viewportHeight,
+		float tooltipWidth,
+		float tooltipHeight )
+	{
+		var left = screenAnchor.Left * inverseScale;
+		var right = screenAnchor.Right * inverseScale;
+		var top = screenAnchor.Top * inverseScale;
+		var bottom = screenAnchor.Bottom * inverseScale;
+		var centerX = (left + right) * 0.5f;
+		var centerY = (top + bottom) * 0.5f;
+		var candidates = new[]
+		{
+			new Vector2( right + CursorOffset, centerY - tooltipHeight * 0.5f ),
+			new Vector2( left - CursorOffset - tooltipWidth, centerY - tooltipHeight * 0.5f ),
+			new Vector2( centerX - tooltipWidth * 0.5f, bottom + CursorOffset ),
+			new Vector2( centerX - tooltipWidth * 0.5f, top - CursorOffset - tooltipHeight )
+		};
+
+		foreach ( var candidate in candidates )
+		{
+			if ( FitsViewport( candidate, viewportWidth, viewportHeight, tooltipWidth, tooltipHeight ) )
+				return candidate;
+		}
+
+		var best = candidates[0];
+		var bestOverflow = GetViewportOverflow( best, viewportWidth, viewportHeight, tooltipWidth, tooltipHeight );
+		for ( var i = 1; i < candidates.Length; i++ )
+		{
+			var overflow = GetViewportOverflow( candidates[i], viewportWidth, viewportHeight, tooltipWidth, tooltipHeight );
+			if ( overflow >= bestOverflow )
+				continue;
+
+			best = candidates[i];
+			bestOverflow = overflow;
+		}
+
+		return ClampToViewport( best, viewportWidth, viewportHeight, tooltipWidth, tooltipHeight );
+	}
+
+	private static bool FitsViewport( Vector2 position, float viewportWidth, float viewportHeight, float width, float height )
+	{
+		return position.x >= ViewportPadding &&
+			position.y >= ViewportPadding &&
+			position.x + width <= viewportWidth - ViewportPadding &&
+			position.y + height <= viewportHeight - ViewportPadding;
+	}
+
+	private static float GetViewportOverflow( Vector2 position, float viewportWidth, float viewportHeight, float width, float height )
+	{
+		return Math.Max( ViewportPadding - position.x, 0f ) +
+			Math.Max( ViewportPadding - position.y, 0f ) +
+			Math.Max( position.x + width - (viewportWidth - ViewportPadding), 0f ) +
+			Math.Max( position.y + height - (viewportHeight - ViewportPadding), 0f );
+	}
+
+	private static Vector2 ClampToViewport( Vector2 position, float viewportWidth, float viewportHeight, float width, float height )
+	{
+		return new Vector2(
+			Math.Clamp( position.x, ViewportPadding, Math.Max( ViewportPadding, viewportWidth - width - ViewportPadding ) ),
+			Math.Clamp( position.y, ViewportPadding, Math.Max( ViewportPadding, viewportHeight - height - ViewportPadding ) )
+		);
 	}
 
 	public override void Tick()
@@ -63,6 +130,7 @@
 		base.Tick();
 
 		if ( Request is not null &&
+			Request.Persistent != true &&
 			Time.Now - TooltipService.ActivatedAt > 0.1f &&
 			(Input.EscapePressed ||
 				Input.Pressed( "Attack1" ) ||
@@ -74,6 +142,16 @@
 		if ( SeenRevision != TooltipService.Revision )
 		{
 			SeenRevision = TooltipService.Revision;
+			StateHasChanged();
+		}
+
+		var tooltipWidth = TooltipPanel?.Box.Rect.Width ?? 0f;
+		var tooltipHeight = TooltipPanel?.Box.Rect.Height ?? 0f;
+		if ( MathF.Abs( tooltipWidth - LastTooltipWidth ) > 0.5f ||
+			MathF.Abs( tooltipHeight - LastTooltipHeight ) > 0.5f )
+		{
+			LastTooltipWidth = tooltipWidth;
+			LastTooltipHeight = tooltipHeight;
 			StateHasChanged();
 		}
 	}

@@ -28,6 +28,7 @@
 			@foreach ( var item in Items )
 			{
 				<Tooltip Variant="dropdown-item-tooltip"
+					PlacementMode="@TooltipPlacementMode.AroundTarget"
 					Enabled="@(!string.IsNullOrWhiteSpace( GetItemTooltip( item ) ))"
 					RequestKey="@GetItemTooltipKey( item )"
 					Title="@FormatItem( item )"
