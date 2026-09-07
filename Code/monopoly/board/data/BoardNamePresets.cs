@@ -354,9 +354,7 @@ public static class BoardNamePresets
 [AttributeUsage( AttributeTargets.Class )]
 public sealed class BoardSpaceNamePresetAttribute : MatchSettingsPresetAttribute
 {
-	public BoardSpaceNamePresetAttribute( string id, string name, int order = 0 ) : base( id, name, order )
-	{
-	}
+	public BoardSpaceNamePresetAttribute( string id, string name, int order = 0 ) : base( id, name, order ) {}
 
 	protected override string CreateSnapshot( TypeDescription type )
 	{
